@@ -1,0 +1,10 @@
+package ${packageName};
+
+import com.forsuredb.api.FSSaveApi;
+import com.forsuredb.annotation.FSColumn;
+
+public interface ${className} extends FSSaveApi#if( $resultParameter )<$resultParameter>#end {
+#foreach($methodDefinition in $methodDefinitions)
+    $methodDefinition
+#end
+}
