@@ -69,9 +69,8 @@ public class Migration implements Comparable<Migration> {
         }
     }
 
-    @Getter @SerializedName("table_info") private final TableInfo tableInfo;
+    @Getter @SerializedName("table_name") private final String tableName;
     @Getter @SerializedName("column_name") private final String columnName;
-    @Getter @SerializedName("db_version") private final int dbVersion;
     @Getter @SerializedName("migration_type") private final Type type;
 
     @Override
@@ -80,25 +79,5 @@ public class Migration implements Comparable<Migration> {
             return -1;
         }
         return type == null ? 1 : type.getPriority() - o.getType().getPriority();
-    }
-
-    public boolean isValid() {
-        return tableInfo != null && tableInfo.getTableName() != null && !tableInfo.getTableName().isEmpty();
-    }
-
-    public String getColumnQualifiedType() {
-        return hasColumn() ? tableInfo.getColumn(columnName).getQualifiedType() : "";
-    }
-
-    public ForeignKeyInfo getForeignKeyInfo() {
-        return hasForeignKey() ? tableInfo.getColumn(columnName).getForeignKeyInfo() : null;
-    }
-
-    private boolean hasColumn() {
-        return tableInfo != null && columnName != null && tableInfo.hasColumn(columnName);
-    }
-
-    private boolean hasForeignKey() {
-        return hasColumn() && tableInfo.getColumn(columnName).isForeignKey();
     }
 }

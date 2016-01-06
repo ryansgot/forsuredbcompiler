@@ -20,6 +20,7 @@ package com.forsuredb.annotationprocessor;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * <p>
@@ -45,4 +46,9 @@ public interface TableContext {
      * @return all of the tables in the context
      */
     Collection<TableInfo> allTables();
+
+    /**
+     * @return a map from table_name -> TableInfo for all tables
+     */
+    Map<String, TableInfo> tableMap();
 }

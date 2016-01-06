@@ -20,13 +20,16 @@ package com.forsuredb.annotationprocessor.generator;
 import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.migration.Migration;
 
+import com.forsuredb.migration.MigrationSet;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.PriorityQueue;
+import java.util.List;
 
 import static com.forsuredb.TestData.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -35,74 +38,97 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class DiffGeneratorTest {
 
-    private PriorityQueue<Migration> actualMigrationQueue;
+    private MigrationSet actualMigrationSet;
 
-    private TableContext migrationContext;
-    private TableContext processingContext;
-    private Migration[] orderedMigrationsExpected;
+    private final int sourceDbVersion;
+    private final TableContext migrationContext;
+    private final TableContext processingContext;
+    private final MigrationSet expectedMigrationSet;
 
-    public DiffGeneratorTest(TableContext migrationContext, TableContext processingContext, Migration[] orderedMigrationsExpected) {
+    public DiffGeneratorTest(int sourceDbVersion,
+                             TableContext migrationContext,
+                             TableContext processingContext,
+                             MigrationSet expectedMigrationSet) {
+        this.sourceDbVersion = sourceDbVersion;
         this.migrationContext = migrationContext;
         this.processingContext = processingContext;
-        this.orderedMigrationsExpected = orderedMigrationsExpected;
+        this.expectedMigrationSet = expectedMigrationSet;
     }
 
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][]{
+        return Arrays.asList(new Object[][] {
+                // No diff (identical contexts)
+                {
+                        4,
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                        .build())
+                                .build(),
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                        .build())
+                                .build(),
+                        MigrationSet.builder().dbVersion(5)
+                                .orderedMigrations(new ArrayList<Migration>())
+                                .build()
+                },
                 // The processing context has a table that the migration context does not have--table has no extra columns
                 {
+                        1,
                         newTableContext().build(),
-                        newTableContext()
-                                .addTable(table().build())
+                        newTableContext().addTable(table().build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.CREATE_TABLE)
-                                        .tableInfo(table().build())
-                                        .build()
-                        }
+                        MigrationSet.builder().dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                                        .tableName(TABLE_NAME)
+                                        .build()))
+                                .targetSchema(tableMapOf(table().build()))
+                                .build()
                 },
                 // The processing context has a table that the migration context does not have--table has extra columns
                 {
+                        10,
                         newTableContext().build(),
-                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build()))
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
                                         .build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.CREATE_TABLE)
-                                        .tableInfo(table().columnMap(columnMapOf(intCol().build()))
-                                                .build())
-                                        .build(),
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                        .tableInfo(table().columnMap(columnMapOf(intCol().build()))
-                                                .build())
-                                        .columnName(intCol().build().getColumnName())
-                                        .build()
-                        }
+                        MigrationSet.builder().dbVersion(11)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                                                .tableName(TABLE_NAME)
+                                                .build(),
+                                        Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(stringCol().build().getColumnName())
+                                                .build(),
+                                        Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(intCol().build().getColumnName())
+                                                .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                .build()))
+                                .build()
                 },
                 // The processing context has a non-unique, non foreign-key column that the migration context does not have
                 {
+                        3,
                         newTableContext().addTable(table().build())
                                 .build(),
-                        newTableContext()
-                                .addTable(table()
+                        newTableContext().addTable(table()
                                         .columnMap(columnMapOf(bigDecimalCol().build()))
                                         .build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                        .tableInfo(table().columnMap(columnMapOf(bigDecimalCol().build()))
-                                                .build())
+                        MigrationSet.builder().dbVersion(4)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                        .tableName(TABLE_NAME)
                                         .columnName(bigDecimalCol().build().getColumnName())
-                                        .build()
-                        }
+                                        .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(columnMapOf(bigDecimalCol().build()))
+                                        .build()))
+                                .build()
                 },
                 // The processing context has a foreign key the migration context does not know about (default delete and update actions)
                 {
+                        2,
                         newTableContext().addTable(table().build()).build(),
                         newTableContext()
                                 .addTable(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
@@ -110,19 +136,20 @@ public class DiffGeneratorTest {
                                                 .build()))
                                         .build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.ADD_FOREIGN_KEY_REFERENCE)
-                                        .tableInfo(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
-                                                                .build())
-                                                        .build()))
-                                                .build())
+                        MigrationSet.builder().dbVersion(3)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_FOREIGN_KEY_REFERENCE)
+                                        .tableName(TABLE_NAME)
                                         .columnName(longCol().build().getColumnName())
-                                        .build()
-                        }
+                                        .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
+                                                        .build())
+                                                .build()))
+                                        .build()))
+                                .build()
                 },
                 // The processing context has a unique index column the migration context doesn't know about
                 {
+                        4364,
                         newTableContext().addTable(table().build())
                                 .build(),
                         newTableContext()
@@ -130,52 +157,66 @@ public class DiffGeneratorTest {
                                                 .build()))
                                         .build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
-                                        .tableInfo(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                        .build()))
-                                                .build())
+                        MigrationSet.builder().dbVersion(4365)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+                                        .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
-                                        .build()
-                        }
+                                        .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
+                                                .build()))
+                                        .build()))
+                                .build()
                 },
                 // The processing context has a unique index on a column the migration context knows about, but doesn't know is unique
                 {
+                        8,
                         newTableContext().addTable(table().columnMap(columnMapOf(stringCol().build()))
                                         .build())
                                 .build(),
                         newTableContext()
-                                .addTable(table()
-                                        .columnMap(columnMapOf(stringCol().unique(true)
+                                .addTable(table().columnMap(columnMapOf(stringCol().unique(true)
                                                 .build()))
                                         .build())
                                 .build(),
-                        new Migration[] {
-                                Migration.builder().dbVersion(1)
-                                        .type(Migration.Type.ADD_UNIQUE_INDEX)
-                                        .tableInfo(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                        .build()))
-                                                .build())
+                        MigrationSet.builder().dbVersion(9)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+                                        .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
-                                        .build()
-                        }
+                                        .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
+                                                .build()))
+                                        .build()))
+                                .build()
                 }
         });
     }
 
     @Before
     public void setUp() {
-        actualMigrationQueue = new DiffGenerator(migrationContext, 0).analyzeDiff(processingContext);
+        actualMigrationSet = new DiffGenerator(migrationContext, sourceDbVersion).analyzeDiff(processingContext);
     }
 
     @Test
-    public void shouldMatchQueriesInOrderAndContent() {
-        int i = 0;
-        while (actualMigrationQueue.size() > 0) {
-            assertEquals("migration index " + i, orderedMigrationsExpected[i], actualMigrationQueue.remove());
-            i++;
+    public void shouldHaveCorrectTargetDbVersion() {
+        assertEquals(expectedMigrationSet.getDbVersion(), actualMigrationSet.getDbVersion());
+    }
+
+    @Test
+    public void shouldHaveCorrectNumberOfMigrations() {
+        assertEquals(expectedMigrationSet.getOrderedMigrations().size(), actualMigrationSet.getOrderedMigrations().size());
+    }
+
+    @Test
+    public void shouldMatchMigrationsInOrderAndContent() {
+        final List<Migration> expected = expectedMigrationSet.getOrderedMigrations();
+        final List<Migration> actual = actualMigrationSet.getOrderedMigrations();
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals("migration index " + i, expected.get(i), actual.get(i));
         }
     }
 
+    @Test
+    public void shouldContainTargetContext() {
+        assertEquals(processingContext.tableMap(), actualMigrationSet.getTargetSchema());
+    }
 }

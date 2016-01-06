@@ -63,6 +63,12 @@ public class ProcessingContext implements TableContext {
     }
 
     @Override
+    public Map<String, TableInfo> tableMap() {
+        createTableMapIfNecessary();
+        return tableMap;
+    }
+
+    @Override
     public boolean hasTable(String tableName) {
         createTableMapIfNecessary();
         return tableName != null && tableMap.containsKey(tableName);

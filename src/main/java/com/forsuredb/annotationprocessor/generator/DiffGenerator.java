@@ -22,8 +22,11 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.migration.Migration;
+import com.forsuredb.migration.MigrationSet;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -64,15 +67,14 @@ public class DiffGenerator {
      * apply to migrate a database from the schema of this instance's {@link TableContext} to that
      * of the {@link TableContext TableContext} argument.
      */
-    public PriorityQueue<Migration> analyzeDiff(TableContext targetContext) {
+    public MigrationSet analyzeDiff(TableContext targetContext) {
         APLog.i(LOG_TAG, "analyzing diff: targetContext.allTables().size() = " + targetContext.allTables().size());
-        PriorityQueue<Migration> retQueue = new PriorityQueue<>();
+        PriorityQueue<Migration> migrationQueue = new PriorityQueue<>();
         for (TableInfo targetTable : targetContext.allTables()) {
             boolean tableCreateMigrationCreated = false;
             if (!sourceContext.hasTable(targetTable.getTableName())) {
-                retQueue.add(Migration.builder().dbVersion(sourceDbVersion + 1)
-                        .type(Migration.Type.CREATE_TABLE)
-                        .tableInfo(targetTable)
+                migrationQueue.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                        .tableName(targetTable.getTableName())
                         .build());
                 tableCreateMigrationCreated = true;
             }
@@ -81,28 +83,37 @@ public class DiffGenerator {
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
                 if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
                     // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-                    retQueue.add(addColumnMigrationFor(targetColumn, targetTable));
+                    migrationQueue.add(addColumnMigrationFor(targetColumn, targetTable));
                     continue;
                 }
 
                 ColumnInfo sourceColumn = sourceTable.getColumn(targetColumn.getColumnName());
                 if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
-                    retQueue.add(Migration.builder().dbVersion(sourceDbVersion + 1)
-                            .type(Migration.Type.ADD_UNIQUE_INDEX)
+                    migrationQueue.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
                             .columnName(sourceColumn.getColumnName())
-                            .tableInfo(targetTable)
+                            .tableName(targetTable.getTableName())
                             .build());
                 }
             }
         }
 
-        return retQueue;
+        return MigrationSet.builder().dbVersion(sourceDbVersion + 1)
+                .orderedMigrations(toList(migrationQueue))
+                .targetSchema(targetContext.tableMap())
+                .build();
+    }
+
+    private List<Migration> toList(PriorityQueue<Migration> migrationQueue) {
+        List<Migration> retList = new LinkedList<>();
+        while (migrationQueue.size() > 0) {
+            retList.add(migrationQueue.remove());
+        }
+        return retList;
     }
 
     private Migration addColumnMigrationFor(ColumnInfo targetColumn, TableInfo targetTable) {
-        return Migration.builder().dbVersion(sourceDbVersion + 1)
-                .columnName(targetColumn.getColumnName())
-                .tableInfo(targetTable)
+        return Migration.builder().columnName(targetColumn.getColumnName())
+                .tableName(targetTable.getTableName())
                 .type(targetColumn.isForeignKey() ? Migration.Type.ADD_FOREIGN_KEY_REFERENCE
                         : targetColumn.isUnique() ? Migration.Type.ALTER_TABLE_ADD_UNIQUE
                         : Migration.Type.ALTER_TABLE_ADD_COLUMN)

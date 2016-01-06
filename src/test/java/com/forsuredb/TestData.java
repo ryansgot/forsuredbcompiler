@@ -48,6 +48,14 @@ public class TestData {
         return retMap;
     }
 
+    public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
+        Map<String, TableInfo> retMap = new HashMap<>();
+        for (TableInfo table : tables) {
+            retMap.put(table.getTableName(), table);
+        }
+        return retMap;
+    }
+
     public static ColumnInfo idCol() {
         return ColumnInfo.builder().columnName("_id")
                 .qualifiedType("long")
@@ -193,6 +201,11 @@ public class TestData {
                 @Override
                 public Collection<TableInfo> allTables() {
                     return tableMap.values();
+                }
+
+                @Override
+                public Map<String, TableInfo> tableMap() {
+                    return tableMap;
                 }
             };
         }

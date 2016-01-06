@@ -27,10 +27,14 @@ import com.forsuredb.migration.MigrationContext;
 import com.forsuredb.migration.MigrationRetriever;
 import com.forsuredb.migration.MigrationRetrieverFactory;
 
+import com.forsuredb.migration.MigrationSet;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.velocity.VelocityContext;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -66,29 +70,17 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
 
     @Override
     protected VelocityContext createVelocityContext() {
-        PriorityQueue<Migration> migrationQueue = new DiffGenerator(new MigrationContext(mr), mr.latestDbVersion()).analyzeDiff(pContext);
-        APLog.i(LOG_TAG, "queryGenrators.size() = " + migrationQueue.size());
-        if (migrationQueue.size() == 0) {
+        MigrationSet migrationSet = new DiffGenerator(new MigrationContext(mr), mr.latestDbVersion()).analyzeDiff(pContext);
+        APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.getOrderedMigrations().size());
+        if (migrationSet.getOrderedMigrations().size() == 0) {
             return null;
         }
 
-        String migrationJson = new JsonGenerator(determineVersion(), migrationQueue).generate();
+        final String migrationSetJson = new Gson().toJson(migrationSet, new TypeToken<MigrationSet>() {}.getType());
 
         VelocityContext vc = new VelocityContext();
-        vc.put("migrationJson", migrationJson);
+        vc.put("migrationJson", migrationSetJson);
         return vc;
-    }
-
-    private int determineVersion() {
-        int version = 1;
-
-        for (Migration m : mr.getMigrations()) {
-            if (m.getDbVersion() >= version) {
-                version = m.getDbVersion() + 1;
-            }
-        }
-
-        return version;
     }
 
     private String getRelativeFileName() {

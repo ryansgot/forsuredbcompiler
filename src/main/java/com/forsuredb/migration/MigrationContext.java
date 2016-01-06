@@ -20,12 +20,15 @@ package com.forsuredb.migration;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.annotationprocessor.info.TableInfo;
+import com.forsuredb.annotationprocessor.util.APLog;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MigrationContext implements TableContext {
+
+    private static final String LOG_TAG = MigrationContext.class.getSimpleName();
 
     private final MigrationRetriever mr;
     private Map<String, TableInfo> tableMap;
@@ -52,11 +55,19 @@ public class MigrationContext implements TableContext {
         return tableMap.values();
     }
 
+    @Override
+    public Map<String, TableInfo> tableMap() {
+        createTableMapIfNull();
+        return tableMap;
+    }
+
     private Map<String, TableInfo> createTables() {
         Map<String, TableInfo.Builder> tableBuilderMap = new HashMap<>();
         Map<String, ColumnInfo.Builder> columnBuilderMap = new HashMap<>();
-        for (Migration m : mr.getMigrations()) {
-            update(m, tableBuilderMap, columnBuilderMap);
+        for (MigrationSet migrationSet : mr.getMigrationSets()) {
+            for (Migration m : migrationSet.getOrderedMigrations()) {
+                update(migrationSet.getTargetSchema().get(m.getTableName()), m, tableBuilderMap, columnBuilderMap);
+            }
         }
 
         for (Map.Entry<String, Map<String, ColumnInfo>> entry : createTableBuilderKeyToColumnMapMap(columnBuilderMap).entrySet()) {
@@ -68,6 +79,8 @@ public class MigrationContext implements TableContext {
         for (Map.Entry<String, TableInfo.Builder> entry : tableBuilderMap.entrySet()) {
             retMap.put(entry.getKey(), entry.getValue().build());
         }
+
+        APLog.i(LOG_TAG, "created tables: " + retMap.toString());
         return retMap;
     }
 
@@ -86,41 +99,42 @@ public class MigrationContext implements TableContext {
         return retMap;
     }
 
-    private void update(Migration m, Map<String, TableInfo.Builder> tableBuilderMap, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+    private void update(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap, Map<String, ColumnInfo.Builder> columnBuilderMap) {
         switch (m.getType()) {
             case CREATE_TABLE:
                 handleCreateTable(m, tableBuilderMap, columnBuilderMap);
                 break;
             case ADD_FOREIGN_KEY_REFERENCE:
-                handleAddForeignKeyReference(m, columnBuilderMap);
+                handleAddForeignKeyReference(table, m, columnBuilderMap);
                 break;
             case ALTER_TABLE_ADD_COLUMN:
-                handleAddColumn(m, columnBuilderMap);
+                handleAddColumn(table, m, columnBuilderMap);
                 break;
             case ALTER_TABLE_ADD_UNIQUE:
-                handleAddUniqueColumn(m, columnBuilderMap);
+                handleAddUniqueColumn(table, m, columnBuilderMap);
         }
     }
 
-    private void handleAddForeignKeyReference(Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+    private void handleAddForeignKeyReference(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+        ColumnInfo column = table.getColumn(m.getColumnName());
         columnBuilderMap.put(columnKey(m), ColumnInfo.builder().columnName(m.getColumnName())
-                .qualifiedType(m.getColumnQualifiedType())
-                .foreignKeyInfo(m.getForeignKeyInfo()));
+                .qualifiedType(column.getQualifiedType())
+                .foreignKeyInfo(column.getForeignKeyInfo()));
     }
 
-    private void handleAddUniqueColumn(Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        handleAddColumn(m, true, columnBuilderMap);
+    private void handleAddUniqueColumn(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+        handleAddColumn(table, m, true, columnBuilderMap);
     }
 
-    private void handleAddColumn(Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        handleAddColumn(m, false, columnBuilderMap);
+    private void handleAddColumn(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+        handleAddColumn(table, m, false, columnBuilderMap);
     }
 
-    private void handleAddColumn(Migration m, boolean unique, Map<String, ColumnInfo.Builder> columnBuilderMap) {
+    private void handleAddColumn(TableInfo table, Migration m, boolean unique, Map<String, ColumnInfo.Builder> columnBuilderMap) {
         ColumnInfo.Builder b = columnBuilderMap.get(columnKey(m));
         if (b == null) {
             b = ColumnInfo.builder().columnName(m.getColumnName())
-                    .qualifiedType(m.getColumnQualifiedType())
+                    .qualifiedType(table.getColumn(m.getColumnName()).getQualifiedType())
                     .unique(unique);
             columnBuilderMap.put(columnKey(m), b);
         }
@@ -129,21 +143,13 @@ public class MigrationContext implements TableContext {
     private void handleCreateTable(Migration m, Map<String, TableInfo.Builder> tableBuilderMap, Map<String, ColumnInfo.Builder> columnBuilderMap) {
         TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
         if (tb == null) {
-            tb = TableInfo.builder().tableName(m.getTableInfo().getTableName());
+            tb = TableInfo.builder().tableName(m.getTableName());
             tableBuilderMap.put(tableKey(m), tb);
         }
-        ColumnInfo.Builder cb = columnBuilderMap.get(columnKey(m));
-        if (cb == null) {
-            cb = ColumnInfo.builder().columnName(m.getColumnName())
-                    .qualifiedType(m.getColumnQualifiedType())
-                    .primaryKey(true);
-            columnBuilderMap.put(columnKey(m), cb);
-        }
-
     }
 
     private String tableKey(Migration m) {
-        return m.getTableInfo().getTableName();
+        return m.getTableName();
     }
 
     private String columnKey(Migration m) {

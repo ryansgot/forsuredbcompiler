@@ -18,13 +18,14 @@
 package com.forsuredb.migration;
 
 import com.forsuredb.api.FSLogger;
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,28 +52,25 @@ public class MigrationRetrieverFactory {
     public MigrationRetriever fromStream(final InputStream inputStream) {
         return new MigrationRetriever() {
 
-            List<Migration> migrations;
+            private MigrationSet migrationSet;
 
             @Override
-            public List<Migration> getMigrations() {
-                if (migrations == null) {
-                    migrations = createMigrations();
+            public List<MigrationSet> getMigrationSets() {
+                if (migrationSet == null) {
+                    migrationSet = createMigrationSet();
                 }
-                return migrations;
+                return Lists.newArrayList(migrationSet);
             }
 
             @Override
             public int latestDbVersion() {
-                if (migrations == null) {
-                    createMigrations();
-                }
-                return latestDbVersionFrom(migrations);
+                return migrationSet.getDbVersion();
             }
 
-            private List<Migration> createMigrations() {
+            private MigrationSet createMigrationSet() {
                 JsonReader reader = new JsonReader(new InputStreamReader(inputStream));
                 try {
-                    return gson.fromJson(reader, new TypeToken<List<Migration>>() {}.getType());
+                    return gson.fromJson(reader, new TypeToken<MigrationSet>() {}.getType());
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -80,15 +78,20 @@ public class MigrationRetrieverFactory {
                         reader.close();
                     } catch (IOException e) {}
                 }
-                return Collections.EMPTY_LIST;
+
+                // return a dummy MigrationSet if the error was found
+                return MigrationSet.builder().dbVersion(-1).build();
             }
         };
     }
 
-    private int latestDbVersionFrom(List<Migration> migrations) {
+    private int latestDbVersionFrom(List<MigrationSet> migrationSets) {
+        if (migrationSets == null) {
+            return 0;
+        }
         int latest = 0;
-        for (Migration migration : migrations) {
-            latest = migration.getDbVersion() > latest ? migration.getDbVersion() : latest;
+        for (MigrationSet migrationSet : migrationSets) {
+            latest = migrationSet.getDbVersion() > latest ? migrationSet.getDbVersion() : latest;
         }
         return latest;
     }
@@ -100,64 +103,51 @@ public class MigrationRetrieverFactory {
     private class DirectoryMigrationsRetriever implements MigrationRetriever {
 
         private final File directory;
-        private List<Migration> migrations;
+        private List<MigrationSet> migrationSets;
 
         public DirectoryMigrationsRetriever(String directory) {
             this.directory = directory == null ? null : new File(directory);
         }
 
         @Override
-        public List<Migration> getMigrations() {
-            if (migrations == null) {
-                migrations = createMigrations();
+        public List<MigrationSet> getMigrationSets() {
+            if (migrationSets == null) {
+                migrationSets = createMigrationSets();
             }
-            return migrations;
+            return migrationSets;
         }
 
         @Override
         public int latestDbVersion() {
-            if (migrations == null) {
-                migrations = createMigrations();
-            }
-            return latestDbVersionFrom(migrations);
+            return latestDbVersionFrom(migrationSets);
         }
 
-        private List<Migration> createMigrations() {
+        private List<MigrationSet> createMigrationSets() {
             if (!validDirectory()) {
                 log.w("directory " + directory + " either doesn't exist or isn't a directory");
                 return Collections.EMPTY_LIST;
             }
 
             log.i("Looking for migrations in " + directory.getPath());
-            List<Migration> retList = new ArrayList<>();
+            List<MigrationSet> retList = new ArrayList<>();
             final PriorityQueue<File> orderedFiles = new PriorityQueue<>(filterMigrationFiles(directory.listFiles()));
             while (orderedFiles.size() > 0) {
-                retList.addAll(migrationsFromFile(orderedFiles.remove()));
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(orderedFiles.remove());
+                    retList.addAll(fromStream(fis).getMigrationSets());
+                } catch (FileNotFoundException fnfe) {
+                    fnfe.printStackTrace();
+                } finally {
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        } catch (IOException ioe) {}
+                    }
+                }
             }
 
             return retList;
-        }
-
-        private List<Migration> migrationsFromFile(File file) {
-            if (file == null || !file.exists()) {
-                return Collections.EMPTY_LIST;
-            }
-
-            JsonReader reader = null;
-            try {
-                reader = new JsonReader(new FileReader(file));
-            } catch (FileNotFoundException fnfe) {
-                log.e("Could not parse migrations: " + fnfe.getMessage());
-                return Collections.EMPTY_LIST;
-            }
-
-            try {
-                return gson.fromJson(reader, new TypeToken<List<Migration>>() {}.getType());
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException ioe) {}
-            }
         }
 
         private List<File> filterMigrationFiles(File[] files) {
