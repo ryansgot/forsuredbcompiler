@@ -64,7 +64,7 @@ bintray {
         repo = 'maven'
         name = 'forsuredbcompiler'
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/ryansgot/forsuredb.git'
+        vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
         publicDownloadNumbers = true
         version {
             name = '0.3.1'
