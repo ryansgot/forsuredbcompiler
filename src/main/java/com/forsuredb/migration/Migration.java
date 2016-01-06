@@ -17,8 +17,6 @@
  */
 package com.forsuredb.migration;
 
-import com.forsuredb.annotationprocessor.info.ForeignKeyInfo;
-import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.google.gson.annotations.SerializedName;
 
 import lombok.AccessLevel;
