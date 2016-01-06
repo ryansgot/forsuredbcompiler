@@ -17,9 +17,7 @@
  */
 package com.forsuredb.migration;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public abstract class QueryGenerator implements Comparable<QueryGenerator> {
 
