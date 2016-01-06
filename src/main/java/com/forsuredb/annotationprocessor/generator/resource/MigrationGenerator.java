@@ -1,5 +1,5 @@
 /*
-   forsuredb, an object relational mapping tool
+   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
 
    Copyright 2015 Ryan Scott
 
@@ -22,7 +22,6 @@ import com.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.forsuredb.annotationprocessor.generator.DiffGenerator;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.api.FSLogger;
-import com.forsuredb.migration.Migration;
 import com.forsuredb.migration.MigrationContext;
 import com.forsuredb.migration.MigrationRetriever;
 import com.forsuredb.migration.MigrationRetrieverFactory;
@@ -34,8 +33,6 @@ import org.apache.velocity.VelocityContext;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.PriorityQueue;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.FileObject;

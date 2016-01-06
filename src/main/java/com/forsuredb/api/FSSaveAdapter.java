@@ -1,5 +1,5 @@
 /*
-   forsuredb, an object relational mapping tool
+   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
 
    Copyright 2015 Ryan Scott
 
