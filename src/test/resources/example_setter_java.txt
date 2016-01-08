@@ -1,0 +1,32 @@
+package com.forsuredb.annotationprocessor.generator.code;
+
+import com.forsuredb.annotation.FSColumn;
+import com.forsuredb.api.FSSaveApi;
+import java.math.BigDecimal;
+import java.util.Date;
+
+public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
+    @FSColumn("_id")
+    TestTableSetter id(long id);
+
+    @FSColumn("app_rating")
+    TestTableSetter appRating(double appRating);
+
+    @FSColumn("created")
+    TestTableSetter created(Date created);
+
+    @FSColumn("global_id")
+    TestTableSetter globalId(long globalId);
+
+    @FSColumn("competitor_app_rating")
+    TestTableSetter competitorAppRating(BigDecimal competitorAppRating);
+
+    @FSColumn("deleted")
+    TestTableSetter deleted(boolean deleted);
+
+    @FSColumn("login_count")
+    TestTableSetter loginCount(int loginCount);
+
+    @FSColumn("modified")
+    TestTableSetter modified(Date modified);
+}

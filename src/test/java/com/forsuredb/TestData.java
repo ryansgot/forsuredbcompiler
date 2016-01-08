@@ -23,6 +23,10 @@ import com.forsuredb.annotationprocessor.info.ForeignKeyInfo;
 import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,14 +34,32 @@ import java.util.Map;
 public class TestData {
 
     public static final String TEST_RES = "src/test/resources";
-    public static final ColumnInfo[] DEFAULT_COLUMNS = new ColumnInfo[] {TestData.idCol(), TestData.createdCol(), TestData.deletedCol(), TestData.modifiedCol()};
+    public static final ColumnInfo[] DEFAULT_COLUMNS = new ColumnInfo[] {
+            TestData.idCol(),
+            TestData.createdCol(),
+            TestData.deletedCol(),
+            TestData.modifiedCol()
+    };
 
     // Convenience constants
     public static final String TABLE_NAME = "test_table";
+    public static final String TABLE_CLASS_NAME = "com.fsryan.test.TestTable";
+
+    public static String resourceText(String resourceName) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(TEST_RES + File.separator + resourceName));
+        String line;
+        StringBuilder out = new StringBuilder();
+        while (null != (line = br.readLine())) {
+            out.append(line).append("\n");
+        }
+        br.close();
+        return out.toString();
+    }
 
     // Convenience methods for making data to go into the tests
     public static TableInfo.Builder table() {
-        return TableInfo.builder().tableName(TABLE_NAME);
+        return TableInfo.builder().tableName(TABLE_NAME)
+                .qualifiedClassName(TABLE_CLASS_NAME);
     }
 
     public static Map<String, ColumnInfo> columnMapOf(ColumnInfo... columns) {
@@ -58,6 +80,7 @@ public class TestData {
 
     public static ColumnInfo idCol() {
         return ColumnInfo.builder().columnName("_id")
+                .methodName("id")
                 .qualifiedType("long")
                 .primaryKey(true)
                 .build();
@@ -65,6 +88,7 @@ public class TestData {
 
     public static ColumnInfo createdCol() {
         return ColumnInfo.builder().columnName("created")
+                .methodName("created")
                 .qualifiedType("java.util.Date")
                 .defaultValue("CURRENT_TIMESTAMP")
                 .build();
@@ -72,6 +96,7 @@ public class TestData {
 
     public static ColumnInfo deletedCol() {
         return ColumnInfo.builder().columnName("deleted")
+                .methodName("deleted")
                 .qualifiedType("boolean")
                 .defaultValue("0")
                 .build();
@@ -79,6 +104,7 @@ public class TestData {
 
     public static ColumnInfo modifiedCol() {
         return ColumnInfo.builder().columnName("modified")
+                .methodName("modified")
                 .qualifiedType("java.util.Date")
                 .defaultValue("CURRENT_TIMESTAMP")
                 .build();
