@@ -15,6 +15,21 @@ import java.util.List;
  *   {@link com.forsuredb.api.FSGetApi}. It should be called as you
  *   initialize the database.
  * </p>
+ * <p>
+ *   You have two options when you generate the tables. First, you can accept
+ *   the default authority ("com.forsuredb.testapp.content") as below:
+ *   <pre>
+ *     {@code
+ *             TableGenerator.generate();
+ *     }
+ *   </pre>
+ *   Or you can generate the tables, specifying your authority, as below:
+ *   <pre>
+ *     {@code
+ *             TableGenerator.generate("my.apps.content.authority");
+ *     }
+ *   </pre>
+ * </p>
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  */
 public class TableGenerator {
