@@ -53,25 +53,21 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                 APLog.e(logTag(), "failed to find class: " + cnfe.getMessage());
             }
         }
-        return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent("    ").build().toString();
+        return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
 
     private JavadocInfo createSetterJavadoc() {
         JavadocInfo.Builder jib = JavadocInfo.builder()
-                .addLine("<p>")
-                .indent()
+                .startParagraph()
                 .addLine("This is an auto-generated class. DO NOT modify it!")
-                .unindent()
-                .addLine("</p>")
-                .indent()
+                .endParagraph()
+                .startParagraph()
                 .addLine("$L is an automatically generated interface describing the", getOutputClassName(false))
                 .addLine("contract for a fluent API for building queries to update or delete one")
                 .addLine("or more records from the $L table.", table.getTableName())
                 .addLine("You DO NOT need to implement this interface in order to use it.")
-                .unindent()
-                .addLine("</p>")
-                .addLine("<p>")
-                .indent()
+                .endParagraph()
+                .startParagraph()
                 .addLine("Below is an example usage:")
                 .startCode()
                 .addLine("$L().set()", CodeUtil.snakeToCamel(table.getTableName()));
@@ -83,9 +79,7 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
         }
         return jib.addLine(".save()")
                 .endCode()
-                .unindent()
-                .addLine("</p>")
-                .addLine("<p>")
+                .endParagraph()
                 .addLine("@author <a href=$S>forsuredbcompiler</a>", "https://github.com/ryansgot/forsuredbcompiler")
                 .addLine("@see FSSaveApi")
                 .addLine()
@@ -94,11 +88,9 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
 
     private MethodSpec methodSpecFor(ColumnInfo column) throws ClassNotFoundException {
         JavadocInfo javadoc = JavadocInfo.builder()
-                .addLine("<p>")
-                .indent()
+                .startParagraph()
                 .addLine("Set the value of the $L column to be updated", column.getColumnName())
-                .unindent()
-                .addLine("</p>")
+                .endParagraph()
                 .addLine()
                 .build();
         return MethodSpec.methodBuilder(column.getMethodName())

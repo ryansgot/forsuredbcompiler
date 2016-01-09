@@ -72,7 +72,7 @@ public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
                         .addMethod(noArgGenerateMethod())
                         .addMethod(generateMethodWithAuthorityArg())
                         .build())
-                .indent("    ")
+                .indent(JAVA_INDENT)
                 .build()
                 .toString();
     }

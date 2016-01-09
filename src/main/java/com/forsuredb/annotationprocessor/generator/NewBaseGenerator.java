@@ -9,6 +9,8 @@ import java.io.Writer;
 
 public abstract class NewBaseGenerator<F extends FileObject> {
 
+    protected static final String JAVA_INDENT = "    ";
+
     private final ProcessingEnvironment processingEnv;
     private Class<?> resultParameter;
 
