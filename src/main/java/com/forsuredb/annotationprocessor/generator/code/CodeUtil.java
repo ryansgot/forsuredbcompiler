@@ -1,15 +1,25 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotationprocessor.util.APLog;
+import com.google.common.base.Joiner;
 
 import java.lang.reflect.Type;
 
 // TODO: remove the need for this class by updating the ColumnInfo model to retain TypeMirror
-public class TypeUtil {
+public class CodeUtil {
 
-    private static final String LOG_TAG = TypeUtil.class.getSimpleName();
+    private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
-    public static Object exampleValue(String qualifiedType) {
+    public static String snakeToCamel(String snakeCaseString) {
+        String[] parts = snakeCaseString.split("_");
+        parts[0] = parts[0].substring(0, 1).toLowerCase() + parts[0].substring(1, parts[0].length());
+        for (int i = 1; i < parts.length; i++) {
+            parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1, parts[i].length());
+        }
+        return Joiner.on("").join(parts);
+    }
+
+    public static Object javaExampleOf(String qualifiedType) {
         switch (qualifiedType) {
             case "char":
                 return 'a';
@@ -38,7 +48,7 @@ public class TypeUtil {
         throw new IllegalStateException("Unsupported type: " + qualifiedType);
     }
 
-    public static Type fromFQTypeName(String fqTypeName) {
+    public static Type typeFromName(String fqTypeName) {
         switch (fqTypeName) {
             case "char":
                 return char.class;

@@ -67,12 +67,12 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                 .indent()
                 .addLine("Below is an example usage:")
                 .startCode()
-                .addLine("$L().set()", "testTable");
+                .addLine("$L().set()", CodeUtil.snakeToCamel(table.getTableName()));
         for (ColumnInfo column : table.getColumns()) {
             if ("modified".equals(column.getColumnName()) || "created".equals(column.getColumnName())) {
                 continue;
             }
-            jib.addLine(".$L($L)", column.getMethodName(), TypeUtil.exampleValue(column.getQualifiedType()));
+            jib.addLine(".$L($L)", column.getMethodName(), CodeUtil.javaExampleOf(column.getQualifiedType()));
         }
         return jib.addLine(".save()")
                 .endCode()
@@ -101,7 +101,7 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                         .addMember("value", "$S", column.getColumnName())
                         .build())
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
-                .addParameter(TypeUtil.fromFQTypeName(column.getQualifiedType()), column.getMethodName())
+                .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.getMethodName())
                 .build();
     }
 
