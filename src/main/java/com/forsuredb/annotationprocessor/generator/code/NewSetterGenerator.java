@@ -37,7 +37,7 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
         JavadocInfo javadoc = createSetterJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.interfaceBuilder(getOutputClassName(false))
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(ParameterizedTypeName.get(FSSaveApi.class, resultParameter))
+                .addSuperinterface(ParameterizedTypeName.get(FSSaveApi.class, getResultParameter()))
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
         for (ColumnInfo column : table.getColumns()) {
             try {
