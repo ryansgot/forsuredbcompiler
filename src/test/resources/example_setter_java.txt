@@ -5,28 +5,96 @@ import com.forsuredb.api.FSSaveApi;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ *   TestTableSetter is an automatically generated interface describing the
+ *   contract for a fluent API for building queries to update or delete one
+ *   or more records from the test_table table.
+ *   You DO NOT need to implement this interface in order to use it.
+ * </p>
+ * <p>
+ *   Below is an example usage:
+ *   <pre>
+ *     {@code
+ *             testTable().set()
+ *             .id(23545494583L)
+ *             .appRating(75.5D)
+ *             .globalId(23545494583L)
+ *             .competitorAppRating(BigDecimal.ONE)
+ *             .deleted(true)
+ *             .loginCount(65536)
+ *             .save()
+ *     }
+ *   </pre>
+ * </p>
+ * <p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @see FSSaveApi
+ */
 public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
+    /**
+     * <p>
+     *   Set the value of the _id column to be updated
+     * </p>
+     */
     @FSColumn("_id")
     TestTableSetter id(long id);
 
+    /**
+     * <p>
+     *   Set the value of the app_rating column to be updated
+     * </p>
+     */
     @FSColumn("app_rating")
     TestTableSetter appRating(double appRating);
 
+    /**
+     * <p>
+     *   Set the value of the created column to be updated
+     * </p>
+     */
     @FSColumn("created")
     TestTableSetter created(Date created);
 
+    /**
+     * <p>
+     *   Set the value of the global_id column to be updated
+     * </p>
+     */
     @FSColumn("global_id")
     TestTableSetter globalId(long globalId);
 
+    /**
+     * <p>
+     *   Set the value of the competitor_app_rating column to be updated
+     * </p>
+     */
     @FSColumn("competitor_app_rating")
     TestTableSetter competitorAppRating(BigDecimal competitorAppRating);
 
+    /**
+     * <p>
+     *   Set the value of the deleted column to be updated
+     * </p>
+     */
     @FSColumn("deleted")
     TestTableSetter deleted(boolean deleted);
 
+    /**
+     * <p>
+     *   Set the value of the login_count column to be updated
+     * </p>
+     */
     @FSColumn("login_count")
     TestTableSetter loginCount(int loginCount);
 
+    /**
+     * <p>
+     *   Set the value of the modified column to be updated
+     * </p>
+     */
     @FSColumn("modified")
     TestTableSetter modified(Date modified);
 }

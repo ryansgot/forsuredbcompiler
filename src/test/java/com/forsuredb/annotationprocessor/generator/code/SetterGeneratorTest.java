@@ -31,22 +31,22 @@ public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
                         resourceText("example_setter_java.txt"),
                         table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable")
                                 .columnMap(columnMapOf(idCol(),
-                                modifiedCol(),
-                                createdCol(),
-                                deletedCol(),
-                                longCol().columnName("global_id")
-                                        .methodName("globalId")
-                                        .build(),
-                                doubleCol().columnName("app_rating")
-                                        .methodName("appRating")
-                                        .build(),
-                                bigDecimalCol().columnName("competitor_app_rating")
-                                        .methodName("competitorAppRating")
-                                        .build(),
-                                intCol().columnName("login_count")
-                                        .methodName("loginCount")
-                                        .build()))
-                                .tableName("user")
+                                        modifiedCol(),
+                                        createdCol(),
+                                        deletedCol(),
+                                        longCol().columnName("global_id")
+                                                .methodName("globalId")
+                                                .build(),
+                                        doubleCol().columnName("app_rating")
+                                                .methodName("appRating")
+                                                .build(),
+                                        bigDecimalCol().columnName("competitor_app_rating")
+                                                .methodName("competitorAppRating")
+                                                .build(),
+                                        intCol().columnName("login_count")
+                                                .methodName("loginCount")
+                                                .build()))
+                                .tableName("test_table")
                                 .build(),
                         SetterGeneratorTest.class
                 }

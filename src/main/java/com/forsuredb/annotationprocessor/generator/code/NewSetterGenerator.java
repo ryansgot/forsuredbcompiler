@@ -17,7 +17,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
 
@@ -35,11 +34,11 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
 
     @Override
     protected String getCode() {
+        JavadocInfo javadoc = createSetterJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.interfaceBuilder(getOutputClassName(false))
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(ParameterizedTypeName.get(FSSaveApi.class, resultParameter));
-        // TODO: add javadocs
-        //codeBuilder.addJavadoc(/**/)
+                .addSuperinterface(ParameterizedTypeName.get(FSSaveApi.class, resultParameter))
+                .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
         for (ColumnInfo column : table.getColumns()) {
             try {
                 codeBuilder.addMethod(methodSpecFor(column));
@@ -50,50 +49,63 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
         return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent("    ").build().toString();
     }
 
+    private JavadocInfo createSetterJavadoc() {
+        JavadocInfo.Builder jib = JavadocInfo.builder()
+                .addLine("<p>")
+                .indent()
+                .addLine("This is an auto-generated class. DO NOT modify it!")
+                .unindent()
+                .addLine("</p>")
+                .indent()
+                .addLine("$L is an automatically generated interface describing the", getOutputClassName(false))
+                .addLine("contract for a fluent API for building queries to update or delete one")
+                .addLine("or more records from the $L table.", table.getTableName())
+                .addLine("You DO NOT need to implement this interface in order to use it.")
+                .unindent()
+                .addLine("</p>")
+                .addLine("<p>")
+                .indent()
+                .addLine("Below is an example usage:")
+                .startCode()
+                .addLine("$L().set()", "testTable");
+        for (ColumnInfo column : table.getColumns()) {
+            if ("modified".equals(column.getColumnName()) || "created".equals(column.getColumnName())) {
+                continue;
+            }
+            jib.addLine(".$L($L)", column.getMethodName(), TypeUtil.exampleValue(column.getQualifiedType()));
+        }
+        return jib.addLine(".save()")
+                .endCode()
+                .unindent()
+                .addLine("</p>")
+                .addLine("<p>")
+                .addLine("@author <a href=$S>forsuredbcompiler</a>", "https://github.com/ryansgot/forsuredbcompiler")
+                .addLine("@see FSSaveApi")
+                .addLine()
+                .build();
+    }
+
     private MethodSpec methodSpecFor(ColumnInfo column) throws ClassNotFoundException {
+        JavadocInfo javadoc = JavadocInfo.builder()
+                .addLine("<p>")
+                .indent()
+                .addLine("Set the value of the $L column to be updated", column.getColumnName())
+                .unindent()
+                .addLine("</p>")
+                .addLine()
+                .build();
         return MethodSpec.methodBuilder(column.getMethodName())
-                // TODO: add javadocs
+                .addJavadoc(javadoc.stringToFormat(), javadoc.replacements())
                 .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(FSColumn.class)
                         .addMember("value", "$S", column.getColumnName())
                         .build())
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
-                .addParameter(fromFQTypeName(column.getQualifiedType()), column.getMethodName())
+                .addParameter(TypeUtil.fromFQTypeName(column.getQualifiedType()), column.getMethodName())
                 .build();
     }
 
     private String getOutputClassName(boolean fullyQualified) {
         return (fullyQualified ? table.getQualifiedClassName() : table.getSimpleClassName()) + "Setter";
-    }
-
-    private Type fromFQTypeName(String fqTypeName) {
-        switch (fqTypeName) {
-            case "char":
-                return char.class;
-            case "byte":
-                return byte.class;
-            case "byte[]":
-                return byte[].class;
-            case "boolean":
-                return boolean.class;
-            case "short":
-                return short.class;
-            case "int":
-                return int.class;
-            case "long":
-                return long.class;
-            case "float":
-                return float.class;
-            case "double":
-                return double.class;
-            default:
-                try {
-                    return Class.forName(fqTypeName);
-                } catch (ClassNotFoundException cnfe) {
-                    APLog.e(logTag(), "could not find type for class: " + fqTypeName);
-                }
-        }
-
-        throw new IllegalStateException("could not find type for class: " + fqTypeName);
     }
 }
