@@ -21,9 +21,9 @@ import java.util.Date;
  *             testTable().set()
  *             .id(23545494583L)
  *             .appRating(75.5D)
- *             .globalId(23545494583L)
  *             .competitorAppRating(BigDecimal.ONE)
  *             .deleted(true)
+ *             .globalId(23545494583L)
  *             .loginCount(65536)
  *             .save()
  *     }
@@ -52,22 +52,6 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
 
     /**
      * <p>
-     *   Set the value of the created column to be updated
-     * </p>
-     */
-    @FSColumn("created")
-    TestTableSetter created(Date created);
-
-    /**
-     * <p>
-     *   Set the value of the global_id column to be updated
-     * </p>
-     */
-    @FSColumn("global_id")
-    TestTableSetter globalId(long globalId);
-
-    /**
-     * <p>
      *   Set the value of the competitor_app_rating column to be updated
      * </p>
      */
@@ -76,11 +60,27 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
 
     /**
      * <p>
+     *   Set the value of the created column to be updated
+     * </p>
+     */
+    @FSColumn("created")
+    TestTableSetter created(Date created);
+
+    /**
+     * <p>
      *   Set the value of the deleted column to be updated
      * </p>
      */
     @FSColumn("deleted")
     TestTableSetter deleted(boolean deleted);
+
+    /**
+     * <p>
+     *   Set the value of the global_id column to be updated
+     * </p>
+     */
+    @FSColumn("global_id")
+    TestTableSetter globalId(long globalId);
 
     /**
      * <p>

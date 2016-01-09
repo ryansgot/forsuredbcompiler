@@ -6,6 +6,7 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.api.FSSaveApi;
+import com.google.common.collect.Lists;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -18,13 +19,19 @@ import javax.lang.model.element.Modifier;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
 
     private final TableInfo table;
+    private final List<ColumnInfo> columnsSortedByName;
 
     public NewSetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv);
         this.table = table;
+        this.columnsSortedByName = columnsSortedByColumnName();
     }
 
     @Override
@@ -39,7 +46,7 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(ParameterizedTypeName.get(FSSaveApi.class, getResultParameter()))
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
-        for (ColumnInfo column : table.getColumns()) {
+        for (ColumnInfo column : columnsSortedByName) {
             try {
                 codeBuilder.addMethod(methodSpecFor(column));
             } catch (ClassNotFoundException cnfe) {
@@ -68,7 +75,7 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                 .addLine("Below is an example usage:")
                 .startCode()
                 .addLine("$L().set()", CodeUtil.snakeToCamel(table.getTableName()));
-        for (ColumnInfo column : table.getColumns()) {
+        for (ColumnInfo column : columnsSortedByName) {
             if ("modified".equals(column.getColumnName()) || "created".equals(column.getColumnName())) {
                 continue;
             }
@@ -107,5 +114,16 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
 
     private String getOutputClassName(boolean fullyQualified) {
         return (fullyQualified ? table.getQualifiedClassName() : table.getSimpleClassName()) + "Setter";
+    }
+
+    private List<ColumnInfo> columnsSortedByColumnName() {
+        List<ColumnInfo> columns = Lists.newArrayList(table.getColumns());
+        Collections.sort(columns, new Comparator<ColumnInfo>() {
+            @Override
+            public int compare(ColumnInfo c1, ColumnInfo c2) {
+                return c1.getColumnName().compareToIgnoreCase(c2.getColumnName());
+            }
+        });
+        return columns;
     }
 }
