@@ -10,11 +10,10 @@ import java.io.Writer;
 public abstract class NewBaseGenerator<F extends FileObject> {
 
     private final ProcessingEnvironment processingEnv;
-    protected final Class<?> resultParameter;
+    private Class<?> resultParameter;
 
     public NewBaseGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
-        resultParameter = createResultParameter();
     }
 
     /**
@@ -63,6 +62,13 @@ public abstract class NewBaseGenerator<F extends FileObject> {
 
     protected String logTag() {
         return this.getClass().getSimpleName();
+    }
+
+    protected Class<?> getResultParameter() {
+        if (resultParameter == null) {
+            resultParameter = createResultParameter();
+        }
+        return resultParameter;
     }
 
     private Class<?> createResultParameter() {
