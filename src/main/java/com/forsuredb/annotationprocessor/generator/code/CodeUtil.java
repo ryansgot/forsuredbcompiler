@@ -11,11 +11,28 @@ public class CodeUtil {
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
     public static String snakeToCamel(String snakeCaseString) {
+        return snakeToCamel(snakeCaseString, false);
+    }
+
+    public static String snakeToCamel(String snakeCaseString, boolean firstCharToUpper) {
+        if (snakeCaseString == null) {
+            return null;
+        } else if (snakeCaseString.isEmpty()) {
+            return "";
+        }
+
         String[] parts = snakeCaseString.split("_");
-        parts[0] = parts[0].substring(0, 1).toLowerCase() + parts[0].substring(1, parts[0].length());
+
+        if (firstCharToUpper) {
+            parts[0] = parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1, parts[0].length());
+        } else {
+            parts[0] = parts[0].substring(0, 1).toLowerCase() + parts[0].substring(1, parts[0].length());
+        }
+
         for (int i = 1; i < parts.length; i++) {
             parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1, parts[i].length());
         }
+
         return Joiner.on("").join(parts);
     }
 
