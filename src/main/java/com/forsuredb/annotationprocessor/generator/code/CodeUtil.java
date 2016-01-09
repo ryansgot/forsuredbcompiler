@@ -5,10 +5,39 @@ import com.google.common.base.Joiner;
 
 import java.lang.reflect.Type;
 
-// TODO: remove the need for this class by updating the ColumnInfo model to retain TypeMirror
-public class CodeUtil {
+/*package*/ class CodeUtil {
 
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
+
+    public static String simpleClassNameFrom(String fqClassName) {
+        if (fqClassName == null) {
+            return null;
+        } else if (fqClassName.isEmpty()) {
+            return "";
+        }
+
+        final String[] split = fqClassName.split("\\.");
+        return split[split.length - 1];
+    }
+
+    public static String packageNameFrom(String fqClassName) {
+        if (fqClassName == null) {
+            return null;
+        } else if (fqClassName.isEmpty()) {
+            return "";
+        }
+
+        String[] split = fqClassName.split("\\.");
+        if (split.length == 1) {
+            return "";
+        }
+
+        StringBuilder ret = new StringBuilder(split[0]);
+        for (int i = 1; i < split.length - 1; i++) {
+            ret.append(".").append(split[i]);
+        }
+        return ret.toString();
+    }
 
     public static String snakeToCamel(String snakeCaseString) {
         return snakeToCamel(snakeCaseString, false);
@@ -36,6 +65,7 @@ public class CodeUtil {
         return Joiner.on("").join(parts);
     }
 
+    // TODO: remove the need for this method by updating the ColumnInfo model to retain TypeMirror
     public static Object javaExampleOf(String qualifiedType) {
         switch (qualifiedType) {
             case "char":
@@ -65,6 +95,7 @@ public class CodeUtil {
         throw new IllegalStateException("Unsupported type: " + qualifiedType);
     }
 
+    // TODO: remove the need for this method by updating the ColumnInfo model to retain TypeMirror
     public static Type typeFromName(String fqTypeName) {
         switch (fqTypeName) {
             case "char":

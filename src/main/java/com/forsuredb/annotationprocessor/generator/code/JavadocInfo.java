@@ -6,7 +6,7 @@ import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JavadocInfo {
+/*package*/ class JavadocInfo {
 
     public static final String AUTHOR_STRING = "@author <a href=\"https://github.com/ryansgot/forsuredbcompiler\">forsuredbcompiler</a>";
     private final String unformattedDoc;

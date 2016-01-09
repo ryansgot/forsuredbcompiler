@@ -23,20 +23,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
+public class NewSetterGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
     private final List<ColumnInfo> columnsSortedByName;
 
     public NewSetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
-        super(processingEnv);
+        super(processingEnv, table.getQualifiedClassName() + "Setter");
         this.table = table;
         this.columnsSortedByName = columnsSortedByColumnName();
-    }
-
-    @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
     }
 
     @Override
@@ -102,10 +97,6 @@ public class NewSetterGenerator extends NewBaseGenerator<JavaFileObject> {
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
                 .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.getMethodName())
                 .build();
-    }
-
-    private String getOutputClassName(boolean fullyQualified) {
-        return (fullyQualified ? table.getQualifiedClassName() : table.getSimpleClassName()) + "Setter";
     }
 
     private List<ColumnInfo> columnsSortedByColumnName() {

@@ -1,7 +1,6 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotation.FSTable;
-import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.api.FSGetApi;
@@ -22,22 +21,13 @@ import java.util.List;
 
 import static com.forsuredb.annotationprocessor.generator.code.JavadocInfo.inlineClassLink;
 
-public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
+public class NewTableCreatorGenerator extends JavaSourceGenerator {
 
-    private static final String CLASS_NAME = "TableGenerator";
-
-    private final String appPackageName;
     private final Collection<TableInfo> tables;
 
     public NewTableCreatorGenerator(ProcessingEnvironment processingEnv, String appPackageName, Collection<TableInfo> tables) {
-        super(processingEnv);
-        this.appPackageName =appPackageName;
+        super(processingEnv, appPackageName + "." + "TableGenerator");
         this.tables = tables;
-    }
-
-    @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
     }
 
     @Override
@@ -66,7 +56,7 @@ public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
                 .addLine(JavadocInfo.AUTHOR_STRING)
                 .addLine()
                 .build();
-        return JavaFile.builder(appPackageName, TypeSpec.classBuilder(getOutputClassName(false))
+        return JavaFile.builder(getOutputPackageName(), TypeSpec.classBuilder(getOutputClassName(false))
                         .addModifiers(Modifier.PUBLIC)
                         .addJavadoc(javadoc.stringToFormat(), javadoc.replacements())
                         .addMethod(noArgGenerateMethod())
@@ -148,9 +138,5 @@ public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
         }
 
         return buf.append("))").toString();
-    }
-
-    private String getOutputClassName(boolean fullyQualified) {
-        return fullyQualified ? appPackageName + "." + CLASS_NAME : CLASS_NAME;
     }
 }
