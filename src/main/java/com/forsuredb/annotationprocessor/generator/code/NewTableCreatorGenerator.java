@@ -6,7 +6,6 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.api.FSGetApi;
 import com.forsuredb.api.FSTableCreator;
-import com.google.common.base.Strings;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -17,7 +16,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,8 +25,6 @@ import static com.forsuredb.annotationprocessor.generator.code.JavadocInfo.inlin
 public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
 
     private static final String CLASS_NAME = "TableGenerator";
-    private static final String METHOD_NAME = "generate";
-    private static final String LIST_VARIABLE_NAME = "retList";
 
     private final String appPackageName;
     private final Collection<TableInfo> tables;
@@ -127,7 +123,7 @@ public class NewTableCreatorGenerator extends NewBaseGenerator<JavaFileObject> {
     }
 
     private String createAddFSTableCreatorLine(TableInfo tableInfo) {
-        StringBuffer buf = new StringBuffer(LIST_VARIABLE_NAME).append(".add(new FSTableCreator(")
+        StringBuffer buf = new StringBuffer("retList").append(".add(new FSTableCreator(")
                 .append("authority, ")
                 .append(tableInfo.getQualifiedClassName()).append(".class");
 
