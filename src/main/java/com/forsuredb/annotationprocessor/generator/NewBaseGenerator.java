@@ -12,7 +12,6 @@ public abstract class NewBaseGenerator<F extends FileObject> {
     protected static final String JAVA_INDENT = "    ";
 
     private final ProcessingEnvironment processingEnv;
-    private Class<?> resultParameter;
 
     public NewBaseGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
@@ -64,21 +63,5 @@ public abstract class NewBaseGenerator<F extends FileObject> {
 
     protected String logTag() {
         return this.getClass().getSimpleName();
-    }
-
-    protected Class<?> getResultParameter() {
-        if (resultParameter == null) {
-            resultParameter = createResultParameter();
-        }
-        return resultParameter;
-    }
-
-    private Class<?> createResultParameter() {
-        try {
-            return Class.forName(System.getProperty("resultParameter"));
-        } catch (ClassNotFoundException cnfe) {
-            APLog.e(logTag(), "Could not get result parameter: " + cnfe.getMessage());
-        }
-        return Object.class;
     }
 }

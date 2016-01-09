@@ -1,6 +1,7 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
+import com.forsuredb.annotationprocessor.util.APLog;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
@@ -9,8 +10,10 @@ import java.io.IOException;
 public abstract class JavaSourceGenerator extends NewBaseGenerator<JavaFileObject> {
 
     private final String fqClassName;
+
     private String packageName;
     private String simpleClassName;
+    private Class<?> resultParameter;
 
     public JavaSourceGenerator(ProcessingEnvironment processingEnv, String fqClassName) {
         super(processingEnv);
@@ -38,5 +41,21 @@ public abstract class JavaSourceGenerator extends NewBaseGenerator<JavaFileObjec
             packageName = CodeUtil.packageNameFrom(fqClassName);
         }
         return packageName;
+    }
+
+    protected Class<?> getResultParameter() {
+        if (resultParameter == null) {
+            resultParameter = createResultParameter();
+        }
+        return resultParameter;
+    }
+
+    private Class<?> createResultParameter() {
+        try {
+            return Class.forName(System.getProperty("resultParameter"));
+        } catch (ClassNotFoundException cnfe) {
+            APLog.e(logTag(), "Could not get result parameter: " + cnfe.getMessage());
+        }
+        return Object.class;
     }
 }
