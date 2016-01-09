@@ -8,6 +8,7 @@ import java.util.List;
 
 public class JavadocInfo {
 
+    public static final String AUTHOR_STRING = "@author <a href=\"https://github.com/ryansgot/forsuredbcompiler\">forsuredbcompiler</a>";
     private final String unformattedDoc;
     private final Object[] replacements;
 
@@ -26,6 +27,10 @@ public class JavadocInfo {
 
     public Object[] replacements() {
         return replacements;
+    }
+
+    public static String inlineClassLink(Class<?> fsGetApiClass) {
+        return fsGetApiClass == null ? "" : "{@link " + fsGetApiClass.getName() + "}";
     }
 
     public static class Builder {
@@ -48,6 +53,14 @@ public class JavadocInfo {
             indentionSize = indentionSize == 0 ? 0 : indentionSize - 1;
             indention = indentionSize == 0 ? "" : Strings.repeat("  ", indentionSize);
             return this;
+        }
+
+        public Builder startParagraph() {
+            return addLine("<p>").indent();
+        }
+
+        public Builder endParagraph() {
+            return unindent().addLine("</p>");
         }
 
         public Builder startCode() {
