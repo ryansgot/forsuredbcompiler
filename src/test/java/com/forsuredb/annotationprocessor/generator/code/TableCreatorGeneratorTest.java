@@ -34,43 +34,7 @@ public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
                 {
                         resourceText("example_table_creator.txt"),
                         "com.forsuredb.annotationprocessor.generator.code",
-                        Lists.newArrayList(
-                                table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable")
-                                        .columnMap(columnMapOf(idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                longCol().columnName("global_id")
-                                                        .methodName("globalId")
-                                                        .foreignKeyInfo(cascadeFKI("test_table_2")
-                                                                .apiClassName("com.forsuredb.annotationprocessor.generator.code.TestTable2")
-                                                                .build())
-                                                        .build()))
-                                        .tableName("test_table")
-                                        .staticDataAsset("test_table_data.xml")
-                                        .staticDataRecordName("test_table_data")
-                                        .build(),
-                                table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable2")
-                                        .columnMap(columnMapOf(idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                longCol().columnName("global_id")
-                                                        .methodName("globalId")
-                                                        .foreignKeyInfo(cascadeFKI("test_table_3")
-                                                                .apiClassName("com.forsuredb.annotationprocessor.generator.code.TestTable3")
-                                                                .build())
-                                                        .build()))
-                                        .tableName("test_table_2")
-                                        .build(),
-                                table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable3")
-                                        .columnMap(columnMapOf(idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol()))
-                                        .tableName("test_table_3")
-                                        .build()
-                        )
+                        Lists.newArrayList(testTargetContext().allTables())
                 }
         });
     }
