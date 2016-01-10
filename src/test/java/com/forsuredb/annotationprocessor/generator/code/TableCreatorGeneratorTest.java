@@ -15,14 +15,14 @@ import java.util.Collection;
 import static com.forsuredb.TestData.*;
 
 @RunWith(Parameterized.class)
-public class NewTableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
+public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     private NewTableCreatorGenerator gut;
 
     private final Collection<TableInfo> tables;
     private final String packageName;
 
-    public NewTableCreatorGeneratorTest(String expectedCode, String packageName, Collection<TableInfo> tables) {
+    public TableCreatorGeneratorTest(String expectedCode, String packageName, Collection<TableInfo> tables) {
         super(expectedCode);
         this.packageName = packageName;
         this.tables = tables;

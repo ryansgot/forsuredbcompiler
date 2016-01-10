@@ -1,0 +1,293 @@
+package com.forsuredb.annotationprocessor.generator.code;
+
+import com.forsuredb.api.Between;
+import com.forsuredb.api.Finder;
+import com.forsuredb.api.Resolver;
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class TestTable3Finder extends Finder<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> {
+    TestTable3Finder(Resolver<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> resolver) {
+        super(resolver);
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdIs(long exactMatch) {
+        addToBuf("_id", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdIsNot(long excluding) {
+        addToBuf("_id", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdLessThan(long nonInclusiveUpperBound) {
+        addToBuf("_id", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdGreaterThan(long nonInclusiveLowerBound) {
+        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdLessThanInclusive(long inclusiveUpperBound) {
+        addToBuf("_id", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdGreaterThanInclusive(long inclusiveLowerBound) {
+        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdBetween(long nonInclusiveLowerBound) {
+        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(long.class, "_id");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byIdBetweenInclusive(long inclusiveLowerBound) {
+        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(long.class, "_id");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingIs(double exactMatch) {
+        addToBuf("app_rating", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingIsNot(double excluding) {
+        addToBuf("app_rating", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingLessThan(double nonInclusiveUpperBound) {
+        addToBuf("app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingGreaterThan(double nonInclusiveLowerBound) {
+        addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingLessThanInclusive(double inclusiveUpperBound) {
+        addToBuf("app_rating", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingGreaterThanInclusive(double inclusiveLowerBound) {
+        addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingBetween(double nonInclusiveLowerBound) {
+        addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(double.class, "app_rating");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
+        addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(double.class, "app_rating");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingIs(BigDecimal exactMatch) {
+        addToBuf("competitor_app_rating", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingIsNot(BigDecimal excluding) {
+        addToBuf("competitor_app_rating", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingLessThan(BigDecimal nonInclusiveUpperBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingGreaterThan(BigDecimal nonInclusiveLowerBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingLessThanInclusive(BigDecimal inclusiveUpperBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingGreaterThanInclusive(BigDecimal inclusiveLowerBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingBetween(BigDecimal nonInclusiveLowerBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(java.math.BigDecimal.class, "competitor_app_rating");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingBetweenInclusive(BigDecimal inclusiveLowerBound) {
+        addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(java.math.BigDecimal.class, "competitor_app_rating");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBefore(Date nonInclusiveUpperBound) {
+        addToBuf("created", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedAfter(Date nonInclusiveLowerBound) {
+        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBeforeInclusive(Date inclusiveUpperBound) {
+        addToBuf("created", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedAfterInclusive(Date inclusiveLowerBound) {
+        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBetween(Date nonInclusiveLowerBound) {
+        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(java.util.Date.class, "created");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBetweenInclusive(Date inclusiveLowerBound) {
+        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(java.util.Date.class, "created");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedIs(Date exactMatch) {
+        addToBuf("created", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedIsNot(Date excluding) {
+        addToBuf("created", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdIs(long exactMatch) {
+        addToBuf("global_id", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdIsNot(long excluding) {
+        addToBuf("global_id", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdLessThan(long nonInclusiveUpperBound) {
+        addToBuf("global_id", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdGreaterThan(long nonInclusiveLowerBound) {
+        addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdLessThanInclusive(long inclusiveUpperBound) {
+        addToBuf("global_id", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdGreaterThanInclusive(long inclusiveLowerBound) {
+        addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdBetween(long nonInclusiveLowerBound) {
+        addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(long.class, "global_id");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdBetweenInclusive(long inclusiveLowerBound) {
+        addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(long.class, "global_id");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountIs(int exactMatch) {
+        addToBuf("login_count", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountIsNot(int excluding) {
+        addToBuf("login_count", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountLessThan(int nonInclusiveUpperBound) {
+        addToBuf("login_count", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountGreaterThan(int nonInclusiveLowerBound) {
+        addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountLessThanInclusive(int inclusiveUpperBound) {
+        addToBuf("login_count", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountGreaterThanInclusive(int inclusiveLowerBound) {
+        addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountBetween(int nonInclusiveLowerBound) {
+        addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(int.class, "login_count");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountBetweenInclusive(int inclusiveLowerBound) {
+        addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(int.class, "login_count");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBefore(Date nonInclusiveUpperBound) {
+        addToBuf("modified", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedAfter(Date nonInclusiveLowerBound) {
+        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBeforeInclusive(Date inclusiveUpperBound) {
+        addToBuf("modified", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedAfterInclusive(Date inclusiveLowerBound) {
+        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBetween(Date nonInclusiveLowerBound) {
+        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(java.util.Date.class, "modified");
+    }
+
+    public Between<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
+        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(java.util.Date.class, "modified");
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedIs(Date exactMatch) {
+        addToBuf("modified", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    public Finder.Conjunction<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedIsNot(Date excluding) {
+        addToBuf("modified", Finder.Operator.NE, excluding);
+        return conjunction;
+    }
+}
