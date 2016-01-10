@@ -5,7 +5,7 @@ import com.google.common.base.Joiner;
 
 import java.lang.reflect.Type;
 
-/*package*/ class CodeUtil {
+/*package*/ public class CodeUtil {
 
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
@@ -52,13 +52,27 @@ import java.lang.reflect.Type;
 
         String[] parts = snakeCaseString.split("_");
 
-        if (firstCharToUpper) {
-            parts[0] = parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1, parts[0].length());
-        } else {
-            parts[0] = parts[0].substring(0, 1).toLowerCase() + parts[0].substring(1, parts[0].length());
+        int firstNonEmptyIndex = 0;
+        while (firstNonEmptyIndex < parts.length && parts[firstNonEmptyIndex].isEmpty()) {
+            firstNonEmptyIndex++;
         }
 
-        for (int i = 1; i < parts.length; i++) {
+        if (firstNonEmptyIndex == parts.length) {
+            return "";
+        }
+
+        if (firstCharToUpper) {
+            parts[firstNonEmptyIndex] = parts[firstNonEmptyIndex].substring(0, 1).toUpperCase()
+                    + parts[firstNonEmptyIndex].substring(1, parts[firstNonEmptyIndex].length());
+        } else {
+            parts[firstNonEmptyIndex] = parts[firstNonEmptyIndex].substring(0, 1).toLowerCase()
+                    + parts[firstNonEmptyIndex].substring(1, parts[firstNonEmptyIndex].length());
+        }
+
+        for (int i = firstNonEmptyIndex + 1; i < parts.length; i++) {
+            if (parts[i].isEmpty()) {
+                continue;
+            }
             parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1, parts[i].length());
         }
 

@@ -28,6 +28,7 @@ public class CodeUtilTest {
             return Arrays.asList(new Object[][] {
                     { null, null, null },
                     { "", "", "" },
+                    { "_id", "id", "Id"},
                     { "snake_case_test", "snakeCaseTest", "SnakeCaseTest" },
                     { "goo", "goo", "Goo" }
             });
