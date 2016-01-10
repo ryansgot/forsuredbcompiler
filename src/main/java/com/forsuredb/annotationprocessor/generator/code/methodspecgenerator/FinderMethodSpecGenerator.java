@@ -1,6 +1,7 @@
 package com.forsuredb.annotationprocessor.generator.code.methodspecgenerator;
 
 import com.forsuredb.annotationprocessor.generator.code.CodeUtil;
+import com.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.api.Between;
 import com.forsuredb.api.Finder;
@@ -78,7 +79,7 @@ public abstract class FinderMethodSpecGenerator {
     /*
      * Methods which determine the grammar type of the generator.
      * This will determine whether the generated MethodSpec list
-     * contains methods like idGreaterThan(long lowExclusiveBoundary)
+     * contains methods like byIdGreaterThan(long nonInclusiveLowerBound)
      */
 
     protected abstract boolean hasBeforeAfterGrammar();
@@ -106,7 +107,7 @@ public abstract class FinderMethodSpecGenerator {
     private List<MethodSpec> isIsNotMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
         return Lists.newArrayList(
                 createSpec(conjunctionType, methodNamePrefix + "Is", "exactMatch", Finder.Operator.EQ),
-                createSpec(conjunctionType, methodNamePrefix + "IsNot", "excluding", Finder.Operator.NE)
+                createSpec(conjunctionType, methodNamePrefix + "IsNot", "exclusion", Finder.Operator.NE)
         );
     }
 
@@ -127,7 +128,14 @@ public abstract class FinderMethodSpecGenerator {
     }
 
     private MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, Finder.Operator op) {
+        JavadocInfo jd = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("add criteria to a query that requires $L for $L", parameterName, column.getColumnName())
+                .endParagraph()
+                .addLine()
+                .build();
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(returnType)
