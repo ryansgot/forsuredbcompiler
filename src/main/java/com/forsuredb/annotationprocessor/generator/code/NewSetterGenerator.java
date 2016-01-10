@@ -25,7 +25,7 @@ public class NewSetterGenerator extends JavaSourceGenerator {
     public NewSetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Setter");
         this.table = table;
-        this.columnsSortedByName = ColumnUtil.columnsSortedByName(table);
+        this.columnsSortedByName = TableDataUtil.columnsSortedByName(table);
     }
 
     @Override

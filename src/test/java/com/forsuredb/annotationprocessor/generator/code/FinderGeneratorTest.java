@@ -11,7 +11,7 @@ import javax.tools.JavaFileObject;
 import java.util.Arrays;
 
 import static com.forsuredb.TestData.resourceText;
-import static com.forsuredb.TestData.testTable;
+import static com.forsuredb.TestData.targetTableWithChildForeignKey;
 
 @RunWith(Parameterized.class)
 public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
@@ -31,7 +31,7 @@ public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
         return Arrays.asList(new Object[][] {
                 {
                         resourceText("example_finder.txt"),
-                        testTable()
+                        targetTableWithChildForeignKey()
                 }
         });
     }

@@ -29,7 +29,7 @@ public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
         return Arrays.asList(new Object[][] {
                 {
                         resourceText("example_setter_java.txt"),
-                        testTable(),
+                        targetTableWithChildForeignKey(),
                         SetterGeneratorTest.class
                 }
         });

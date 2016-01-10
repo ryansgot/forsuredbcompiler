@@ -13,8 +13,6 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,7 +88,7 @@ public class NewTableCreatorGenerator extends JavaSourceGenerator {
                         .addStatement("authority = authority == null || authority.isEmpty() ? $S : authority", "com.forsuredb.testapp.content")
                         .addStatement("final $T retList = new $T()", ParameterizedTypeName.get(List.class, FSTableCreator.class), ParameterizedTypeName.get(LinkedList.class, FSTableCreator.class))
                         .build());
-        for (TableInfo table : tables) {
+        for (TableInfo table : TableDataUtil.tablesSortedByName(tables)) {
             codeBuilder.addStatement(createAddFSTableCreatorLine(table));
         }
         return codeBuilder.addStatement("return retList").build();

@@ -24,9 +24,10 @@ public class NewFinderGenerator extends JavaSourceGenerator {
     public NewFinderGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Finder");
         this.table = table;
-        columnsSortedByName = ColumnUtil.columnsSortedByName(table);
+        columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         parameterClasses = new ClassName[] {
                 ClassName.get(getResultParameter()),                            // U (the resultParameter)
+                ClassName.get(getRecordContainer()),                            // R extends RecordContainer
                 ClassName.bestGuess(table.getQualifiedClassName()),             // G extends FSGetApi
                 ClassName.bestGuess(table.getQualifiedClassName() + "Setter"),  // S extends FSSaveApi<U>
                 ClassName.bestGuess(getOutputClassName(true))                   // F extends Finder<U, G, S, F>
