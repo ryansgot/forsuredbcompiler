@@ -33,28 +33,6 @@ public class NewFinderGenerator extends JavaSourceGenerator {
         };
     }
 
-    /**
-     * <p>
-     *   This is an auto-generated class. DO NOT modify it!
-     * </p>
-     * <p>
-     *   Provides methods for creating a query that will query the test_table_3
-     *   table. These methods can be chained to produce just about any query you
-     *   may want, for example:
-     *     <pre>
-     *       {@code
-     *               testTable3().find()
-     *               .byIdBetweenInclusive(23545494583L)
-     *               .andInclusive(23545494583L)
-     *               .byCreatedBefore(new Date())
-     *               .andFinally()
-     *               .get();
-     *       }
-     *     </pre>
-     * </p>
-     * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
-     * @see Resolver
-     */
     @Override
     protected String getCode() {
         JavadocInfo jd = JavadocInfo.builder()
@@ -73,6 +51,8 @@ public class NewFinderGenerator extends JavaSourceGenerator {
                 .addLine(".andFinally()")
                 .addLine(".get();")
                 .endCode()
+                .addLine("The above will create the following query:")
+                .addLine("SELECT * FROM $L where _id >= $L AND _id <= $L AND created < [the system time]", table.getTableName(), CodeUtil.javaExampleOf("long").toString().replace("L", ""), CodeUtil.javaExampleOf("long").toString().replace("L", ""))
                 .endParagraph()
                 .addLine(JavadocInfo.AUTHOR_STRING)
                 .addLine("@see Resolver")

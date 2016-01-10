@@ -24,6 +24,8 @@ import java.util.Date;
  *             .get();
  *     }
  *   </pre>
+ *   The above will create the following query:
+ *   SELECT * FROM test_table_3 where _id >= 23545494583 AND _id <= 23545494583 AND created < [the system time]
  * </p>
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
