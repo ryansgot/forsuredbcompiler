@@ -1,0 +1,117 @@
+package com.forsuredb.annotationprocessor.generator.code;
+
+import com.forsuredb.api.FSJoin;
+import com.forsuredb.api.FSProjection;
+import com.forsuredb.api.ForSureInfoFactory;
+import com.forsuredb.api.Resolver;
+import com.forsuredb.api.TypedRecordContainer;
+import java.lang.Class;
+import java.lang.Override;
+import java.lang.String;
+
+public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder> {
+    public static final String TABLE_NAME = "test_table_2";
+
+    public static final String[] columns = {"_id","created","deleted","modified","test_table_3_id",};
+
+    public static final FSProjection PROJECTION = new FSProjection() {
+        @Override
+        public String tableName() {
+            return TABLE_NAME;
+        }
+
+        @Override
+        public String[] columns() {
+            return columns;
+        }
+    };
+
+    public TestTable2Resolver(ForSureInfoFactory infoFactory) {
+        super(infoFactory);
+    }
+
+    public TestTable2Resolver joinTestTable3(final FSJoin.Type type) {
+        addJoin(new FSJoin() {
+            @Override
+            public FSJoin.Type type() {
+                return type;
+            }
+
+            @Override
+            public String parentTable() {
+                return "test_table_3";
+            }
+
+            @Override
+            public String parentColumn() {
+                return "_id";
+            }
+
+            @Override
+            public String childTable() {
+                return "test_table_2";
+            }
+
+            @Override
+            public String childColumn() {
+                return "test_table_3_id";
+            }
+        }, TestTable3.PROJECTION);
+        return this;
+    }
+
+    public TestTable2Resolver joinTestTable(final FSJoin.Type type) {
+        addJoin(new FSJoin() {
+            @Override
+            public FSJoin.Type type() {
+                return type;
+            }
+
+            @Override
+            public String parentTable() {
+                return "test_table_2";
+            }
+
+            @Override
+            public String parentColumn() {
+                return "_id";
+            }
+
+            @Override
+            public String childTable() {
+                return "test_table";
+            }
+
+            @Override
+            public String childColumn() {
+                return "test_table_2_id";
+            }
+        }, TestTable.PROJECTION);
+        return this;
+    }
+
+    @Override
+    protected Class<TestTable2> getApiClass() {
+        return TestTable2.class;
+    }
+
+    @Override
+    protected Class<TestTable2Setter> setApiClass() {
+        return TestTable2Setter.class;
+    }
+
+    @Override
+    protected FSProjection projection() {
+        return PROJECTION;
+    }
+
+    @Override
+    protected TestTable2Finder newFinderInstance() {
+        return new TestTable2Finder(this);
+    }
+
+    @Override
+    protected String tableName() {
+        return TABLE_NAME;
+    }
+}

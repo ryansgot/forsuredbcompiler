@@ -22,10 +22,10 @@ import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Finder<U, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, G, S, F>> {
+public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
 
-    public interface Conjunction<U, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, G, S, F>> {
-        Resolver<U, G, S, F> andFinally();
+    public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
+        Resolver<U, R, G, S, F> andFinally();
         F and();
         F or();
     }
@@ -46,12 +46,12 @@ public abstract class Finder<U, G extends FSGetApi, S extends FSSaveApi<U>, F ex
 
     private final StringBuffer whereBuf = new StringBuffer();
     private final List<String> replacementsList = new ArrayList<>();
-    protected final Conjunction<U, G, S, F> conjunction;
+    protected final Conjunction<U, R, G, S, F> conjunction;
 
-    public Finder(final Resolver<U, G, S, F> resolver) {
-        conjunction = new Conjunction<U, G, S, F>() {
+    public Finder(final Resolver<U, R, G, S, F> resolver) {
+        conjunction = new Conjunction<U, R, G, S, F>() {
             @Override
-            public Resolver<U, G, S, F> andFinally() {
+            public Resolver<U, R, G, S, F> andFinally() {
                 return resolver;
             }
 
@@ -103,16 +103,16 @@ public abstract class Finder<U, G extends FSGetApi, S extends FSSaveApi<U>, F ex
         replacementsList.add(value.toString());
     }
 
-    protected final <T> Between<U, G, S, F> createBetween(Class<T> qualifiedType, final String column) {
-        return new Between<U, G, S, F>() {
+    protected final <T> Between<U, R, G, S, F> createBetween(Class<T> qualifiedType, final String column) {
+        return new Between<U, R, G, S, F>() {
             @Override
-            public <T> Conjunction<U, G, S, F> and(T high) {
+            public <T> Conjunction<U, R, G, S, F> and(T high) {
                 addToBuff(column, Operator.LT, high);
                 return conjunction;
             }
 
             @Override
-            public <T> Conjunction<U, G, S, F> andInclusive(T high) {
+            public <T> Conjunction<U, R, G, S, F> andInclusive(T high) {
                 addToBuff(column, Operator.LE, high);
                 return conjunction;
             }
