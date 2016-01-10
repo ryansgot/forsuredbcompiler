@@ -202,8 +202,13 @@ public class TestData {
 
         return qualifiedType + suffix;
     }
-    public static TableInfo testTable() {
+
+    public static TableInfo targetTableWithChildForeignKey() {
         return testTargetContext().getTable("test_table_3");
+    }
+
+    public static TableInfo targetTableWithParentAndChildForeignKey() {
+        return testTargetContext().getTable("test_table_2");
     }
 
     public static TableContext testTargetContext() {
