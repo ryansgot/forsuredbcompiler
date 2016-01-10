@@ -202,6 +202,62 @@ public class TestData {
 
         return qualifiedType + suffix;
     }
+    public static TableInfo testTable() {
+        return testTargetContext().getTable("test_table_3");
+    }
+
+    public static TableContext testTargetContext() {
+        return newTableContext().addTable(table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable")
+                        .columnMap(columnMapOf(idCol(),
+                                modifiedCol(),
+                                createdCol(),
+                                deletedCol(),
+                                longCol().columnName("test_table_2_id")
+                                        .methodName("testTable2Id")
+                                        .foreignKeyInfo(cascadeFKI("test_table_2")
+                                                .columnName("_id")
+                                                .apiClassName("com.forsuredb.annotationprocessor.generator.code.TestTable2")
+                                                .build())
+                                        .build()))
+                        .tableName("test_table")
+                        .staticDataAsset("test_table_data.xml")
+                        .staticDataRecordName("test_table_data")
+                        .build())
+                .addTable(table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable2")
+                                .columnMap(columnMapOf(idCol(),
+                                        modifiedCol(),
+                                        createdCol(),
+                                        deletedCol(),
+                                        longCol().columnName("test_table_3_id")
+                                                .methodName("testTable3Id")
+                                                .foreignKeyInfo(cascadeFKI("test_table_3")
+                                                        .columnName("_id")
+                                                        .apiClassName("com.forsuredb.annotationprocessor.generator.code.TestTable3")
+                                                        .build())
+                                                .build()))
+                                .tableName("test_table_2")
+                                .build())
+                .addTable(table().qualifiedClassName("com.forsuredb.annotationprocessor.generator.code.TestTable3")
+                                .columnMap(columnMapOf(idCol(),
+                                        modifiedCol(),
+                                        createdCol(),
+                                        deletedCol(),
+                                        doubleCol().columnName("app_rating")
+                                                .methodName("appRating")
+                                                .build(),
+                                        bigDecimalCol().columnName("competitor_app_rating")
+                                                .methodName("competitorAppRating")
+                                                .build(),
+                                        longCol().columnName("global_id")
+                                                .methodName("globalId")
+                                                .build(),
+                                        intCol().columnName("login_count")
+                                                .methodName("loginCount")
+                                                .build()))
+                                .tableName("test_table_3")
+                                .build())
+                .build();
+    }
 
     public static class TableContextBuilder {
 
