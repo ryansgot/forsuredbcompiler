@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ColumnUtil {
+public class TableDataUtil {
 
     public static List<ColumnInfo> columnsSortedByName(TableInfo table) {
         return columnsSortedByName(table == null ? null : table.getColumns());
