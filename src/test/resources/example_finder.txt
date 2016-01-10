@@ -6,6 +6,28 @@ import com.forsuredb.api.Resolver;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ * <p>
+ *   Provides methods for creating a query that will query the test_table_3
+ *   table. These methods can be chained to produce just about any query you
+ *   may want, for example:
+ *   <pre>
+ *     {@code
+ *             testTable3().find()
+ *             .byIdBetweenInclusive(23545494583L)
+ *             .andInclusive(23545494583L)
+ *             .byCreatedBefore(new Date())
+ *             .andFinally()
+ *             .get();
+ *     }
+ *   </pre>
+ * </p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @see Resolver
+ */
 public class TestTable3Finder extends Finder<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> {
     TestTable3Finder(Resolver<FinderGeneratorTest, TestTable3, TestTable3Setter, TestTable3Finder> resolver) {
         super(resolver);
