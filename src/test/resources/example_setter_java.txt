@@ -10,16 +10,16 @@ import java.util.Date;
  *   This is an auto-generated class. DO NOT modify it!
  * </p>
  * <p>
- *   TestTableSetter is an automatically generated interface describing the
+ *   TestTable3Setter is an automatically generated interface describing the
  *   contract for a fluent API for building queries to update or delete one
- *   or more records from the test_table table.
+ *   or more records from the test_table_3 table.
  *   You DO NOT need to implement this interface in order to use it.
  * </p>
  * <p>
  *   Below is an example usage:
  *   <pre>
  *     {@code
- *             testTable().set()
+ *             testTable3().set()
  *             .id(23545494583L)
  *             .appRating(75.5D)
  *             .competitorAppRating(BigDecimal.ONE)
@@ -33,14 +33,14 @@ import java.util.Date;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see FSSaveApi
  */
-public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
+public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
     /**
      * <p>
      *   Set the value of the _id column to be updated
      * </p>
      */
     @FSColumn("_id")
-    TestTableSetter id(long id);
+    TestTable3Setter id(long id);
 
     /**
      * <p>
@@ -48,7 +48,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("app_rating")
-    TestTableSetter appRating(double appRating);
+    TestTable3Setter appRating(double appRating);
 
     /**
      * <p>
@@ -56,7 +56,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("competitor_app_rating")
-    TestTableSetter competitorAppRating(BigDecimal competitorAppRating);
+    TestTable3Setter competitorAppRating(BigDecimal competitorAppRating);
 
     /**
      * <p>
@@ -64,7 +64,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("created")
-    TestTableSetter created(Date created);
+    TestTable3Setter created(Date created);
 
     /**
      * <p>
@@ -72,7 +72,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("deleted")
-    TestTableSetter deleted(boolean deleted);
+    TestTable3Setter deleted(boolean deleted);
 
     /**
      * <p>
@@ -80,7 +80,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("global_id")
-    TestTableSetter globalId(long globalId);
+    TestTable3Setter globalId(long globalId);
 
     /**
      * <p>
@@ -88,7 +88,7 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("login_count")
-    TestTableSetter loginCount(int loginCount);
+    TestTable3Setter loginCount(int loginCount);
 
     /**
      * <p>
@@ -96,5 +96,5 @@ public interface TestTableSetter extends FSSaveApi<SetterGeneratorTest> {
      * </p>
      */
     @FSColumn("modified")
-    TestTableSetter modified(Date modified);
+    TestTable3Setter modified(Date modified);
 }

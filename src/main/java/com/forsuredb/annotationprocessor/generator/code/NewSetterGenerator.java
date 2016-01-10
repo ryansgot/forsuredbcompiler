@@ -1,12 +1,10 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotation.FSColumn;
-import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.api.FSSaveApi;
-import com.google.common.collect.Lists;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -16,11 +14,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class NewSetterGenerator extends JavaSourceGenerator {
@@ -31,7 +25,7 @@ public class NewSetterGenerator extends JavaSourceGenerator {
     public NewSetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Setter");
         this.table = table;
-        this.columnsSortedByName = columnsSortedByColumnName();
+        this.columnsSortedByName = ColumnUtil.columnsSortedByName(table);
     }
 
     @Override
@@ -97,16 +91,5 @@ public class NewSetterGenerator extends JavaSourceGenerator {
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
                 .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.getMethodName())
                 .build();
-    }
-
-    private List<ColumnInfo> columnsSortedByColumnName() {
-        List<ColumnInfo> columns = Lists.newArrayList(table.getColumns());
-        Collections.sort(columns, new Comparator<ColumnInfo>() {
-            @Override
-            public int compare(ColumnInfo c1, ColumnInfo c2) {
-                return c1.getColumnName().compareToIgnoreCase(c2.getColumnName());
-            }
-        });
-        return columns;
     }
 }
