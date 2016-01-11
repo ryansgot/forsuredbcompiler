@@ -14,6 +14,7 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,6 +46,8 @@ public abstract class FinderMethodSpecGenerator {
                 // intentionally fall through
             case "int":
                 return new NumberFinderMethodGenerator(column);
+            case "boolean":
+                return new BooleanFinderMethodGenerator(column);
         }
 
         return new EmptyGenerator(column);
@@ -55,22 +58,26 @@ public abstract class FinderMethodSpecGenerator {
             return Collections.emptyList();
         }
 
-        final String methodNamePrefix = "by" + CodeUtil.snakeToCamel(column.getColumnName(), true);
+        final String methodNameInsertion = CodeUtil.snakeToCamel(column.getColumnName(), true);
         final ParameterizedTypeName conjunctionType = ParameterizedTypeName.get(ClassName.get(Finder.Conjunction.class), parameterClasses);
         final ParameterizedTypeName betweenType = ParameterizedTypeName.get(ClassName.get(Between.class), parameterClasses);
 
         List<MethodSpec> retList = new ArrayList<>();
         if (hasBeforeAfterGrammar()) {
-            retList.addAll(beforeAfterMethodSpecs(methodNamePrefix, conjunctionType, betweenType));
+            retList.addAll(beforeAfterMethodSpecs("by" + methodNameInsertion, conjunctionType, betweenType));
         }
         if (hasIsIsNotGrammar()) {
-            retList.addAll(isIsNotMethodSpecs(methodNamePrefix, conjunctionType, betweenType));
+            retList.addAll(isIsNotMethodSpecs(methodNameInsertion, conjunctionType));
+        }
+        if (hasOnNotOnGrammar()) {
+            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "On", "exactMatch", Finder.Operator.EQ));
+            retList.add(createSpec(conjunctionType, "byNot" + methodNameInsertion + "On", "exclusion", Finder.Operator.NE));
         }
         if (hasGreaterThanLessThanGrammar()) {
-            retList.addAll(greaterThanLessThanMethodSpecs(methodNamePrefix, conjunctionType, betweenType));
+            retList.addAll(greaterThanLessThanMethodSpecs("by" + methodNameInsertion, conjunctionType, betweenType));
         }
         if (hasLikeGrammar()) {
-            retList.add(createSpec(conjunctionType, methodNamePrefix + "Like", "like", Finder.Operator.LIKE));
+            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "Like", "like", Finder.Operator.LIKE));
         }
 
         return retList;
@@ -85,6 +92,7 @@ public abstract class FinderMethodSpecGenerator {
     protected abstract boolean hasBeforeAfterGrammar();
     protected abstract boolean hasBetweenGrammar();
     protected abstract boolean hasIsIsNotGrammar();
+    protected abstract boolean hasOnNotOnGrammar();
     protected abstract boolean hasGreaterThanLessThanGrammar();
     protected abstract boolean hasLikeGrammar();
 
@@ -104,11 +112,14 @@ public abstract class FinderMethodSpecGenerator {
         return retList;
     }
 
-    private List<MethodSpec> isIsNotMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
-        return Lists.newArrayList(
-                createSpec(conjunctionType, methodNamePrefix + "Is", "exactMatch", Finder.Operator.EQ),
-                createSpec(conjunctionType, methodNamePrefix + "IsNot", "exclusion", Finder.Operator.NE)
-        );
+    private List<MethodSpec> isIsNotMethodSpecs(String methodNameInsertion, ParameterizedTypeName conjunctionType) {
+        List<MethodSpec> retList = new ArrayList<>();
+        retList.add(createSpec(conjunctionType, "by" + methodNameInsertion, "exactMatch", Finder.Operator.EQ));
+        retList.add(createSpec(conjunctionType,
+                column.getQualifiedType().equals("boolean") ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
+                "exclusion",
+                Finder.Operator.NE));
+        return retList;
     }
 
     private List<MethodSpec> greaterThanLessThanMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
@@ -168,6 +179,11 @@ public abstract class FinderMethodSpecGenerator {
 
         @Override
         protected boolean hasIsIsNotGrammar() {
+            return false;
+        }
+
+        @Override
+        protected boolean hasOnNotOnGrammar() {
             return false;
         }
 

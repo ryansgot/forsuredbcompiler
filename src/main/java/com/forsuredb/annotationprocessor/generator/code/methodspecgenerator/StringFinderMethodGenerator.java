@@ -23,6 +23,11 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
     }
 
     @Override
+    protected boolean hasOnNotOnGrammar() {
+        return false;
+    }
+
+    @Override
     protected boolean hasGreaterThanLessThanGrammar() {
         return true;
     }

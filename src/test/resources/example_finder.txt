@@ -41,7 +41,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for _id
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdIs(long exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byId(long exactMatch) {
         addToBuf("_id", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -51,7 +51,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for _id
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdIsNot(long exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdNot(long exclusion) {
         addToBuf("_id", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -121,7 +121,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for app_rating
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingIs(double exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRating(double exactMatch) {
         addToBuf("app_rating", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -131,7 +131,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for app_rating
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingIsNot(double exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingNot(double exclusion) {
         addToBuf("app_rating", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -201,7 +201,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for competitor_app_rating
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingIs(BigDecimal exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRating(BigDecimal exactMatch) {
         addToBuf("competitor_app_rating", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -211,7 +211,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for competitor_app_rating
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingIsNot(BigDecimal exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingNot(BigDecimal exclusion) {
         addToBuf("competitor_app_rating", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -341,7 +341,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for created
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedIs(Date exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedOn(Date exactMatch) {
         addToBuf("created", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -351,8 +351,28 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for created
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedIsNot(Date exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotCreatedOn(Date exclusion) {
         addToBuf("created", Finder.Operator.NE, exclusion);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires exactMatch for deleted
+     * </p>
+     */
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byDeleted(boolean exactMatch) {
+        addToBuf("deleted", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires exclusion for deleted
+     * </p>
+     */
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotDeleted(boolean exclusion) {
+        addToBuf("deleted", Finder.Operator.NE, exclusion);
         return conjunction;
     }
 
@@ -361,7 +381,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for global_id
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdIs(long exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalId(long exactMatch) {
         addToBuf("global_id", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -371,7 +391,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for global_id
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdIsNot(long exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdNot(long exclusion) {
         addToBuf("global_id", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -441,7 +461,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for login_count
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountIs(int exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCount(int exactMatch) {
         addToBuf("login_count", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -451,7 +471,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for login_count
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountIsNot(int exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountNot(int exclusion) {
         addToBuf("login_count", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -581,7 +601,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exactMatch for modified
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedIs(Date exactMatch) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedOn(Date exactMatch) {
         addToBuf("modified", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -591,7 +611,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      *   add criteria to a query that requires exclusion for modified
      * </p>
      */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedIsNot(Date exclusion) {
+    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotModifiedOn(Date exclusion) {
         addToBuf("modified", Finder.Operator.NE, exclusion);
         return conjunction;
     }
