@@ -23,5 +23,5 @@ public abstract class GeneratorTest<F extends FileObject> {
         assertEquals(classCode, generatorUnderTest().getCode());
     }
 
-    protected abstract NewBaseGenerator<F> generatorUnderTest();
+    protected abstract BaseGenerator<F> generatorUnderTest();
 }

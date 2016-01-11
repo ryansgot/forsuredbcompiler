@@ -1,7 +1,7 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotationprocessor.generator.GeneratorTest;
-import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
+import com.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.google.common.collect.Lists;
 import org.junit.Before;
@@ -45,7 +45,7 @@ public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
     }
 
     @Override
-    protected NewBaseGenerator<JavaFileObject> generatorUnderTest() {
+    protected BaseGenerator<JavaFileObject> generatorUnderTest() {
         return gut;
     }
 }

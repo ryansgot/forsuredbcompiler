@@ -29,7 +29,6 @@ import com.forsuredb.migration.MigrationRetrieverFactory;
 import com.forsuredb.migration.MigrationSet;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.velocity.VelocityContext;
 
 import java.io.IOException;
 import java.util.Date;
@@ -53,8 +52,8 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
     private final ProcessingContext pContext;
     private final MigrationRetriever mr;
 
-    public MigrationGenerator(ProcessingContext pContext, String migrationDirectory, ProcessingEnvironment processingEnv)  {
-            super("migration_resource.vm", processingEnv);
+    public MigrationGenerator(ProcessingEnvironment processingEnv, String migrationDirectory, ProcessingContext pContext)  {
+            super(processingEnv);
             date = new Date();
             this.pContext = pContext;
             mr = new MigrationRetrieverFactory(new FSLogger.DefaultFSLogger()).fromDirectory(migrationDirectory);
@@ -66,18 +65,14 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
     }
 
     @Override
-    protected VelocityContext createVelocityContext() {
+    protected String getCode() {
         MigrationSet migrationSet = new DiffGenerator(new MigrationContext(mr), mr.latestDbVersion()).analyzeDiff(pContext);
         APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.getOrderedMigrations().size());
         if (migrationSet.getOrderedMigrations().size() == 0) {
             return null;
         }
 
-        final String migrationSetJson = new Gson().toJson(migrationSet, new TypeToken<MigrationSet>() {}.getType());
-
-        VelocityContext vc = new VelocityContext();
-        vc.put("migrationJson", migrationSetJson);
-        return vc;
+        return new Gson().toJson(migrationSet, new TypeToken<MigrationSet>() {}.getType());
     }
 
     private String getRelativeFileName() {

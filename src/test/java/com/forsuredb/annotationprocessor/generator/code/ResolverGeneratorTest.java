@@ -2,7 +2,7 @@ package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.annotationprocessor.generator.GeneratorTest;
-import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
+import com.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -50,7 +50,7 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
     }
 
     @Override
-    protected NewBaseGenerator<JavaFileObject> generatorUnderTest() {
+    protected BaseGenerator<JavaFileObject> generatorUnderTest() {
         return gut;
     }
 }

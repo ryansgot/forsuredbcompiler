@@ -28,12 +28,7 @@ import com.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.forsuredb.annotationprocessor.info.TableInfo;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
-import org.apache.velocity.app.VelocityEngine;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -82,13 +77,12 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private void processFSTableAnnotations(Set<TypeElement> tableTypes) {
         ProcessingContext pc = new ProcessingContext(tableTypes);
-        VelocityEngine ve = createVelocityEngine();
 
         if (!setterApisCreated) {
             createSetterApis(pc);
         }
         if (!migrationsCreated && Boolean.getBoolean("createMigrations")) {
-            createMigrations(ve, pc);
+            createMigrations(pc);
         }
         if (!tableCreatorClassCreated) {
             createTableCreatorClass(pc);
@@ -111,10 +105,10 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         setterApisCreated = true;   // <-- maintain state so setter APIs don't have to be created more than once
     }
 
-    private void createMigrations(VelocityEngine ve, ProcessingContext pc) {
+    private void createMigrations(ProcessingContext pc) {
         String migrationDirectory = System.getProperty("migrationDirectory");
         APLog.i(LOG_TAG, "got migration directory: " + migrationDirectory);
-        new MigrationGenerator(pc, migrationDirectory, processingEnv).generate(ve);
+        new MigrationGenerator(processingEnv, migrationDirectory, pc).generate();
         migrationsCreated = true;   // <-- maintain state so migrations don't have to be created more than once
     }
 
@@ -126,7 +120,6 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     }
 
     private void createFinderClasses(ProcessingContext pc) {
-        String resultParameter = System.getProperty("resultParameter");
         for (TableInfo tableInfo : pc.allTables()) {
             new FinderGenerator(processingEnv, tableInfo).generate();
         }
@@ -144,32 +137,5 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         String applicationPackageName = System.getProperty("applicationPackageName");
         new ForSureGenerator(processingEnv, applicationPackageName, pc).generate();
         forSureClassCreated = true; // <-- maintain state so ForSure doesn't have to be created more than once
-    }
-
-    private VelocityEngine createVelocityEngine() {
-        Properties props = new Properties();
-        URL url = this.getClass().getClassLoader().getResource("velocity.properties");
-
-        InputStream in = null;
-        try {
-            in = url.openStream();
-            props.load(in);
-        } catch (IOException | NullPointerException exception) {
-            APLog.e(LOG_TAG, "Could not load velocity.properties:" + exception.getMessage());
-            return null;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ioe) {
-                    // do nothing
-                }
-            }
-        }
-
-        VelocityEngine ve = new VelocityEngine(props);
-        ve.init();
-
-        return ve;
     }
 }

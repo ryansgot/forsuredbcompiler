@@ -1,6 +1,6 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.annotationprocessor.generator.NewBaseGenerator;
+import com.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.api.RecordContainer;
 import com.forsuredb.api.TypedRecordContainer;
@@ -9,7 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
-public abstract class JavaSourceGenerator extends NewBaseGenerator<JavaFileObject> {
+public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> {
 
     private final String fqClassName;
 
