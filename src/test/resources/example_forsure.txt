@@ -1,0 +1,144 @@
+package com.forsuredb.annotationprocessor.generator.code;
+
+import com.forsuredb.api.ForSureInfoFactory;
+import com.forsuredb.api.TypedRecordContainer;
+
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ * <p>
+ *   The entry point into any querying of the database tables you
+ *   defined by extending the {@link com.forsuredb.api.FSGetApi} interface.
+ *   Common usage for getting data will include the following:
+ *   <pre>
+ *     {@code
+ *             Retriever retriever = ForSure.testTable().find()
+ *             .byId(1)
+ *             .andFinally()
+ *             .get();
+ *             if (retriever.moveToFirst()) {
+ *                 do {
+ *                     long id = tableApi.id(retriever);
+ *                     Date modified = tableApi.modified(retriever);
+ *                     Date created = tableApi.created(retriever);
+ *                     boolean deleted = tableApi.deleted(retriever);
+ *                     // Any of the methods you added to your extension of FSGetApi
+ *                 } while (retriever.moveToNext())
+ *             }
+ *             retriever.close();
+ *     }
+ *   </pre>
+ * </p>
+ * <p>
+ *   Common usage for updating an existing record into the table:
+ *   <pre>
+ *     {@code
+ *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             .byId(1)
+ *             .andFinally()
+ *             .set()
+ *             .id(2)
+ *             .save();
+ *     }
+ *   </pre>
+ * </p>
+ * <p>
+ *   Common usage for inserting a new record into the table
+ *   (with only default data):
+ *   <pre>
+ *     {@code
+ *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().set()
+ *             .save();
+ *     }
+ *   </pre>
+ * </p>
+ * <p>
+ *   Common usage for flipping the deleted bit on a record:
+ *   <pre>
+ *     {@code
+ *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             .byId(1)
+ *             .andFinally()
+ *             .set()
+ *             .softDelete();
+ *     }
+ *   </pre>
+ * </p>
+ * <p>
+ *   Common usage for permanently the deleting a record:
+ *   <pre>
+ *     {@code
+ *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             .byId(1)
+ *             .andFinally()
+ *             .set()
+ *             .hardDelete();
+ *     }
+ *   </pre>
+ * </p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ */
+public class ForSure {
+    private static ForSure instance;
+
+    private ForSureInfoFactory<ForSureGeneratorTest, TypedRecordContainer> infoFactory;
+
+    private ForSure(ForSureInfoFactory<ForSureGeneratorTest, TypedRecordContainer> infoFactory) {
+        this.infoFactory = infoFactory;
+    }
+
+    public static void init(ForSureInfoFactory<ForSureGeneratorTest, TypedRecordContainer> infoFactory) {
+        if (instance == null) {
+            instance = new ForSure(infoFactory);
+        }
+    }
+
+    /**
+     * <p>
+     *   Access the querying mechanisms for the test_table table.
+     * </p>
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTableSetter
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTableFinder
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTableResolver
+     */
+    public static TestTableResolver testTable() {
+        throwIfUninitialized();
+        return new TestTableResolver(instance.infoFactory);
+    }
+
+    /**
+     * <p>
+     *   Access the querying mechanisms for the test_table_2 table.
+     * </p>
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable2
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable2Setter
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable2Finder
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable2Resolver
+     */
+    public static TestTable2Resolver testTable2() {
+        throwIfUninitialized();
+        return new TestTable2Resolver(instance.infoFactory);
+    }
+
+    /**
+     * <p>
+     *   Access the querying mechanisms for the test_table_3 table.
+     * </p>
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable3
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable3Setter
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable3Finder
+     * @see com.forsuredb.annotationprocessor.generator.code.TestTable3Resolver
+     */
+    public static TestTable3Resolver testTable3() {
+        throwIfUninitialized();
+        return new TestTable3Resolver(instance.infoFactory);
+    }
+
+    private static void throwIfUninitialized() {
+        if (instance == null) {
+            throw new IllegalStateException("Must init ForSure before use");
+        }
+    }
+}
