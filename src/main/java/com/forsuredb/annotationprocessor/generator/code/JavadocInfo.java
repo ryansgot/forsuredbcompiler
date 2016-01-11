@@ -49,10 +49,18 @@ public class JavadocInfo {
             return this;
         }
 
+        public Builder indentJava() {
+            return indent().indent();
+        }
+
         public Builder unindent() {
             indentionSize = indentionSize == 0 ? 0 : indentionSize - 1;
             indention = indentionSize == 0 ? "" : Strings.repeat("  ", indentionSize);
             return this;
+        }
+
+        public Builder unindentJava() {
+            return unindent().unindent();
         }
 
         public Builder startParagraph() {
