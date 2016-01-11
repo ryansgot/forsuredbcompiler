@@ -9,6 +9,26 @@ import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
 
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ * <p>
+ *   Entry point for querying the test_table_3 table. You can access
+ *   this {@link com.forsuredb.api.Resolver} via the generated static
+ *   method in the ForSure class:
+ *   <pre>
+ *     {@code
+ *             ForSure.testTable3().find()
+ *             .byIdLessThan(23545494583L)
+ *             .andFinally()
+ *             .get();
+ *     }
+ *   </pre>
+ * </p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @see Resolver
+ */
 public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> {
     public static final String TABLE_NAME = "test_table_3";
 
@@ -30,6 +50,12 @@ public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRec
         super(infoFactory);
     }
 
+    /**
+     * <p>
+     *   Add a join to test_table_2 on test_table_2.test_table_3_id = test_table_3._id
+     *   to the query
+     * </p>
+     */
     public TestTable3Resolver joinTestTable2(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override

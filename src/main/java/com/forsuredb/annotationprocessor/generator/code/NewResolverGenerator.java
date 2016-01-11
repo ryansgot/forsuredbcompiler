@@ -47,8 +47,9 @@ public class NewResolverGenerator extends JavaSourceGenerator {
 
     @Override
     protected String getCode() {
+        JavadocInfo jd = classJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
-//                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(ParameterizedTypeName.get(ClassName.get(Resolver.class),
                         resultParameterClassName,
@@ -61,6 +62,28 @@ public class NewResolverGenerator extends JavaSourceGenerator {
         addJoinMethods(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private JavadocInfo classJavadoc() {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("This is an auto-generated class. DO NOT modify it!")
+                .endParagraph()
+                .startParagraph()
+                .addLine("Entry point for querying the $L table. You can access", table.getTableName())
+                .addLine("this $L via the generated static", JavadocInfo.inlineClassLink(Resolver.class))
+                .addLine("method in the ForSure class:")
+                .startCode()
+                .addLine("ForSure.$L().find()", CodeUtil.snakeToCamel(table.getTableName()))
+                .addLine(".byIdLessThan($L)", CodeUtil.javaExampleOf("long"))
+                .addLine(".andFinally()")
+                .addLine(".get();")
+                .endCode()
+                .endParagraph()
+                .addLine(JavadocInfo.AUTHOR_STRING)
+                .addLine("@see Resolver")
+                .addLine()
+                .build();
     }
 
     private void addFields(TypeSpec.Builder codeBuilder) {
@@ -121,7 +144,13 @@ public class NewResolverGenerator extends JavaSourceGenerator {
             if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName()) || !column.isForeignKey()) {
                 continue;
             }
-            codeBuilder.addMethod(createMethodSpecForJoin(column.getForeignKeyInfo().getApiClassName(), createChildTableJoinSpec(column)));
+            JavadocInfo jd = javadocFor(column.getForeignKeyInfo().getTableName(),
+                    column.getForeignKeyInfo().getColumnName(),
+                    table.getTableName(),
+                    column.getColumnName());
+            codeBuilder.addMethod(createMethodSpecForJoin(column.getForeignKeyInfo().getApiClassName(),
+                            createChildTableJoinSpec(column),
+                            jd));
         }
 
         // add join methods where this table is the parent in the join relationship
@@ -133,9 +162,28 @@ public class NewResolverGenerator extends JavaSourceGenerator {
                     continue;
                 }
                 final TypeSpec joinSpec = createParentTableJoinSpec(column, targetTable.getTableName());
-                codeBuilder.addMethod(createMethodSpecForJoin(targetTable.getQualifiedClassName(), joinSpec));
+                JavadocInfo jd = javadocFor(table.getTableName(),
+                                column.getForeignKeyInfo().getColumnName(),
+                                targetTable.getTableName(),
+                                column.getColumnName());
+                codeBuilder.addMethod(createMethodSpecForJoin(targetTable.getQualifiedClassName(), joinSpec, jd));
             }
         }
+    }
+
+    private JavadocInfo javadocFor(String parentTable, String parentColumn, String childTable, String childColumn) {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Add a join to $L on $L.$L = $L.$L",
+                        table.getTableName().equals(parentTable) ? childTable : parentTable,
+                        childTable,
+                        childColumn,
+                        parentTable,
+                        parentColumn)
+                .addLine("to the query")
+                .endParagraph()
+                .addLine()
+                .build();
     }
 
     private TypeSpec createChildTableJoinSpec(ColumnInfo column) {
@@ -184,9 +232,10 @@ public class NewResolverGenerator extends JavaSourceGenerator {
                 .build();
     }
 
-    private MethodSpec createMethodSpecForJoin(String joinedTableApiClass, TypeSpec childTableJoinSpec) {
+    private MethodSpec createMethodSpecForJoin(String joinedTableApiClass, TypeSpec childTableJoinSpec, JavadocInfo jd) {
         final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTableApiClass);
         return MethodSpec.methodBuilder("join" + apiClassSimpleName)
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ClassName.bestGuess(getOutputClassName(false)))
                 .addParameter(FSJoin.Type.class, "type", Modifier.FINAL)
