@@ -15,7 +15,7 @@ public abstract class JavaSourceGenerator extends NewBaseGenerator<JavaFileObjec
 
     private String packageName;
     private String simpleClassName;
-    private Class<?> resultParameter;
+    private String resultParameter;
     private Class<? extends RecordContainer> recordContainer;
 
     public JavaSourceGenerator(ProcessingEnvironment processingEnv, String fqClassName) {
@@ -46,19 +46,15 @@ public abstract class JavaSourceGenerator extends NewBaseGenerator<JavaFileObjec
         return packageName;
     }
 
-    protected Class<?> getResultParameter() {
+    protected String getResultParameter() {
         if (resultParameter == null) {
-            try {
-                resultParameter = Class.forName(System.getProperty("resultParameter"));
-            } catch (ClassNotFoundException cnfe) {
-                APLog.e(logTag(), "Could not get result parameter: " + cnfe.getMessage());
-                resultParameter = Object.class;
-            }
+            resultParameter = System.getProperty("resultParameter");
+            resultParameter = resultParameter == null ? "java.lang.Object" : resultParameter;
         }
         return resultParameter;
     }
 
-    protected Class<? extends RecordContainer> getRecordContainer() {
+    protected Class<? extends RecordContainer> getRecordContainerClass() {
         if (recordContainer == null) {
             try {
                 recordContainer = Class.forName(System.getProperty("recordContainer")).asSubclass(RecordContainer.class);

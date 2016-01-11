@@ -1,91 +1,128 @@
-/*
-   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
-
-   Copyright 2015 Ryan Scott
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.annotationprocessor.ProcessingContext;
-import com.forsuredb.annotationprocessor.generator.BaseGenerator;
+import com.forsuredb.annotation.FSTable;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
+import com.forsuredb.api.FSGetApi;
 import com.forsuredb.api.FSTableCreator;
-
-import org.apache.velocity.VelocityContext;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.tools.JavaFileObject;
+import javax.lang.model.element.Modifier;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
-/**
- * <p>
- *     Generator for the TableGenerator class that contains all of the
- *     {@link FSTableCreator FSTableCreator} instance definitions and returns them as a list.
- * </p>
- * @author Ryan Scott
- */
-public class TableCreatorGenerator extends BaseGenerator<JavaFileObject> {
+import static com.forsuredb.annotationprocessor.generator.code.JavadocInfo.inlineClassLink;
 
-    private static final String CLASS_NAME = "TableGenerator";
-    private static final String METHOD_NAME = "generate";
-    private static final String LIST_VARIABLE_NAME = "retList";
+public class TableCreatorGenerator extends JavaSourceGenerator {
 
-    private final String applicationPackageName;
-    private final ProcessingContext pContext;
+    private final Collection<TableInfo> tables;
 
-    public TableCreatorGenerator(ProcessingEnvironment processingEnv,
-                                 String applicationPackageName,
-                                 ProcessingContext pContext) {
-        super("table_creator.vm", processingEnv);
-        this.applicationPackageName = applicationPackageName;
-        this.pContext = pContext;
+    public TableCreatorGenerator(ProcessingEnvironment processingEnv, String appPackageName, Collection<TableInfo> tables) {
+        super(processingEnv, appPackageName + "." + "TableGenerator");
+        this.tables = tables;
     }
 
     @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
+    protected String getCode() {
+        JavadocInfo javadoc = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("This is an automatically-generated class. DO NOT modify it!")
+                .endParagraph()
+                .startParagraph()
+                .addLine("$L generates the basic information about the tables", getOutputClassName(false))
+                .addLine("you have described in your extensions of")
+                .addLine("$L. It should be called as you", inlineClassLink(FSGetApi.class))
+                .addLine("initialize the database.")
+                .endParagraph()
+                .startParagraph()
+                .addLine("You have two options when you generate the tables. First, you can accept")
+                .addLine("the default authority (\"com.forsuredb.testapp.content\") as below:")
+                .startCode()
+                .addLine("TableGenerator.generate();")
+                .endCode()
+                .addLine("Or you can generate the tables, specifying your authority, as below:")
+                .startCode()
+                .addLine("TableGenerator.generate(\"my.apps.content.authority\");")
+                .endCode()
+                .endParagraph()
+                .addLine(JavadocInfo.AUTHOR_STRING)
+                .addLine()
+                .build();
+        return JavaFile.builder(getOutputPackageName(), TypeSpec.classBuilder(getOutputClassName(false))
+                        .addModifiers(Modifier.PUBLIC)
+                        .addJavadoc(javadoc.stringToFormat(), javadoc.replacements())
+                        .addMethod(noArgGenerateMethod())
+                        .addMethod(generateMethodWithAuthorityArg())
+                        .build())
+                .indent(JAVA_INDENT)
+                .build()
+                .toString();
     }
 
-    @Override
-    protected VelocityContext createVelocityContext() {
-        VelocityContext vc = new VelocityContext();
-        vc.put("className", getOutputClassName(false));
-        vc.put("packageName", applicationPackageName);
-        vc.put("methodName", METHOD_NAME);
-        vc.put("listVariableName", LIST_VARIABLE_NAME);
-        vc.put("addFSTableCreatorLines", createAddFSTableCratorLines());
-        return vc;
-    }
-
-    private String getOutputClassName(boolean fullyQualified) {
-        return fullyQualified ? applicationPackageName + "." + CLASS_NAME : CLASS_NAME;
-    }
-
-    private List<String> createAddFSTableCratorLines() {
-        List<String> retList = new ArrayList<>();
-        for (TableInfo table : pContext.allTables()) {
-            retList.add(createAddFSTableCreatorLine(table));
+    private MethodSpec generateMethodWithAuthorityArg() {
+        JavadocInfo jd = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Creates a list of $L", inlineClassLink(FSTableCreator.class))
+                .addLine("objects that tell the underlying routing mechanism all it needs to")
+                .addLine("know in order to set up the appropriate routes to the tables.")
+                .endParagraph()
+                .addLine("@param authority The authority for your database resources")
+                .addLine("@return A list of $L corresponding", inlineClassLink(FSTableCreator.class))
+                .addLine("to all $L extensions annotated with", inlineClassLink(FSGetApi.class))
+                .addLine(inlineClassLink(FSTable.class))
+                .addLine("@see #generate()")
+                .addLine()
+                .build();
+        MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder("generate")
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(ParameterizedTypeName.get(List.class, FSTableCreator.class))
+                .addParameter(String.class, "authority")
+                .addCode(CodeBlock.builder().add("// provide a reasonable default authority\n")
+                        .addStatement("authority = authority == null || authority.isEmpty() ? $S : authority", "com.forsuredb.testapp.content")
+                        .addStatement("final $T retList = new $T()", ParameterizedTypeName.get(List.class, FSTableCreator.class), ParameterizedTypeName.get(LinkedList.class, FSTableCreator.class))
+                        .build());
+        for (TableInfo table : TableDataUtil.tablesSortedByName(tables)) {
+            codeBuilder.addStatement(createAddFSTableCreatorLine(table));
         }
-        return retList;
+        return codeBuilder.addStatement("return retList").build();
+    }
+
+    private MethodSpec noArgGenerateMethod() {
+        JavadocInfo jd = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Creates a list of $L", inlineClassLink(FSTableCreator.class))
+                .addLine("objects that tell the underlying routing mechanism all it needs to")
+                .addLine("know in order to set up the appropriate routes to the tables.")
+                .endParagraph()
+                .startParagraph()
+                .addLine("This version will use the default authority,")
+                .addLine("$S", "com.forsuredb.testapp.content")
+                .endParagraph()
+                .addLine("@return A list of $L corresponding", inlineClassLink(FSTableCreator.class))
+                .addLine("to all $L extensions annotated with", inlineClassLink(FSGetApi.class))
+                .addLine(inlineClassLink(FSTable.class))
+                .addLine("@see #generate(String)")
+                .addLine()
+                .build();
+        return MethodSpec.methodBuilder("generate")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(ParameterizedTypeName.get(List.class, FSTableCreator.class))
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addCode(CodeBlock.builder()
+                        .addStatement("return generate(null)")
+                        .build())
+                .build();
     }
 
     private String createAddFSTableCreatorLine(TableInfo tableInfo) {
-        StringBuffer buf = new StringBuffer(LIST_VARIABLE_NAME).append(".add(new FSTableCreator(")
+        StringBuffer buf = new StringBuffer("retList").append(".add(new FSTableCreator(")
                 .append("authority, ")
                 .append(tableInfo.getQualifiedClassName()).append(".class");
 
@@ -98,6 +135,6 @@ public class TableCreatorGenerator extends BaseGenerator<JavaFileObject> {
             buf.append(", ").append(column.getForeignKeyInfo().getApiClassName()).append(".class");
         }
 
-        return buf.append("));").toString();
+        return buf.append("))").toString();
     }
 }

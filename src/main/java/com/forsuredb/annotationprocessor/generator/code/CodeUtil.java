@@ -104,6 +104,8 @@ import java.lang.reflect.Type;
                 return "new Date()";
             case "java.math.BigDecimal":
                 return "BigDecimal.ONE";
+            case "java.lang.String":
+                return "A String";
         }
 
         throw new IllegalStateException("Unsupported type: " + qualifiedType);

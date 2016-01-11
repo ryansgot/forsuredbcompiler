@@ -16,7 +16,7 @@ import static com.forsuredb.TestData.*;
 @RunWith(Parameterized.class)
 public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private NewResolverGenerator gut;
+    private ResolverGenerator gut;
 
     private TableInfo inputTable;
     private TableContext inputTargetContext;
@@ -46,7 +46,7 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = new NewResolverGenerator(mockProcessingEnv, inputTable, inputTargetContext);
+        gut = new ResolverGenerator(mockProcessingEnv, inputTable, inputTargetContext);
     }
 
     @Override

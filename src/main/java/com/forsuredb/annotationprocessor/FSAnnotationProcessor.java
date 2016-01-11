@@ -85,29 +85,28 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         VelocityEngine ve = createVelocityEngine();
 
         if (!setterApisCreated) {
-            createSetterApis(ve, pc);
+            createSetterApis(pc);
         }
         if (!migrationsCreated && Boolean.getBoolean("createMigrations")) {
             createMigrations(ve, pc);
         }
         if (!tableCreatorClassCreated) {
-            createTableCreatorClass(ve, pc);
+            createTableCreatorClass(pc);
         }
         if (!finderClassesCreated) {
-            createFinderClasses(ve, pc);
+            createFinderClasses(pc);
         }
         if (!resolverClassesCreated) {
-            createResolverClasses(ve, pc);
+            createResolverClasses(pc);
         }
         if (!forSureClassCreated) {
-            createForSureClass(ve, pc);
+            createForSureClass(pc);
         }
     }
 
-    private void createSetterApis(VelocityEngine ve, ProcessingContext pc) {
-        String resultParameter = System.getProperty("resultParameter");
+    private void createSetterApis(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new SetterGenerator(tableInfo, resultParameter, processingEnv).generate(ve);
+            new SetterGenerator(processingEnv, tableInfo).generate();
         }
         setterApisCreated = true;   // <-- maintain state so setter APIs don't have to be created more than once
     }
@@ -119,33 +118,31 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         migrationsCreated = true;   // <-- maintain state so migrations don't have to be created more than once
     }
 
-    private void createTableCreatorClass(VelocityEngine ve, ProcessingContext pc) {
+    private void createTableCreatorClass(ProcessingContext pc) {
         String applicationPackageName = System.getProperty("applicationPackageName");
         APLog.i(LOG_TAG, "got applicationPackageName: " + applicationPackageName);
-        new TableCreatorGenerator(processingEnv, applicationPackageName, pc).generate(ve);
+        new TableCreatorGenerator(processingEnv, applicationPackageName, pc.allTables()).generate();
         tableCreatorClassCreated = true;    // <-- maintain state so TableCreator class does not have to be created more than once
     }
 
-    private void createFinderClasses(VelocityEngine ve, ProcessingContext pc) {
+    private void createFinderClasses(ProcessingContext pc) {
         String resultParameter = System.getProperty("resultParameter");
         for (TableInfo tableInfo : pc.allTables()) {
-            new FinderGenerator(tableInfo, resultParameter, processingEnv).generate(ve);
+            new FinderGenerator(processingEnv, tableInfo).generate();
         }
         finderClassesCreated = true;    // <-- maintain state so finder classes don't have to be created more than once
     }
 
-    private void createResolverClasses(VelocityEngine ve, ProcessingContext pc) {
-        String resultParameter = System.getProperty("resultParameter");
+    private void createResolverClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new ResolverGenerator(tableInfo, pc.allJoins(), resultParameter, processingEnv).generate(ve);
+            new ResolverGenerator(processingEnv, tableInfo, pc).generate();
         }
         resolverClassesCreated = true;
     }
 
-    private void createForSureClass(VelocityEngine ve, ProcessingContext pc) {
-        String resultParameter = System.getProperty("resultParameter");
+    private void createForSureClass(ProcessingContext pc) {
         String applicationPackageName = System.getProperty("applicationPackageName");
-        new ForSureGenerator(pc.allTables(), pc.allJoins(), applicationPackageName, resultParameter, processingEnv).generate(ve);
+        new ForSureGenerator(processingEnv, applicationPackageName, pc).generate();
         forSureClassCreated = true; // <-- maintain state so ForSure doesn't have to be created more than once
     }
 

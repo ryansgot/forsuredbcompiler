@@ -82,7 +82,7 @@ public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRec
             public String childColumn() {
                 return "test_table_3_id";
             }
-        }, TestTable3.PROJECTION);
+        }, TestTable3Resolver.PROJECTION);
         return this;
     }
 
@@ -118,7 +118,7 @@ public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRec
             public String childColumn() {
                 return "test_table_2_id";
             }
-        }, TestTable.PROJECTION);
+        }, TestTableResolver.PROJECTION);
         return this;
     }
 

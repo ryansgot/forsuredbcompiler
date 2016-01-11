@@ -17,7 +17,7 @@ import static com.forsuredb.TestData.*;
 @RunWith(Parameterized.class)
 public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private NewTableCreatorGenerator gut;
+    private TableCreatorGenerator gut;
 
     private final Collection<TableInfo> tables;
     private final String packageName;
@@ -41,7 +41,7 @@ public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = new NewTableCreatorGenerator(mockProcessingEnv, packageName, tables);
+        gut = new TableCreatorGenerator(mockProcessingEnv, packageName, tables);
     }
 
     @Override

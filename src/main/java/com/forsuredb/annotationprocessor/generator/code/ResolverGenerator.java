@@ -1,158 +1,279 @@
-/*
-   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
-
-   Copyright 2015 Ryan Scott
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.annotationprocessor.util.Pair;
-import com.forsuredb.annotationprocessor.generator.BaseGenerator;
+import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
-import com.forsuredb.annotationprocessor.info.JoinInfo;
+import com.forsuredb.annotationprocessor.info.ForeignKeyInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
-import org.apache.velocity.VelocityContext;
+import com.forsuredb.api.FSJoin;
+import com.forsuredb.api.FSProjection;
+import com.forsuredb.api.ForSureInfoFactory;
+import com.forsuredb.api.Resolver;
+import com.google.common.base.Strings;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 
-import java.io.IOException;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.tools.JavaFileObject;
-
-public class ResolverGenerator extends BaseGenerator<JavaFileObject> {
+public class ResolverGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
-    private final List<JoinInfo> allJoins;
-    private final String resultParameter;
+    private final TableContext targetContext;
+    private List<ColumnInfo> columnsSortedByName;
+    private final ClassName resultParameterClassName;
+    private final ClassName recordContainerClassName;
+    private final ClassName getClassName;
+    private final ClassName setClassName;
+    private final ClassName finderClassName;
 
-    public ResolverGenerator(TableInfo table, List<JoinInfo> allJoins, String resultParameter, ProcessingEnvironment processingEnv) {
-        super("resolver.vm", processingEnv);
+    public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
+        super(processingEnv, table.getQualifiedClassName() + "Resolver");
         this.table = table;
-        this.allJoins = allJoins;
-        this.resultParameter = resultParameter;
+        this.targetContext = targetContext;
+        columnsSortedByName = TableDataUtil.columnsSortedByName(table);
+        resultParameterClassName = ClassName.bestGuess(getResultParameter());
+        recordContainerClassName = ClassName.get(getRecordContainerClass());
+        getClassName = ClassName.bestGuess(table.getQualifiedClassName());
+        setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
+        finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
     }
 
     @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
+    protected String getCode() {
+        JavadocInfo jd = classJavadoc();
+        TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addModifiers(Modifier.PUBLIC)
+                .superclass(ParameterizedTypeName.get(ClassName.get(Resolver.class),
+                        resultParameterClassName,
+                        recordContainerClassName,
+                        getClassName,
+                        setClassName,
+                        finderClassName));
+        addFields(codeBuilder);
+        addConstructor(codeBuilder);
+        addJoinMethods(codeBuilder);
+        addAbstractMethodImplementations(codeBuilder);
+        return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
 
-    @Override
-    protected VelocityContext createVelocityContext() {
-        VelocityContext vc = new VelocityContext();
-        vc.put("packageName", table.getPackageName());
-        vc.put("resultParameter", resultParameter);
-        vc.put("getApiClass", table.getSimpleClassName());
-        vc.put("className", getOutputClassName(false));
-        vc.put("setApiClass", setApiClass());
-        vc.put("finderClass", finderClass());
-        vc.put("tableName", table.getTableName());
-        vc.put("joinMethodDefinitions", createJoinMethods());
-        vc.put("columns", createColumns());
-        return vc;
+    private JavadocInfo classJavadoc() {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("This is an auto-generated class. DO NOT modify it!")
+                .endParagraph()
+                .startParagraph()
+                .addLine("Entry point for querying the $L table. You can access", table.getTableName())
+                .addLine("this $L via the generated static", JavadocInfo.inlineClassLink(Resolver.class))
+                .addLine("method in the ForSure class:")
+                .startCode()
+                .addLine("ForSure.$L().find()", CodeUtil.snakeToCamel(table.getTableName()))
+                .addLine(".byIdLessThan($L)", CodeUtil.javaExampleOf("long"))
+                .addLine(".andFinally()")
+                .addLine(".get();")
+                .endCode()
+                .endParagraph()
+                .addLine(JavadocInfo.AUTHOR_STRING)
+                .addLine("@see Resolver")
+                .addLine()
+                .build();
     }
 
-    private List<JoinMethodDefinition> createJoinMethods() {
-        List<JoinMethodDefinition> ret = new ArrayList<>();
-        for (JoinInfo join : allJoins) {
-            if (join.getParentTable().getTableName().equals(table.getTableName())) {
-                ret.add(new JoinMethodDefinition(getOutputClassName(false), join, true, resultParameter));
-            } else if (join.getChildTable().getTableName().equals(table.getTableName())) {
-                ret.add(new JoinMethodDefinition(getOutputClassName(false), join, false, resultParameter));
+    private void addFields(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$S", table.getTableName())
+                        .build());
+        String[] columnNames = orderedColumnNames();
+        codeBuilder.addField(FieldSpec.builder(String[].class, "columns")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("{" + Strings.repeat("$S,", columnNames.length) + "}", columnNames)
+                        .build())
+                .addField(FieldSpec.builder(FSProjection.class, "PROJECTION")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer(CodeBlock.builder()
+                                .add("$L", anonymousFSProjection())
+                                .build())
+                        .build());
+    }
+
+    private String[] orderedColumnNames() {
+        List<String> retList = new ArrayList<>();
+        for (ColumnInfo column : columnsSortedByName) {
+            retList.add(column.getColumnName());
+        }
+        return retList.toArray(new String[retList.size()]);
+    }
+
+    private TypeSpec anonymousFSProjection() {
+        return TypeSpec.anonymousClassBuilder("")
+                .addSuperinterface(FSProjection.class)
+                .addMethod(MethodSpec.methodBuilder("tableName")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String.class)
+                        .addStatement("return TABLE_NAME")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("columns")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String[].class)
+                        .addStatement("return columns")
+                        .build())
+                .build();
+    }
+
+    private void addConstructor(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(ForSureInfoFactory.class, "infoFactory")
+                        .addStatement("super(infoFactory)")
+                        .build());
+    }
+
+    private void addJoinMethods(TypeSpec.Builder codeBuilder) {
+        // Add join methods where this table is the child in the join relationship
+        for (ColumnInfo column : columnsSortedByName) {
+            if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName()) || !column.isForeignKey()) {
+                continue;
+            }
+            JavadocInfo jd = javadocFor(column.getForeignKeyInfo().getTableName(),
+                    column.getForeignKeyInfo().getColumnName(),
+                    table.getTableName(),
+                    column.getColumnName());
+            codeBuilder.addMethod(createMethodSpecForJoin(column.getForeignKeyInfo().getApiClassName(),
+                            createChildTableJoinSpec(column),
+                            jd));
+        }
+
+        // add join methods where this table is the parent in the join relationship
+        for (TableInfo targetTable : TableDataUtil.tablesSortedByName(targetContext, table)) {
+            for (ColumnInfo column : TableDataUtil.columnsSortedByName(targetTable.getColumns())) {
+                if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())
+                        || !column.isForeignKey()
+                        || !table.getTableName().equals(column.getForeignKeyInfo().getTableName())) {
+                    continue;
+                }
+                final TypeSpec joinSpec = createParentTableJoinSpec(column, targetTable.getTableName());
+                JavadocInfo jd = javadocFor(table.getTableName(),
+                                column.getForeignKeyInfo().getColumnName(),
+                                targetTable.getTableName(),
+                                column.getColumnName());
+                codeBuilder.addMethod(createMethodSpecForJoin(targetTable.getQualifiedClassName(), joinSpec, jd));
             }
         }
-        return ret;
     }
 
-    private String getOutputClassName(boolean fullyQualified) {
-        return (fullyQualified ? table.getQualifiedClassName() : table.getSimpleClassName()) + "Resolver";
+    private JavadocInfo javadocFor(String parentTable, String parentColumn, String childTable, String childColumn) {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Add a join to $L on $L.$L = $L.$L",
+                        table.getTableName().equals(parentTable) ? childTable : parentTable,
+                        childTable,
+                        childColumn,
+                        parentTable,
+                        parentColumn)
+                .addLine("to the query")
+                .endParagraph()
+                .addLine()
+                .build();
     }
 
-    private String setApiClass() {
-        return table.getSimpleClassName() + "Setter";
+    private TypeSpec createChildTableJoinSpec(ColumnInfo column) {
+        final ForeignKeyInfo fki = column.getForeignKeyInfo();
+        return createJoinSpec(fki.getTableName(), fki.getColumnName(), table.getTableName(), column.getColumnName());
     }
 
-    private String finderClass() {
-        return table.getSimpleClassName() + "Finder";
+    private TypeSpec createParentTableJoinSpec(ColumnInfo column, String childTableName) {
+        final ForeignKeyInfo fki = column.getForeignKeyInfo();
+        return createJoinSpec(table.getTableName(), fki.getColumnName(), childTableName, column.getColumnName());
     }
 
-    private List<String> createColumns() {
-        List<String> ret = new ArrayList<>();
-        for (ColumnInfo column : table.getColumns()) {
-            ret.add(column.getColumnName());
-        }
-        return ret;
+    private TypeSpec createJoinSpec(String parentTableName, String parentColumnName, String childTableName, String childColumnName) {
+        return TypeSpec.anonymousClassBuilder("")
+                .addSuperinterface(FSJoin.class)
+                .addMethod(MethodSpec.methodBuilder("type")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(FSJoin.Type.class)
+                        .addStatement("return type")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("parentTable")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String.class)
+                        .addStatement("return $S", parentTableName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("parentColumn")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String.class)
+                        .addStatement("return $S", parentColumnName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("childTable")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String.class)
+                        .addStatement("return $S", childTableName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("childColumn")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(String.class)
+                        .addStatement("return $S", childColumnName)
+                        .build())
+                .build();
     }
 
-    private static class JoinMethodDefinition extends BaseMethodDefinition {
+    private MethodSpec createMethodSpecForJoin(String joinedTableApiClass, TypeSpec childTableJoinSpec, JavadocInfo jd) {
+        final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTableApiClass);
+        return MethodSpec.methodBuilder("join" + apiClassSimpleName)
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.bestGuess(getOutputClassName(false)))
+                .addParameter(FSJoin.Type.class, "type", Modifier.FINAL)
+                .addStatement("addJoin($L, $L.PROJECTION)", childTableJoinSpec, apiClassSimpleName + "Resolver")
+                .addStatement("return this")
+                .build();
+    }
 
-        private final JoinInfo join;
-        private final String resultParameter;
-        private final boolean isParent;
-
-        public JoinMethodDefinition(String returnType, JoinInfo join, boolean isParent, String resultParameter) {
-            super("public", returnType, methodName(join, isParent), new Pair<>("final FSJoin.Type", "type"));
-            this.isParent = isParent;
-            this.join = join;
-            this.resultParameter = resultParameter;
-        }
-
-        @Override
-        public String toString() {
-            return new StringBuilder(doc()).append(newLine(0))
-                    .append(signature()).append(" {").append(newLine(2))
-                        .append("projections.add(").append(getOtherResolverClass()).append(".PROJECTION);").append(newLine(2))
-                        .append("joins.add(new FSJoin() {").append(newLine(3))
-                            .append("@Override").append(newLine(3))
-                            .append("public Type type() {").append(newLine(4))
-                                .append("return type;").append(newLine(3))
-                            .append("}").append(newLine(3))
-                            .append("@Override").append(newLine(3))
-                            .append("public String parentTable() {").append(newLine(4))
-                                .append("return \"").append(join.getParentTable().getTableName()).append("\";").append(newLine(3))
-                            .append("}").append(newLine(3))
-                            .append("@Override").append(newLine(3))
-                            .append("public String parentColumn() {").append(newLine(4))
-                                .append("return \"").append(join.getParentColumn().getColumnName()).append("\";").append(newLine(3))
-                            .append("}").append(newLine(3))
-                            .append("@Override").append(newLine(3))
-                            .append("public String childTable() {").append(newLine(4))
-                                .append("return \"").append(join.getChildTable().getTableName()).append("\";").append(newLine(3))
-                            .append("}").append(newLine(3))
-                            .append("@Override").append(newLine(3))
-                            .append("public String childColumn() {").append(newLine(4))
-                                .append("return \"").append(join.getChildColumn().getColumnName()).append("\";").append(newLine(3))
-                            .append("}").append(newLine(2))
-                        .append("});").append(newLine(2))
-                        .append("lookupResource = (").append(resultParameter).append(") infoFactory.locatorWithJoins(lookupResource, joins);").append(newLine(2))
-                    .append("return this;").append(newLine(1))
-                    .append("}")
-                    .toString();
-        }
-
-        private String getOtherResolverClass() {
-            return (isParent ? join.getChildTable().getSimpleClassName() : join.getParentTable().getSimpleClassName()) + "Resolver";
-        }
-
-        private static String methodName(JoinInfo join, boolean isParent) {
-            return "join" + (isParent ? join.getChildTable().getSimpleClassName() : join.getParentTable().getSimpleClassName());
-        }
-
-        private String doc() {
-            // TODO
-            return "";
-        }
+    private void addAbstractMethodImplementations(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("getApiClass")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(ParameterizedTypeName.get(ClassName.get(Class.class), getClassName))
+                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName()))
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("setApiClass")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(ParameterizedTypeName.get(ClassName.get(Class.class), setClassName))
+                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName() + "Setter"))
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("projection")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(FSProjection.class)
+                        .addStatement("return PROJECTION")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("newFinderInstance")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(finderClassName)
+                        .addStatement("return new $T(this)", finderClassName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("tableName")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(String.class)
+                        .addStatement("return TABLE_NAME")
+                        .build());
     }
 }

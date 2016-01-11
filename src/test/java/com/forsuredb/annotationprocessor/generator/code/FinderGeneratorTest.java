@@ -16,7 +16,7 @@ import static com.forsuredb.TestData.targetTableWithChildForeignKey;
 @RunWith(Parameterized.class)
 public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private NewFinderGenerator gut;
+    private FinderGenerator gut;
 
     private TableInfo inputTable;
 
@@ -38,7 +38,7 @@ public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = new NewFinderGenerator(mockProcessingEnv, inputTable);
+        gut = new FinderGenerator(mockProcessingEnv, inputTable);
     }
 
     @Override

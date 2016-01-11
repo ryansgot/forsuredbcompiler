@@ -13,7 +13,7 @@ import com.forsuredb.api.TypedRecordContainer;
  *   Common usage for getting data will include the following:
  *   <pre>
  *     {@code
- *             Retriever retriever = ForSure.testTable().find()
+ *             Retriever retriever = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .get();
@@ -34,7 +34,7 @@ import com.forsuredb.api.TypedRecordContainer;
  *   Common usage for updating an existing record into the table:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             SaveResult<com.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()
@@ -48,7 +48,7 @@ import com.forsuredb.api.TypedRecordContainer;
  *   (with only default data):
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().set()
+ *             SaveResult<com.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().set()
  *             .save();
  *     }
  *   </pre>
@@ -57,7 +57,7 @@ import com.forsuredb.api.TypedRecordContainer;
  *   Common usage for flipping the deleted bit on a record:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             SaveResult<com.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()
@@ -69,7 +69,7 @@ import com.forsuredb.api.TypedRecordContainer;
  *   Common usage for permanently the deleting a record:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTable().find()
+ *             SaveResult<com.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()
@@ -103,7 +103,7 @@ public class ForSure {
      * @see com.forsuredb.annotationprocessor.generator.code.TestTableFinder
      * @see com.forsuredb.annotationprocessor.generator.code.TestTableResolver
      */
-    public static TestTableResolver testTable() {
+    public static TestTableResolver testTableTable() {
         throwIfUninitialized();
         return new TestTableResolver(instance.infoFactory);
     }
@@ -117,7 +117,7 @@ public class ForSure {
      * @see com.forsuredb.annotationprocessor.generator.code.TestTable2Finder
      * @see com.forsuredb.annotationprocessor.generator.code.TestTable2Resolver
      */
-    public static TestTable2Resolver testTable2() {
+    public static TestTable2Resolver testTable2Table() {
         throwIfUninitialized();
         return new TestTable2Resolver(instance.infoFactory);
     }
@@ -131,7 +131,7 @@ public class ForSure {
      * @see com.forsuredb.annotationprocessor.generator.code.TestTable3Finder
      * @see com.forsuredb.annotationprocessor.generator.code.TestTable3Resolver
      */
-    public static TestTable3Resolver testTable3() {
+    public static TestTable3Resolver testTable3Table() {
         throwIfUninitialized();
         return new TestTable3Resolver(instance.infoFactory);
     }

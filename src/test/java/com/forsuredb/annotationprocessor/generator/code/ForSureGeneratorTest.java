@@ -15,7 +15,7 @@ import static com.forsuredb.TestData.*;
 @RunWith(Parameterized.class)
 public class ForSureGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private NewForSureGenerator gut;
+    private ForSureGenerator gut;
 
     private String packageName;
     private TableContext inputTargetContext;
@@ -40,7 +40,7 @@ public class ForSureGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = new NewForSureGenerator(mockProcessingEnv, packageName, inputTargetContext);
+        gut = new ForSureGenerator(mockProcessingEnv, packageName, inputTargetContext);
     }
 
     @Override

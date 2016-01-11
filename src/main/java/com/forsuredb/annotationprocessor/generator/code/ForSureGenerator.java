@@ -1,180 +1,208 @@
-/*
-   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
-
-   Copyright 2015 Ryan Scott
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.forsuredb.annotationprocessor.info.JoinInfo;
+import com.forsuredb.annotation.FSTable;
+import com.forsuredb.annotationprocessor.TableContext;
 import com.forsuredb.annotationprocessor.info.TableInfo;
-import org.apache.commons.lang.WordUtils;
-import org.apache.velocity.VelocityContext;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.forsuredb.api.FSGetApi;
+import com.forsuredb.api.ForSureInfoFactory;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.tools.JavaFileObject;
+import javax.lang.model.element.Modifier;
+import java.util.List;
 
-public class ForSureGenerator extends BaseGenerator<JavaFileObject> {
+import static com.forsuredb.annotationprocessor.generator.code.CodeUtil.snakeToCamel;
+import static com.forsuredb.annotationprocessor.generator.code.JavadocInfo.inlineClassLink;
 
-    private static final String CLASS_NAME = "ForSure";
+public class ForSureGenerator extends JavaSourceGenerator {
 
-    private final Collection<TableInfo> allTables;
-//    private final List<JoinResolver> allJoinResolvers;
-    private final String applicationPackageName;
-    private final String resultParameter;
+    private final List<TableInfo> tablesSortedByName;
+    private final TableInfo exampleTable;
 
-    public ForSureGenerator(Collection<TableInfo> allTables, List<JoinInfo> allJoins, String applicationPackageName, String resultParameter, ProcessingEnvironment processingEnv) {
-        super("forsure.vm", processingEnv);
-        this.resultParameter = resultParameter;
-        this.allTables = allTables;
-//        this.allJoinResolvers = createJoinResolvers(allJoins);
-        this.applicationPackageName = applicationPackageName;
+    public ForSureGenerator(ProcessingEnvironment processingEnv, String packageName, TableContext targetContext) {
+        super(processingEnv, packageName + ".ForSure");
+        tablesSortedByName = TableDataUtil.tablesSortedByName(targetContext);
+        exampleTable = tablesSortedByName.size() > 0 ? tablesSortedByName.get(0) : null;
     }
 
     @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
+    protected String getCode() {
+        final ParameterizedTypeName infoFactoryTypeName = ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class),
+                ClassName.bestGuess(getResultParameter()),
+                ClassName.get(getRecordContainerClass()));
+        JavadocInfo jd = classJavadoc();
+        TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addModifiers(Modifier.PUBLIC);
+        addFields(codeBuilder, infoFactoryTypeName);
+        addConstructor(codeBuilder, infoFactoryTypeName);
+        addInitMethod(codeBuilder, infoFactoryTypeName);
+        addResolverMethods(codeBuilder);
+        addThrowIfUninitializedMethod(codeBuilder);
+        return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
 
-    @Override
-    protected VelocityContext createVelocityContext() {
-        final VelocityContext vc = new VelocityContext();
-        vc.put("packageName", applicationPackageName);
-        vc.put("resultParameter", resultParameter);
-        vc.put("modelClassImports", createModelClassImports());
-//        vc.put("joinClassImports", createJoinClassImports());
-        vc.put("tableResolverMethods", createTableResolverMethods());
-//        vc.put("joinResolvers", allJoinResolvers);
-        return vc;
+    private JavadocInfo classJavadoc() {
+        if (exampleTable == null) {
+            return JavadocInfo.builder()
+                    .startParagraph()
+                    .addLine("This is an auto-generated class. DO NOT modify it!")
+                    .endParagraph()
+                    .startParagraph()
+                    .addLine("You did not mark any extensions of $L", inlineClassLink(FSGetApi.class))
+                    .addLine("with the $L annotation", inlineClassLink(FSTable.class))
+                    .addLine("This class will do nothing.")
+                    .endParagraph()
+                    .startParagraph()
+                    .addLine("A class like the following will cause the magic to start happening:")
+                    .startCode()
+                    .addLine("    public interface MyTable extends FSGetApi {")
+                    .addLine("@FSColumn($S) int my_int_column(Retriever retriever);", "my_int_column")
+                    .addLine("}")
+                    .endCode()
+                    .endParagraph()
+                    .addLine(JavadocInfo.AUTHOR_STRING)
+                    .addLine()
+                    .build();
+        }
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("This is an auto-generated class. DO NOT modify it!")
+                .endParagraph()
+                .startParagraph()
+                .addLine("The entry point into any querying of the database tables you")
+                .addLine("defined by extending the $L interface.", inlineClassLink(FSGetApi.class))
+                .addLine("Common usage for getting data will include the following:")
+                .startCode()
+                .addLine("Retriever retriever = ForSure.$L().find()", snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine(".byId(1)")
+                .addLine(".andFinally()")
+                .addLine(".get();")
+                .addLine("if (retriever.moveToFirst()) {")
+                .indentJava()
+                .addLine("do {")
+                .indentJava()
+                .addLine("long id = tableApi.id(retriever);")
+                .addLine("Date modified = tableApi.modified(retriever);")
+                .addLine("Date created = tableApi.created(retriever);")
+                .addLine("boolean deleted = tableApi.deleted(retriever);")
+                .addLine("// Any of the methods you added to your extension of FSGetApi")
+                .unindentJava()
+                .addLine("} while (retriever.moveToNext())")
+                .unindentJava()
+                .addLine("}")
+                .addLine("retriever.close();")
+                .endCode()
+                .endParagraph()
+                .startParagraph()
+                .addLine("Common usage for updating an existing record into the table:")
+                .startCode()
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine(".byId(1)")
+                .addLine(".andFinally()")
+                .addLine(".set()")
+                .addLine(".id(2)")
+                .addLine(".save();")
+                .endCode()
+                .endParagraph()
+                .startParagraph()
+                .addLine("Common usage for inserting a new record into the table")
+                .addLine("(with only default data):")
+                .startCode()
+                .addLine("SaveResult<$L> result = ForSure.$L().set()", getResultParameter(), snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine(".save();")
+                .endCode()
+                .endParagraph()
+                .startParagraph()
+                .addLine("Common usage for flipping the deleted bit on a record:")
+                .startCode()
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine(".byId(1)")
+                .addLine(".andFinally()")
+                .addLine(".set()")
+                .addLine(".softDelete();")
+                .endCode()
+                .endParagraph()
+                .startParagraph()
+                .addLine("Common usage for permanently the deleting a record:")
+                .startCode()
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine(".byId(1)")
+                .addLine(".andFinally()")
+                .addLine(".set()")
+                .addLine(".hardDelete();")
+                .endCode()
+                .endParagraph()
+                .addLine(JavadocInfo.AUTHOR_STRING)
+                .addLine()
+                .build();
     }
 
-    private List<String> createModelClassImports() {
-        List<String> ret = new ArrayList<>();
-        for (TableInfo table : allTables) {
-            ret.add(table.getQualifiedClassName());
-        }
-        return ret;
+    private void addFields(TypeSpec.Builder codeBuilder, ParameterizedTypeName infoFactoryTypeName) {
+        codeBuilder.addField(ClassName.bestGuess(getOutputClassName(true)), "instance", Modifier.PRIVATE, Modifier.STATIC)
+                .addField(infoFactoryTypeName, "infoFactory", Modifier.PRIVATE);
     }
 
-//    private List<String> createJoinClassImports() {
-//        List<String> ret = new ArrayList<>();
-//        for (JoinResolver joinResolver : allJoinResolvers) {
-//            ret.add(joinResolver.getFullyQualifiedClassName());
-//        }
-//        return ret;
-//    }
-
-    private List<TableResolver> createTableResolverMethods() {
-        List<TableResolver> ret = new ArrayList<>();
-        for (TableInfo table : allTables) {
-            ret.add(new TableResolver(table, resultParameter));
-        }
-        return ret;
+    private void addConstructor(TypeSpec.Builder codeBuilder, ParameterizedTypeName infoFactoryTypeName) {
+        codeBuilder.addMethod(MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
+                .addParameter(infoFactoryTypeName, "infoFactory")
+                .addStatement("this.infoFactory = infoFactory")
+                .build());
     }
 
-//    private List<JoinResolver> createJoinResolvers(List<JoinInfo> allJoins) {
-//        List<JoinResolver> ret = new ArrayList<>();
-//        for (JoinInfo join : allJoins) {
-//            ret.add(new JoinResolver(join, resultParameter));
-//        }
-//        return ret;
-//    }
-
-    private String getOutputClassName(boolean fullyQualified) {
-        return fullyQualified ? applicationPackageName + "." + CLASS_NAME : CLASS_NAME;
+    private void addInitMethod(TypeSpec.Builder codeBuilder, ParameterizedTypeName infoFactoryTypeName) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("init")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(infoFactoryTypeName, "infoFactory")
+                .addCode(CodeBlock.builder()
+                        .beginControlFlow("if (instance == null)")
+                        .addStatement("instance = new ForSure(infoFactory)")
+                        .endControlFlow()
+                        .build())
+                .build());
     }
 
-    private static class TableResolver {
-
-        private final String resultParameter;
-        private final String getApiClass;
-        private final String resolverClass;
-        private final String setApiClass;
-        private final String finderClass;
-        private final String tableNameReference;
-
-        public TableResolver(TableInfo table, String resultParameter) {
-            this.resultParameter = resultParameter;
-            getApiClass = table.getSimpleClassName();
-            resolverClass = getApiClass + "Resolver";
-            setApiClass = getApiClass + "Setter";
-            finderClass = getApiClass + "Finder";
-            tableNameReference = resolverClass + ".TABLE_NAME";
-        }
-
-        @Override
-        public String toString() {
-            return new StringBuilder(doc()).append(newLine(1))
-                    .append("public static ").append(resolverClass).append(" ").append(WordUtils.uncapitalize(getApiClass)).append("() {").append(newLine(2))
-                    .append("return new ").append(resolverClass).append("(instance.infoFactory);").append(newLine(1))
-                    .append("}")
-                    .toString();
-        }
-
-        private String doc() {
-            return new StringBuilder("/**").append(newLine(1))
-                    .append(" * Access the querying mechanisms for the {@link ").append(resolverClass).append("#TABLE_NAME").append(" table.").append(newLine(1))
-                    .append(" * @see ").append(getApiClass).append(newLine(1))
-                    .append(" * @see ").append(setApiClass).append(newLine(1))
-                    .append(" * @see ").append(finderClass).append(newLine(1))
-                    .append(" * @see ").append(resolverClass).append(newLine(1))
-                    .append(" */").toString();
-        }
-
-        private String newLine(int tabs) {
-            final StringBuilder buf = new StringBuilder("\n");
-            for (int i = 0; i < tabs; i++) {
-                buf.append("    ");
-            }
-            return buf.toString();
+    private void addResolverMethods(TypeSpec.Builder codeBuilder) {
+        for (TableInfo table : tablesSortedByName) {
+            ClassName resolverTypeName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
+            JavadocInfo jd = javadocInfoFor(table);
+            codeBuilder.addMethod(MethodSpec.methodBuilder(snakeToCamel(table.getTableName()) + "Table")
+                    .addJavadoc(jd.stringToFormat(), jd.replacements())
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                    .returns(resolverTypeName)
+                    .addStatement("throwIfUninitialized()")
+                    .addStatement("return new $T(instance.infoFactory)", resolverTypeName)
+                    .build());
         }
     }
 
-//    private static class JoinResolver {
-//
-//        private final String className;
-//        private final String fullyQualifiedClassName;
-//        private final String methodName;
-//        private final String parentTableNameReference;
-//        private final String childTableNameReference;
-//        private final String resultParameter;
-//
-//        public JoinResolver(JoinInfo join, String resultParameter) {
-//            className = join.getChildTable().getSimpleClassName() + "Join" + join.getParentTable().getSimpleClassName();
-//            fullyQualifiedClassName = join.getChildTable().getPackageName() + "." + className;
-//            methodName = WordUtils.uncapitalize(className);
-//            parentTableNameReference = join.getParentTable().getSimpleClassName() + "Resolver.TABLE_NAME";
-//            childTableNameReference = join.getChildTable().getSimpleClassName() + "Resolver.TABLE_NAME";
-//            this.resultParameter = resultParameter;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return new StringBuilder("public static ").append(className).append(" ").append(methodName).append("() {\n")
-//                    .append("        ").append("return new ").append(className).append("((").append(resultParameter).append(") instance.resourceOf(").append(parentTableNameReference).append("), (").append(resultParameter).append(") instance.resourceOf(").append(childTableNameReference).append("), ").append("instance.infoFactory);\n")
-//                    .append("    }")
-//                    .toString();
-//        }
-//
-//        public String getFullyQualifiedClassName() {
-//            return fullyQualifiedClassName;
-//        }
-//    }
+    private JavadocInfo javadocInfoFor(TableInfo table) {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Access the querying mechanisms for the $L table.", table.getTableName())
+                .endParagraph()
+                .addLine("@see $L", table.getQualifiedClassName())
+                .addLine("@see $L", table.getQualifiedClassName() + "Setter")
+                .addLine("@see $L", table.getQualifiedClassName() + "Finder")
+                .addLine("@see $L", table.getQualifiedClassName() + "Resolver")
+                .addLine()
+                .build();
+    }
+
+    private void addThrowIfUninitializedMethod(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("throwIfUninitialized")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addCode(CodeBlock.builder()
+                        .beginControlFlow("if (instance == null)")
+                        .addStatement("throw new IllegalStateException($S)", "Must init ForSure before use")
+                        .endControlFlow()
+                        .build())
+                .build());
+    }
 }

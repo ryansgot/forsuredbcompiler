@@ -93,7 +93,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         };
     }
 
-    protected final void addToBuff(String column, Operator operator, Object value) {
+    protected final void addToBuf(String column, Operator operator, Object value) {
         if (!canAddClause(column, operator, value)) {
             return;
         }
@@ -107,13 +107,13 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         return new Between<U, R, G, S, F>() {
             @Override
             public <T> Conjunction<U, R, G, S, F> and(T high) {
-                addToBuff(column, Operator.LT, high);
+                addToBuf(column, Operator.LT, high);
                 return conjunction;
             }
 
             @Override
             public <T> Conjunction<U, R, G, S, F> andInclusive(T high) {
-                addToBuff(column, Operator.LE, high);
+                addToBuf(column, Operator.LE, high);
                 return conjunction;
             }
         };

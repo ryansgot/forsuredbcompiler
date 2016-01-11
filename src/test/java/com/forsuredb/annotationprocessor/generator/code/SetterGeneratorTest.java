@@ -15,7 +15,7 @@ import static com.forsuredb.TestData.*;
 @RunWith(Parameterized.class)
 public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private NewSetterGenerator gut;
+    private SetterGenerator gut;
     private TableInfo table;
 
     public SetterGeneratorTest(String expectedCode, TableInfo table, Class<?> resultParameter) {
@@ -37,7 +37,7 @@ public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = new NewSetterGenerator(mockProcessingEnv, table);
+        gut = new SetterGenerator(mockProcessingEnv, table);
     }
 
     @Override

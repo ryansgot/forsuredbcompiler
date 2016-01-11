@@ -1,88 +1,95 @@
-/*
-   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
-
-   Copyright 2015 Ryan Scott
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.annotationprocessor.generator.BaseGenerator;
+import com.forsuredb.annotation.FSColumn;
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
-import org.apache.velocity.VelocityContext;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.forsuredb.annotationprocessor.util.APLog;
+import com.forsuredb.api.FSSaveApi;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.tools.JavaFileObject;
+import javax.lang.model.element.Modifier;
 
-/**
- * <p>
- *     Takes the table info (which was generated from an {@link com.forsuredb.api.FSGetApi FSGetApi}
- *     extension) and  will generate the corresponding {@link com.forsuredb.api.FSSaveApi FSSaveApi}
- *     interface.
- * </p>
- */
-public class SetterGenerator extends BaseGenerator<JavaFileObject> {
+import java.util.List;
 
-    private final TableInfo tableInfo;
-    private final String resultParameter;
+public class SetterGenerator extends JavaSourceGenerator {
 
-    public SetterGenerator(TableInfo tableInfo, String resultParameter, ProcessingEnvironment processingEnv) {
-        super("setter_interface.vm", processingEnv);
-        this.tableInfo = tableInfo;
-        this.resultParameter = resultParameter;
+    private final TableInfo table;
+    private final List<ColumnInfo> columnsSortedByName;
+
+    public SetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
+        super(processingEnv, table.getQualifiedClassName() + "Setter");
+        this.table = table;
+        this.columnsSortedByName = TableDataUtil.columnsSortedByName(table);
     }
 
     @Override
-    protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
-        return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
-    }
-
-    @Override
-    protected VelocityContext createVelocityContext() {
-        VelocityContext vc = new VelocityContext();
-        if (resultParameter != null && !resultParameter.isEmpty()) {
-            vc.put("resultParameter", resultParameter);
+    protected String getCode() {
+        JavadocInfo javadoc = createSetterJavadoc();
+        TypeSpec.Builder codeBuilder = TypeSpec.interfaceBuilder(getOutputClassName(false))
+                .addModifiers(Modifier.PUBLIC)
+                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(FSSaveApi.class), ClassName.bestGuess(getResultParameter())))
+                .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
+        for (ColumnInfo column : columnsSortedByName) {
+            try {
+                codeBuilder.addMethod(methodSpecFor(column));
+            } catch (ClassNotFoundException cnfe) {
+                APLog.e(logTag(), "failed to find class: " + cnfe.getMessage());
+            }
         }
-        vc.put("className", getOutputClassName(false));
-        vc.put("packageName", tableInfo.getPackageName());
-        vc.put("methodDefinitions", createMethodDefinitions());
-        return vc;
+        return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
 
-    private List<String> createMethodDefinitions() {
-        List<String> retList = new ArrayList<>();
-        for (ColumnInfo column : tableInfo.getColumns()) {
-            retList.add(createMethodDefinition(column));
+    private JavadocInfo createSetterJavadoc() {
+        JavadocInfo.Builder jib = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("This is an auto-generated class. DO NOT modify it!")
+                .endParagraph()
+                .startParagraph()
+                .addLine("$L is an automatically generated interface describing the", getOutputClassName(false))
+                .addLine("contract for a fluent API for building queries to update or delete one")
+                .addLine("or more records from the $L table.", table.getTableName())
+                .addLine("You DO NOT need to implement this interface in order to use it.")
+                .endParagraph()
+                .startParagraph()
+                .addLine("Below is an example usage:")
+                .startCode()
+                .addLine("$L().set()", CodeUtil.snakeToCamel(table.getTableName()));
+        for (ColumnInfo column : columnsSortedByName) {
+            if ("modified".equals(column.getColumnName()) || "created".equals(column.getColumnName())) {
+                continue;
+            }
+            jib.addLine(".$L($L)", column.getMethodName(), CodeUtil.javaExampleOf(column.getQualifiedType()));
         }
-
-        return retList;
+        return jib.addLine(".save()")
+                .endCode()
+                .endParagraph()
+                .addLine("@author <a href=$S>forsuredbcompiler</a>", "https://github.com/ryansgot/forsuredbcompiler")
+                .addLine("@see FSSaveApi")
+                .addLine()
+                .build();
     }
 
-    private String getOutputClassName(boolean fullyQualified) {
-        return (fullyQualified ? tableInfo.getQualifiedClassName() : tableInfo.getSimpleClassName()) + "Setter";
-    }
-
-    private String createMethodDefinition(ColumnInfo column) {
-        return new StringBuilder("@FSColumn(\"").append(column.getColumnName())
-                .append("\") ").append(getOutputClassName(false))
-                .append(" ").append(column.getMethodName())
-                .append("(").append(column.getQualifiedType().toString())
-                .append(" ").append(column.getMethodName()).append(");")
-                .toString();
+    private MethodSpec methodSpecFor(ColumnInfo column) throws ClassNotFoundException {
+        JavadocInfo javadoc = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Set the value of the $L column to be updated", column.getColumnName())
+                .endParagraph()
+                .addLine()
+                .build();
+        return MethodSpec.methodBuilder(column.getMethodName())
+                .addJavadoc(javadoc.stringToFormat(), javadoc.replacements())
+                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                .addAnnotation(AnnotationSpec.builder(FSColumn.class)
+                        .addMember("value", "$S", column.getColumnName())
+                        .build())
+                .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
+                .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.getMethodName())
+                .build();
     }
 }
