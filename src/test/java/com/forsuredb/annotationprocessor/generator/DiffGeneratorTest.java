@@ -187,6 +187,56 @@ public class DiffGeneratorTest {
                                                 .build()))
                                         .build()))
                                 .build()
+                },
+                // The processing does not have a table the migration context knows about (a table deletion)
+                {
+                        47,
+                        newTableContext()
+                                .addTable(table()
+                                        .tableName("table_1")
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_1_string").build()))
+                                        .build())
+                                .addTable(table()
+                                        .tableName("table_2")
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .tableName("table_2")
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
+                                        .build())
+                                .build(),
+                        MigrationSet.builder().dbVersion(48)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder()
+                                        .type(Migration.Type.DROP_TABLE)
+                                        .tableName("table_1")
+                                        .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .tableName("table_2")
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
+                                        .build()))
+                                .build()
                 }
         });
     }

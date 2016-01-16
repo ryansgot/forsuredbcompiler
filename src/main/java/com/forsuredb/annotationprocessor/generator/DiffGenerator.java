@@ -24,6 +24,8 @@ import com.forsuredb.annotationprocessor.util.APLog;
 import com.forsuredb.migration.Migration;
 import com.forsuredb.migration.MigrationSet;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,10 +72,21 @@ public class DiffGenerator {
     public MigrationSet analyzeDiff(TableContext targetContext) {
         APLog.i(LOG_TAG, "analyzing diff: targetContext.allTables().size() = " + targetContext.allTables().size());
         PriorityQueue<Migration> migrationQueue = new PriorityQueue<>();
+        migrationQueue.addAll(additiveChanges(targetContext));
+        migrationQueue.addAll(subtractiveChanges(targetContext));
+
+        return MigrationSet.builder().dbVersion(sourceDbVersion + 1)
+                .orderedMigrations(toList(migrationQueue))
+                .targetSchema(targetContext.tableMap())
+                .build();
+    }
+
+    private List<Migration> additiveChanges(TableContext targetContext) {
+        List<Migration> retList = new ArrayList<>();
         for (TableInfo targetTable : targetContext.allTables()) {
             boolean tableCreateMigrationCreated = false;
             if (!sourceContext.hasTable(targetTable.getTableName())) {
-                migrationQueue.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                retList.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
                         .tableName(targetTable.getTableName())
                         .build());
                 tableCreateMigrationCreated = true;
@@ -83,24 +96,20 @@ public class DiffGenerator {
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
                 if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
                     // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-                    migrationQueue.add(addColumnMigrationFor(targetColumn, targetTable));
+                    retList.add(addColumnMigrationFor(targetColumn, targetTable));
                     continue;
                 }
 
                 ColumnInfo sourceColumn = sourceTable.getColumn(targetColumn.getColumnName());
                 if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
-                    migrationQueue.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+                    retList.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
                             .columnName(sourceColumn.getColumnName())
                             .tableName(targetTable.getTableName())
                             .build());
                 }
             }
         }
-
-        return MigrationSet.builder().dbVersion(sourceDbVersion + 1)
-                .orderedMigrations(toList(migrationQueue))
-                .targetSchema(targetContext.tableMap())
-                .build();
+        return retList;
     }
 
     private List<Migration> toList(PriorityQueue<Migration> migrationQueue) {
@@ -129,5 +138,35 @@ public class DiffGenerator {
             retSet.add(targetColumn);
         }
         return retSet;
+    }
+
+    private List<Migration> subtractiveChanges(TableContext targetContext) {
+        List<Migration> retList = new ArrayList<>();
+        for (TableInfo sourceTable : sourceContext.allTables()) {
+            if (!targetContext.hasTable(sourceTable.getTableName())) {
+                retList.add(Migration.builder().type(Migration.Type.DROP_TABLE)
+                        .tableName(sourceTable.getTableName())
+                        .build());
+                continue;
+            }
+
+//            TableInfo sourceTable = sourceContext.getTable(targetTable.getTableName());
+//            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
+//                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
+//                    // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
+//                    retList.add(addColumnMigrationFor(targetColumn, targetTable));
+//                    continue;
+//                }
+//
+//                ColumnInfo sourceColumn = sourceTable.getColumn(targetColumn.getColumnName());
+//                if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
+//                    retList.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+//                            .columnName(sourceColumn.getColumnName())
+//                            .tableName(targetTable.getTableName())
+//                            .build());
+//                }
+//            }
+        }
+        return retList;
     }
 }
