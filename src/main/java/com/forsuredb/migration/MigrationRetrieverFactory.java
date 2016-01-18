@@ -64,6 +64,9 @@ public class MigrationRetrieverFactory {
 
             @Override
             public int latestDbVersion() {
+                if (migrationSet == null) {
+                    migrationSet = createMigrationSet();
+                }
                 return migrationSet.getDbVersion();
             }
 
@@ -119,6 +122,9 @@ public class MigrationRetrieverFactory {
 
         @Override
         public int latestDbVersion() {
+            if (migrationSets == null) {
+                migrationSets = createMigrationSets();
+            }
             return latestDbVersionFrom(migrationSets);
         }
 
