@@ -362,7 +362,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * </p>
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byDeleted(boolean exactMatch) {
-        addToBuf("deleted", Finder.Operator.EQ, exactMatch);
+        addToBuf("deleted", Finder.Operator.EQ, exactMatch ? 1 : 0);
         return conjunction;
     }
 
@@ -372,7 +372,7 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * </p>
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotDeleted(boolean exclusion) {
-        addToBuf("deleted", Finder.Operator.NE, exclusion);
+        addToBuf("deleted", Finder.Operator.NE, exclusion ? 1 : 0);
         return conjunction;
     }
 

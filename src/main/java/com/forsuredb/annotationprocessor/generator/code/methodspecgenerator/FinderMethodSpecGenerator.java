@@ -14,7 +14,6 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,6 +95,10 @@ public abstract class FinderMethodSpecGenerator {
     protected abstract boolean hasGreaterThanLessThanGrammar();
     protected abstract boolean hasLikeGrammar();
 
+    protected String translateParameter(String parameterName) {
+        return parameterName;
+    }
+
     private List<MethodSpec> beforeAfterMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
         List<MethodSpec> retList = Lists.newArrayList(
                 createSpec(conjunctionType, methodNamePrefix + "Before", "nonInclusiveUpperBound", Finder.Operator.LT),
@@ -150,7 +153,7 @@ public abstract class FinderMethodSpecGenerator {
                 .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(returnType)
-                .addStatement("addToBuf($S, Finder.Operator.$L, $L)", column.getColumnName(), op.name(), parameterName);
+                .addStatement("addToBuf($S, Finder.Operator.$L, $L)", column.getColumnName(), op.name(), translateParameter(parameterName));
 
         if (returnType.rawType.simpleName().equals("Between")) {
             codeBuilder.addStatement("return createBetween($L.class, $S)", column.getQualifiedType(), column.getColumnName());

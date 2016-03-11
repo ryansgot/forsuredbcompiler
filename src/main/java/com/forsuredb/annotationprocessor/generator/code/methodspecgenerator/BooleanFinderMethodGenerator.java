@@ -36,4 +36,9 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
     protected boolean hasLikeGrammar() {
         return false;
     }
+
+    @Override
+    protected String translateParameter(String parameterName) {
+        return parameterName + " ? 1 : 0";
+    }
 }
