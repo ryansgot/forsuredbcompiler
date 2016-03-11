@@ -179,7 +179,7 @@ public class FSSaveAdapter {
             if (type.equals(byte[].class)) {
                 recordContainer.put(column, (byte[]) arg);
             } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-                recordContainer.put(column, (Boolean) arg ? 0 : 1);
+                recordContainer.put(column, (Boolean) arg ? 1 : 0);
             } else if (type.equals(Date.class)) {
                 recordContainer.put(column, FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
             } else {
