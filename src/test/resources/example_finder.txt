@@ -5,7 +5,6 @@ import com.forsuredb.api.Finder;
 import com.forsuredb.api.Resolver;
 import com.forsuredb.api.TypedRecordContainer;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * <p>
@@ -38,88 +37,10 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
 
     /**
      * <p>
-     *   add criteria to a query that requires exactMatch for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byId(long exactMatch) {
-        addToBuf("_id", Finder.Operator.EQ, exactMatch);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exclusion for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdNot(long exclusion) {
-        addToBuf("_id", Finder.Operator.NE, exclusion);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveUpperBound for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdLessThan(long nonInclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LT, nonInclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdGreaterThan(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveUpperBound for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdLessThanInclusive(long inclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LE, inclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for _id
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdGreaterThanInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for _id
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdBetween(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
-        return createBetween(long.class, "_id");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for _id
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byIdBetweenInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
-        return createBetween(long.class, "_id");
-    }
-
-    /**
-     * <p>
      *   add criteria to a query that requires exactMatch for app_rating
      * </p>
+     * @param exactMatch
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRating(double exactMatch) {
         addToBuf("app_rating", Finder.Operator.EQ, exactMatch);
@@ -130,6 +51,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exclusion for app_rating
      * </p>
+     * @param exclusion
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingNot(double exclusion) {
         addToBuf("app_rating", Finder.Operator.NE, exclusion);
@@ -140,6 +63,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveUpperBound for app_rating
      * </p>
+     * @param nonInclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingLessThan(double nonInclusiveUpperBound) {
         addToBuf("app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
@@ -150,6 +75,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for app_rating
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingGreaterThan(double nonInclusiveLowerBound) {
         addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -160,6 +87,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveUpperBound for app_rating
      * </p>
+     * @param inclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingLessThanInclusive(double inclusiveUpperBound) {
         addToBuf("app_rating", Finder.Operator.LE, inclusiveUpperBound);
@@ -170,6 +99,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for app_rating
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingGreaterThanInclusive(double inclusiveLowerBound) {
         addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
@@ -180,6 +111,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for app_rating
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingBetween(double nonInclusiveLowerBound) {
         addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -190,6 +123,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for app_rating
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
         addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
@@ -200,6 +135,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exactMatch for competitor_app_rating
      * </p>
+     * @param exactMatch
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRating(BigDecimal exactMatch) {
         addToBuf("competitor_app_rating", Finder.Operator.EQ, exactMatch);
@@ -210,6 +147,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exclusion for competitor_app_rating
      * </p>
+     * @param exclusion
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingNot(BigDecimal exclusion) {
         addToBuf("competitor_app_rating", Finder.Operator.NE, exclusion);
@@ -220,6 +159,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveUpperBound for competitor_app_rating
      * </p>
+     * @param nonInclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingLessThan(BigDecimal nonInclusiveUpperBound) {
         addToBuf("competitor_app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
@@ -230,6 +171,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for competitor_app_rating
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingGreaterThan(BigDecimal nonInclusiveLowerBound) {
         addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -240,6 +183,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveUpperBound for competitor_app_rating
      * </p>
+     * @param inclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingLessThanInclusive(BigDecimal inclusiveUpperBound) {
         addToBuf("competitor_app_rating", Finder.Operator.LE, inclusiveUpperBound);
@@ -250,6 +195,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for competitor_app_rating
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingGreaterThanInclusive(BigDecimal inclusiveLowerBound) {
         addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
@@ -260,6 +207,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for competitor_app_rating
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingBetween(BigDecimal nonInclusiveLowerBound) {
         addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -270,6 +219,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for competitor_app_rating
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCompetitorAppRatingBetweenInclusive(BigDecimal inclusiveLowerBound) {
         addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
@@ -278,108 +229,10 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
 
     /**
      * <p>
-     *   add criteria to a query that requires nonInclusiveUpperBound for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LT, nonInclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveUpperBound for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LE, inclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for created
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
-        return createBetween(java.util.Date.class, "created");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for created
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
-        return createBetween(java.util.Date.class, "created");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exactMatch for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byCreatedOn(Date exactMatch) {
-        addToBuf("created", Finder.Operator.EQ, exactMatch);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exclusion for created
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotCreatedOn(Date exclusion) {
-        addToBuf("created", Finder.Operator.NE, exclusion);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exactMatch for deleted
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byDeleted(boolean exactMatch) {
-        addToBuf("deleted", Finder.Operator.EQ, exactMatch ? 1 : 0);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exclusion for deleted
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotDeleted(boolean exclusion) {
-        addToBuf("deleted", Finder.Operator.NE, exclusion ? 1 : 0);
-        return conjunction;
-    }
-
-    /**
-     * <p>
      *   add criteria to a query that requires exactMatch for global_id
      * </p>
+     * @param exactMatch
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalId(long exactMatch) {
         addToBuf("global_id", Finder.Operator.EQ, exactMatch);
@@ -390,6 +243,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exclusion for global_id
      * </p>
+     * @param exclusion
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdNot(long exclusion) {
         addToBuf("global_id", Finder.Operator.NE, exclusion);
@@ -400,6 +255,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveUpperBound for global_id
      * </p>
+     * @param nonInclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdLessThan(long nonInclusiveUpperBound) {
         addToBuf("global_id", Finder.Operator.LT, nonInclusiveUpperBound);
@@ -410,6 +267,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for global_id
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdGreaterThan(long nonInclusiveLowerBound) {
         addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -420,6 +279,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveUpperBound for global_id
      * </p>
+     * @param inclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdLessThanInclusive(long inclusiveUpperBound) {
         addToBuf("global_id", Finder.Operator.LE, inclusiveUpperBound);
@@ -430,6 +291,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for global_id
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdGreaterThanInclusive(long inclusiveLowerBound) {
         addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
@@ -440,6 +303,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for global_id
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdBetween(long nonInclusiveLowerBound) {
         addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -450,6 +315,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for global_id
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byGlobalIdBetweenInclusive(long inclusiveLowerBound) {
         addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
@@ -460,6 +327,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exactMatch for login_count
      * </p>
+     * @param exactMatch
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCount(int exactMatch) {
         addToBuf("login_count", Finder.Operator.EQ, exactMatch);
@@ -470,6 +339,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires exclusion for login_count
      * </p>
+     * @param exclusion
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountNot(int exclusion) {
         addToBuf("login_count", Finder.Operator.NE, exclusion);
@@ -480,6 +351,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveUpperBound for login_count
      * </p>
+     * @param nonInclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountLessThan(int nonInclusiveUpperBound) {
         addToBuf("login_count", Finder.Operator.LT, nonInclusiveUpperBound);
@@ -490,6 +363,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for login_count
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountGreaterThan(int nonInclusiveLowerBound) {
         addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -500,6 +375,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveUpperBound for login_count
      * </p>
+     * @param inclusiveUpperBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountLessThanInclusive(int inclusiveUpperBound) {
         addToBuf("login_count", Finder.Operator.LE, inclusiveUpperBound);
@@ -510,6 +387,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for login_count
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Finder$Conjunction} that allows you to continue adding more query criteria
      */
     public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountGreaterThanInclusive(int inclusiveLowerBound) {
         addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
@@ -520,6 +399,8 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires nonInclusiveLowerBound for login_count
      * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountBetween(int nonInclusiveLowerBound) {
         addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
@@ -530,89 +411,11 @@ public class TestTable3Finder extends Finder<FinderGeneratorTest, TypedRecordCon
      * <p>
      *   add criteria to a query that requires inclusiveLowerBound for login_count
      * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link com.forsuredb.api.Between} that allows you to provide an upper bound for this criteria
      */
     public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byLoginCountBetweenInclusive(int inclusiveLowerBound) {
         addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
         return createBetween(int.class, "login_count");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveUpperBound for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LT, nonInclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveUpperBound for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LE, inclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for modified
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
-        return createBetween(java.util.Date.class, "modified");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for modified
-     * </p>
-     */
-    public Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
-        return createBetween(java.util.Date.class, "modified");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exactMatch for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byModifiedOn(Date exactMatch) {
-        addToBuf("modified", Finder.Operator.EQ, exactMatch);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exclusion for modified
-     * </p>
-     */
-    public Finder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> byNotModifiedOn(Date exclusion) {
-        addToBuf("modified", Finder.Operator.NE, exclusion);
-        return conjunction;
     }
 }
