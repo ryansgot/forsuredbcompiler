@@ -29,8 +29,8 @@ public class JavadocInfo {
         return replacements;
     }
 
-    public static String inlineClassLink(Class<?> fsGetApiClass) {
-        return fsGetApiClass == null ? "" : "{@link " + fsGetApiClass.getName() + "}";
+    public static String inlineClassLink(Class<?> className) {
+        return className == null ? "" : "{@link " + className.getName() + "}";
     }
 
     public static class Builder {
@@ -81,6 +81,27 @@ public class JavadocInfo {
 
         public Builder addLine() {
             return addLine("");
+        }
+
+        public Builder param(String paramName, String paramExplanation) {
+            if (Strings.isNullOrEmpty(paramName)) {
+                return this;
+            }
+            if (Strings.isNullOrEmpty(paramExplanation)) {
+                return addLine("@param $L", paramName);
+            }
+            return addLine("@param $L $L", paramName, paramExplanation);
+        }
+
+        public Builder param(String paramName) {
+            return param(paramName, null);
+        }
+
+        public Builder returns(String explanation, Object... replacements) {
+            if (Strings.isNullOrEmpty(explanation)) {
+                return addLine("@return");
+            }
+            return addLine("@return " + explanation, replacements);
         }
 
         public Builder addLine(String stringToFormat, Object... replacements) {
