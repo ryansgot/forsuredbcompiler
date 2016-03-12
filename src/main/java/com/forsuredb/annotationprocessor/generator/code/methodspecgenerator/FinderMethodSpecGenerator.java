@@ -142,18 +142,16 @@ public abstract class FinderMethodSpecGenerator {
     }
 
     private MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, Finder.Operator op) {
-        JavadocInfo jd = JavadocInfo.builder()
-                .startParagraph()
-                .addLine("add criteria to a query that requires $L for $L", parameterName, column.getColumnName())
-                .endParagraph()
-                .addLine()
-                .build();
+        JavadocInfo jd = javadocInfoFor(returnType, parameterName);
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
-                .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(returnType)
-                .addStatement("addToBuf($S, Finder.Operator.$L, $L)", column.getColumnName(), op.name(), translateParameter(parameterName));
+                .addStatement("addToBuf($S, Finder.Operator.$L, $L)", column.getColumnName(), op.name(), translateParameter(parameterName))
+                .returns(returnType);
+
+        if (!column.getQualifiedType().equals("boolean")) {
+            codeBuilder.addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName);
+        }
 
         if (returnType.rawType.simpleName().equals("Between")) {
             codeBuilder.addStatement("return createBetween($L.class, $S)", column.getQualifiedType(), column.getColumnName());
@@ -162,6 +160,20 @@ public abstract class FinderMethodSpecGenerator {
         }
 
         return codeBuilder.build();
+    }
+
+    private JavadocInfo javadocInfoFor(ParameterizedTypeName returnType, String parameterName) {
+        JavadocInfo.Builder jdBuilder = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("add criteria to a query that requires $L for $L", parameterName, column.getColumnName())
+                .endParagraph()
+                .param(parameterName);
+        if (returnType.rawType.simpleName().equals("Between")) {
+            jdBuilder.returns("a $L that allows you to provide an upper bound for this criteria", JavadocInfo.inlineClassLink(Between.class));
+        } else {
+            jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(Finder.Conjunction.class));
+        }
+        return jdBuilder.addLine().build();
     }
 
     private static class EmptyGenerator extends FinderMethodSpecGenerator {

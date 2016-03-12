@@ -77,6 +77,9 @@ public class FinderGenerator extends JavaSourceGenerator {
 
     private void addQueryBuilderMethods(TypeSpec.Builder codeBuilder) {
         for (ColumnInfo column : columnsSortedByName) {
+            if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())) {
+                continue;
+            }
             for (MethodSpec methodSpec : FinderMethodSpecGenerator.create(column).generate(parameterClasses)) {
                 codeBuilder.addMethod(methodSpec);
             }

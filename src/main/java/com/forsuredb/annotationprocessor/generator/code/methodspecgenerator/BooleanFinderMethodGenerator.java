@@ -1,6 +1,7 @@
 package com.forsuredb.annotationprocessor.generator.code.methodspecgenerator;
 
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
+import com.forsuredb.api.Finder;
 
 /*package*/ class BooleanFinderMethodGenerator extends FinderMethodSpecGenerator {
     public BooleanFinderMethodGenerator(ColumnInfo column) {
@@ -37,8 +38,18 @@ import com.forsuredb.annotationprocessor.info.ColumnInfo;
         return false;
     }
 
+    /**
+     * <p>
+     *     Because a boolean is either either an integer of value 0 (false) or 1 (true)
+     *     in our representation, the parameterName is ignored.
+     * </p>
+     * @param parameterName not used
+     * @return the literal code used to replace the '?' in the query will always be 1 because the
+     * query will be '... boolean_column = ?...' for isBooleanColumn() and '... boolean_column != ?...'
+     * for isNotBooleanColumn()
+     */
     @Override
     protected String translateParameter(String parameterName) {
-        return parameterName + " ? 1 : 0";
+        return "1";
     }
 }
