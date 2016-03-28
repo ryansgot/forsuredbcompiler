@@ -45,11 +45,13 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         }
     }
 
+    private final String tableName;
     private final StringBuffer whereBuf = new StringBuffer();
     private final List<String> replacementsList = new ArrayList<>();
     protected final Conjunction<U, R, G, S, F> conjunction;
 
     public Finder(final Resolver<U, R, G, S, F> resolver) {
+        this.tableName = resolver.tableName();
         conjunction = new Conjunction<U, R, G, S, F>() {
             @Override
             public Resolver<U, R, G, S, F> andFinally() {
@@ -414,6 +416,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         if (!canAddClause(column, operator, value)) {
             return;
         }
+        column = tableName + "." + column;  // <-- disambiguate column from other tables that have same name column
         whereBuf.append(whereBuf.length() == 0 ? column : " AND " + column)
                 .append(" ").append(operator.getSymbol())
                 .append(" ").append(operator == Operator.LIKE ? "%?%" : "?");
