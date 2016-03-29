@@ -71,7 +71,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append("OR");
+                    whereBuf.append(" OR ");
                 }
                 return (F) Finder.this;
             }
@@ -312,7 +312,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @see #byDeleted()
      */
     public Conjunction<U, R, G, S, F>  byNotDeleted() {
-        addToBuf("deleted", Finder.Operator.NE, 0);
+        addToBuf("deleted", Finder.Operator.NE, 1);
         return conjunction;
     }
 
@@ -417,7 +417,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
             return;
         }
         column = tableName + "." + column;  // <-- disambiguate column from other tables that have same name column
-        whereBuf.append(whereBuf.length() == 0 ? column : " AND " + column)
+        whereBuf.append(column)
                 .append(" ").append(operator.getSymbol())
                 .append(" ").append(operator == Operator.LIKE ? "%?%" : "?");
         replacementsList.add(value.toString());
@@ -445,7 +445,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
 
     private void surroundCurrentWhereWithParens() {
         String currentWhere = whereBuf.toString();
-        whereBuf.delete(0, whereBuf.length() - 1);
+        whereBuf.delete(0, whereBuf.length());
         whereBuf.trimToSize();
         whereBuf.append("(").append(currentWhere).append(")");
     }
