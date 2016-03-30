@@ -19,6 +19,7 @@ package com.forsuredb.api;
 
 import com.google.common.base.Strings;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,9 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
             return symbol;
         }
     }
+
+    // TODO: this highlights a need to get this sort of DBMS-specific stuff out of the compiler
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private final String tableName;
     private final StringBuffer whereBuf = new StringBuffer();
@@ -416,24 +420,29 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         if (!canAddClause(column, operator, value)) {
             return;
         }
+
         column = tableName + "." + column;  // <-- disambiguate column from other tables that have same name column
         whereBuf.append(column)
                 .append(" ").append(operator.getSymbol())
                 .append(" ").append(operator == Operator.LIKE ? "%?%" : "?");
-        replacementsList.add(value.toString());
+        replacementsList.add(Date.class.equals(value.getClass()) ? dateFormat.format((Date) value) : value.toString());
     }
 
     protected final <T> Between<U, R, G, S, F> createBetween(Class<T> qualifiedType, final String column) {
         return new Between<U, R, G, S, F>() {
             @Override
             public <T> Conjunction<U, R, G, S, F> and(T high) {
-                addToBuf(column, Operator.LT, high);
-                return conjunction;
+                return conjoin(Operator.LT, high);
             }
 
             @Override
             public <T> Conjunction<U, R, G, S, F> andInclusive(T high) {
-                addToBuf(column, Operator.LE, high);
+                return conjoin(Operator.LE, high);
+            }
+
+            private <T> Conjunction<U, R, G, S, F> conjoin(Operator o, T high) {
+                whereBuf.append(" AND ");
+                addToBuf(column, o, high);
                 return conjunction;
             }
         };
