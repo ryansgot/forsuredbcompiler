@@ -43,7 +43,13 @@ public interface FSJoin {
          */
         INNER,
         OUTER,
+        LEFT_OUTER,
         CROSS;
+
+        @Override
+        public String toString() {
+            return name().replace("_", " ");
+        }
     }
 
     /**
