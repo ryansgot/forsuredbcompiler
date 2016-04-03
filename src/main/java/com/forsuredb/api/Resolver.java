@@ -97,7 +97,8 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
         try {
             return preserveQueryStateAndGet();
         } finally {
-            finder = null;  // <-- When a finder's selection method is called, it must be nullified
+            orderBy = null; // <-- When a finder's get method is called, avoid leaking into the next query
+            finder = null;  // <-- When a finder's get method is called, avoid leaking into the next query
             joins.clear();  // <-- the state of the joins must be empty at the start of each query
             projections.clear();    // <-- the state of the projections must be empty at the start of each query
             lookupResource = tableLocator();
