@@ -105,11 +105,12 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     }
 
     public final Retriever preserveQueryStateAndGet() {
+        final String orderByString = orderBy == null ? null : orderBy.getOrderByString()
         final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         projections.add(projection());
-        return joins.size() == 0 ? queryable.query(projection(), selection, orderBy.getOrderByString())
-                : queryable.query(joins, projections, selection, orderBy.getOrderByString());
+        return joins.size() == 0 ? queryable.query(projection(), selection, orderByString)
+                : queryable.query(joins, projections, selection, orderByString);
     }
 
     public final O order() {
