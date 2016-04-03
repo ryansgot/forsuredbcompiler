@@ -112,7 +112,7 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
                 : queryable.query(joins, projections, selection, orderBy.getOrderByString());
     }
 
-    public final OrderBy<U, R, G, S, F, O> order() {
+    public final O order() {
         orderBy = newOrderByInstance();
         return orderBy;
     }

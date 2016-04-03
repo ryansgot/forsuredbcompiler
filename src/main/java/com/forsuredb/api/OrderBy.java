@@ -7,7 +7,7 @@ public abstract class OrderBy<U, R extends RecordContainer, G extends FSGetApi, 
 
     public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
         Resolver<U, R, G, S, F, O> andFinally();
-        OrderBy<U, R, G, S, F, O> and();
+        O and();
     }
 
     public enum Order {
@@ -29,8 +29,8 @@ public abstract class OrderBy<U, R extends RecordContainer, G extends FSGetApi, 
             }
 
             @Override
-            public OrderBy<U, R, G, S, F, O> and() {
-                return OrderBy.this;
+            public O and() {
+                return (O) OrderBy.this;
             }
         };
     }
