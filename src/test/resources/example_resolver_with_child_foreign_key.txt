@@ -29,7 +29,7 @@ import java.lang.String;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder> {
+public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
     public static final String TABLE_NAME = "test_table_3";
 
     public static final String[] columns = {"_id","app_rating","competitor_app_rating","created","deleted","global_id","login_count","modified",};
@@ -104,6 +104,11 @@ public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRec
     @Override
     protected TestTable3Finder newFinderInstance() {
         return new TestTable3Finder(this);
+    }
+
+    @Override
+    protected TestTable3OrderBy newOrderByInstance() {
+        return new TestTable3OrderBy(this);
     }
 
     @Override

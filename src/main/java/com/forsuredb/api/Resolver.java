@@ -70,7 +70,7 @@ import java.util.List;
  * @see Finder
  * @author Ryan Scott
  */
-public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
+public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
 
     private final ForSureInfoFactory<U, R> infoFactory;
     private final List<FSJoin> joins = new ArrayList<>();
@@ -79,6 +79,7 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     private U lookupResource;
     private G getApi;
     private F finder;
+    private O orderBy;
 
     public Resolver(ForSureInfoFactory<U, R> infoFactory) {
         this.infoFactory = infoFactory;
@@ -107,8 +108,13 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
         final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         projections.add(projection());
-        return joins.size() == 0 ? queryable.query(projection(), selection, null)
-                : queryable.query(joins, projections, selection, null);
+        return joins.size() == 0 ? queryable.query(projection(), selection, orderBy.getOrderByString())
+                : queryable.query(joins, projections, selection, orderBy.getOrderByString());
+    }
+
+    public final OrderBy<U, R, G, S, F, O> order() {
+        orderBy = newOrderByInstance();
+        return orderBy;
     }
 
     public final S set() {
@@ -142,6 +148,7 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     protected abstract Class<S> setApiClass();
     protected abstract FSProjection projection();
     protected abstract F newFinderInstance();
+    protected abstract O newOrderByInstance();
     protected abstract String tableName();
 
     protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
