@@ -39,7 +39,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
 //                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get(Finder.class), parameterClasses));
+                .superclass(ParameterizedTypeName.get(ClassName.get(OrderBy.class), parameterClasses));
         addConstructor(codeBuilder);
         addOrderByMethods(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();

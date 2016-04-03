@@ -19,6 +19,7 @@ package com.forsuredb.annotationprocessor;
 
 import com.forsuredb.annotation.FSTable;
 
+import com.forsuredb.annotationprocessor.generator.code.OrderByGenerator;
 import com.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
 import com.forsuredb.annotationprocessor.generator.code.FinderGenerator;
 import com.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
@@ -56,6 +57,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     private static boolean migrationsCreated = false;          // <-- maintain state so migrations don't have to be created more than once
     private static boolean tableCreatorClassCreated = false;   // <-- maintain state so TableCreator class does not have to be created more than once
     private static boolean finderClassesCreated = false;       // <-- maintain state so finder classes don't have to be created more than once
+    private static boolean orderByClassesCreated = false;      // <-- maintain state so orderby classes don't have to be created more than once
     private static boolean resolverClassesCreated = false;     // <-- maintain state so resolver classes don't have to be created more than once
     private static boolean forSureClassCreated = false;        // <-- maintain state so ForSure doesn't have to be created more than once
 
@@ -87,6 +89,9 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         if (!tableCreatorClassCreated) {
             createTableCreatorClass(pc);
         }
+        if (!orderByClassesCreated) {
+            createOrderByClasses(pc);
+        }
         if (!finderClassesCreated) {
             createFinderClasses(pc);
         }
@@ -117,6 +122,13 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         APLog.i(LOG_TAG, "got applicationPackageName: " + applicationPackageName);
         new TableCreatorGenerator(processingEnv, applicationPackageName, pc.allTables()).generate();
         tableCreatorClassCreated = true;    // <-- maintain state so TableCreator class does not have to be created more than once
+    }
+
+    private void createOrderByClasses(ProcessingContext pc) {
+        for (TableInfo tableInfo : pc.allTables()) {
+            new OrderByGenerator(processingEnv, tableInfo).generate();
+        }
+        orderByClassesCreated = true;    // <-- maintain state so orderby classes don't have to be created more than once
     }
 
     private void createFinderClasses(ProcessingContext pc) {

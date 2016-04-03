@@ -1,11 +1,10 @@
 package com.forsuredb.annotationprocessor.generator.code;
 
-import com.forsuredb.api.Finder;
 import com.forsuredb.api.OrderBy;
 import com.forsuredb.api.Resolver;
 import com.forsuredb.api.TypedRecordContainer;
 
-public class TestTable3OrderBy extends Finder<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
     TestTable3OrderBy(Resolver<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> resolver) {
         super(resolver);
     }
