@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
+public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
 
-    public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
-        Resolver<U, R, G, S, F> andFinally();
+    public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
+        Resolver<U, R, G, S, F, O> andFinally();
         F and();
         F or();
     }
@@ -52,13 +52,13 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
     private final String tableName;
     private final StringBuffer whereBuf = new StringBuffer();
     private final List<String> replacementsList = new ArrayList<>();
-    protected final Conjunction<U, R, G, S, F> conjunction;
+    protected final Conjunction<U, R, G, S, F, O> conjunction;
 
-    public Finder(final Resolver<U, R, G, S, F> resolver) {
+    public Finder(final Resolver<U, R, G, S, F, O> resolver) {
         this.tableName = resolver.tableName();
-        conjunction = new Conjunction<U, R, G, S, F>() {
+        conjunction = new Conjunction<U, R, G, S, F, O>() {
             @Override
-            public Resolver<U, R, G, S, F> andFinally() {
+            public Resolver<U, R, G, S, F, O> andFinally() {
                 return resolver;
             }
 
@@ -107,7 +107,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exactMatch
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byId(long exactMatch) {
+    public Conjunction<U, R, G, S, F, O>  byId(long exactMatch) {
         addToBuf("_id", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -119,7 +119,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exclusion
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byIdNot(long exclusion) {
+    public Conjunction<U, R, G, S, F, O> byIdNot(long exclusion) {
         addToBuf("_id", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -131,7 +131,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byIdLessThan(long nonInclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byIdLessThan(long nonInclusiveUpperBound) {
         addToBuf("_id", Finder.Operator.LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -143,7 +143,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Finder.Conjunction<U, R, G, S, F>  byIdGreaterThan(long nonInclusiveLowerBound) {
+    public Finder.Conjunction<U, R, G, S, F, O>  byIdGreaterThan(long nonInclusiveLowerBound) {
         addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -155,7 +155,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byIdLessThanInclusive(long inclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byIdLessThanInclusive(long inclusiveUpperBound) {
         addToBuf("_id", Finder.Operator.LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -167,7 +167,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byIdGreaterThanInclusive(long inclusiveLowerBound) {
+    public Conjunction<U, R, G, S, F, O>  byIdGreaterThanInclusive(long inclusiveLowerBound) {
         addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -179,7 +179,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F>  byIdBetween(long nonInclusiveLowerBound) {
+    public Between<U, R, G, S, F, O>  byIdBetween(long nonInclusiveLowerBound) {
         addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
@@ -191,7 +191,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F>  byIdBetweenInclusive(long inclusiveLowerBound) {
+    public Between<U, R, G, S, F, O>  byIdBetweenInclusive(long inclusiveLowerBound) {
         addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
@@ -203,7 +203,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byCreatedBefore(Date nonInclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byCreatedBefore(Date nonInclusiveUpperBound) {
         addToBuf("created", Finder.Operator.LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -215,7 +215,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byCreatedAfter(Date nonInclusiveLowerBound) {
+    public Conjunction<U, R, G, S, F, O>  byCreatedAfter(Date nonInclusiveLowerBound) {
         addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -227,7 +227,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byCreatedBeforeInclusive(Date inclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byCreatedBeforeInclusive(Date inclusiveUpperBound) {
         addToBuf("created", Finder.Operator.LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -239,7 +239,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byCreatedAfterInclusive(Date inclusiveLowerBound) {
+    public Conjunction<U, R, G, S, F, O>  byCreatedAfterInclusive(Date inclusiveLowerBound) {
         addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -251,7 +251,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F>  byCreatedBetween(Date nonInclusiveLowerBound) {
+    public Between<U, R, G, S, F, O>  byCreatedBetween(Date nonInclusiveLowerBound) {
         addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
@@ -263,7 +263,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F>  byCreatedBetweenInclusive(Date inclusiveLowerBound) {
+    public Between<U, R, G, S, F, O>  byCreatedBetweenInclusive(Date inclusiveLowerBound) {
         addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
@@ -275,7 +275,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exactMatch
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byCreatedOn(Date exactMatch) {
+    public Conjunction<U, R, G, S, F, O>  byCreatedOn(Date exactMatch) {
         addToBuf("created", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -287,7 +287,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exclusion
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byNotCreatedOn(Date exclusion) {
+    public Conjunction<U, R, G, S, F, O>  byNotCreatedOn(Date exclusion) {
         addToBuf("created", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -301,7 +301,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      * @see #byNotDeleted()
      */
-    public Conjunction<U, R, G, S, F>  byDeleted() {
+    public Conjunction<U, R, G, S, F, O>  byDeleted() {
         addToBuf("deleted", Finder.Operator.EQ, 1);
         return conjunction;
     }
@@ -315,7 +315,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      * @see #byDeleted()
      */
-    public Conjunction<U, R, G, S, F>  byNotDeleted() {
+    public Conjunction<U, R, G, S, F, O>  byNotDeleted() {
         addToBuf("deleted", Finder.Operator.NE, 1);
         return conjunction;
     }
@@ -327,7 +327,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byModifiedBefore(Date nonInclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byModifiedBefore(Date nonInclusiveUpperBound) {
         addToBuf("modified", Finder.Operator.LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -339,7 +339,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byModifiedAfter(Date nonInclusiveLowerBound) {
+    public Conjunction<U, R, G, S, F, O>  byModifiedAfter(Date nonInclusiveLowerBound) {
         addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -351,7 +351,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveUpperBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byModifiedBeforeInclusive(Date inclusiveUpperBound) {
+    public Conjunction<U, R, G, S, F, O>  byModifiedBeforeInclusive(Date inclusiveUpperBound) {
         addToBuf("modified", Finder.Operator.LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -363,7 +363,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byModifiedAfterInclusive(Date inclusiveLowerBound) {
+    public Conjunction<U, R, G, S, F, O>  byModifiedAfterInclusive(Date inclusiveLowerBound) {
         addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -375,7 +375,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param nonInclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F>  byModifiedBetween(Date nonInclusiveLowerBound) {
+    public Between<U, R, G, S, F, O>  byModifiedBetween(Date nonInclusiveLowerBound) {
         addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
@@ -387,7 +387,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param inclusiveLowerBound
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
-    public Between<U, R, G, S, F> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
+    public Between<U, R, G, S, F, O> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
         addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
@@ -399,7 +399,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exactMatch
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byModifiedOn(Date exactMatch) {
+    public Conjunction<U, R, G, S, F, O>  byModifiedOn(Date exactMatch) {
         addToBuf("modified", Finder.Operator.EQ, exactMatch);
         return conjunction;
     }
@@ -411,7 +411,7 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
      * @param exclusion
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
-    public Conjunction<U, R, G, S, F>  byNotModifiedOn(Date exclusion) {
+    public Conjunction<U, R, G, S, F, O>  byNotModifiedOn(Date exclusion) {
         addToBuf("modified", Finder.Operator.NE, exclusion);
         return conjunction;
     }
@@ -428,19 +428,19 @@ public abstract class Finder<U, R extends RecordContainer, G extends FSGetApi, S
         replacementsList.add(Date.class.equals(value.getClass()) ? dateFormat.format((Date) value) : value.toString());
     }
 
-    protected final <T> Between<U, R, G, S, F> createBetween(Class<T> qualifiedType, final String column) {
-        return new Between<U, R, G, S, F>() {
+    protected final <T> Between<U, R, G, S, F, O> createBetween(Class<T> qualifiedType, final String column) {
+        return new Between<U, R, G, S, F, O>() {
             @Override
-            public <T> Conjunction<U, R, G, S, F> and(T high) {
+            public <T> Conjunction<U, R, G, S, F, O> and(T high) {
                 return conjoin(Operator.LT, high);
             }
 
             @Override
-            public <T> Conjunction<U, R, G, S, F> andInclusive(T high) {
+            public <T> Conjunction<U, R, G, S, F, O> andInclusive(T high) {
                 return conjoin(Operator.LE, high);
             }
 
-            private <T> Conjunction<U, R, G, S, F> conjoin(Operator o, T high) {
+            private <T> Conjunction<U, R, G, S, F, O> conjoin(Operator o, T high) {
                 whereBuf.append(" AND ");
                 addToBuf(column, o, high);
                 return conjunction;

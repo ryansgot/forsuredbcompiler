@@ -17,7 +17,7 @@
  */
 package com.forsuredb.api;
 
-public interface Between<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F>> {
-    <T> Finder.Conjunction<U, R, G, S, F> and(T high);
-    <T> Finder.Conjunction<U, R, G, S, F> andInclusive(T high);
+public interface Between<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
+    <T> Finder.Conjunction<U, R, G, S, F, O> and(T high);
+    <T> Finder.Conjunction<U, R, G, S, F, O> andInclusive(T high);
 }

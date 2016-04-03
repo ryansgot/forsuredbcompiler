@@ -30,7 +30,8 @@ public class FinderGenerator extends JavaSourceGenerator {
                 ClassName.get(getRecordContainerClass()),                       // R extends RecordContainer
                 ClassName.bestGuess(table.getQualifiedClassName()),             // G extends FSGetApi
                 ClassName.bestGuess(table.getQualifiedClassName() + "Setter"),  // S extends FSSaveApi<U>
-                ClassName.bestGuess(getOutputClassName(true))                   // F extends Finder<U, G, S, F>
+                ClassName.bestGuess(getOutputClassName(true)),                  // F extends Finder<U, R, G, S, F, O>
+                ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy")  // O extends OrderBy<U, R, G, S, F, O>
         };
     }
 
