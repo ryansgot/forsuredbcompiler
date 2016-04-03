@@ -2,7 +2,6 @@ package com.forsuredb.annotationprocessor.generator.code;
 
 import com.forsuredb.annotationprocessor.info.ColumnInfo;
 import com.forsuredb.annotationprocessor.info.TableInfo;
-import com.forsuredb.api.Finder;
 import com.forsuredb.api.OrderBy;
 import com.forsuredb.api.Resolver;
 import com.squareup.javapoet.ClassName;
@@ -63,13 +62,25 @@ public class OrderByGenerator extends JavaSourceGenerator {
     }
 
     private MethodSpec methodSpecFor(ColumnInfo column) {
+        JavadocInfo jd = javadocInfoFor(column.getColumnName());
         return MethodSpec.methodBuilder("by" + CodeUtil.snakeToCamel(column.getColumnName(), true))
-//                .addJavadoc(jd.stringToFormat(), jd.replacements())
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addParameter(TypeName.get(OrderBy.Order.class), "order")
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("appendOrder($S, $L)", column.getColumnName(), "order")
                 .addStatement("return conjunction")
                 .returns(ParameterizedTypeName.get(ClassName.get(OrderBy.Conjunction.class), parameterClasses))
+                .build();
+    }
+    private JavadocInfo javadocInfoFor(String columnName) {
+        return JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Order the results of the query by $L", columnName)
+                .endParagraph()
+                .param("order", "the direction to order the results")
+                .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(OrderBy.Conjunction.class))
+                .addLine("adding other query parameters")
+                .addLine()
                 .build();
     }
 }

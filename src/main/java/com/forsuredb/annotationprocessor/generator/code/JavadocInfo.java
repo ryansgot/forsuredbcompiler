@@ -30,7 +30,7 @@ public class JavadocInfo {
     }
 
     public static String inlineClassLink(Class<?> className) {
-        return className == null ? "" : "{@link " + className.getName() + "}";
+        return className == null ? "" : "{@link " + className.getName().replaceAll("\\$", ".") + "}";
     }
 
     public static class Builder {
