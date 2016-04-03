@@ -1,0 +1,32 @@
+package com.forsuredb.annotationprocessor.generator.code;
+
+import com.forsuredb.api.Finder;
+import com.forsuredb.api.OrderBy;
+import com.forsuredb.api.Resolver;
+import com.forsuredb.api.TypedRecordContainer;
+
+public class TestTable3OrderBy extends Finder<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+    TestTable3OrderBy(Resolver<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> resolver) {
+        super(resolver);
+    }
+
+    public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRating(OrderBy.Order order) {
+        appendOrder("app_rating", order);
+        return conjunction;
+    }
+
+    public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRating(OrderBy.Order order) {
+        appendOrder("competitor_app_rating", order);
+        return conjunction;
+    }
+
+    public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalId(OrderBy.Order order) {
+        appendOrder("global_id", order);
+        return conjunction;
+    }
+
+    public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCount(OrderBy.Order order) {
+        appendOrder("login_count", order);
+        return conjunction;
+    }
+}
