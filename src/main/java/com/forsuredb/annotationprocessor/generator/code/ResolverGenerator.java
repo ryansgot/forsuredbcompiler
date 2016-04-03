@@ -32,6 +32,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private final ClassName getClassName;
     private final ClassName setClassName;
     private final ClassName finderClassName;
+    private final ClassName orderByClassName;
 
     public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.getQualifiedClassName() + "Resolver");
@@ -43,6 +44,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         getClassName = ClassName.bestGuess(table.getQualifiedClassName());
         setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
         finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
+        orderByClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
     }
 
     @Override
@@ -56,7 +58,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         recordContainerClassName,
                         getClassName,
                         setClassName,
-                        finderClassName));
+                        finderClassName,
+                        orderByClassName));
         addFields(codeBuilder);
         addConstructor(codeBuilder);
         addJoinMethods(codeBuilder);
@@ -268,6 +271,12 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addModifiers(Modifier.PROTECTED)
                         .returns(finderClassName)
                         .addStatement("return new $T(this)", finderClassName)
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("newOrderByInstance")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .returns(orderByClassName)
+                        .addStatement("return new $T(this)", orderByClassName)
                         .build())
                 .addMethod(MethodSpec.methodBuilder("tableName")
                         .addAnnotation(Override.class)
