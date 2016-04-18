@@ -55,7 +55,7 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @SerializedName("column_name") private final String columnName;
     @SerializedName("column_type") private final String qualifiedType;
     @Getter @SerializedName("default_value") private final String defaultValue;
-    @Getter private final boolean unique;
+    @Getter @SerializedName("unique") private final boolean unique;
     @Getter @SerializedName("primary_key") private final boolean primaryKey;
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
 
