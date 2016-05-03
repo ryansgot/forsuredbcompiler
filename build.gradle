@@ -12,6 +12,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: "jacoco"
 
 group = 'com.fsryan'
 version = '0.6.3'
@@ -49,6 +50,33 @@ sourceSets {
         java {
             srcDirs = ['src/test/java']
         }
+    }
+}
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+}
+
+task jacocoReport(type: JacocoReport, dependsOn: 'test') {
+
+    jacoco {
+        version "0.7.6.201602180812"
+    }
+
+    group = 'Reporting'
+    description = 'Generate Jacoco coverage reports after running tests.'
+
+    executionData = files('build/jacoco/test.exec')
+    sourceDirectories = files('/src/main/java')
+    classDirectories = fileTree(
+            dir: 'build/classes',
+            excludes: []
+    )
+
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.enabled = true
     }
 }
 
