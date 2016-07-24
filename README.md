@@ -53,14 +53,14 @@ dependencies {
 
 forsuredb {
     // should be the same as the applicationId from the android extension
-    applicationPackageName = 'com.forsuredb.testapp'
+    applicationPackageName = 'com.fsryan.testapp'
     // the fully-qualified class name of the parameterization of the SaveResult.
     // If you have an Android project, this should be the result parameter.
     resultParameter = "android.net.Uri"
     // The fully-qualified class name of the parameterization of the generated
     // ForSure class. It is the class that stores a record before it is 
     // deleted/inserted/updated etc.
-    recordContainer = "com.forsuredb.provider.FSContentValues"
+    recordContainer = "com.fsryan.provider.FSContentValues"
     // the assets directory of your app starting at your project's base directory
     migrationDirectory = 'app/src/main/assets'
     // Your app's base directory
@@ -73,8 +73,8 @@ forsuredb {
         android:name=".App" >
   <!-- ... -->
   <provider
-      android:name="com.forsuredb.provider.FSDefaultProvider"
-      android:authorities="com.forsuredb.testapp.content"
+      android:name="com.fsryan.provider.FSDefaultProvider"
+      android:authorities="com.fsryan.testapp.content"
       android:enabled="true"
       android:exported="false" />
 </application
@@ -89,7 +89,7 @@ public class App extends Application {
         // pass your custom authority in to TableGenerator.generate() if you don't want the default
         FSDBHelper.init(this, "testapp.db", TableGenerator.generate());
         // the String is your Content Provider's authority
-        ForSureAndroidInfoFactory.init(this, "com.forsuredb.testapp.content")
+        ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content")
         // ForSureAndroidInfoFactory tells ForSure everything it needs to know.
         ForSure.init(ForSureAndroidInfoFactory.inst());
     }

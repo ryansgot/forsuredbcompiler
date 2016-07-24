@@ -1,0 +1,20 @@
+package ${packageName};
+
+import Between;
+import Finder;
+import Resolver;
+
+public class ${className} extends Finder<${resultParameter}, ${getApiClass}, ${setApiClass}, ${className}> {
+
+#foreach($columnConstant in $columnConstants)
+    private static final String ${columnConstant};
+#end
+
+    public ${className}(Resolver<${resultParameter}, ${getApiClass}, ${setApiClass}, ${className}> resolver) {
+        super(resolver);
+    }
+#foreach($methodDefinition in $methodDefinitions)
+
+    ${methodDefinition}
+#end
+}

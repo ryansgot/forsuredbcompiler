@@ -1,0 +1,10 @@
+package ${packageName};
+
+import FSSaveApi;
+import FSColumn;
+
+public interface ${className} extends FSSaveApi#if( $resultParameter )<$resultParameter>#end {
+#foreach($methodDefinition in $methodDefinitions)
+    $methodDefinition
+#end
+}

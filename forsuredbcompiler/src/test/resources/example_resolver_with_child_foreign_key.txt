@@ -1,0 +1,118 @@
+package com.fsryan.annotationprocessor.generator.code;
+
+import FSJoin;
+import FSProjection;
+import ForSureInfoFactory;
+import Resolver;
+import TypedRecordContainer;
+import java.lang.Class;
+import java.lang.Override;
+import java.lang.String;
+
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ * <p>
+ *   Entry point for querying the test_table_3 table. You can access
+ *   this {@link Resolver} via the generated static
+ *   method in the ForSure class:
+ *   <pre>
+ *     {@code
+ *             ForSure.testTable3().find()
+ *             .byIdLessThan(23545494583L)
+ *             .andFinally()
+ *             .get();
+ *     }
+ *   </pre>
+ * </p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @see Resolver
+ */
+public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+    public static final String TABLE_NAME = "test_table_3";
+
+    public static final String[] columns = {"_id","app_rating","competitor_app_rating","created","deleted","global_id","login_count","modified",};
+
+    public static final FSProjection PROJECTION = new FSProjection() {
+        @Override
+        public String tableName() {
+            return TABLE_NAME;
+        }
+
+        @Override
+        public String[] columns() {
+            return columns;
+        }
+    };
+
+    public TestTable3Resolver(ForSureInfoFactory infoFactory) {
+        super(infoFactory);
+    }
+
+    /**
+     * <p>
+     *   Add a join to test_table_2 on test_table_2.test_table_3_id = test_table_3._id
+     *   to the query
+     * </p>
+     */
+    public TestTable3Resolver joinTestTable2(final FSJoin.Type type) {
+        addJoin(new FSJoin() {
+            @Override
+            public FSJoin.Type type() {
+                return type;
+            }
+
+            @Override
+            public String parentTable() {
+                return "test_table_3";
+            }
+
+            @Override
+            public String parentColumn() {
+                return "_id";
+            }
+
+            @Override
+            public String childTable() {
+                return "test_table_2";
+            }
+
+            @Override
+            public String childColumn() {
+                return "test_table_3_id";
+            }
+        }, TestTable2Resolver.PROJECTION);
+        return this;
+    }
+
+    @Override
+    protected Class<TestTable3> getApiClass() {
+        return TestTable3.class;
+    }
+
+    @Override
+    protected Class<TestTable3Setter> setApiClass() {
+        return TestTable3Setter.class;
+    }
+
+    @Override
+    protected FSProjection projection() {
+        return PROJECTION;
+    }
+
+    @Override
+    protected TestTable3Finder newFinderInstance() {
+        return new TestTable3Finder(this);
+    }
+
+    @Override
+    protected TestTable3OrderBy newOrderByInstance() {
+        return new TestTable3OrderBy(this);
+    }
+
+    @Override
+    protected String tableName() {
+        return TABLE_NAME;
+    }
+}
