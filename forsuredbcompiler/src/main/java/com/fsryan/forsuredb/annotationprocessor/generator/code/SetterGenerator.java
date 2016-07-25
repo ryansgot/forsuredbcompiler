@@ -69,7 +69,7 @@ public class SetterGenerator extends JavaSourceGenerator {
         return jib.addLine(".save()")
                 .endCode()
                 .endParagraph()
-                .addLine("@author <a href=$S>forsuredb</a>", "https://github.com/ryansgot/forsuredb")
+                .addLine(JavadocInfo.AUTHOR_STRING)
                 .addLine("@see FSSaveApi")
                 .addLine()
                 .build();
