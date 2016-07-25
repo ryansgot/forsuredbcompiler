@@ -122,6 +122,7 @@ public class TableCreatorGenerator extends JavaSourceGenerator {
     private String createAddFSTableCreatorLine(TableInfo tableInfo) {
         StringBuffer buf = new StringBuffer("retList").append(".add(new FSTableCreator(")
                 .append("authority, ")
+                .append("\"" + tableInfo.getTableName() + "\", ")
                 .append(tableInfo.getQualifiedClassName()).append(".class");
 
         if (tableInfo.hasStaticData()) {

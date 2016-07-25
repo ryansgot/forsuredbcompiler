@@ -35,18 +35,17 @@ public class FSTableCreator implements Comparable<FSTableCreator> {
     private final Class<? extends FSGetApi>[] foreignKeyClasses;
     private final String tableName;
 
-    public FSTableCreator(String authority, Class<? extends FSGetApi> tableApiClass, String staticDataAsset, String staticDataRecordName, Class<? extends FSGetApi>... foreignKeyClasses) {
+    public FSTableCreator(String authority, String tableName, Class<? extends FSGetApi> tableApiClass, String staticDataAsset, String staticDataRecordName, Class<? extends FSGetApi>... foreignKeyClasses) {
         this.authority = authority;
         this.tableApiClass = tableApiClass;
         this.staticDataAsset = staticDataAsset;
         this.staticDataRecordName = staticDataRecordName;
         this.foreignKeyClasses = foreignKeyClasses;
-        // TODO: fix the source vs. runtime annotations business
-        this.tableName = tableApiClass.getSimpleName();
+        this.tableName = tableName;
     }
 
-    public FSTableCreator(String authority, Class<? extends FSGetApi> tableApiClass, Class<? extends FSGetApi>... foreignKeyClasses) {
-        this(authority, tableApiClass, NO_STATIC_DATA_ASSET, "", foreignKeyClasses);
+    public FSTableCreator(String authority, String tableName, Class<? extends FSGetApi> tableApiClass, Class<? extends FSGetApi>... foreignKeyClasses) {
+        this(authority, tableName, tableApiClass, NO_STATIC_DATA_ASSET, "", foreignKeyClasses);
     }
 
     /**
