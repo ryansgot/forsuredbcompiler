@@ -51,27 +51,27 @@ public interface FSLogger {
      */
     class DefaultFSLogger implements FSLogger {
 
-        //TODO: make a constructor that has a tag and replace the literal
+        private static final String TAG = "[MIGRATION_PARSER_ERROR]: ";
 
         @Override
         public void e(String message) {
-            System.out.println("[MIGRATION_PARSER_ERROR]: " + message);
+            System.out.println(TAG + message);
         }
 
         @Override
         public void i(String message) {
-            System.out.println("[MIGRATION_PARSER_INFO]: " + message);
+            System.out.println(TAG + message);
         }
 
         @Override
         public void w(String message) {
-            System.out.println("[MIGRATION_PARSER_WARNING]: " + message);
+            System.out.println(TAG + message);
 
         }
 
         @Override
         public void o(String message) {
-            System.out.println("[MIGRATION_PARSER_OTHER]: " + message);
+            System.out.println(TAG + message);
         }
     }
 }
