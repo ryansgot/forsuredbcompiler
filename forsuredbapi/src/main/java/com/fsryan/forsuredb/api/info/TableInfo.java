@@ -107,28 +107,6 @@ public class TableInfo {
         this.staticDataRecordName = staticDataRecordName;
     }
 
-    public static TableInfo from(TypeElement intf) {
-        if (intf == null) {
-            throw new IllegalArgumentException("Cannot create TableInfo from null TypeElement");
-        }
-        if (intf.getKind() != ElementKind.INTERFACE) {
-            throw new IllegalArgumentException("Can only create TableInfo from " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
-        }
-
-        final Map<String, ColumnInfo> columnMap = new HashMap<>();
-        for (ExecutableElement me : ElementFilter.methodsIn(intf.getEnclosedElements())) {
-            final ColumnInfo column = ColumnInfo.from(me);
-            columnMap.put(column.getColumnName(), column);
-        }
-
-        return builder().columnMap(columnMap)
-                .qualifiedClassName(intf.getQualifiedName().toString())
-                .tableName(createTableName(intf))
-                .staticDataAsset(createStaticDataAsset(intf))
-                .staticDataRecordName(createStaticDataRecordName(intf))
-                .build();
-    }
-
     public boolean isValid() {
         return (qualifiedClassName != null && !qualifiedClassName.isEmpty()) || (tableName != null && !tableName.isEmpty());
     }
@@ -192,21 +170,6 @@ public class TableInfo {
         }
         Collections.sort(retList);
         return retList;
-    }
-
-    private static String createTableName(TypeElement intf) {
-        FSTable table = intf.getAnnotation(FSTable.class);
-        return table == null ? intf.getSimpleName().toString() : table.value();
-    }
-
-    private static String createStaticDataAsset(TypeElement intf) {
-        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
-        return staticData == null ? null : staticData.asset();
-    }
-
-    private static String createStaticDataRecordName(TypeElement intf) {
-        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
-        return staticData == null ? null : staticData.recordName();
     }
 
     private String createTableName(String tableName, String qualifiedClassName) {

@@ -22,6 +22,7 @@ import com.fsryan.forsuredb.api.info.JoinInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
+import com.fsryan.forsuredb.info.TableInfoFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -129,7 +130,7 @@ public class ProcessingContext implements TableContext {
                 continue;   // <-- only process interfaces that are non-private
             }
 
-            ret.add(TableInfo.from(te));
+            ret.add(TableInfoFactory.create(te));
         }
 
         return ret;

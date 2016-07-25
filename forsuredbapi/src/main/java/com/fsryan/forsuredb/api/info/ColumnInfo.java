@@ -17,17 +17,9 @@
  */
 package com.fsryan.forsuredb.api.info;
 
-import com.fsryan.forsuredb.annotations.FSColumn;
-import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.annotations.PrimaryKey;
-import com.fsryan.forsuredb.annotations.Unique;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 
 import lombok.Getter;
 
@@ -51,21 +43,6 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @Getter @SerializedName("unique") private final boolean unique;
     @Getter @SerializedName("primary_key") private final boolean primaryKey;
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
-
-    public static ColumnInfo from(ExecutableElement ee) {
-        if (ee.getKind() != ElementKind.METHOD) {
-            return null;
-        }
-
-        Builder builder = builder();
-        for (AnnotationMirror am : ee.getAnnotationMirrors()) {
-            appendAnnotationInfo(builder, am);
-        }
-
-        return builder.methodName(ee.getSimpleName().toString())
-                      .qualifiedType(ee.getReturnType().toString())
-                      .build();
-    }
 
     public boolean isValid() {
         return (methodName != null && !methodName.isEmpty()) || (columnName != null && !columnName.isEmpty());
@@ -140,25 +117,5 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
         }
 
         return null;
-    }
-
-    private static void appendAnnotationInfo(Builder builder, AnnotationMirror am) {
-        // TODO: figure out the dependency stuff here
-//        AnnotationTranslator at = AnnotationTranslatorFactory.inst().create(am);
-//
-//        String annotationClass = am.getAnnotationType().toString();
-//        if (annotationClass.equals(FSColumn.class.getName())) {
-//            builder.columnName(at.property("value").as(String.class));
-//        } else if (annotationClass.equals(ForeignKey.class.getName())) {
-//            builder.foreignKeyInfo(ForeignKeyInfo.builder().columnName(at.property("columnName").asString())
-//                    .apiClassName(at.property("apiClass").asString())
-//                    .deleteAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()))
-//                    .updateAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()))
-//                    .build());
-//        } else if (annotationClass.equals(PrimaryKey.class.getName())) {
-//            builder.primaryKey(true);
-//        } else if (annotationClass.equals(Unique.class.getName())) {
-//            builder.unique(true);
-//        }
     }
 }

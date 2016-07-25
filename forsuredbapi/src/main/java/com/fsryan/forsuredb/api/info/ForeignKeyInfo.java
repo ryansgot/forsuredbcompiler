@@ -20,8 +20,6 @@ package com.fsryan.forsuredb.api.info;
 import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.google.gson.annotations.SerializedName;
 
-import javax.lang.model.element.ExecutableElement;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,11 +34,6 @@ public class ForeignKeyInfo {
     @Getter @Setter @SerializedName("foreign_table_name") private String tableName;     // <-- may not be known on creation
     @Getter @SerializedName("foreign_column_name")private final String columnName;
     @Getter @SerializedName("foreign_api_class_name") private final String apiClassName;
-
-    public static ForeignKeyInfo from(ExecutableElement ee) {
-        // TODO
-        return null;
-    }
 
     public boolean isValid() {
         return columnName != null
