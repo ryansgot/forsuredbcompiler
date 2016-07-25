@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.google.common.collect.BiMap;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -38,7 +40,7 @@ public class FSSaveAdapter {
      *     Caches the column information so that reflection on each interface must happen only once
      * </p>
      */
-    private static final Map<Class<? extends FSSaveApi>, Map<String, Type>> API_TO_COLUMNS_MAP = new HashMap<>();
+    private static final Map<Class<? extends FSSaveApi>, Map<Method, ColumnDescriptor>> API_TO_COLUMNS_MAP = new HashMap<>();
 
     /**
      * <p>
@@ -74,8 +76,8 @@ public class FSSaveAdapter {
     }
 
     // lazily create the column type maps for each api so that they are not created each time a new handler is created
-    private static <T extends FSSaveApi> Map<String, Type> getColumnTypeMapFor(Class<T> api) {
-        Map<String, Type> retMap = API_TO_COLUMNS_MAP.get(api);
+    private static <T extends FSSaveApi> Map<Method, ColumnDescriptor> getColumnTypeMapFor(Class<T> api) {
+        Map<Method, ColumnDescriptor> retMap = API_TO_COLUMNS_MAP.get(api);
         if (retMap == null) {
             retMap = createColumnTypeMapFor(api);
             API_TO_COLUMNS_MAP.put(api, retMap);
@@ -83,17 +85,29 @@ public class FSSaveAdapter {
         return retMap;
     }
 
-    private static <T extends FSSaveApi> Map<String, Type> createColumnTypeMapFor(Class<T> api) {
-        Map<String, Type> retMap = new HashMap<>();
+    private static <T extends FSSaveApi> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Class<T> api) {
+        Map<Method, ColumnDescriptor> retMap = new HashMap<>();
+        // This means there can be no overloading of methods in Setter interfaces. That is fine because
+        // Setter methods must take one and only one argument.
+        BiMap<String, String> columnMethodNameMap = null;
+        try {
+            columnMethodNameMap = (BiMap<String, String>) api.getDeclaredField("COLUMN_TO_METHOD_NAME_MAP").get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (columnMethodNameMap == null) {
+            return retMap;
+        }
+
         for (Method m : api.getDeclaredMethods()) {
-            retMap.put(getColumnName(m), m.getGenericParameterTypes()[0]);
+            String columnName = columnMethodNameMap.inverse().get(m.getName());
+            if (columnName == null) {
+                continue;
+            }
+            retMap.put(m, new ColumnDescriptor(columnName, m.getGenericParameterTypes()[0]));
         }
         return retMap;
-    }
-
-    private static String getColumnName(Method m) {
-        // TODO: update SetterGenerator to contain the map as a static final map
-        return m.getName();
     }
 
     private static class Handler<U, R extends RecordContainer> implements InvocationHandler {
@@ -101,9 +115,9 @@ public class FSSaveAdapter {
         private final FSQueryable<U, R> queryable;
         private final FSSelection selection;
         private final R recordContainer;
-        private final Map<String, Type> columnTypeMap;
+        private final Map<Method, ColumnDescriptor> columnTypeMap;
 
-        public Handler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<String, Type> columnTypeMap) {
+        public Handler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
             this.queryable = queryable;
             this.selection = selection;
             this.recordContainer = recordContainer;
@@ -129,7 +143,7 @@ public class FSSaveAdapter {
                     return queryable.delete(selection);
             }
 
-            performSet(getColumnName(method), args[0]);
+            performSet(columnTypeMap.get(method), args[0]);
             return proxy;
         }
 
@@ -173,16 +187,16 @@ public class FSSaveAdapter {
             return ResultFactory.create(null, rowsAffected, null);
         }
 
-        private void performSet(String column, Object arg) {
-            Type type = columnTypeMap.get(column);
+        private void performSet(ColumnDescriptor columnDescriptor, Object arg) {
+            Type type = columnDescriptor.getType();
             if (type.equals(byte[].class)) {
-                recordContainer.put(column, (byte[]) arg);
+                recordContainer.put(columnDescriptor.getColumnName(), (byte[]) arg);
             } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-                recordContainer.put(column, (Boolean) arg ? 1 : 0);
+                recordContainer.put(columnDescriptor.getColumnName(), (Boolean) arg ? 1 : 0);
             } else if (type.equals(Date.class)) {
-                recordContainer.put(column, FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
+                recordContainer.put(columnDescriptor.getColumnName(), FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
             } else {
-                recordContainer.put(column, arg.toString());
+                recordContainer.put(columnDescriptor.getColumnName(), arg.toString());
             }
         }
     }
@@ -206,5 +220,12 @@ public class FSSaveAdapter {
                 }
             };
         }
+    }
+
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    private static class ColumnDescriptor {
+        private final String columnName;
+        private final Type type;
     }
 }
