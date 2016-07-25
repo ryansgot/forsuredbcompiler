@@ -5,14 +5,13 @@ import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSSaveApi;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 
 import java.util.List;
-import java.util.Map;
 
 public class SetterGenerator extends JavaSourceGenerator {
 
@@ -52,11 +51,11 @@ public class SetterGenerator extends JavaSourceGenerator {
 
     private FieldSpec columnNameToMethodNameMapField() {
         CodeBlock.Builder mapBlockBuilder = CodeBlock.builder()
-                .add("new $T()", ParameterizedTypeName.get(ImmutableMap.Builder.class, String.class, String.class));
+                .add("new $T()", ParameterizedTypeName.get(ImmutableBiMap.Builder.class, String.class, String.class));
         for (ColumnInfo column : columnsSortedByName) {
             mapBlockBuilder.add("$L($S, $S)", "\n        .put", column.getColumnName(), column.getMethodName());
         }
-        return FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_MAP", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        return FieldSpec.builder(ParameterizedTypeName.get(ImmutableBiMap.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_MAP", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer(mapBlockBuilder.build())
                 .build();
     }
