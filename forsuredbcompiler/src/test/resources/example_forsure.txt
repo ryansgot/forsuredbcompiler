@@ -1,7 +1,8 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import ForSureInfoFactory;
-import TypedRecordContainer;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest;
+import com.fsryan.forsuredb.api.ForSureInfoFactory;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
 
 /**
  * <p>
@@ -9,7 +10,7 @@ import TypedRecordContainer;
  * </p>
  * <p>
  *   The entry point into any querying of the database tables you
- *   defined by extending the {@link FSGetApi} interface.
+ *   defined by extending the {@link com.fsryan.forsuredb.api.FSGetApi} interface.
  *   Common usage for getting data will include the following:
  *   <pre>
  *     {@code
@@ -34,7 +35,7 @@ import TypedRecordContainer;
  *   Common usage for updating an existing record into the table:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTableTable().find()
+ *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()
@@ -48,7 +49,7 @@ import TypedRecordContainer;
  *   (with only default data):
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTableTable().set()
+ *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().set()
  *             .save();
  *     }
  *   </pre>
@@ -57,7 +58,7 @@ import TypedRecordContainer;
  *   Common usage for flipping the deleted bit on a record:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTableTable().find()
+ *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()
@@ -69,7 +70,7 @@ import TypedRecordContainer;
  *   Common usage for permanently the deleting a record:
  *   <pre>
  *     {@code
- *             SaveResult<ForSureGeneratorTest> result = ForSure.testTableTable().find()
+ *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
  *             .andFinally()
  *             .set()

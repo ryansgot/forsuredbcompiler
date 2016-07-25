@@ -1,6 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import FSTableCreator;
+import com.fsryan.forsuredb.api.FSTableCreator;
 import java.lang.String;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  * <p>
  *   TableGenerator generates the basic information about the tables
  *   you have described in your extensions of
- *   {@link FSGetApi}. It should be called as you
+ *   {@link com.fsryan.forsuredb.api.FSGetApi}. It should be called as you
  *   initialize the database.
  * </p>
  * <p>
@@ -35,7 +35,7 @@ import java.util.List;
 public class TableGenerator {
     /**
      * <p>
-     *   Creates a list of {@link FSTableCreator}
+     *   Creates a list of {@link com.fsryan.forsuredb.api.FSTableCreator}
      *   objects that tell the underlying routing mechanism all it needs to
      *   know in order to set up the appropriate routes to the tables.
      * </p>
@@ -43,9 +43,9 @@ public class TableGenerator {
      *   This version will use the default authority,
      *   "com.fsryan.testapp.content"
      * </p>
-     * @return A list of {@link FSTableCreator} corresponding
-     * to all {@link FSGetApi} extensions annotated with
-     * {@link FSTable}
+     * @return A list of {@link com.fsryan.forsuredb.api.FSTableCreator} corresponding
+     * to all {@link com.fsryan.forsuredb.api.FSGetApi} extensions annotated with
+     * {@link com.fsryan.forsuredb.annotations.FSTable}
      * @see #generate(String)
      */
     public static List<FSTableCreator> generate() {
@@ -54,14 +54,14 @@ public class TableGenerator {
 
     /**
      * <p>
-     *   Creates a list of {@link FSTableCreator}
+     *   Creates a list of {@link com.fsryan.forsuredb.api.FSTableCreator}
      *   objects that tell the underlying routing mechanism all it needs to
      *   know in order to set up the appropriate routes to the tables.
      * </p>
      * @param authority The authority for your database resources
-     * @return A list of {@link FSTableCreator} corresponding
-     * to all {@link FSGetApi} extensions annotated with
-     * {@link FSTable}
+     * @return A list of {@link com.fsryan.forsuredb.api.FSTableCreator} corresponding
+     * to all {@link com.fsryan.forsuredb.api.FSGetApi} extensions annotated with
+     * {@link com.fsryan.forsuredb.annotations.FSTable}
      * @see #generate()
      */
     public static List<FSTableCreator> generate(String authority) {

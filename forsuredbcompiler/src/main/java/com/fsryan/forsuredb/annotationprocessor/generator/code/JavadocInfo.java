@@ -8,7 +8,7 @@ import java.util.List;
 
 public class JavadocInfo {
 
-    public static final String AUTHOR_STRING = "@author <a href=\"https://github.com/ryansgot/forsuredb\">forsuredb</a>";
+    public static final String AUTHOR_STRING = "@author <a href=\"https://github.com/ryansgot/forsuredbcompiler\">forsuredbcompiler</a>";
     private final String unformattedDoc;
     private final Object[] replacements;
 

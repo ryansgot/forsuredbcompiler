@@ -1,8 +1,9 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import OrderBy;
-import Resolver;
-import TypedRecordContainer;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.OrderByGeneratorTest;
+import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
 
 public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
     TestTable3OrderBy(Resolver<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> resolver) {
@@ -14,7 +15,7 @@ public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecord
      *   Order the results of the query by app_rating
      * </p>
      * @param order the direction to order the results
-     * @return a {@link OrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * @return a {@link com.fsryan.forsuredb.api.OrderBy.Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
     public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRating(OrderBy.Order order) {
@@ -27,7 +28,7 @@ public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecord
      *   Order the results of the query by competitor_app_rating
      * </p>
      * @param order the direction to order the results
-     * @return a {@link OrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * @return a {@link com.fsryan.forsuredb.api.OrderBy.Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
     public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRating(OrderBy.Order order) {
@@ -40,7 +41,7 @@ public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecord
      *   Order the results of the query by global_id
      * </p>
      * @param order the direction to order the results
-     * @return a {@link OrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * @return a {@link com.fsryan.forsuredb.api.OrderBy.Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
     public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalId(OrderBy.Order order) {
@@ -53,7 +54,7 @@ public class TestTable3OrderBy extends OrderBy<OrderByGeneratorTest, TypedRecord
      *   Order the results of the query by login_count
      * </p>
      * @param order the direction to order the results
-     * @return a {@link OrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * @return a {@link com.fsryan.forsuredb.api.OrderBy.Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
     public OrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCount(OrderBy.Order order) {

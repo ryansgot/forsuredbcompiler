@@ -1,7 +1,8 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import FSColumn;
-import FSSaveApi;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
+import com.fsryan.forsuredb.annotations.FSColumn;
+import com.fsryan.forsuredb.api.FSSaveApi;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -30,7 +31,7 @@ import java.util.Date;
  *     }
  *   </pre>
  * </p>
- * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @author <a href="https://github.com/ryansgot/forsuredb">forsuredb</a>
  * @see FSSaveApi
  */
 public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {

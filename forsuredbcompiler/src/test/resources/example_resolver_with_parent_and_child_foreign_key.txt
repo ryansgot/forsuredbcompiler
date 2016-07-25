@@ -1,10 +1,11 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import FSJoin;
-import FSProjection;
-import ForSureInfoFactory;
-import Resolver;
-import TypedRecordContainer;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGeneratorTest;
+import com.fsryan.forsuredb.api.FSJoin;
+import com.fsryan.forsuredb.api.FSProjection;
+import com.fsryan.forsuredb.api.ForSureInfoFactory;
+import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
 import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
@@ -15,7 +16,7 @@ import java.lang.String;
  * </p>
  * <p>
  *   Entry point for querying the test_table_2 table. You can access
- *   this {@link Resolver} via the generated static
+ *   this {@link com.fsryan.forsuredb.api.Resolver} via the generated static
  *   method in the ForSure class:
  *   <pre>
  *     {@code

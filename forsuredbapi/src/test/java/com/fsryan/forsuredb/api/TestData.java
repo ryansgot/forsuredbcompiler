@@ -15,19 +15,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.fsryan.forsuredb;
+package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
-import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.api.info.TableInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,10 +33,10 @@ public class TestData {
 
     public static final String TEST_RES = "src/test/resources";
     public static final ColumnInfo[] DEFAULT_COLUMNS = new ColumnInfo[] {
-            TestData.idCol(),
-            TestData.createdCol(),
-            TestData.deletedCol(),
-            TestData.modifiedCol()
+            idCol(),
+            createdCol(),
+            deletedCol(),
+            modifiedCol()
     };
 
     // Convenience constants
@@ -173,10 +171,6 @@ public class TestData {
                 .tableName(foreignKeyTableName);
     }
 
-    public static TableContextBuilder newTableContext() {
-        return new TableContextBuilder();
-    }
-
     // Helpers for covenience methods
 
     private static ColumnInfo.Builder columnFrom(String qualifiedType) {
@@ -201,100 +195,5 @@ public class TestData {
         }
 
         return qualifiedType + suffix;
-    }
-
-    public static TableInfo targetTableWithChildForeignKey() {
-        return testTargetContext().getTable("test_table_3");
-    }
-
-    public static TableInfo targetTableWithParentAndChildForeignKey() {
-        return testTargetContext().getTable("test_table_2");
-    }
-
-    public static TableContext testTargetContext() {
-        return newTableContext().addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable")
-                        .columnMap(columnMapOf(idCol(),
-                                modifiedCol(),
-                                createdCol(),
-                                deletedCol(),
-                                longCol().columnName("test_table_2_id")
-                                        .methodName("testTable2Id")
-                                        .foreignKeyInfo(cascadeFKI("test_table_2")
-                                                .columnName("_id")
-                                                .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-                                                .build())
-                                        .build()))
-                        .tableName("test_table")
-                        .staticDataAsset("test_table_data.xml")
-                        .staticDataRecordName("test_table_data")
-                        .build())
-                .addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-                                .columnMap(columnMapOf(idCol(),
-                                        modifiedCol(),
-                                        createdCol(),
-                                        deletedCol(),
-                                        longCol().columnName("test_table_3_id")
-                                                .methodName("testTable3Id")
-                                                .foreignKeyInfo(cascadeFKI("test_table_3")
-                                                        .columnName("_id")
-                                                        .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-                                                        .build())
-                                                .build()))
-                                .tableName("test_table_2")
-                                .build())
-                .addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-                                .columnMap(columnMapOf(idCol(),
-                                        modifiedCol(),
-                                        createdCol(),
-                                        deletedCol(),
-                                        doubleCol().columnName("app_rating")
-                                                .methodName("appRating")
-                                                .build(),
-                                        bigDecimalCol().columnName("competitor_app_rating")
-                                                .methodName("competitorAppRating")
-                                                .build(),
-                                        longCol().columnName("global_id")
-                                                .methodName("globalId")
-                                                .build(),
-                                        intCol().columnName("login_count")
-                                                .methodName("loginCount")
-                                                .build()))
-                                .tableName("test_table_3")
-                                .build())
-                .build();
-    }
-
-    public static class TableContextBuilder {
-
-        private final Map<String, TableInfo> tableMap = new HashMap<>();
-
-        public TableContextBuilder addTable(TableInfo table) {
-            tableMap.put(table.getTableName(), table);
-            return this;
-        }
-
-        public TableContext build() {
-            return new TableContext() {
-                @Override
-                public boolean hasTable(String tableName) {
-                    return tableMap.containsKey(tableName);
-                }
-
-                @Override
-                public TableInfo getTable(String tableName) {
-                    return tableMap.get(tableName);
-                }
-
-                @Override
-                public Collection<TableInfo> allTables() {
-                    return tableMap.values();
-                }
-
-                @Override
-                public Map<String, TableInfo> tableMap() {
-                    return tableMap;
-                }
-            };
-        }
     }
 }
