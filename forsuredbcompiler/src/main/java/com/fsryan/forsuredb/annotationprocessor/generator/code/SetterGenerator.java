@@ -5,17 +5,14 @@ import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSSaveApi;
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.google.common.collect.ImmutableMap;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 
 import java.util.List;
+import java.util.Map;
 
 public class SetterGenerator extends JavaSourceGenerator {
 
@@ -35,6 +32,14 @@ public class SetterGenerator extends JavaSourceGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(ParameterizedTypeName.get(ClassName.get(FSSaveApi.class), ClassName.bestGuess(getResultParameter())))
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
+
+        codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer(CodeBlock.builder()
+                        .add("$S", table.getTableName())
+                        .build())
+                .build());
+        codeBuilder.addField(columnNameToMethodNameMapField());
+
         for (ColumnInfo column : columnsSortedByName) {
             try {
                 codeBuilder.addMethod(methodSpecFor(column));
@@ -43,6 +48,17 @@ public class SetterGenerator extends JavaSourceGenerator {
             }
         }
         return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private FieldSpec columnNameToMethodNameMapField() {
+        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder()
+                .add("new $T()", ParameterizedTypeName.get(ImmutableMap.Builder.class, String.class, String.class));
+        for (ColumnInfo column : columnsSortedByName) {
+            mapBlockBuilder.add("$L($S, $S)", "\n        .put", column.getColumnName(), column.getMethodName());
+        }
+        return FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_MAP", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer(mapBlockBuilder.build())
+                .build();
     }
 
     private JavadocInfo createSetterJavadoc() {

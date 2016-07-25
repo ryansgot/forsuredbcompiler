@@ -3,8 +3,11 @@ package com.fsryan.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.FSSaveApi;
+import com.google.common.collect.ImmutableMap;
+import java.lang.String;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * <p>
@@ -35,6 +38,18 @@ import java.util.Date;
  * @see FSSaveApi
  */
 public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
+    String TABLE_NAME = "test_table_3";
+
+    Map<String, String> COLUMN_TO_METHOD_NAME_MAP = new ImmutableMap.Builder<String, String>()
+            .put("_id", "id")
+            .put("app_rating", "appRating")
+            .put("competitor_app_rating", "competitorAppRating")
+            .put("created", "created")
+            .put("deleted", "deleted")
+            .put("global_id", "globalId")
+            .put("login_count", "loginCount")
+            .put("modified", "modified");
+
     /**
      * <p>
      *   Set the value of the _id column to be updated
