@@ -3,6 +3,7 @@ package com.fsryan.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.FSSaveApi;
+import com.google.common.collect.ImmutableBiMap;
 import java.lang.String;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -37,6 +38,16 @@ import java.util.Date;
  */
 public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
     String TABLE_NAME = "test_table_3";
+
+    ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_MAP = new ImmutableBiMap.Builder<String, String>()
+            .put("_id", "id")
+            .put("app_rating", "appRating")
+            .put("competitor_app_rating", "competitorAppRating")
+            .put("created", "created")
+            .put("deleted", "deleted")
+            .put("global_id", "globalId")
+            .put("login_count", "loginCount")
+            .put("modified", "modified");
 
     /**
      * <p>

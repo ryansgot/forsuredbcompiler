@@ -9,6 +9,7 @@ import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableBiMap;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
@@ -62,9 +63,17 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         orderByClassName));
         addFields(codeBuilder);
         addConstructor(codeBuilder);
+        addColumnMethodNameMapMethod(codeBuilder);
         addJoinMethods(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private void addColumnMethodNameMapMethod(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("columnNameToMethodNameBiMap")
+                .addAnnotation(Override.class)
+                .addStatement("return $L", "COLUMN_TO_METHOD_NAME_BI_MAP")
+                .build());
     }
 
     private JavadocInfo classJavadoc() {
@@ -105,6 +114,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                                 .add("$L", anonymousFSProjection())
                                 .build())
                         .build());
+        codeBuilder.addField(columnNameToMethodNameMapField());
     }
 
     private String[] orderedColumnNames() {
@@ -130,6 +140,17 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .returns(String[].class)
                         .addStatement("return columns")
                         .build())
+                .build();
+    }
+
+    private FieldSpec columnNameToMethodNameMapField() {
+        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder()
+                .add("new $T()", ParameterizedTypeName.get(ImmutableBiMap.Builder.class, String.class, String.class));
+        for (ColumnInfo column : columnsSortedByName) {
+            mapBlockBuilder.add("$L($S, $S)", "\n        .put", column.getColumnName(), column.getMethodName());
+        }
+        return FieldSpec.builder(ParameterizedTypeName.get(ImmutableBiMap.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_MAP", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                .initializer(mapBlockBuilder.build())
                 .build();
     }
 

@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.google.common.collect.BiMap;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,7 +90,8 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
 
     public final G getApi() {
         if (getApi == null) {
-            getApi = FSGetAdapter.createUnambiguous(getApiClass());
+            // TODO: In order to decruftify, the FSColumn and FSTable annotations must be
+            getApi = FSGetAdapter.createUnambiguous(this);
         }
         return getApi;
     }
@@ -124,7 +127,7 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
         R recordContainer = infoFactory.createRecordContainer();
         FSSelection selection = finder == null ? null : finder.selection();
         finder = null;  // <-- When a finder's selection method is called, it must be nullified
-        return FSSaveAdapter.create(queryable, selection, recordContainer, setApiClass());
+        return FSSaveAdapter.create(queryable, selection, recordContainer, this);
     }
 
     public final F find() {
@@ -145,6 +148,8 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     }
 
     // the following methods fill in the details for the Resolver class
+
+    public abstract BiMap<String, String> columnNameToMethodNameBiMap();
 
     protected abstract Class<G> getApiClass();
     protected abstract Class<S> setApiClass();

@@ -57,8 +57,8 @@ public class FSSaveAdapter {
      * @param emptyRecord an {@link RecordContainer} extension that represents the record prior to being
      *                    inserted/updated or a delete operation is run. It does not matter whether this record
      *                    is empty or not because it will be emptied for you.
-     * @param api The {@link FSSaveApi FSSaveApi} class for which you would like an object
-     * @param <T> The type of an {@link FSSaveApi} which was generated at compile time from an
+     * @param resolver The {@link FSSaveApi FSSaveApi} class for which you would like an object
+     * @param <S> The type of an {@link FSSaveApi} which was generated at compile time from an
      * {@link FSGetApi} definition
      * @param <U> The class by which records are located
      * @param <R> An extension of {@link RecordContainer} that holds records prior to their insertion/update
@@ -66,42 +66,37 @@ public class FSSaveAdapter {
      * @return An implementation of the {@link FSSaveApi} class object passed in
      * @see FSSaveApi
      */
-    public static <T extends FSSaveApi<U>, U, R extends RecordContainer> T create(FSQueryable<U, R> queryable,
+    public static <S extends FSSaveApi<U>, U, R extends RecordContainer> S create(FSQueryable<U, R> queryable,
                                                                                   FSSelection selection,
                                                                                   R emptyRecord,
-                                                                                  Class<T> api) {
-        return (T) Proxy.newProxyInstance(api.getClassLoader(),
-                                          new Class<?>[]{api},
-                                          new Handler(queryable, selection, emptyRecord, getColumnTypeMapFor(api)));
+                                                                                  Resolver<U, R, ?, S, ?, ?> resolver) {
+        return (S) Proxy.newProxyInstance(resolver.setApiClass().getClassLoader(),
+                                          new Class<?>[]{resolver.setApiClass()},
+                                          new Handler(queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
     }
 
     // lazily create the column type maps for each api so that they are not created each time a new handler is created
-    private static <T extends FSSaveApi> Map<Method, ColumnDescriptor> getColumnTypeMapFor(Class<T> api) {
-        Map<Method, ColumnDescriptor> retMap = API_TO_COLUMNS_MAP.get(api);
+    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> getColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resolver) {
+        Class<S> setApi = resolver.setApiClass();
+        Map<Method, ColumnDescriptor> retMap = API_TO_COLUMNS_MAP.get(setApi);
         if (retMap == null) {
-            retMap = createColumnTypeMapFor(api);
-            API_TO_COLUMNS_MAP.put(api, retMap);
+            retMap = createColumnTypeMapFor(resolver);
+            API_TO_COLUMNS_MAP.put(setApi, retMap);
         }
         return retMap;
     }
 
-    private static <T extends FSSaveApi> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Class<T> api) {
+    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resover) {
         Map<Method, ColumnDescriptor> retMap = new HashMap<>();
         // This means there can be no overloading of methods in Setter interfaces. That is fine because
         // Setter methods must take one and only one argument.
-        BiMap<String, String> columnMethodNameMap = null;
-        try {
-            columnMethodNameMap = (BiMap<String, String>) api.getDeclaredField("COLUMN_TO_METHOD_NAME_MAP").get(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (columnMethodNameMap == null) {
+        Map<String, String> methodNameToColumnNameMap = resover.columnNameToMethodNameBiMap().inverse();
+        if (methodNameToColumnNameMap == null) {
             return retMap;
         }
 
-        for (Method m : api.getDeclaredMethods()) {
-            String columnName = columnMethodNameMap.inverse().get(m.getName());
+        for (Method m : resover.setApiClass().getDeclaredMethods()) {
+            String columnName = methodNameToColumnNameMap.get(m.getName());
             if (columnName == null) {
                 continue;
             }

@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  * <p>
  *     Able to create an instance of any {@link FSGetApi} extension.
@@ -69,13 +71,14 @@ public class FSGetAdapter {
      *     that if the joined tables have the same name, then you may not get the result
      *     you want.
      * </p>
-     * @param tableApi The Class object of the {@link FSGetApi} for which you would like an instance
-     * @param <T> The {@link FSGetApi} extension's type
+     * @param resolver a {@link Resolver} instance that is capable of providing an {@link FSGetApi}
+     * @param <G> The {@link FSGetApi} extension's type
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
-    public static <T extends FSGetApi> T create(Class<T> tableApi) {
+    public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
+        Class<G> tableApi = resolver.getApiClass();
         GetApiValidator.validateClass(tableApi);
-        return (T) Proxy.newProxyInstance(tableApi.getClassLoader(), new Class<?>[] {tableApi}, getHandlerFor(tableApi));
+        return (G) Proxy.newProxyInstance(tableApi.getClassLoader(), new Class<?>[] {tableApi}, getHandlerFor(resolver));
     }
 
     /**
@@ -84,51 +87,47 @@ public class FSGetAdapter {
      *     tableName_columnName format so that it can be unambiguous. This is helpful for joins
      *     because different tables may have the same column name
      * </p>
-     * @param tableApi The Class object of the {@link FSGetApi} for which you would like an instance
-     * @param <T> The {@link FSGetApi} extension's type
+     * @param resolver a {@link Resolver} instance that is capable of providing an {@link FSGetApi}
+     * @param <G> The {@link FSGetApi} extension's type
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
-    public static <T extends FSGetApi> T createUnambiguous(Class<T> tableApi) {
-        GetApiValidator.validateClass(tableApi);
-        return (T) Proxy.newProxyInstance(tableApi.getClassLoader(), new Class<?>[] {tableApi}, getUnambiguousHandlerFor(tableApi));
+    public static <G extends FSGetApi> G createUnambiguous(Resolver<?, ?, G, ?, ?, ?> resolver) {
+        GetApiValidator.validateClass(resolver.getApiClass());
+        // TODO: determine whether you should gather the arguments for the Handler or whether the handler should know about resolvers.
+        return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getUnambiguousHandlerFor(resolver));
     }
 
-    private static Handler getHandlerFor(Class<? extends FSGetApi> tableApi) {
-        Handler h = handlerMap.get(tableApi);
+    private static <G extends FSGetApi> Handler getHandlerFor(Resolver<?, ?, G, ?, ?, ?> resolver) {
+        Handler h = handlerMap.get(resolver.getApiClass());
         if (h == null) {
-            h = new Handler(tableApi);
-            handlerMap.put(tableApi, h);
+            h = new Handler(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse());
+            handlerMap.put(resolver.getApiClass(), h);
         }
         return h;
     }
 
-    private static Handler getUnambiguousHandlerFor(Class<? extends FSGetApi> tableApi) {
-        Handler h = unambiguousHandlerMap.get(tableApi);
+    private static <G extends FSGetApi> Handler getUnambiguousHandlerFor(Resolver<?, ?, G, ?, ?, ?> resolver) {
+        Handler h = unambiguousHandlerMap.get(resolver.getApiClass());
         if (h == null) {
-            h = new Handler(tableApi, true);
-            unambiguousHandlerMap.put(tableApi, h);
+            h = new Handler(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse(), true);
+            unambiguousHandlerMap.put(resolver.getApiClass(), h);
         }
         return h;
-    }
-
-    private static String getColumnName(Method m) {
-        // TODO: fix this runtime vs. source annotation business
-        return m.getName();
     }
 
     private static class Handler implements InvocationHandler {
 
         private final String tableName;
+        // TODO: create a cache instead of building this Method to column name map
         private final Map<Method, String> methodToColumnNameMap;
 
-        public Handler(Class<? extends FSGetApi> tableApi) {
-            this(tableApi, false);
+        public Handler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
+            this(tableApi, tableName, methodNameToColumnNameMap, false);
         }
 
-        public Handler(Class<? extends FSGetApi> tableApi, boolean isUnambiguous) {
-            // TODO: fix this runtime vs. source annotation business
-            tableName = tableApi.getSimpleName();
-            methodToColumnNameMap = createMethodToColumnNameMap(tableApi, isUnambiguous);
+        public Handler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+            this.tableName = tableName;
+            methodToColumnNameMap = createMethodToColumnNameMap(tableApi, methodNameToColumnNameMap, isUnambiguous);
         }
 
         /**
@@ -189,14 +188,22 @@ public class FSGetAdapter {
             return null;
         }
 
-        private Map<Method, String> createMethodToColumnNameMap(Class<?> tableApi, boolean isUnambiguous) {
+        private Map<Method, String> createMethodToColumnNameMap(Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
             Map<Method, String> ret = new HashMap<>();
             for (Method m : tableApi.getDeclaredMethods()) {
-                ret.put(m, (isUnambiguous ? tableName + "_" : "") + getColumnName(m));
+                String columnName = methodNameToColumnNameMap.get(m.getName());
+                if (isNullOrEmpty(columnName)) {
+                    continue;
+                }
+                ret.put(m, (isUnambiguous ? tableName + "_" : "") + columnName);
             }
             for (Class<?> superTableApi : tableApi.getInterfaces()) {
                 for (Method m : superTableApi.getDeclaredMethods()) {
-                    ret.put(m, (isUnambiguous ? tableName + "_" : "") + getColumnName(m));
+                    String columnName = methodNameToColumnNameMap.get(m.getName());
+                    if (isNullOrEmpty(columnName)) {
+                        continue;
+                    }
+                    ret.put(m, (isUnambiguous ? tableName + "_" : "") + columnName);
                 }
             }
             return ret;

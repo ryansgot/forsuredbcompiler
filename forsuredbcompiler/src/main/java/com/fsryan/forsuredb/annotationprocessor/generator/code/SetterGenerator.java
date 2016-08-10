@@ -37,7 +37,6 @@ public class SetterGenerator extends JavaSourceGenerator {
                         .add("$S", table.getTableName())
                         .build())
                 .build());
-        codeBuilder.addField(columnNameToMethodNameMapField());
 
         for (ColumnInfo column : columnsSortedByName) {
             try {
@@ -47,17 +46,6 @@ public class SetterGenerator extends JavaSourceGenerator {
             }
         }
         return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
-    }
-
-    private FieldSpec columnNameToMethodNameMapField() {
-        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder()
-                .add("new $T()", ParameterizedTypeName.get(ImmutableBiMap.Builder.class, String.class, String.class));
-        for (ColumnInfo column : columnsSortedByName) {
-            mapBlockBuilder.add("$L($S, $S)", "\n        .put", column.getColumnName(), column.getMethodName());
-        }
-        return FieldSpec.builder(ParameterizedTypeName.get(ImmutableBiMap.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_MAP", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer(mapBlockBuilder.build())
-                .build();
     }
 
     private JavadocInfo createSetterJavadoc() {
