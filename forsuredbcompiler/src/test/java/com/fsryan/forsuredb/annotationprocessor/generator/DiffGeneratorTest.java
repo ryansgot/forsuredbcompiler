@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.fsryan.forsuredb.TestData.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -58,168 +59,160 @@ public class DiffGeneratorTest {
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                // No diff (identical contexts)
-                {
+                {   // 00 No diff (identical contexts)
                         4,
-                        TestData.newTableContext().addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.intCol().build(), TestData.stringCol().build()))
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
                                         .build())
                                 .build(),
-                        TestData.newTableContext().addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.intCol().build(), TestData.stringCol().build()))
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(5)
                                 .orderedMigrations(new ArrayList<Migration>())
                                 .build()
                 },
-                // The processing context has a table that the migration context does not have--table has no extra columns
-                {
+                {   // 01 The processing context has a table that the migration context does not have--table has no extra columns
                         1,
-                        TestData.newTableContext().build(),
-                        TestData.newTableContext().addTable(TestData.table().build())
+                        newTableContext().build(),
+                        newTableContext().addTable(table().build())
                                 .build(),
                         MigrationSet.builder().dbVersion(2)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
-                                        .tableName(TestData.TABLE_NAME)
+                                        .tableName(TABLE_NAME)
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table().build()))
+                                .targetSchema(tableMapOf(table().build()))
                                 .build()
                 },
-                // The processing context has a table that the migration context does not have--table has extra columns
-                {
+                {   // 02 The processing context has a table that the migration context does not have--table has extra columns
                         10,
-                        TestData.newTableContext().build(),
-                        TestData.newTableContext().addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.intCol().build(), TestData.stringCol().build()))
+                        newTableContext().build(),
+                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(11)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
-                                                .tableName(TestData.TABLE_NAME)
+                                                .tableName(TABLE_NAME)
                                                 .build(),
                                         Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                                .tableName(TestData.TABLE_NAME)
-                                                .columnName(TestData.stringCol().build().getColumnName())
+                                                .tableName(TABLE_NAME)
+                                                .columnName(intCol().build().getColumnName())
                                                 .build(),
                                         Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                                .tableName(TestData.TABLE_NAME)
-                                                .columnName(TestData.intCol().build().getColumnName())
+                                                .tableName(TABLE_NAME)
+                                                .columnName(stringCol().build().getColumnName())
                                                 .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table().columnMap(TestData.columnMapOf(TestData.intCol().build(), TestData.stringCol().build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
                                 .build()))
                                 .build()
                 },
-                // The processing context has a non-unique, non foreign-key column that the migration context does not have
-                {
+                {   // 03 The processing context has a non-unique, non foreign-key column that the migration context does not have
                         3,
-                        TestData.newTableContext().addTable(TestData.table().build())
+                        newTableContext().addTable(table().build())
                                 .build(),
-                        TestData.newTableContext().addTable(TestData.table()
-                                        .columnMap(TestData.columnMapOf(TestData.bigDecimalCol().build()))
+                        newTableContext().addTable(table()
+                                        .columnMap(columnMapOf(bigDecimalCol().build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                        .tableName(TestData.TABLE_NAME)
-                                        .columnName(TestData.bigDecimalCol().build().getColumnName())
+                                        .tableName(TABLE_NAME)
+                                        .columnName(bigDecimalCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table()
-                                        .columnMap(TestData.columnMapOf(TestData.bigDecimalCol().build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(columnMapOf(bigDecimalCol().build()))
                                         .build()))
                                 .build()
                 },
-                // The processing context has a foreign key the migration context does not know about (default delete and update actions)
-                {
+                {   // 04 The processing context has a foreign key the migration context does not know about (default delete and update actions)
                         2,
-                        TestData.newTableContext().addTable(TestData.table().build()).build(),
-                        TestData.newTableContext()
-                                .addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.longCol().foreignKeyInfo(TestData.cascadeFKI("user")
+                        newTableContext().addTable(table().build()).build(),
+                        newTableContext()
+                                .addTable(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
                                                         .build())
                                                 .build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_FOREIGN_KEY_REFERENCE)
-                                        .tableName(TestData.TABLE_NAME)
-                                        .columnName(TestData.longCol().build().getColumnName())
+                                        .tableName(TABLE_NAME)
+                                        .columnName(longCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table().columnMap(TestData.columnMapOf(TestData.longCol().foreignKeyInfo(TestData.cascadeFKI("user")
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
                                                         .build())
                                                 .build()))
                                         .build()))
                                 .build()
                 },
-                // The processing context has a unique index column the migration context doesn't know about
-                {
+                {   // 05 The processing context has a unique index column the migration context doesn't know about
                         4364,
-                        TestData.newTableContext().addTable(TestData.table().build())
+                        newTableContext().addTable(table().build())
                                 .build(),
-                        TestData.newTableContext()
-                                .addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.stringCol().unique(true)
+                        newTableContext()
+                                .addTable(table().columnMap(columnMapOf(stringCol().unique(true)
                                                 .build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4365)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
-                                        .tableName(TestData.TABLE_NAME)
-                                        .columnName(TestData.stringCol().build().getColumnName())
+                                        .tableName(TABLE_NAME)
+                                        .columnName(stringCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table().columnMap(TestData.columnMapOf(TestData.stringCol().unique(true)
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
                                                 .build()))
                                         .build()))
                                 .build()
                 },
-                // The processing context has a unique index on a column the migration context knows about, but doesn't know is unique
-                {
+                {   // 06 The processing context has a unique index on a column the migration context knows about, but doesn't know is unique
                         8,
-                        TestData.newTableContext().addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.stringCol().build()))
+                        newTableContext().addTable(table().columnMap(columnMapOf(stringCol().build()))
                                         .build())
                                 .build(),
-                        TestData.newTableContext()
-                                .addTable(TestData.table().columnMap(TestData.columnMapOf(TestData.stringCol().unique(true)
+                        newTableContext()
+                                .addTable(table().columnMap(columnMapOf(stringCol().unique(true)
                                                 .build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(9)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
-                                        .tableName(TestData.TABLE_NAME)
-                                        .columnName(TestData.stringCol().build().getColumnName())
+                                        .tableName(TABLE_NAME)
+                                        .columnName(stringCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table().columnMap(TestData.columnMapOf(TestData.stringCol().unique(true)
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
                                                 .build()))
                                         .build()))
                                 .build()
                 },
-                // The processing does not have a table the migration context knows about (a table deletion)
-                {
+                {   // 07 The processing does not have a table the migration context knows about (a table deletion)
                         47,
-                        TestData.newTableContext()
-                                .addTable(TestData.table()
+                        newTableContext()
+                                .addTable(table()
                                         .tableName("table_1")
-                                        .columnMap(TestData.columnMapOf(
-                                                TestData.idCol(),
-                                                TestData.modifiedCol(),
-                                                TestData.createdCol(),
-                                                TestData.deletedCol(),
-                                                TestData.stringCol().columnName("table_1_string").build()))
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_1_string").build()))
                                         .build())
-                                .addTable(TestData.table()
+                                .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(TestData.columnMapOf(
-                                                TestData.idCol(),
-                                                TestData.modifiedCol(),
-                                                TestData.createdCol(),
-                                                TestData.deletedCol(),
-                                                TestData.stringCol().columnName("table_2_string").build()))
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
                                         .build())
                                 .build(),
-                        TestData.newTableContext()
-                                .addTable(TestData.table()
+                        newTableContext()
+                                .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(TestData.columnMapOf(
-                                                TestData.idCol(),
-                                                TestData.modifiedCol(),
-                                                TestData.createdCol(),
-                                                TestData.deletedCol(),
-                                                TestData.stringCol().columnName("table_2_string").build()))
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(48)
@@ -227,14 +220,14 @@ public class DiffGeneratorTest {
                                         .type(Migration.Type.DROP_TABLE)
                                         .tableName("table_1")
                                         .build()))
-                                .targetSchema(TestData.tableMapOf(TestData.table()
+                                .targetSchema(tableMapOf(table()
                                         .tableName("table_2")
-                                        .columnMap(TestData.columnMapOf(
-                                                TestData.idCol(),
-                                                TestData.modifiedCol(),
-                                                TestData.createdCol(),
-                                                TestData.deletedCol(),
-                                                TestData.stringCol().columnName("table_2_string").build()))
+                                        .columnMap(columnMapOf(
+                                                idCol(),
+                                                modifiedCol(),
+                                                createdCol(),
+                                                deletedCol(),
+                                                stringCol().columnName("table_2_string").build()))
                                         .build()))
                                 .build()
                 }

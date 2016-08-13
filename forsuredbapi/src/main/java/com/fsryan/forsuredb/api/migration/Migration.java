@@ -21,6 +21,8 @@ import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
 
+import static com.google.common.base.Strings.nullToEmpty;
+
 /**
  * <p>
  *     The Migration class holds all of the information necessary for a {@link QueryGenerator} to generate the
@@ -71,6 +73,19 @@ public class Migration implements Comparable<Migration> {
         if (o == null || this.getType() == null) {
             return -1;
         }
-        return type == null ? 1 : type.getPriority() - o.getType().getPriority();
+        if (type == null) {
+            return 1;
+        }
+
+        int priorityDiff = type.getPriority() - o.getType().getPriority();
+        if (priorityDiff != 0) {
+            return priorityDiff;
+        }
+        // Unambiguously determine order based upon comparing table or column name in the case of equal priority
+        return isTableMigration() ? nullToEmpty(tableName).compareTo(o.getTableName()) : nullToEmpty(columnName).compareTo(o.getColumnName());
+    }
+
+    public boolean isTableMigration() {
+        return type == Type.CREATE_TABLE || type == Type.DROP_TABLE || type == Type.CREATE_TEMP_TABLE_FROM_EXISTING;
     }
 }
