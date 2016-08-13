@@ -2,4 +2,7 @@ test:
   override:
     - ./gradlew clean jacocoReport
   post:
-    - cp -r build/reports/* $CIRCLE_TEST_REPORTS/
+    - mkdir -p $CIRCLE_TEST_REPORTS/forsuredbapi
+    - mkdir -p $CIRCLE_TEST_REPORTS/forsuredbcompiler
+    - cp -r forsuredbapi/build/reports/* $CIRCLE_TEST_REPORTS/forsuredbapi/
+    - cp -r forsuredbcompiler/build/reports/* $CIRCLE_TEST_REPORTS/forsuredbcompiler/
