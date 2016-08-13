@@ -63,7 +63,7 @@ bintray {
         repo = 'maven'
         name = 'forsuredbapi'
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/ryansgot/forsuredb.git'
+        vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
         publicDownloadNumbers = true
         version {
             name = '0.7.0'
@@ -78,7 +78,7 @@ publishing {
     publications {
         forsuredbapiPublication(MavenPublication) {
             from components.java
-            groupId = 'com.fsryan.fsryan'
+            groupId = 'com.fsryan.forsuredb'
             artifactId = 'forsuredbapi'
             version = '0.7.0'
 
