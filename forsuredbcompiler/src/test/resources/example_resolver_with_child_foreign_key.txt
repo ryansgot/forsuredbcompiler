@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import java.lang.Class;
 import java.lang.Override;
@@ -48,7 +49,7 @@ public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRec
         }
     };
 
-    private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_MAP = new ImmutableBiMap.Builder<String, String>()
+    private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
             .put("_id", "id")
             .put("app_rating", "appRating")
             .put("competitor_app_rating", "competitorAppRating")
@@ -56,14 +57,15 @@ public class TestTable3Resolver extends Resolver<ResolverGeneratorTest, TypedRec
             .put("deleted", "deleted")
             .put("global_id", "globalId")
             .put("login_count", "loginCount")
-            .put("modified", "modified");
+            .put("modified", "modified")
+            .build();
 
     public TestTable3Resolver(ForSureInfoFactory infoFactory) {
         super(infoFactory);
     }
 
     @Override
-    void columnNameToMethodNameBiMap() {
+    public BiMap<String, String> columnNameToMethodNameBiMap() {
         return COLUMN_TO_METHOD_NAME_BI_MAP;
     }
 
