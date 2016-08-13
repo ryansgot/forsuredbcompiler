@@ -67,7 +67,7 @@ bintray {
         publicDownloadNumbers = true
         version {
             name = '0.7.0'
-            desc = 'Guts of the ForSureDB project, containing code to generate source and assets'
+            desc = 'Classes necessary for integration with forsuredb'
             released  = new Date()
             vcsTag = 'v0.7.0'
         }

@@ -8,7 +8,7 @@ As the central part of the forsuredb project, it is one of libraries necessary f
 1. forsuredbcompiler (compile only)
 2. forsuredbapi
 3. A platform integration library (see https://github.com/ryansgot/forsuredbandroid for an example)
-4. An SQL library conforming to the forsuredb standards (see https://github.com/ryansgot/forsuredbsqlitelib for an example). Libraries 2 and 3 can be combined, however.
+4. An SQL library conforming to the forsuredb standards (see https://github.com/ryansgot/forsuredbsqlitelib for an example). Libraries 3 and 4 can be combined, however.
 
 ### Using forsuredb in Android
 - Create a new Android project (see https://github.com/ryansgot/forsuredbandroid for a sample app)
