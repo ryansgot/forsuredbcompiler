@@ -46,7 +46,7 @@ import javax.lang.model.util.ElementFilter;
  * </p>
  * @author Ryan Scott
  */
-@SupportedAnnotationTypes("com.fsryan.annotation.*")
+@SupportedAnnotationTypes("com.fsryan.forsuredb.annotations.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class FSAnnotationProcessor extends AbstractProcessor {
 
