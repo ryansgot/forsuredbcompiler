@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -53,11 +54,17 @@ public class StaticDataRetrieverFactory {
                 public List<RecordContainer> getRecords(String recordName) {
                     return Collections.emptyList();
                 }
+
+                @Override
+                public List<Map<String, String>> getRawRecords(String recordName) {
+                    return Collections.emptyList();
+                }
             };
         }
 
         return new StaticDataRetriever() {
             List<RecordContainer> records;
+            List<Map<String, String>> rawRecords;
 
             @Override
             public List<RecordContainer> getRecords(final String recordName) {
@@ -66,14 +73,31 @@ public class StaticDataRetrieverFactory {
                 }
 
                 records = new LinkedList<>();
-                new Parser(log, new Parser.RecordListener() {
+                Parser.parse(xmlStream, new RecordContainerParseHandler(recordName, log, new Parser.RecordListener<RecordContainer>() {
                     @Override
-                    public void onRecord(RecordContainer recordContainer) {
-                        records.add(recordContainer);
+                    public void onRecord(RecordContainer record) {
+                        records.add(record);
                     }
-                }).parse(xmlStream, recordName);
+                }));
 
                 return records;
+            }
+
+            @Override
+            public List<Map<String, String>> getRawRecords(String recordName) {
+                if (rawRecords != null) {
+                    return rawRecords;
+                }
+
+                records = new LinkedList<>();
+                Parser.parse(xmlStream, new RawRecordParseHandler(recordName, log, new Parser.RecordListener<Map<String, String>>() {
+                    @Override
+                    public void onRecord(Map<String, String> record) {
+                        rawRecords.add(record);
+                    }
+                }));
+
+                return rawRecords;
             }
         };
     }

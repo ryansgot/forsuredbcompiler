@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,29 +36,23 @@ import javax.xml.parsers.SAXParserFactory;
  * </p>
  * @author Ryan Scott
  */
-/*package*/ class Parser {
+/*package*/ class Parser<T extends ParseHandler<T>> {
 
-    /*package*/ interface RecordListener {
-        void onRecord(RecordContainer recordContainer);
+    public interface RecordListener<T> {
+        void onRecord(T record);
+        RecordListener<?> NOOP = new RecordListener() {
+            public void onRecord(Object record) {}
+        };
     }
 
-    private final RecordListener recordListener;
-    private final FSLogger log;
-
-    public Parser(FSLogger log, RecordListener recordListener) {
-        this.log = log;
-        this.recordListener = recordListener;
+    public static <T> void parse(String staticDataFilePath, ParseHandler<T> parseHandler) throws FileNotFoundException {
+        parse(new File(staticDataFilePath), parseHandler);
     }
 
-    public final void parse(String staticDataFilePath, String recordName) throws FileNotFoundException {
-        parse(new File(staticDataFilePath), recordName);
-    }
-
-    public final void parse(File staticDataFile, String recordName) throws FileNotFoundException {
-        log.i("parsing: " + staticDataFile.getName());
+    public static <T> void parse(File staticDataFile, ParseHandler<T> parseHandler) throws FileNotFoundException {
         FileInputStream fis = new FileInputStream(staticDataFile);
         try {
-            parse(fis, recordName);
+            parse(fis, parseHandler);
         } finally {
             try {
                 fis.close();
@@ -67,10 +62,10 @@ import javax.xml.parsers.SAXParserFactory;
         }
     }
 
-    public final void parse(InputStream xmlStream, String recordName) {
+    public static <T> void parse(InputStream xmlStream, ParseHandler<T> parseHandler) {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-            saxParser.parse(xmlStream, new ParseHandler(recordName, recordListener, log));
+            saxParser.parse(xmlStream, parseHandler);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

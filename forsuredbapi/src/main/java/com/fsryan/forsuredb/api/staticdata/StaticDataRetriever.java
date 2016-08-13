@@ -21,13 +21,16 @@ package com.fsryan.forsuredb.api.staticdata;
 import com.fsryan.forsuredb.api.RecordContainer;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
- *     An interface for getting {@link RecordContainer} objects
+ *     An interface for getting {@link RecordContainer} objects describing the forsuredb specific format
+ *     or {@link Map} objects that describe a raw key-value record format
  * </p>
  * @author Ryan Scott
  */
 public interface StaticDataRetriever {
     List<RecordContainer> getRecords(String recordName);
+    List<Map<String, String>> getRawRecords(String recordName);
 }

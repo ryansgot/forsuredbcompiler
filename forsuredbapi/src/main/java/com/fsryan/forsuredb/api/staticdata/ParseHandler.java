@@ -18,8 +18,6 @@
 package com.fsryan.forsuredb.api.staticdata;
 
 import com.fsryan.forsuredb.api.FSLogger;
-import com.fsryan.forsuredb.api.RecordContainer;
-import com.fsryan.forsuredb.api.TypedRecordContainer;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -33,16 +31,16 @@ import javax.xml.parsers.SAXParser;
  * </p>
  * @author Ryan Scott
  */
-/*package*/ class ParseHandler extends DefaultHandler {
+/*package*/ abstract class ParseHandler<T> extends DefaultHandler {
 
     private final String recordName;
-    private final Parser.RecordListener recordListener;
     private final FSLogger log;
+    private final Parser.RecordListener<T> recordListener;
 
-    /*package*/ ParseHandler(String recordName, Parser.RecordListener recordListener, FSLogger log) {
+    /*package*/ ParseHandler(String recordName, FSLogger log, Parser.RecordListener<T> recordListener) {
         this.recordName = recordName;
-        this.recordListener = recordListener;
         this.log = log == null ? new FSLogger.SilentLog() : log;
+        this.recordListener = recordListener == null ? (Parser.RecordListener<T>) Parser.RecordListener.NOOP : recordListener;
     }
 
     @Override
@@ -52,10 +50,7 @@ import javax.xml.parsers.SAXParser;
         }
 
         log.i("found " + recordName);
-        RecordContainer recordContainer = getRecordContainerFrom(attributes);
-        if (recordContainer != null) {
-            recordListener.onRecord(recordContainer);
-        }
+        recordListener.onRecord(createRecord(attributes));
     }
 
     @Override
@@ -68,15 +63,9 @@ import javax.xml.parsers.SAXParser;
         log.i("characters: " + new String(ch, start, length));
     }
 
+    protected abstract T createRecord(Attributes attributes);
+
     private boolean isRecordElement(String qName) {
         return qName != null && recordName.equals(qName);
-    }
-
-    private RecordContainer getRecordContainerFrom(Attributes attributes) {
-        TypedRecordContainer ret = new TypedRecordContainer();
-        for (int i = 0; i < attributes.getLength(); i++) {
-            ret.put(attributes.getQName(i), attributes.getValue(i));
-        }
-        return ret;
     }
 }
