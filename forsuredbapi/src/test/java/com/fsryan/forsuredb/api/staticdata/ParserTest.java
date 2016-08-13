@@ -71,12 +71,11 @@ public class ParserTest {
     @Before
     public void setUp() {
         rl = Mockito.mock(Parser.RecordListener.class);
-        parser = new Parser(new FSLogger.DefaultFSLogger(), rl);
     }
 
     @Test
     public void testParserFindsEachMigrationLine() throws Exception {
-        parser.parse(TestData.TEST_RES + File.separator + xmlRecordFile, recordName);
+        Parser.parse(TestData.TEST_RES + File.separator + xmlRecordFile, new RecordContainerParseHandler(recordName, FSLogger.SILENT_LOG, rl));
         Mockito.verify(rl, Mockito.times(numRecords)).onRecord(Mockito.any(RecordContainer.class));
     }
 }

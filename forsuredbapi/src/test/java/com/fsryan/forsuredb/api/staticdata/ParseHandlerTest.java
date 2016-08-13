@@ -29,10 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -45,11 +42,18 @@ public class ParseHandlerTest {
 
     private SAXParser saxParser;
     private ByteArrayInputStream xmlStream;
-    private final List<RecordContainer> parsedRecordContainers = new LinkedList<>();
-    private final Parser.RecordListener recordListener = new Parser.RecordListener() {
+    private final List<RecordContainer> parsedRecordContainers = new ArrayList<>();
+    private final List<Map<String, String>> parsedRawRecords = new ArrayList<>();
+    private final Parser.RecordListener<RecordContainer> recordContainerListener = new Parser.RecordListener<RecordContainer>() {
         @Override
         public void onRecord(RecordContainer recordContainer) {
             parsedRecordContainers.add(recordContainer);
+        }
+    };
+    private final Parser.RecordListener<Map<String, String>> rawRecordListener = new Parser.RecordListener<Map<String, String>>() {
+        @Override
+        public void onRecord(Map<String, String> rawRecord) {
+            parsedRawRecords.add(rawRecord);
         }
     };
 
@@ -121,19 +125,41 @@ public class ParseHandlerTest {
         xmlStream.close();
         saxParser = null;
         parsedRecordContainers.clear();
+        parsedRawRecords.clear();
     }
 
     @Test
-    public void shouldHaveCorrectNumberOfRecords() throws Exception {
-        saxParser.parse(xmlStream, new ParseHandler(recordName, recordListener, new FSLogger.DefaultFSLogger()));
+    public void shouldHaveCorrectNumberOfRawRecords() throws Exception {
+        saxParser.parse(xmlStream, new RawRecordParseHandler(recordName, new FSLogger.DefaultFSLogger(), rawRecordListener));
+        assertEquals(expected.size(), parsedRawRecords.size());
+    }
+
+    @Test
+    public void shouldHaveCorrectNumberOfRecordContainerRecords() throws Exception {
+        saxParser.parse(xmlStream, new RecordContainerParseHandler(recordName, new FSLogger.DefaultFSLogger(), recordContainerListener));
         assertEquals(expected.size(), parsedRecordContainers.size());
     }
 
     @Test
-    public void shouldHaveCorrectRecords() throws Exception {
-        saxParser.parse(xmlStream, new ParseHandler(recordName, recordListener, new FSLogger.DefaultFSLogger()));
-        while (0 < expected.size()) {
-            validateMapEqualsRecordContainer(expected.remove(0), parsedRecordContainers.remove(0));
+    public void shouldHaveCorrectRawRecords() throws Exception {
+        saxParser.parse(xmlStream, new RawRecordParseHandler(recordName, new FSLogger.DefaultFSLogger(), rawRecordListener));
+        for (int idx = 0; idx < expected.size(); idx++) {
+            validateExpectedKeysAndValues(expected.get(0), parsedRawRecords.get(0));
+        }
+    }
+
+    @Test
+    public void shouldHaveCorrectRecordContainerRecords() throws Exception {
+        saxParser.parse(xmlStream, new RecordContainerParseHandler(recordName, new FSLogger.DefaultFSLogger(), recordContainerListener));
+        for (int idx = 0; idx < expected.size(); idx++) {
+            validateMapEqualsRecordContainer(expected.get(0), parsedRecordContainers.get(0));
+        }
+    }
+
+    private void validateExpectedKeysAndValues(Map<String, String> expected, Map<String, String> actual) {
+        for (Map.Entry<String, String> entry : expected.entrySet()) {
+            assertNotNull("Did not parse " + entry.getKey(), actual.get(entry.getKey()));
+            assertEquals(entry.getValue(), actual.get(entry.getKey()));
         }
     }
 

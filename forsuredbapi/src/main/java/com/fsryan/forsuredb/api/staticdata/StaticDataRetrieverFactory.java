@@ -89,7 +89,7 @@ public class StaticDataRetrieverFactory {
                     return rawRecords;
                 }
 
-                records = new LinkedList<>();
+                rawRecords = new LinkedList<>();
                 Parser.parse(xmlStream, new RawRecordParseHandler(recordName, log, new Parser.RecordListener<Map<String, String>>() {
                     @Override
                     public void onRecord(Map<String, String> record) {
