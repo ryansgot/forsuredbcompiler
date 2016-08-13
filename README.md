@@ -2,12 +2,15 @@
 forsuredbcompiler is Annotation processor for the forsuredb project that handles code and resource generation.
 As the central part of the forsuredb project, it is one of libraries necessary for forsuredb to work.
 
-## The three libraries you need for an application
-1. forsuredbcompiler
-2. A platform integration library (see https://github.com/ryansgot/forsuredbandroid for an example)
-3. An SQL library conforming to the forsuredb standards (see https://github.com/ryansgot/forsuredbsqlitelib for an example). Libraries 2 and 3 can be combined, however.
+## Quickstart
 
-## Using forsuredb in Android
+### The three library dependencies for your application
+1. forsuredbcompiler (compile only)
+2. forsuredbapi
+3. A platform integration library (see https://github.com/ryansgot/forsuredbandroid for an example)
+4. An SQL library conforming to the forsuredb standards (see https://github.com/ryansgot/forsuredbsqlitelib for an example). Libraries 2 and 3 can be combined, however.
+
+### Using forsuredb in Android
 - Create a new Android project (see https://github.com/ryansgot/forsuredbandroid for a sample app)
 - Set up the project build.gradle repositories and dependencies like this:
 ```groovy
@@ -18,16 +21,13 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.6'  // <-- forsuredbcompiler needs this plugin to generate code
-        classpath 'com.fsryan:forsuredbplugin:0.1.1'
+        classpath 'com.fsryan:forsuredbplugin:0.2.0'
     }
 }
 
 allprojects {
     repositories {
         jcenter() // <-- all jar/aar files for forsuredb are hosted on jcenter
-        maven {
-            url  "http://dl.bintray.com/ryansgot/maven"   // <-- com.fsryan.forsuredb.sqlitelib will be on jcenter soon
-        }
     }
 }
 ```
@@ -46,9 +46,13 @@ android {
 
 dependencies {
     compile 'com.google.guava:guava:18.0'
-    compile 'com.fsryan:forsuredbandroid:0.4.0@aar'
-    
-    apt 'com.fsryan:forsuredbcompiler:0.4.0'
+
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.7.0'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:sqlitelib:0.2.0'              // the SQLite DBMS integration
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.7.0@aar'   // the Android integration and useful tools
+
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.7.0'     // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.7.0'          // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -73,7 +77,7 @@ forsuredb {
         android:name=".App" >
   <!-- ... -->
   <provider
-      android:name="com.fsryan.provider.FSDefaultProvider"
+      android:name="com.fsryan.forsuredb.provider.FSDefaultProvider"
       android:authorities="com.fsryan.testapp.content"
       android:enabled="true"
       android:exported="false" />
@@ -115,10 +119,9 @@ public interface UserTable extends FSGetApi {   // <-- you must extend FSGetApi 
 - Add a unique index column to a table
 - Make an existing column a unique index
 - Add a foreign key column to a table
-
+Note that these migrations are supported by forsuredbcompiler, but if you want to use a different DBMS, then you'll have
+to implement your own ```DBMSIntegrator```
 ## Coming up
 - support for inverse migrations of each of the currently supported migrations
-- support for more types of migrations
-- an example java (non-Android) project and corresponding forsuredbjava library
+- abstractions for using forsuredb as a docstore
 - more robust where-clause editing when doing joins
-- A solution for the issue adding multiple ```@ForeignKey``` annotations to the same ```FSGetApi``` extension at once
