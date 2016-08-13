@@ -17,15 +17,11 @@
  */
 package com.fsryan.forsuredb.api.staticdata;
 
-import com.fsryan.forsuredb.api.FSLogger;
-import com.fsryan.forsuredb.api.RecordContainer;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
