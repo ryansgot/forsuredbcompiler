@@ -24,15 +24,29 @@ public class Caster {
     }
 
     /**
-     * <p>
-     *     Throws a {@link ClassCastException ClassCastException} if the type parameter cannot
-     *     be used to cast the underlying object.
-     * </p>
      * @param cls The class of the type you would like to return
      * @param <T> The type you would like to return
      * @return The property cast to T
+     * @throws ClassCastException if the type parameter cannot be used to cast the underlying object
      */
     public <T> T as(Class<T> cls) {
         return (T) uncasted;
+    }
+
+    /**
+     * @param defaultValue the default value you would like to return if the object is null or a
+     * @param <T> The type you would like to return
+     * @return The property cast to T or defaultValue if a failure occurs
+     */
+    public <T> T castSafe(T defaultValue) {
+        if (uncasted == null) {
+            return defaultValue;
+        }
+        try {
+            return (T) uncasted;
+        } catch (ClassCastException cce) {
+            APLog.w(Caster.class.getSimpleName(), "Cannot cast " + uncasted.getClass().getName() + " to " + (defaultValue == null ? "null" : defaultValue.getClass().getSimpleName()));
+        }
+        return defaultValue;
     }
 }

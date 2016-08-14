@@ -34,7 +34,9 @@ public class ColumnInfoFactory {
 
         String annotationClass = am.getAnnotationType().toString();
         if (annotationClass.equals(FSColumn.class.getName())) {
-            builder.columnName(at.property("value").as(String.class));
+            builder.columnName(at.property("value").as(String.class))
+                    .searchable(at.property("searchable").castSafe(true))
+                    .orderable(at.property("orderable").castSafe(true));
         } else if (annotationClass.equals(ForeignKey.class.getName())) {
             builder.foreignKeyInfo(ForeignKeyInfo.builder().columnName(at.property("columnName").asString())
                     .apiClassName(at.property("apiClass").asString())
