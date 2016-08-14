@@ -4,7 +4,7 @@ As the central part of the forsuredb project, it is one of libraries necessary f
 
 ## Quickstart
 
-### The three library dependencies for your application
+### The four library dependencies for your application
 1. forsuredbcompiler (compile only)
 2. forsuredbapi
 3. A platform integration library (see https://github.com/ryansgot/forsuredbandroid for an example)
@@ -121,6 +121,7 @@ public interface UserTable extends FSGetApi {   // <-- you must extend FSGetApi 
 - Add a foreign key column to a table
 Note that these migrations are supported by forsuredbcompiler, but if you want to use a different DBMS, then you'll have
 to implement your own ```DBMSIntegrator```
+
 ## Coming up
 - support for inverse migrations of each of the currently supported migrations
 - abstractions for using forsuredb as a docstore
