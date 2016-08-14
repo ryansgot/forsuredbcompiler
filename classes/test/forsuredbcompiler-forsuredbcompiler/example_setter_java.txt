@@ -1,0 +1,115 @@
+package com.fsryan.annotationprocessor.generator.code;
+
+import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
+import com.fsryan.forsuredb.annotations.FSColumn;
+import com.fsryan.forsuredb.api.FSSaveApi;
+import com.google.common.collect.ImmutableBiMap;
+import java.lang.String;
+import java.math.BigDecimal;
+import java.util.Date;
+
+/**
+ * <p>
+ *   This is an auto-generated class. DO NOT modify it!
+ * </p>
+ * <p>
+ *   TestTable3Setter is an automatically generated interface describing the
+ *   contract for a fluent API for building queries to update or delete one
+ *   or more records from the test_table_3 table.
+ *   You DO NOT need to implement this interface in order to use it.
+ * </p>
+ * <p>
+ *   Below is an example usage:
+ *   <pre>
+ *     {@code
+ *             testTable3().set()
+ *             .id(23545494583L)
+ *             .appRating(75.5D)
+ *             .competitorAppRating(BigDecimal.ONE)
+ *             .deleted(true)
+ *             .globalId(23545494583L)
+ *             .loginCount(65536)
+ *             .save()
+ *     }
+ *   </pre>
+ * </p>
+ * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
+ * @see FSSaveApi
+ */
+public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
+    String TABLE_NAME = "test_table_3";
+
+    ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_MAP = new ImmutableBiMap.Builder<String, String>()
+            .put("_id", "id")
+            .put("app_rating", "appRating")
+            .put("competitor_app_rating", "competitorAppRating")
+            .put("created", "created")
+            .put("deleted", "deleted")
+            .put("global_id", "globalId")
+            .put("login_count", "loginCount")
+            .put("modified", "modified");
+
+    /**
+     * <p>
+     *   Set the value of the _id column to be updated
+     * </p>
+     */
+    @FSColumn("_id")
+    TestTable3Setter id(long id);
+
+    /**
+     * <p>
+     *   Set the value of the app_rating column to be updated
+     * </p>
+     */
+    @FSColumn("app_rating")
+    TestTable3Setter appRating(double appRating);
+
+    /**
+     * <p>
+     *   Set the value of the competitor_app_rating column to be updated
+     * </p>
+     */
+    @FSColumn("competitor_app_rating")
+    TestTable3Setter competitorAppRating(BigDecimal competitorAppRating);
+
+    /**
+     * <p>
+     *   Set the value of the created column to be updated
+     * </p>
+     */
+    @FSColumn("created")
+    TestTable3Setter created(Date created);
+
+    /**
+     * <p>
+     *   Set the value of the deleted column to be updated
+     * </p>
+     */
+    @FSColumn("deleted")
+    TestTable3Setter deleted(boolean deleted);
+
+    /**
+     * <p>
+     *   Set the value of the global_id column to be updated
+     * </p>
+     */
+    @FSColumn("global_id")
+    TestTable3Setter globalId(long globalId);
+
+    /**
+     * <p>
+     *   Set the value of the login_count column to be updated
+     * </p>
+     */
+    @FSColumn("login_count")
+    TestTable3Setter loginCount(int loginCount);
+
+    /**
+     * <p>
+     *   Set the value of the modified column to be updated
+     * </p>
+     */
+    @FSColumn("modified")
+    TestTable3Setter modified(Date modified);
+}
