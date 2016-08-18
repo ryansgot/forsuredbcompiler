@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code;
+package com.fsryan.forsuredb.annotationprocessor.generator.code.orderby;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
@@ -30,13 +30,14 @@ public class OrderByGeneratorTest extends GeneratorTest<JavaFileObject> {
                 {
                         TestData.resourceText("example_order_by.txt"),
                         TestData.targetTableWithChildForeignKey()
-                }
+                },
+                // TODO: test DocStoreOrderByGenerator
         });
     }
 
     @Before
     public void setUp() {
-        gut = new OrderByGenerator(mockProcessingEnv, inputTable);
+        gut = OrderByGenerator.getFor(mockProcessingEnv, inputTable);
     }
 
     @Override

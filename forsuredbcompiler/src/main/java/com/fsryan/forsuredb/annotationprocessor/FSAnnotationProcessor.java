@@ -17,11 +17,11 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.OrderByGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.orderby.OrderByGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.FinderGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.finder.FinderGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.ResolverGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
@@ -125,21 +125,21 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private void createOrderByClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new OrderByGenerator(processingEnv, tableInfo).generate();
+            OrderByGenerator.getFor(processingEnv, tableInfo).generate();
         }
         orderByClassesCreated = true;    // <-- maintain state so orderby classes don't have to be created more than once
     }
 
     private void createFinderClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new FinderGenerator(processingEnv, tableInfo).generate();
+            FinderGenerator.getFor(processingEnv, tableInfo).generate();
         }
         finderClassesCreated = true;    // <-- maintain state so finder classes don't have to be created more than once
     }
 
     private void createResolverClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new ResolverGenerator(processingEnv, tableInfo, pc).generate();
+            ResolverGenerator.getFor(processingEnv, tableInfo, pc).generate();
         }
         resolverClassesCreated = true;
     }

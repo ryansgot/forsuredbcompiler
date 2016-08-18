@@ -1,6 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.OrderByGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.orderby.OrderByGeneratorTest;
 import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.TypedRecordContainer;

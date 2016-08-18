@@ -26,12 +26,25 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- *     Use the Unique annotation on methods defined in your extensions of
- *     {@link FSGetApi FSGetApi} in order to create this column as a unique index
- *     for your table.
+ *     Use the Unique annotation on methods defined in your extensions of {@link FSGetApi FSGetApi}
+ *     in order to mark this column as unique.
+ * </p>
+ * <p>
+ *     Due to the fact that you can create an index that is not unique, there is also a
+ *     {@link Index} annotation. Annotating an {@link com.fsryan.forsuredb.api.FSGetApi} method with
+ *     both {@link Unique} and {@link Index} will have the same effect as setting {@link #index()}
+ *     to true.
  * </p>
  * @author Ryan Scott
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Unique {}
+public @interface Unique {
+    /**
+     * <p>
+     *
+     * </p>
+     * @return
+     */
+    boolean index() default false;
+}

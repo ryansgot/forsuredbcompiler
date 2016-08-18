@@ -1,5 +1,9 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code;
+package com.fsryan.forsuredb.annotationprocessor.generator.code.orderby;
 
+import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.api.OrderBy;
@@ -13,24 +17,40 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
+import java.util.LinkedList;
 import java.util.List;
 
-public class OrderByGenerator extends JavaSourceGenerator {
+public abstract class OrderByGenerator extends JavaSourceGenerator {
 
     private final List<ColumnInfo> columnsSortedByName;
     private final ClassName[] parameterClasses;
 
-    public OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
+    protected OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "OrderBy");
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
-        parameterClasses = new ClassName[] {
-                ClassName.bestGuess(getResultParameter()),                      // U (the resultParameter)
-                ClassName.get(getRecordContainerClass()),                       // R extends RecordContainer
-                ClassName.bestGuess(table.getQualifiedClassName()),             // G extends FSGetApi
-                ClassName.bestGuess(table.getQualifiedClassName() + "Setter"),  // S extends FSSaveApi<U>
-                ClassName.bestGuess(table.getQualifiedClassName() + "Finder"),  // F extends Finder<U, R, G, S, F, O>
-                ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy")  // O extends OrderBy<U, R, G, S, F, O>
-        };
+        parameterClasses = createParameterClasses(table).toArray(new ClassName[0]);
+    }
+
+    public static OrderByGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
+        return table.isDocStore() ? new DocStoreOrderByGenerator(processingEnv, table) : new RelationalOrderByGenerator(processingEnv, table);
+    }
+
+    /**
+     * <p>
+     *     If you override this method, then you must call the super class method.
+     * </p>
+     * @param table the table information for which the Finder class extension should be generated
+     * @return a List of ClassName describing the type parameters of the Finder class extension
+     */
+    protected List<ClassName> createParameterClasses(TableInfo table) {
+        List<ClassName> ret = new LinkedList<>();
+        ret.add(ClassName.bestGuess(getResultParameter()));                         // U (the resultParameter)
+        ret.add(ClassName.get(getRecordContainerClass()));                          // R extends RecordContainer
+        ret.add(ClassName.bestGuess(table.getQualifiedClassName()));                // G extends FSGetApi
+        ret.add(ClassName.bestGuess(table.getQualifiedClassName() + "Setter"));     // S extends FSSaveApi<U>
+        ret.add(ClassName.bestGuess(table.getQualifiedClassName() + "Finder"));     // F extends Finder<U, R, G, S, F, O>
+        ret.add(ClassName.bestGuess(getOutputClassName(true)));                     // O extends OrderBy<U, R, G, S, F, O>
+        return ret;
     }
 
     @Override

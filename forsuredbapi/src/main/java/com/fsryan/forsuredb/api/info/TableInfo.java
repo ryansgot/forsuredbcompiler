@@ -17,8 +17,6 @@
  */
 package com.fsryan.forsuredb.api.info;
 
-import com.fsryan.forsuredb.annotations.FSStaticData;
-import com.fsryan.forsuredb.annotations.FSTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.annotations.SerializedName;
 
@@ -29,12 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
 import lombok.Getter;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * <p>
@@ -88,12 +83,14 @@ public class TableInfo {
     @Getter @SerializedName("qualified_class_name") private final String qualifiedClassName;
     @Getter @SerializedName("static_data_asset") private final String staticDataAsset;
     @Getter @SerializedName("static_data_record_name") private final String staticDataRecordName;
+    @Getter @SerializedName("doc_store_parameterization") private final TypeMirror docStoreParameterization;
 
     private TableInfo(Map<String, ColumnInfo> columnMap,
                       String tableName,
                       String qualifiedClassName,
                       String staticDataAsset,
-                      String staticDataRecordName) {
+                      String staticDataRecordName,
+                      TypeMirror docStoreParameterization) {
         this.tableName = createTableName(tableName, qualifiedClassName);
         this.qualifiedClassName = qualifiedClassName;
 
@@ -105,6 +102,7 @@ public class TableInfo {
 
         this.staticDataAsset = staticDataAsset;
         this.staticDataRecordName = staticDataRecordName;
+        this.docStoreParameterization = docStoreParameterization;
     }
 
     public boolean isValid() {
@@ -129,6 +127,10 @@ public class TableInfo {
             buf.append(".").append(split[i]);
         }
         return buf.toString();
+    }
+
+    public boolean isDocStore() {
+        return docStoreParameterization != null;
     }
 
     public boolean hasStaticData() {

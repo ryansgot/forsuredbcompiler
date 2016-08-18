@@ -37,12 +37,13 @@ public class Migration implements Comparable<Migration> {
 
     public enum Type {
         CREATE_TABLE(0),
-        ALTER_TABLE_ADD_COLUMN(1),
-        ALTER_TABLE_ADD_UNIQUE(1),
-        ADD_FOREIGN_KEY_REFERENCE(2),
-        ADD_UNIQUE_INDEX(3),
-        CREATE_TEMP_TABLE_FROM_EXISTING(4),
-        DROP_TABLE(5);
+        ALTER_TABLE_ADD_COLUMN(10),
+        ALTER_TABLE_ADD_UNIQUE(10),
+        ADD_FOREIGN_KEY_REFERENCE(19),
+        ADD_UNIQUE_INDEX(30),
+        ADD_INDEX(30),
+        CREATE_TEMP_TABLE_FROM_EXISTING(40),
+        DROP_TABLE(100);
 
         private int priority;
 

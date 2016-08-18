@@ -1,6 +1,10 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code;
+package com.fsryan.forsuredb.annotationprocessor.generator.code.resolver;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
@@ -11,20 +15,14 @@ import com.fsryan.forsuredb.api.Resolver;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResolverGenerator extends JavaSourceGenerator {
+public abstract class ResolverGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
     private final TableContext targetContext;
@@ -36,7 +34,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private final ClassName finderClassName;
     private final ClassName orderByClassName;
 
-    public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
+    protected ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.getQualifiedClassName() + "Resolver");
         this.table = table;
         this.targetContext = targetContext;
@@ -49,13 +47,18 @@ public class ResolverGenerator extends JavaSourceGenerator {
         orderByClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
     }
 
+    public static ResolverGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
+        return table.isDocStore() ? new DocStoreResolverGenerator(processingEnv, table, targetContext)
+                : new RelationalResolverGenerator(processingEnv, table, targetContext);
+    }
+
     @Override
     protected String getCode() {
         JavadocInfo jd = classJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get(Resolver.class),
+                .superclass(ParameterizedTypeName.get(extendsFromClassName(),
                         resultParameterClassName,
                         recordContainerClassName,
                         getClassName,
@@ -69,6 +72,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
+
+    protected abstract ClassName extendsFromClassName();
 
     private void addColumnMethodNameMapMethod(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.methodBuilder("columnNameToMethodNameBiMap")

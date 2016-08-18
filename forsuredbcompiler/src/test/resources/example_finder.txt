@@ -1,6 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.FinderGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.finder.FinderGeneratorTest;
 import com.fsryan.forsuredb.api.Between;
 import com.fsryan.forsuredb.api.Finder;
 import com.fsryan.forsuredb.api.Resolver;

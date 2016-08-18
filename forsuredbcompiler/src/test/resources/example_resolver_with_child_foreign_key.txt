@@ -1,6 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.ResolverGeneratorTest;
 import com.fsryan.forsuredb.api.FSJoin;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;

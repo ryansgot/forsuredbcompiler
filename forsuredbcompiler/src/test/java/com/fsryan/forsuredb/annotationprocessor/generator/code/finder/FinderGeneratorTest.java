@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code;
+package com.fsryan.forsuredb.annotationprocessor.generator.code.finder;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
@@ -30,13 +30,14 @@ public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
                 {
                         TestData.resourceText("example_finder.txt"),
                         TestData.targetTableWithChildForeignKey()
-                }
+                },
+                // TODO: test DocStoreFinder generation
         });
     }
 
     @Before
     public void setUp() {
-        gut = new FinderGenerator(mockProcessingEnv, inputTable);
+        gut = FinderGenerator.getFor(mockProcessingEnv, inputTable);
     }
 
     @Override

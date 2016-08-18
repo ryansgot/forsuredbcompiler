@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/*package*/ class TableDataUtil {
+public class TableDataUtil {
 
     public static List<ColumnInfo> columnsSortedByName(TableInfo table, ColumnInfo... excludedColumns) {
         return columnsSortedByName(table == null ? null : table.getColumns(), excludedColumns);
