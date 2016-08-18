@@ -1,11 +1,10 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGeneratorTest;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.FSSaveApi;
 import java.lang.String;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * <p>
@@ -35,7 +34,7 @@ import java.util.Date;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see FSSaveApi
  */
-public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
+public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
     String TABLE_NAME = "test_table_3";
 
     /**
@@ -64,14 +63,6 @@ public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
 
     /**
      * <p>
-     *   Set the value of the created column to be updated
-     * </p>
-     */
-    @FSColumn("created")
-    TestTable3Setter created(Date created);
-
-    /**
-     * <p>
      *   Set the value of the deleted column to be updated
      * </p>
      */
@@ -93,12 +84,4 @@ public interface TestTable3Setter extends FSSaveApi<SetterGeneratorTest> {
      */
     @FSColumn("login_count")
     TestTable3Setter loginCount(int loginCount);
-
-    /**
-     * <p>
-     *   Set the value of the modified column to be updated
-     * </p>
-     */
-    @FSColumn("modified")
-    TestTable3Setter modified(Date modified);
 }

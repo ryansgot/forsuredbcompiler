@@ -18,11 +18,11 @@
 package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.orderby.OrderByGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.finder.FinderGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.ResolverGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.api.info.TableInfo;
@@ -52,7 +52,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private static final String LOG_TAG = FSAnnotationProcessor.class.getSimpleName();
 
-    private static boolean setterApisCreated = false;          // <-- maintain state so setter APIs don't have to be created more than once
+    private static boolean setterApisCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
     private static boolean migrationsCreated = false;          // <-- maintain state so migrations don't have to be created more than once
     private static boolean tableCreatorClassCreated = false;   // <-- maintain state so TableCreator class does not have to be created more than once
     private static boolean finderClassesCreated = false;       // <-- maintain state so finder classes don't have to be created more than once
@@ -104,9 +104,9 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private void createSetterApis(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new SetterGenerator(processingEnv, tableInfo).generate();
+            SaveApiGenerator.getFor(processingEnv, tableInfo).generate();
         }
-        setterApisCreated = true;   // <-- maintain state so setter APIs don't have to be created more than once
+        setterApisCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
     }
 
     private void createMigrations(ProcessingContext pc) {

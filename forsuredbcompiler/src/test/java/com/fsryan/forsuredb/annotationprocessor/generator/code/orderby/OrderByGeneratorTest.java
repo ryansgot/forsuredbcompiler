@@ -28,7 +28,7 @@ public class OrderByGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        TestData.resourceText("example_order_by.txt"),
+                        TestData.resourceText("example_relational_order_by.txt"),
                         TestData.targetTableWithChildForeignKey()
                 },
                 // TODO: test DocStoreOrderByGenerator

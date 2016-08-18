@@ -15,15 +15,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.fsryan.forsuredb.api;
+package com.fsryan.forsuredb.api.adapter;
 
-import com.google.common.collect.BiMap;
+import com.fsryan.forsuredb.api.*;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,7 +69,7 @@ public class FSSaveAdapter {
                                                                                   Resolver<U, R, ?, S, ?, ?> resolver) {
         return (S) Proxy.newProxyInstance(resolver.setApiClass().getClassLoader(),
                                           new Class<?>[]{resolver.setApiClass()},
-                                          new Handler(queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
+                                          SaveHandler.getFor(resolver.setApiClass(), queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
     }
 
     // lazily create the column type maps for each api so that they are not created each time a new handler is created
@@ -103,124 +100,5 @@ public class FSSaveAdapter {
             retMap.put(m, new ColumnDescriptor(columnName, m.getGenericParameterTypes()[0]));
         }
         return retMap;
-    }
-
-    private static class Handler<U, R extends RecordContainer> implements InvocationHandler {
-
-        private final FSQueryable<U, R> queryable;
-        private final FSSelection selection;
-        private final R recordContainer;
-        private final Map<Method, ColumnDescriptor> columnTypeMap;
-
-        public Handler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
-            this.queryable = queryable;
-            this.selection = selection;
-            this.recordContainer = recordContainer;
-            this.columnTypeMap = columnTypeMap;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method.getDeclaringClass() == Object.class) {
-                return method.invoke(this, args);
-            }
-
-            // The following methods are terminal
-            switch(method.getName()) {
-                case "save":
-                    return performSave();
-                case "softDelete":
-                    recordContainer.clear();
-                    recordContainer.put("deleted", 1);
-                    return performUpdate();
-                case "hardDelete":
-                    recordContainer.clear();
-                    return queryable.delete(selection);
-            }
-
-            performSet(columnTypeMap.get(method), args[0]);
-            return proxy;
-        }
-
-        private SaveResult<U> performSave() {
-            if (selection == null) {
-                return performInsert();
-            }
-            return performUpsert();
-        }
-
-        private SaveResult<U> performUpsert() {
-            Retriever cursor = queryable.query(null, selection, null);
-            try {
-                if (cursor == null || cursor.getCount() < 1) {
-                    return performInsert();
-                }
-                return performUpdate();
-            } catch (Exception e) {
-                return ResultFactory.create(null, 0, e);
-            } finally {
-                recordContainer.clear();
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        private SaveResult<U> performInsert() {
-            try {
-                final U inserted = queryable.insert(recordContainer);
-                return ResultFactory.create(inserted, inserted == null ? 0 : 1, null);
-            } catch (Exception e) {
-                return ResultFactory.create(null, 0, e);
-            } finally {
-                recordContainer.clear();
-            }
-        }
-
-        private SaveResult<U> performUpdate() {
-            int rowsAffected = queryable.update(recordContainer, selection);
-            return ResultFactory.create(null, rowsAffected, null);
-        }
-
-        private void performSet(ColumnDescriptor columnDescriptor, Object arg) {
-            Type type = columnDescriptor.getType();
-            if (type.equals(byte[].class)) {
-                recordContainer.put(columnDescriptor.getColumnName(), (byte[]) arg);
-            } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-                recordContainer.put(columnDescriptor.getColumnName(), (Boolean) arg ? 1 : 0);
-            } else if (type.equals(Date.class)) {
-                recordContainer.put(columnDescriptor.getColumnName(), FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
-            } else {
-                recordContainer.put(columnDescriptor.getColumnName(), arg.toString());
-            }
-        }
-    }
-
-    private static class ResultFactory {
-        public static <U> SaveResult<U> create(final U inserted, final int rowsAffected, final Exception e) {
-            return new SaveResult<U>() {
-                @Override
-                public Exception exception() {
-                    return e;
-                }
-
-                @Override
-                public U inserted() {
-                    return inserted;
-                }
-
-                @Override
-                public int rowsAffected() {
-                    return rowsAffected;
-                }
-            };
-        }
-    }
-
-    @lombok.Data
-    @lombok.AllArgsConstructor
-    private static class ColumnDescriptor {
-        private final String columnName;
-        private final Type type;
     }
 }

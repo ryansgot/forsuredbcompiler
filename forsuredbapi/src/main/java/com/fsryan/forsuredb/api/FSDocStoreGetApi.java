@@ -30,7 +30,7 @@ import com.fsryan.forsuredb.annotations.FSColumn;
 public interface FSDocStoreGetApi<T> extends FSGetApi {
     /**
      * <p>
-     *     Deserializes the document into a an object of type S.
+     *     Deserializes the document into a an object of type C.
      * </p>
      * <p>
      *     You must make an assignment with this call for S to be non-ambiguously inferred. In other
@@ -39,11 +39,28 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      *     the base type, T.
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
-     * @param <S> the type to deserialize
+     * @param <C> the type to deserialize
      * @return an object of type S deseralized from the string in the doc column
      * @see #doc(Retriever)
      */
-    <S extends T> S get(Retriever retriever);
+    <C extends T> C getAs(Class<C> cls, Retriever retriever);
+
+    /**
+     * <p>
+     *     Deserializes the document into a an object of type T.
+     * </p>
+     * <p>
+     *     You must make an assignment with this call for S to be non-ambiguously inferred. In other
+     *     words, you must assign a temporary variable and then call a method on that in order for
+     *     the compiler to know about additional members of the object that are not guaranteed by
+     *     the base type, T.
+     * </p>
+     * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
+     * @param <C> the type to deserialize
+     * @return an object of type S deseralized from the string in the doc column
+     * @see #doc(Retriever)
+     */
+    T get(Retriever retriever);
 
     /**
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
@@ -59,7 +76,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      *     the package name or the class name for a class, then this will not be reflected in this
      *     column . . . yet.
      * </p>
-     * @param retriever
+     * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return the fully-qualified java class name of the
      */
     @FSColumn("class_name") String className(Retriever retriever);

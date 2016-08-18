@@ -7,7 +7,6 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.api.OrderBy;
-import com.fsryan.forsuredb.api.Resolver;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -35,12 +34,16 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
         return table.isDocStore() ? new DocStoreOrderByGenerator(processingEnv, table) : new RelationalOrderByGenerator(processingEnv, table);
     }
 
+    protected abstract ClassName extendsFromClassName();
+    protected abstract ClassName resolverClassName();
+    protected abstract Class<?> conjunctionClass();
+
     /**
      * <p>
      *     If you override this method, then you must call the super class method.
      * </p>
      * @param table the table information for which the Finder class extension should be generated
-     * @return a List of ClassName describing the type parameters of the Finder class extension
+     * @return a List of ClassName describing the type parameters of the OrderBy class extension
      */
     protected List<ClassName> createParameterClasses(TableInfo table) {
         List<ClassName> ret = new LinkedList<>();
@@ -58,7 +61,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
 //                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get(OrderBy.class), parameterClasses));
+                .superclass(ParameterizedTypeName.get(extendsFromClassName(), parameterClasses));
         addConstructor(codeBuilder);
         addOrderByMethods(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
@@ -66,7 +69,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addParameter(ParameterizedTypeName.get(ClassName.get(Resolver.class), parameterClasses), "resolver")
+                .addParameter(ParameterizedTypeName.get(resolverClassName(), parameterClasses), "resolver")
                 .addStatement("super(resolver)")
                 .build());
     }
@@ -89,16 +92,17 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("appendOrder($S, $L)", column.getColumnName(), "order")
                 .addStatement("return conjunction")
-                .returns(ParameterizedTypeName.get(ClassName.get(OrderBy.Conjunction.class), parameterClasses))
+                .returns(ParameterizedTypeName.get(ClassName.get(conjunctionClass()), parameterClasses))
                 .build();
     }
+
     private JavadocInfo javadocInfoFor(String columnName) {
         return JavadocInfo.builder()
                 .startParagraph()
                 .addLine("Order the results of the query by $L", columnName)
                 .endParagraph()
                 .param("order", "the direction to order the results")
-                .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(OrderBy.Conjunction.class))
+                .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(conjunctionClass()))
                 .addLine("adding other query parameters")
                 .addLine()
                 .build();

@@ -1,27 +1,37 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code;
+package com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi;
 
+import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
-import com.fsryan.forsuredb.api.FSSaveApi;
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.Sets;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 
 import java.util.List;
+import java.util.Set;
 
-public class SetterGenerator extends JavaSourceGenerator {
+public abstract class SaveApiGenerator extends JavaSourceGenerator {
+
+    private static final Set<String> BASE_BLOCKED_COLUMNS = Sets.newHashSet("modified", "created");
 
     private final TableInfo table;
     private final List<ColumnInfo> columnsSortedByName;
 
-    public SetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
+    protected SaveApiGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Setter");
         this.table = table;
         this.columnsSortedByName = TableDataUtil.columnsSortedByName(table);
+    }
+
+    public static SaveApiGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
+        return table.isDocStore() ? new DocStoreSaveApiGenerator(processingEnv, table) : new RelationalSaveApiGenerator(processingEnv, table);
     }
 
     @Override
@@ -29,7 +39,7 @@ public class SetterGenerator extends JavaSourceGenerator {
         JavadocInfo javadoc = createSetterJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.interfaceBuilder(getOutputClassName(false))
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(FSSaveApi.class), ClassName.bestGuess(getResultParameter())))
+                .addSuperinterface(createSuperinterfaceParameterizedTypeName(table))
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
 
         codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
@@ -38,14 +48,32 @@ public class SetterGenerator extends JavaSourceGenerator {
                         .build())
                 .build());
 
+
         for (ColumnInfo column : columnsSortedByName) {
+            if (isBlockedFromSetterMethods(column)) {
+                continue;
+            }
             try {
                 codeBuilder.addMethod(methodSpecFor(column));
             } catch (ClassNotFoundException cnfe) {
                 APLog.e(logTag(), "failed to find class: " + cnfe.getMessage());
             }
         }
+
         return JavaFile.builder(table.getPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    protected abstract ParameterizedTypeName createSuperinterfaceParameterizedTypeName(TableInfo table);
+
+    /**
+     * <p>
+     *     If you override this method, then you must call the super class method
+     * </p>
+     * @param column the {@link ColumnInfo} to check whether there should be a setter method
+     * @return true of the column is blocked
+     */
+    protected boolean isBlockedFromSetterMethods(ColumnInfo column) {
+        return BASE_BLOCKED_COLUMNS.contains(column.getColumnName());
     }
 
     private JavadocInfo createSetterJavadoc() {

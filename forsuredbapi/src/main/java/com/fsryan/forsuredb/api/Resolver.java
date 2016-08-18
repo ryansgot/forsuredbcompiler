@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.adapter.FSGetAdapter;
+import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
 import com.google.common.collect.BiMap;
 
 import java.util.ArrayList;
@@ -72,7 +74,7 @@ import java.util.List;
  * @see Finder
  * @author Ryan Scott
  */
-public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<U, R, G, S, F, O>, O extends OrderBy<U, R, G, S, F, O>> {
+public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder, O extends OrderBy> {
 
     private final ForSureInfoFactory<U, R> infoFactory;
     private final List<FSJoin> joins = new ArrayList<>();
@@ -150,13 +152,12 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     // the following methods fill in the details for the Resolver class
 
     public abstract BiMap<String, String> columnNameToMethodNameBiMap();
-
-    protected abstract Class<G> getApiClass();
-    protected abstract Class<S> setApiClass();
-    protected abstract FSProjection projection();
+    public abstract Class<G> getApiClass();
+    public abstract Class<S> setApiClass();
+    public abstract FSProjection projection();
+    public abstract String tableName();
     protected abstract F newFinderInstance();
     protected abstract O newOrderByInstance();
-    protected abstract String tableName();
 
     protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
         projections.add(foreignTableProjection);

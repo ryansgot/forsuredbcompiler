@@ -4,7 +4,7 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.Resolver
 import com.fsryan.forsuredb.api.FSJoin;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
-import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.RelationalResolver;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -17,12 +17,12 @@ import java.lang.String;
  *   This is an auto-generated class. DO NOT modify it!
  * </p>
  * <p>
- *   Entry point for querying the test_table_2 table. You can access
+ *   Entry point for querying the test_table_3 table. You can access
  *   this {@link com.fsryan.forsuredb.api.Resolver} via the generated static
  *   method in the ForSure class:
  *   <pre>
  *     {@code
- *             ForSure.testTable2().find()
+ *             ForSure.testTable3().find()
  *             .byIdLessThan(23545494583L)
  *             .andFinally()
  *             .get();
@@ -32,10 +32,10 @@ import java.lang.String;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder, TestTable2OrderBy> {
-    public static final String TABLE_NAME = "test_table_2";
+public class TestTable3Resolver extends RelationalResolver<ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+    public static final String TABLE_NAME = "test_table_3";
 
-    public static final String[] columns = {"_id","created","deleted","modified","test_table_3_id",};
+    public static final String[] columns = {"_id","app_rating","competitor_app_rating","created","deleted","global_id","login_count","modified",};
 
     public static final FSProjection PROJECTION = new FSProjection() {
         @Override
@@ -51,13 +51,16 @@ public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRec
 
     private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
             .put("_id", "id")
+            .put("app_rating", "appRating")
+            .put("competitor_app_rating", "competitorAppRating")
             .put("created", "created")
             .put("deleted", "deleted")
+            .put("global_id", "globalId")
+            .put("login_count", "loginCount")
             .put("modified", "modified")
-            .put("test_table_3_id", "testTable3Id")
             .build();
 
-    public TestTable2Resolver(ForSureInfoFactory infoFactory) {
+    public TestTable3Resolver(ForSureInfoFactory infoFactory) {
         super(infoFactory);
     }
 
@@ -68,11 +71,11 @@ public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRec
 
     /**
      * <p>
-     *   Add a join to test_table_3 on test_table_2.test_table_3_id = test_table_3._id
+     *   Add a join to test_table_2 on test_table_2.test_table_3_id = test_table_3._id
      *   to the query
      * </p>
      */
-    public TestTable2Resolver joinTestTable3(final FSJoin.Type type) {
+    public TestTable3Resolver joinTestTable2(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -98,73 +101,37 @@ public class TestTable2Resolver extends Resolver<ResolverGeneratorTest, TypedRec
             public String childColumn() {
                 return "test_table_3_id";
             }
-        }, TestTable3Resolver.PROJECTION);
-        return this;
-    }
-
-    /**
-     * <p>
-     *   Add a join to test_table on test_table.test_table_2_id = test_table_2._id
-     *   to the query
-     * </p>
-     */
-    public TestTable2Resolver joinTestTable(final FSJoin.Type type) {
-        addJoin(new FSJoin() {
-            @Override
-            public FSJoin.Type type() {
-                return type;
-            }
-
-            @Override
-            public String parentTable() {
-                return "test_table_2";
-            }
-
-            @Override
-            public String parentColumn() {
-                return "_id";
-            }
-
-            @Override
-            public String childTable() {
-                return "test_table";
-            }
-
-            @Override
-            public String childColumn() {
-                return "test_table_2_id";
-            }
-        }, TestTableResolver.PROJECTION);
+        }, TestTable2Resolver.PROJECTION);
         return this;
     }
 
     @Override
-    protected Class<TestTable2> getApiClass() {
-        return TestTable2.class;
+    public Class<TestTable3> getApiClass() {
+        return TestTable3.class;
     }
 
     @Override
-    protected Class<TestTable2Setter> setApiClass() {
-        return TestTable2Setter.class;
+    public Class<TestTable3Setter> setApiClass() {
+        return TestTable3Setter.class;
     }
 
     @Override
-    protected FSProjection projection() {
+    public FSProjection projection() {
         return PROJECTION;
     }
 
     @Override
-    protected TestTable2Finder newFinderInstance() {
-        return new TestTable2Finder(this);
+    protected TestTable3Finder newFinderInstance() {
+        return new TestTable3Finder(this);
     }
 
     @Override
-    protected TestTable2OrderBy newOrderByInstance() {
-        return new TestTable2OrderBy(this);
+    protected TestTable3OrderBy newOrderByInstance() {
+        return new TestTable3OrderBy(this);
     }
 
     @Override
-    protected String tableName() {
+    public String tableName() {
         return TABLE_NAME;
     }
 }

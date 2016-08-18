@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
+
 /**
  * <p>
  *     All {@link FSGetApi FSGetApi} extensions defined by the user will have a corresponding

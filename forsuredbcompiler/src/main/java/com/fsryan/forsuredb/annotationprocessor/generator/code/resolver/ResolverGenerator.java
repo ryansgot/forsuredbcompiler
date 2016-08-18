@@ -20,6 +20,7 @@ import com.squareup.javapoet.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class ResolverGenerator extends JavaSourceGenerator {
@@ -27,8 +28,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
     private final TableInfo table;
     private final TableContext targetContext;
     private List<ColumnInfo> columnsSortedByName;
-    private final ClassName resultParameterClassName;
-    private final ClassName recordContainerClassName;
+    private final ClassName[] parameterNames;
     private final ClassName getClassName;
     private final ClassName setClassName;
     private final ClassName finderClassName;
@@ -39,12 +39,29 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
         this.table = table;
         this.targetContext = targetContext;
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
-        resultParameterClassName = ClassName.bestGuess(getResultParameter());
-        recordContainerClassName = ClassName.get(getRecordContainerClass());
         getClassName = ClassName.bestGuess(table.getQualifiedClassName());
         setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
         finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
         orderByClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
+        parameterNames = createParameterNames(table).toArray(new ClassName[0]);
+    }
+
+    /**
+     * <p>
+     *     If you override this method, then you must call the super class method.
+     * </p>
+     * @param table the table information for which the Finder class extension should be generated
+     * @return a List of ClassName describing the type parameters of the Resolver class extension
+     */
+    protected List<ClassName> createParameterNames(TableInfo table) {
+        List<ClassName> ret = new LinkedList<>();
+        ret.add(ClassName.bestGuess(getResultParameter()));
+        ret.add(ClassName.get(getRecordContainerClass()));
+        ret.add(getClassName);
+        ret.add(setClassName);
+        ret.add(finderClassName);
+        ret.add(orderByClassName);
+        return ret;
     }
 
     public static ResolverGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
@@ -58,13 +75,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(extendsFromClassName(),
-                        resultParameterClassName,
-                        recordContainerClassName,
-                        getClassName,
-                        setClassName,
-                        finderClassName,
-                        orderByClassName));
+                .superclass(ParameterizedTypeName.get(extendsFromClassName(), parameterNames));
         addFields(codeBuilder);
         addConstructor(codeBuilder);
         addColumnMethodNameMapMethod(codeBuilder);
@@ -280,19 +291,19 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
     private void addAbstractMethodImplementations(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.methodBuilder("getApiClass")
                         .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PROTECTED)
+                        .addModifiers(Modifier.PUBLIC)
                         .returns(ParameterizedTypeName.get(ClassName.get(Class.class), getClassName))
                         .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName()))
                         .build())
                 .addMethod(MethodSpec.methodBuilder("setApiClass")
                         .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PROTECTED)
+                        .addModifiers(Modifier.PUBLIC)
                         .returns(ParameterizedTypeName.get(ClassName.get(Class.class), setClassName))
                         .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName() + "Setter"))
                         .build())
                 .addMethod(MethodSpec.methodBuilder("projection")
                         .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PROTECTED)
+                        .addModifiers(Modifier.PUBLIC)
                         .returns(FSProjection.class)
                         .addStatement("return PROJECTION")
                         .build())
@@ -310,7 +321,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
                         .build())
                 .addMethod(MethodSpec.methodBuilder("tableName")
                         .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PROTECTED)
+                        .addModifiers(Modifier.PUBLIC)
                         .returns(String.class)
                         .addStatement("return TABLE_NAME")
                         .build());

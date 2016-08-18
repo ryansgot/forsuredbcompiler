@@ -4,7 +4,6 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.TestData;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,12 +32,12 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        resourceText("example_resolver_with_child_foreign_key.txt"),
+                        resourceText("example_relational_resolver_with_child_foreign_key.txt"),
                         targetTableWithChildForeignKey(),
                         testTargetContext()
                 },
                 {
-                        resourceText("example_resolver_with_parent_and_child_foreign_key.txt"),
+                        resourceText("example_relational_resolver_with_parent_and_child_foreign_key.txt"),
                         targetTableWithParentAndChildForeignKey(),
                         testTargetContext()
                 },

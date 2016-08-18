@@ -28,7 +28,7 @@ public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        TestData.resourceText("example_finder.txt"),
+                        TestData.resourceText("example_relational_finder.txt"),
                         TestData.targetTableWithChildForeignKey()
                 },
                 // TODO: test DocStoreFinder generation

@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code.resolver;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.RelationalResolver;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.squareup.javapoet.ClassName;
 
@@ -14,6 +14,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 
     @Override
     protected ClassName extendsFromClassName() {
-        return ClassName.get(Resolver.class);
+        return ClassName.get(RelationalResolver.class);
     }
 }

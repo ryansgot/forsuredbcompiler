@@ -15,8 +15,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.fsryan.forsuredb.api;
+package com.fsryan.forsuredb.api.adapter;
 
+
+import com.fsryan.forsuredb.api.Retriever;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

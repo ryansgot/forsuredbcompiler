@@ -7,8 +7,6 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenerator.FinderMethodSpecGenerator;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.Finder;
-import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -37,6 +35,11 @@ public abstract class FinderGenerator extends JavaSourceGenerator {
     public static FinderGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
         return table.isDocStore() ? new DocStoreFinderGenerator(processingEnv, table) : new RelationalFinderGenerator(processingEnv, table);
     }
+
+    protected abstract ClassName extendsFromClassName();
+    protected abstract ClassName resolverClassName();
+    protected abstract Class<?> conjunctionClass();
+    protected abstract Class<?> betweenClass();
 
     /**
      * <p>
@@ -84,7 +87,7 @@ public abstract class FinderGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get(Finder.class), parameterClasses));
+                .superclass(ParameterizedTypeName.get(extendsFromClassName(), parameterClasses));
         addConstructor(codeBuilder);
         addQueryBuilderMethods(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(BaseGenerator.JAVA_INDENT).build().toString();
@@ -92,7 +95,7 @@ public abstract class FinderGenerator extends JavaSourceGenerator {
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addParameter(ParameterizedTypeName.get(ClassName.get(Resolver.class), parameterClasses), "resolver")
+                .addParameter(ParameterizedTypeName.get(resolverClassName(), parameterClasses), "resolver")
                 .addStatement("super(resolver)")
                 .build());
     }
@@ -102,7 +105,7 @@ public abstract class FinderGenerator extends JavaSourceGenerator {
             if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())) {
                 continue;
             }
-            for (MethodSpec methodSpec : FinderMethodSpecGenerator.create(column).generate(parameterClasses)) {
+            for (MethodSpec methodSpec : FinderMethodSpecGenerator.create(column, conjunctionClass(), betweenClass()).generate(parameterClasses)) {
                 codeBuilder.addMethod(methodSpec);
             }
         }

@@ -3,7 +3,6 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.Between;
 import com.fsryan.forsuredb.api.Finder;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -17,24 +16,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class FinderMethodSpecGenerator {
+public abstract class FinderMethodSpecGenerator<C, B> {
 
     private final ColumnInfo column;
+    private final Class<C> conjunctionClass;
+    private final Class<B> betweenClass;
 
-    protected FinderMethodSpecGenerator(ColumnInfo column) {
+    protected FinderMethodSpecGenerator(ColumnInfo column, Class<C> conjunctionClass, Class<B> betweenClass) {
         this.column = column;
+        this.conjunctionClass = conjunctionClass;
+        this.betweenClass = betweenClass;
     }
 
-    public static FinderMethodSpecGenerator create(ColumnInfo column) {
+    public static <C, B> FinderMethodSpecGenerator<C, B> create(ColumnInfo column, Class<C> conjunctionClass, Class<B> betweenClass) {
         if (column == null || Strings.isNullOrEmpty(column.getQualifiedType()) || Strings.isNullOrEmpty(column.getColumnName())) {
-            return new EmptyGenerator(column);
+            return new EmptyGenerator(column, conjunctionClass, betweenClass);
         }
 
         switch (column.getQualifiedType()) {
             case "java.util.Date":
-                return new DateFinderMethodGenerator(column);
+                return new DateFinderMethodGenerator(column, conjunctionClass, betweenClass);
             case "java.lang.String":
-                return new StringFinderMethodGenerator(column);
+                return new StringFinderMethodGenerator(column, conjunctionClass, betweenClass);
             case "java.math.BigDecimal":
                 // intentionally fall through
             case "double":
@@ -44,12 +47,12 @@ public abstract class FinderMethodSpecGenerator {
             case "long":
                 // intentionally fall through
             case "int":
-                return new NumberFinderMethodGenerator(column);
+                return new NumberFinderMethodGenerator(column, conjunctionClass, betweenClass);
             case "boolean":
-                return new BooleanFinderMethodGenerator(column);
+                return new BooleanFinderMethodGenerator(column, conjunctionClass, betweenClass);
         }
 
-        return new EmptyGenerator(column);
+        return new EmptyGenerator(column, conjunctionClass, betweenClass);
     }
 
     public final List<MethodSpec> generate(TypeName[] parameterClasses) {
@@ -58,8 +61,8 @@ public abstract class FinderMethodSpecGenerator {
         }
 
         final String methodNameInsertion = CodeUtil.snakeToCamel(column.getColumnName(), true);
-        final ParameterizedTypeName conjunctionType = ParameterizedTypeName.get(ClassName.get(Finder.Conjunction.class), parameterClasses);
-        final ParameterizedTypeName betweenType = ParameterizedTypeName.get(ClassName.get(Between.class), parameterClasses);
+        final ParameterizedTypeName conjunctionType = ParameterizedTypeName.get(ClassName.get(conjunctionClass), parameterClasses);
+        final ParameterizedTypeName betweenType = ParameterizedTypeName.get(ClassName.get(betweenClass), parameterClasses);
 
         List<MethodSpec> retList = new ArrayList<>();
         if (hasBeforeAfterGrammar()) {
@@ -125,7 +128,7 @@ public abstract class FinderMethodSpecGenerator {
         return retList;
     }
 
-    private List<MethodSpec> greaterThanLessThanMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
+    private <C, B> List<MethodSpec> greaterThanLessThanMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
         List<MethodSpec> retList = Lists.newArrayList(
                 createSpec(conjunctionType, methodNamePrefix + "LessThan", "nonInclusiveUpperBound", Finder.Operator.LT),
                 createSpec(conjunctionType, methodNamePrefix + "GreaterThan", "nonInclusiveLowerBound", Finder.Operator.GT),
@@ -141,12 +144,12 @@ public abstract class FinderMethodSpecGenerator {
         return retList;
     }
 
-    private MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, Finder.Operator op) {
+    private <C, B> MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, Finder.Operator op) {
         JavadocInfo jd = javadocInfoFor(returnType, parameterName);
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("addToBuf($S, Finder.Operator.$L, $L)", column.getColumnName(), op.name(), translateParameter(parameterName))
+                .addStatement("addToBuf($S, $T.$L, $L)", column.getColumnName(), op.getClass(), op.name(), translateParameter(parameterName))
                 .returns(returnType);
 
         if (!column.getQualifiedType().equals("boolean")) {
@@ -169,17 +172,17 @@ public abstract class FinderMethodSpecGenerator {
                 .endParagraph()
                 .param(parameterName);
         if (returnType.rawType.simpleName().equals("Between")) {
-            jdBuilder.returns("a $L that allows you to provide an upper bound for this criteria", JavadocInfo.inlineClassLink(Between.class));
+            jdBuilder.returns("a $L that allows you to provide an upper bound for this criteria", JavadocInfo.inlineClassLink(betweenClass));
         } else {
-            jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(Finder.Conjunction.class));
+            jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(conjunctionClass));
         }
         return jdBuilder.addLine().build();
     }
 
-    private static class EmptyGenerator extends FinderMethodSpecGenerator {
+    private static class EmptyGenerator<C, B> extends FinderMethodSpecGenerator<C, B> {
 
-        protected EmptyGenerator(ColumnInfo column) {
-            super(column);
+        protected EmptyGenerator(ColumnInfo column, Class<C> conjunctionClass, Class<B> betweenClass) {
+            super(column, conjunctionClass, betweenClass);
         }
 
         @Override
