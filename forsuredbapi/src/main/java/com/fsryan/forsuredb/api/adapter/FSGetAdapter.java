@@ -82,7 +82,8 @@ public class FSGetAdapter {
     public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
         Class<G> tableApi = resolver.getApiClass();
         GetApiValidator.validateClass(tableApi);
-        return (G) Proxy.newProxyInstance(tableApi.getClassLoader(), new Class<?>[] {tableApi}, getHandlerFor(resolver));
+        G proxyInstance = (G) Proxy.newProxyInstance(tableApi.getClassLoader(), InterfaceHelper.getInterfaces(tableApi), getHandlerFor(resolver));
+        return proxyInstance;
     }
 
     /**

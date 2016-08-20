@@ -21,7 +21,9 @@ import com.fsryan.forsuredb.api.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -67,9 +69,11 @@ public class FSSaveAdapter {
                                                                                   FSSelection selection,
                                                                                   R emptyRecord,
                                                                                   Resolver<U, R, ?, S, ?, ?> resolver) {
-        return (S) Proxy.newProxyInstance(resolver.setApiClass().getClassLoader(),
-                                          new Class<?>[]{resolver.setApiClass()},
-                                          SaveHandler.getFor(resolver.setApiClass(), queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
+        Class<S> setApiClass = resolver.setApiClass();
+        S proxyInstance = (S) Proxy.newProxyInstance(setApiClass.getClassLoader(),
+                                          InterfaceHelper.getInterfaces(setApiClass),
+                                          new SaveHandler(queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
+        return proxyInstance;
     }
 
     // lazily create the column type maps for each api so that they are not created each time a new handler is created

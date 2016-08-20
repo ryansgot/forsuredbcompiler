@@ -29,15 +29,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
     }
 
     public static RetrieveHandler getFor(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
-        if (!tableApi.isAssignableFrom(FSDocStoreGetApi.class)) {
+        if (!FSDocStoreGetApi.class.isAssignableFrom(tableApi)) {
             return new RelationalRetrieveHandler(tableApi, tableName, methodNameToColumnNameMap, isUnambiguous);
         }
-        TypeVariable tv = tableApi.getTypeParameters()[0];
         Class baseClass = Object.class;
         try {
-            baseClass = Class.forName(tv.getBounds()[0].toString());
+            baseClass = (Class) tableApi.getDeclaredField("BASE_CLASS").get(tableApi);
         } catch (Exception e) {
-            System.out.println("could not get type bounds for type variable: " + tv);
+            System.out.println("could not get BASE_CLASS for : " + tableApi.getName());
             e.printStackTrace();
         }
         return new DocStoreRetrieveHandler<>(baseClass, tableApi, tableName, methodNameToColumnNameMap, isUnambiguous);

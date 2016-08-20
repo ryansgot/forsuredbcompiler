@@ -21,7 +21,7 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
 
     private static final Set<String> BASE_BLOCKED_COLUMNS = Sets.newHashSet("modified", "created");
 
-    private final TableInfo table;
+    protected final TableInfo table;
     private final List<ColumnInfo> columnsSortedByName;
 
     protected SaveApiGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
@@ -42,12 +42,7 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
                 .addSuperinterface(createSuperinterfaceParameterizedTypeName(table))
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements());
 
-        codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer(CodeBlock.builder()
-                        .add("$S", table.getTableName())
-                        .build())
-                .build());
-
+        addFields(codeBuilder);
 
         for (ColumnInfo column : columnsSortedByName) {
             if (isBlockedFromSetterMethods(column)) {
@@ -74,6 +69,20 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
      */
     protected boolean isBlockedFromSetterMethods(ColumnInfo column) {
         return BASE_BLOCKED_COLUMNS.contains(column.getColumnName());
+    }
+
+    /**
+     * <p>
+     *     If you override this method, then you must callthe super class method
+     * </p>
+     * @param codeBuilder The {@link TypeSpec.Builder} used to generate this code
+     */
+    protected void addFields(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer(CodeBlock.builder()
+                        .add("$S", table.getTableName())
+                        .build())
+                .build());
     }
 
     private JavadocInfo createSetterJavadoc() {

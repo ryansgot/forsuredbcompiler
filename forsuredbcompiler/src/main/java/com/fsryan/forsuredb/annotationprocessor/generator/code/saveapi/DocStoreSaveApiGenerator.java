@@ -5,10 +5,10 @@ import com.fsryan.forsuredb.api.FSDocStoreSaveApi;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.google.common.collect.Sets;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Modifier;
 import java.util.Set;
 
 /*package*/ class DocStoreSaveApiGenerator extends SaveApiGenerator {
@@ -17,6 +17,16 @@ import java.util.Set;
 
     protected DocStoreSaveApiGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table);
+    }
+
+    @Override
+    public void addFields(TypeSpec.Builder codeBuilder) {
+        super.addFields(codeBuilder);
+        codeBuilder.addField(FieldSpec.builder(Class.class, "BASE_CLASS", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer(CodeBlock.builder()
+                        .add("$L.class", table.getDocStoreParameterization())
+                        .build())
+                .build());
     }
 
     @Override
