@@ -72,7 +72,7 @@ public class FSSaveAdapter {
         Class<S> setApiClass = resolver.setApiClass();
         S proxyInstance = (S) Proxy.newProxyInstance(setApiClass.getClassLoader(),
                                           InterfaceHelper.getInterfaces(setApiClass),
-                                          new SaveHandler(queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
+                                          SaveHandler.getFor(setApiClass, queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
         return proxyInstance;
     }
 

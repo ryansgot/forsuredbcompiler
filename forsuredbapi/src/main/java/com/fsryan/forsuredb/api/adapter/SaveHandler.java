@@ -1,20 +1,14 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.*;
-import com.google.gson.Gson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.Map;
 
-/*package*/ class SaveHandler<U, R extends RecordContainer> implements InvocationHandler {
-
-    private static final Gson gson = new Gson();
-    private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
-    private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
+/*package*/ abstract class SaveHandler<U, R extends RecordContainer> implements InvocationHandler {
 
     private final FSQueryable<U, R> queryable;
     private final FSSelection selection;
@@ -28,10 +22,10 @@ import java.util.Map;
         this.columnTypeMap = columnTypeMap;
     }
 
-//    public static <U, R extends RecordContainer, S extends FSSaveApi<U>> SaveHandler<U, R> getFor(Class<S> saveApiClass, FSQueryable<U, R> queryable, FSSelection selection, R emptyRecord, Map<Method, ColumnDescriptor> columnTypeMap) {
-//        return FSDocStoreSaveApi.class.isAssignableFrom(saveApiClass) ? new DocStoreSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap)
-//                : new RelationalSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap);
-//    }
+    public static <U, R extends RecordContainer, S extends FSSaveApi<U>> SaveHandler<U, R> getFor(Class<S> saveApiClass, FSQueryable<U, R> queryable, FSSelection selection, R emptyRecord, Map<Method, ColumnDescriptor> columnTypeMap) {
+        return FSDocStoreSaveApi.class.isAssignableFrom(saveApiClass) ? new DocStoreSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap)
+                : new RelationalSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap);
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -50,33 +44,10 @@ import java.util.Map;
             case "hardDelete":
                 recordContainer.clear();
                 return queryable.delete(selection);
-            case "object":
-                updateDocProperties(args[0]);
-                return proxy;
         }
 
         performSet(columnTypeMap.get(method), args[0]);
         return proxy;
-    }
-
-    private void updateDocProperties(Object obj) {
-        for (Map.Entry<Method, ColumnDescriptor> methodToColumnDescriptorEntry : columnTypeMap.entrySet()) {
-            String methodName = methodToColumnDescriptorEntry.getKey().getName();
-            if (methodName.equals("id") || methodName.equals("deleted")) {
-                continue;
-            }
-            Object val = null;
-            try {
-                Field f = obj.getClass().getDeclaredField(methodName);
-                f.setAccessible(true);
-                val = f.get(obj);
-                performSet(methodToColumnDescriptorEntry.getValue(), val);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());
-        performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj));
     }
 
     protected void performSet(ColumnDescriptor columnDescriptor, Object arg) {
