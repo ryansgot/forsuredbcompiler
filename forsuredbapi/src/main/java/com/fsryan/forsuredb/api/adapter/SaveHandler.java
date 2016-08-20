@@ -1,17 +1,20 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.*;
+import com.google.gson.Gson;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
 /*package*/ class SaveHandler<U, R extends RecordContainer> implements InvocationHandler {
 
+    private static final Gson gson = new Gson();
     private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
+    private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
 
     private final FSQueryable<U, R> queryable;
     private final FSSelection selection;
@@ -57,11 +60,23 @@ import java.util.Map;
     }
 
     private void updateDocProperties(Object obj) {
-        for (Method m : columnTypeMap.keySet()) {
-            System.out.println("method in key set: " + m.getName() + "; obj methods: " + Arrays.toString(obj.getClass().getDeclaredMethods()));
+        for (Map.Entry<Method, ColumnDescriptor> methodToColumnDescriptorEntry : columnTypeMap.entrySet()) {
+            String methodName = methodToColumnDescriptorEntry.getKey().getName();
+            if (methodName.equals("id") || methodName.equals("deleted")) {
+                continue;
+            }
+            Object val = null;
+            try {
+                Field f = obj.getClass().getDeclaredField(methodName);
+                f.setAccessible(true);
+                val = f.get(obj);
+                performSet(methodToColumnDescriptorEntry.getValue(), val);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        // TODO: serialize the object
-        performSet(DOC_COLUMN_DESCRIPTOR, "");
+        performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());
+        performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj));
     }
 
     protected void performSet(ColumnDescriptor columnDescriptor, Object arg) {

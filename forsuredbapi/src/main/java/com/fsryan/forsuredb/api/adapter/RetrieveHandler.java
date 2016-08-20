@@ -15,7 +15,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 /*package*/ abstract class RetrieveHandler implements InvocationHandler {
 
-    private final String tableName;
+    protected final String tableName;
     // TODO: create a cache instead of building this Method to column name map
     private final Map<Method, String> methodToColumnNameMap;
 

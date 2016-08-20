@@ -2,11 +2,14 @@ package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
+import com.google.gson.Gson;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
 public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
+
+    private static final Gson gson = new Gson();
 
     private final Class<T> baseClass;
 
@@ -19,16 +22,24 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
     public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
         switch (m.getName()) {
             case "doc":
-                // TODO
-                return "";
+                return callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
             case "className":
-                // TODO
-                return callRetrieverMethod((Retriever) args[0], "class_name", String.class);
+                return callRetrieverMethod((Retriever) args[0], tableName + "_class_name", String.class);
             case "get":
-                // TODO: deserialize doc as type T
+                String doc = (String) callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
+                try {
+                    return gson.fromJson(doc, baseClass);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return null;
             case "getAs":
-                // TODO: deserialize doc as type C
+                doc = (String) callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
+                try {
+                    return gson.fromJson(doc, (Class) args[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return null;
         }
         return super.invoke(proxy, m, args);
