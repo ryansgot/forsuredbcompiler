@@ -5,6 +5,8 @@ import com.fsryan.forsuredb.api.*;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
 
@@ -12,7 +14,7 @@ import java.util.Map;
 
     private final FSQueryable<U, R> queryable;
     private final FSSelection selection;
-    private final R recordContainer;
+    protected final R recordContainer;
     protected final Map<Method, ColumnDescriptor> columnTypeMap;
 
     protected SaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
@@ -52,15 +54,38 @@ import java.util.Map;
 
     protected void performSet(ColumnDescriptor columnDescriptor, Object arg) {
         Type type = columnDescriptor.getType();
-        if (type.equals(byte[].class)) {
-            recordContainer.put(columnDescriptor.getColumnName(), (byte[]) arg);
+        String columnName = columnDescriptor.getColumnName();
+        if (type.equals(String.class)) {
+            recordContainer.put(columnName, (String) arg);
+        } else if (type.equals(int.class) || type.equals(Integer.class)) {
+            recordContainer.put(columnName, (int) arg);
+        } else if (type.equals(long.class) || type.equals(Long.class)) {
+            recordContainer.put(columnName, (long) arg);
+        } else if (type.equals(double.class) || type.equals(Double.class)) {
+            recordContainer.put(columnName, (double) arg);
         } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-            recordContainer.put(columnDescriptor.getColumnName(), (Boolean) arg ? 1 : 0);
+            recordContainer.put(columnName, (Boolean) arg ? 1 : 0);
+        } else if (type.equals(BigDecimal.class) || type.equals(BigInteger.class)) {
+            recordContainer.put(columnName, arg.toString());
         } else if (type.equals(Date.class)) {
-            recordContainer.put(columnDescriptor.getColumnName(), FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
+            recordContainer.put(columnName, FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
+        } else if (type.equals(byte[].class)) {
+            recordContainer.put(columnName, (byte[]) arg);
         } else {
-            recordContainer.put(columnDescriptor.getColumnName(), arg.toString());
+            handleTypeMiss(columnName, type, arg);
         }
+    }
+
+    /**
+     * <p>
+     *     If you override this method, you <i>SHOULD NOT</i> call the super class method
+     * </p>
+     * @param columnName the name of the column to set with value arg
+     * @param type the type of the column
+     * @param val the value to set
+     */
+    protected void handleTypeMiss(String columnName, Type type, Object val) {
+        recordContainer.put(columnName, val.toString());
     }
 
     private SaveResult<U> performSave() {

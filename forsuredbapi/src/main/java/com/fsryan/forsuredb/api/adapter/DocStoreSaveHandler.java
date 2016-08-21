@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /*package*/ class DocStoreSaveHandler<U, R extends RecordContainer> extends SaveHandler<U, R> {
@@ -29,6 +30,11 @@ import java.util.Map;
         return super.invoke(proxy, method, args);
     }
 
+    @Override
+    protected void handleTypeMiss(String columnName, Type type, Object val) {
+        recordContainer.put(columnName, gson.toJson(val, type));
+    }
+
     private void updateDocProperties(Object obj) {
         for (Map.Entry<Method, ColumnDescriptor> methodToColumnDescriptorEntry : columnTypeMap.entrySet()) {
             String methodName = methodToColumnDescriptorEntry.getKey().getName();
@@ -43,6 +49,7 @@ import java.util.Map;
                 performSet(methodToColumnDescriptorEntry.getValue(), val);
             } catch (Exception e) {
                 e.printStackTrace();
+                return;
             }
         }
         performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());

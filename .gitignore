@@ -6,4 +6,5 @@ out/*
 local.properties
 
 # Java
+classes/*
 **/*.class

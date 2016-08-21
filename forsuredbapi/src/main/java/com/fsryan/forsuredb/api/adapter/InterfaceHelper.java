@@ -9,7 +9,7 @@ import java.util.List;
 /*package*/ class InterfaceHelper {
 
     public static Class<?>[] getInterfaces(Class<?> c) {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        List<Class<?>> result = new ArrayList<>();
         if (c.isInterface()) {
             result.add(c);
         } else {

@@ -21,9 +21,7 @@ import com.fsryan.forsuredb.api.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -87,16 +85,16 @@ public class FSSaveAdapter {
         return retMap;
     }
 
-    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resover) {
+    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resolver) {
         Map<Method, ColumnDescriptor> retMap = new HashMap<>();
         // This means there can be no overloading of methods in Setter interfaces. That is fine because
         // Setter methods must take one and only one argument.
-        Map<String, String> methodNameToColumnNameMap = resover.columnNameToMethodNameBiMap().inverse();
+        Map<String, String> methodNameToColumnNameMap = resolver.columnNameToMethodNameBiMap().inverse();
         if (methodNameToColumnNameMap == null) {
             return retMap;
         }
 
-        for (Method m : resover.setApiClass().getDeclaredMethods()) {
+        for (Method m : resolver.setApiClass().getDeclaredMethods()) {
             String columnName = methodNameToColumnNameMap.get(m.getName());
             if (columnName == null) {
                 continue;
