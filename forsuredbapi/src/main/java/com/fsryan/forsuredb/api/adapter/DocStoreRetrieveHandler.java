@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.api.Retriever;
 import com.google.gson.Gson;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
@@ -37,7 +38,7 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
             case "getAs":
                 doc = (String) callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
                 try {
-                    return gson.fromJson(doc, (Class) args[1]);
+                    return gson.fromJson(doc, (Type) args[1]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
