@@ -21,19 +21,15 @@ import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.Retriever;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * <p>
@@ -56,10 +52,14 @@ public class FSGetAdapter {
         try {
             methodMap.put(BigDecimal.class, Retriever.class.getDeclaredMethod("getString", String.class));
             methodMap.put(boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
+            methodMap.put(Boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
             methodMap.put(byte[].class, Retriever.class.getDeclaredMethod("getBlob", String.class));
             methodMap.put(double.class, Retriever.class.getDeclaredMethod("getDouble", String.class));
+            methodMap.put(Double.class, Retriever.class.getDeclaredMethod("getDouble", String.class));
             methodMap.put(int.class, Retriever.class.getDeclaredMethod("getInt", String.class));
+            methodMap.put(Integer.class, Retriever.class.getDeclaredMethod("getInt", String.class));
             methodMap.put(long.class, Retriever.class.getDeclaredMethod("getLong", String.class));
+            methodMap.put(Long.class, Retriever.class.getDeclaredMethod("getLong", String.class));
             methodMap.put(String.class, Retriever.class.getDeclaredMethod("getString", String.class));
             methodMap.put(Date.class, Retriever.class.getDeclaredMethod("getString", String.class));
         } catch (NoSuchMethodException nsme) {

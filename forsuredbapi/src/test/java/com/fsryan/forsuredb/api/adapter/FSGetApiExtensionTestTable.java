@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @FSTable("forsuredb_test_table")
 /*package*/ interface FSGetApiExtensionTestTable extends FSGetApi {
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
     @FSColumn("boolean_column") boolean booleanColumn(Retriever retriever);
     @FSColumn("boolean_wrapper_column") Boolean booleanWrapperColumn(Retriever retriever);
     @FSColumn("byte_array_column") byte[] byteArrayColumn(Retriever retriever);
+    @FSColumn("date_column") Date dateColumn(Retriever retriever);
     @FSColumn("double_column") double doubleColumn(Retriever retriever);
     @FSColumn("double_wrapper_column") Double doubleWrapperColumn(Retriever retriever);
     @FSColumn("int_column") int intColumn(Retriever retriever);
