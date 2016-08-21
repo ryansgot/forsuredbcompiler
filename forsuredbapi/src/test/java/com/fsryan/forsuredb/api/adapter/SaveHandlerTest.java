@@ -9,6 +9,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
@@ -76,78 +77,133 @@ public abstract class SaveHandlerTest<U> {
         public void shouldCallPutStringRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("stringColumn", String.class), new Object[]{"string_value"});
             verify(mockRecordContainer, times(1)).put("string_column", "string_value");
+            verifyNoOtherPutsCalled("string_column");
         }
 
         @Test
         public void shouldCallPutIntRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("intColumn", int.class), new Object[]{1});
             verify(mockRecordContainer, times(1)).put("int_column", 1);
+            verifyNoOtherPutsCalled("int_column");
         }
 
         @Test
         public void shouldCallPutIntegerWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("integerWrapperColumn", Integer.class), new Object[]{Integer.valueOf(1)});
             verify(mockRecordContainer, times(1)).put("integer_wrapper_column", 1);
+            verifyNoOtherPutsCalled("integer_wrapper_column");
         }
 
         @Test
         public void shouldCallPutLongRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("longColumn", long.class), new Object[]{Long.MAX_VALUE});
             verify(mockRecordContainer, times(1)).put("long_column", Long.MAX_VALUE);
+            verifyNoOtherPutsCalled("long_column");
         }
 
         @Test
         public void shouldCallPutLongWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("longWrapperColumn", Long.class), new Object[]{Long.valueOf(1)});
             verify(mockRecordContainer, times(1)).put("long_wrapper_column", Long.valueOf(1));
+            verifyNoOtherPutsCalled("long_wrapper_column");
         }
 
         @Test
         public void shouldCallPutDoubleRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("doubleColumn", double.class), new Object[]{Double.MAX_VALUE});
             verify(mockRecordContainer, times(1)).put("double_column", Double.MAX_VALUE);
+            verifyNoOtherPutsCalled("double_column");
         }
 
         @Test
         public void shouldCallPutDoubleWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("doubleWrapperColumn", Double.class), new Object[]{Double.valueOf(1)});
             verify(mockRecordContainer, times(1)).put("double_wrapper_column", Double.valueOf(1));
+            verifyNoOtherPutsCalled("double_wrapper_column");
         }
 
         @Test
         public void shouldCallPutBooleanRecordContainerMethodTrue() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanColumn", boolean.class), new Object[]{true});
             verify(mockRecordContainer, times(1)).put("boolean_column", 1);
+            verifyNoOtherPutsCalled("boolean_column");
         }
 
         @Test
         public void shouldCallPutBooleanRecordContainerMethodFalse() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanColumn", boolean.class), new Object[]{false});
             verify(mockRecordContainer, times(1)).put("boolean_column", 0);
+            verifyNoOtherPutsCalled("boolean_column");
         }
 
         @Test
         public void shouldCallPutBooleanWrapperRecordContainerMethodTrue() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanWrapperColumn", Boolean.class), new Object[]{Boolean.valueOf(true)});
             verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 1);
+            verifyNoOtherPutsCalled("boolean_wrapper_column");
         }
 
         @Test
         public void shouldCallPutBooleanWrapperRecordContainerMethodFalse() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanWrapperColumn", Boolean.class), new Object[]{Boolean.valueOf(false)});
             verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 0);
+            verifyNoOtherPutsCalled("boolean_wrapper_column");
         }
 
         @Test
         public void shouldCallPutStringRecordContainerMethodOnBigDecimal() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("bigDecimalColumn", BigDecimal.class), new Object[]{BigDecimal.TEN});
             verify(mockRecordContainer, times(1)).put("big_decimal_column", BigDecimal.TEN.toString());
+            verifyNoOtherPutsCalled("big_decimal_column");
         }
 
         @Test
         public void shouldCallPutStringRecordContainerMethodOnDate() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("dateColumn", Date.class), new Object[]{new Date()});
-            verify(mockRecordContainer, times(1)).put(eq("date_column"), any(String.class));
+            verify(mockRecordContainer, times(1)).put(eq("date_column"), any(String.class));    // <-- not validating format
+            verifyNoOtherPutsCalled("date_column");
+        }
+
+        protected void verifyNoOtherPutsCalled(String columnName) {
+            if (!"big_decimal_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("big_decimal_column"), any(String.class));
+            }
+            if (!"boolean_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("boolean_column"), any(int.class));
+            }
+            if (!"boolean_wrapper_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("boolean_wrapper_column"), any(int.class));
+            }
+            if (!"byte_array_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("byte_array_column"), any(byte[].class));
+            }
+            if (!"date_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("date_column"), any(String.class));
+            }
+            if (!"double_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("double_column"), any(double.class));
+            }
+            if (!"double_wrapper_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("double_wrapper_column"), any(Double.class));
+            }
+            if (!"int_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("int_column"), any(int.class));
+            }
+            if (!"integer_wrapper_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("integer_wrapper_column"), any(Integer.class));
+            }
+            if (!"long_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("long_column"), any(long.class));
+            }
+            if (!"long_wrapper_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("long_wrapper_column"), any(Long.class));
+            }
+            if (!"string_column".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("string_column"), any(String.class));
+            }
+            if (!"doc".equals(columnName)) {
+                verify(mockRecordContainer, times(0)).put(eq("doc"), any(String.class));
+            }
         }
 
         public static class Relational extends Set {
@@ -160,6 +216,7 @@ public abstract class SaveHandlerTest<U> {
                 byte[] arr = new byte[] {1, 2, 3};
                 shut.invoke(shut, apiClass.getMethod("byteArrayColumn", byte[].class), new Object[]{arr});
                 verify(mockRecordContainer, times(1)).put("byte_array_column", arr);
+                verifyNoOtherPutsCalled("byte_array_column");
             }
         }
 
