@@ -96,9 +96,9 @@ import java.util.Map;
     }
 
     private SaveResult<U> performUpsert() {
-        Retriever cursor = queryable.query(null, selection, null);
+        Retriever retriever = queryable.query(null, selection, null);
         try {
-            if (cursor == null || cursor.getCount() < 1) {
+            if (retriever == null || retriever.getCount() < 1) {
                 return performInsert();
             }
             return performUpdate();
@@ -106,8 +106,8 @@ import java.util.Map;
             return SaveResultFactory.create(null, 0, e);
         } finally {
             recordContainer.clear();
-            if (cursor != null) {
-                cursor.close();
+            if (retriever != null) {
+                retriever.close();
             }
         }
     }
