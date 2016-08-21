@@ -63,8 +63,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         return callRetrieverMethod((Retriever) args[0], methodToColumnNameMap.get(method), method.getGenericReturnType());
     }
 
-    protected Object callRetrieverMethod(Retriever retriever, String column, Type type)
-            throws InvocationTargetException, IllegalAccessException {
+    protected Object callRetrieverMethod(Retriever retriever, String column, Type type) throws InvocationTargetException, IllegalAccessException {
         // TODO: find out a better solution for translation methods
         final Method cursorMethod = FSGetAdapter.methodMap.get(type);
         if (type.equals(BigDecimal.class)) {
