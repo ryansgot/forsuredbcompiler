@@ -15,8 +15,9 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 /*package*/ abstract class RetrieveHandler implements InvocationHandler {
 
+    private static final Map<String, Map<Method, String>> methodToColumnNameMapCache = new HashMap<>();
+
     protected final String tableName;
-    // TODO: create a cache instead of building this Method to column name map
     private final Map<Method, String> methodToColumnNameMap;
 
     public RetrieveHandler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
@@ -25,7 +26,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
     public RetrieveHandler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
         this.tableName = tableName;
-        methodToColumnNameMap = createMethodToColumnNameMap(tableApi, methodNameToColumnNameMap, isUnambiguous);
+        methodToColumnNameMap = getOrCreateMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap, isUnambiguous);
     }
 
     public static RetrieveHandler getFor(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
@@ -101,7 +102,16 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         return null;
     }
 
-    private Map<Method, String> createMethodToColumnNameMap(Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+    private Map<Method, String> getOrCreateMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+        Map<Method, String> ret = methodToColumnNameMapCache.get(tableName);
+        if (ret == null) {
+            ret = createMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap, isUnambiguous);
+            methodToColumnNameMapCache.put(tableName, ret);
+        }
+        return ret;
+    }
+
+    private Map<Method, String> createMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
         Map<Method, String> ret = new HashMap<>();
         for (Method m : tableApi.getDeclaredMethods()) {
             String columnName = methodNameToColumnNameMap.get(m.getName());
