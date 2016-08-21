@@ -76,7 +76,6 @@ public class FSGetAdapter {
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
     public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
-        GetApiValidator.validateClass(resolver.getApiClass());
         // TODO: determine whether you should gather the arguments for the Handler or whether the handler should know about resolvers.
         return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getHandlerFor(resolver));
     }

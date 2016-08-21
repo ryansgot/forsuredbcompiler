@@ -58,7 +58,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         if (method.getDeclaringClass() == Object.class) {
             return method.invoke(this, args);
         }
-        GetApiValidator.validateCall(args);
         return callRetrieverMethod((Retriever) args[0], methodToColumnNameMap.get(method), method.getGenericReturnType());
     }
 
