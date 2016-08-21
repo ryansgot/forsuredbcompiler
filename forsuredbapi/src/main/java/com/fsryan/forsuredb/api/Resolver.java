@@ -93,7 +93,7 @@ public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi,
     public final G getApi() {
         if (getApi == null) {
             // TODO: In order to decruftify, the FSColumn and FSTable annotations must be
-            getApi = FSGetAdapter.createUnambiguous(this);
+            getApi = FSGetAdapter.create(this);
         }
         return getApi;
     }

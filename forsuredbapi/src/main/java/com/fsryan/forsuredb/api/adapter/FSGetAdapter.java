@@ -41,9 +41,6 @@ public class FSGetAdapter {
 
     /*package*/ static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    // does not prefix the column at all
-    private static final Map<Class<? extends FSGetApi>, RetrieveHandler> handlerMap = new HashMap<>();
-
     // This prefixes each column with tableName + "_"
     private static final Map<Class<? extends FSGetApi>, RetrieveHandler> unambiguousHandlerMap = new HashMap<>();
 
@@ -70,24 +67,6 @@ public class FSGetAdapter {
 
     /**
      * <p>
-     *     Creates an instance of the table api class passed in that references columns by
-     *     their name within the scope of the table. If you use this with a join, beware
-     *     that if the joined tables have the same name, then you may not get the result
-     *     you want.
-     * </p>
-     * @param resolver a {@link Resolver} instance that is capable of providing an {@link FSGetApi}
-     * @param <G> The {@link FSGetApi} extension's type
-     * @return an instance of the {@link FSGetApi} interface class passed in
-     */
-    public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
-        Class<G> tableApi = resolver.getApiClass();
-        GetApiValidator.validateClass(tableApi);
-        G proxyInstance = (G) Proxy.newProxyInstance(tableApi.getClassLoader(), InterfaceHelper.getInterfaces(tableApi), getHandlerFor(resolver));
-        return proxyInstance;
-    }
-
-    /**
-     * <p>
      *     Creates an instance of the table api class passed in that references columns in a
      *     tableName_columnName format so that it can be unambiguous. This is helpful for joins
      *     because different tables may have the same column name
@@ -96,25 +75,16 @@ public class FSGetAdapter {
      * @param <G> The {@link FSGetApi} extension's type
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
-    public static <G extends FSGetApi> G createUnambiguous(Resolver<?, ?, G, ?, ?, ?> resolver) {
+    public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
         GetApiValidator.validateClass(resolver.getApiClass());
         // TODO: determine whether you should gather the arguments for the Handler or whether the handler should know about resolvers.
-        return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getUnambiguousHandlerFor(resolver));
+        return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getHandlerFor(resolver));
     }
 
     private static <G extends FSGetApi> RetrieveHandler getHandlerFor(Resolver<?, ?, G, ?, ?, ?> resolver) {
-        RetrieveHandler h = handlerMap.get(resolver.getApiClass());
-        if (h == null) {
-            h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse(), false);
-            handlerMap.put(resolver.getApiClass(), h);
-        }
-        return h;
-    }
-
-    private static <G extends FSGetApi> RetrieveHandler getUnambiguousHandlerFor(Resolver<?, ?, G, ?, ?, ?> resolver) {
         RetrieveHandler h = unambiguousHandlerMap.get(resolver.getApiClass());
         if (h == null) {
-            h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse(), true);
+            h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse());
             unambiguousHandlerMap.put(resolver.getApiClass(), h);
         }
         return h;

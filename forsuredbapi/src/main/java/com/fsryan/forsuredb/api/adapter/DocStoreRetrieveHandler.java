@@ -13,8 +13,8 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
 
     private final Class<T> baseClass;
 
-    public DocStoreRetrieveHandler(Class<T> baseClass, Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
-        super(tableApi, tableName, methodNameToColumnNameMap, isUnambiguous);
+    public DocStoreRetrieveHandler(Class<T> baseClass, Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
+        super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
     }
 

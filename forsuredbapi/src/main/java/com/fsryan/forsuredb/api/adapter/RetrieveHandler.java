@@ -21,17 +21,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
     private final Map<Method, String> methodToColumnNameMap;
 
     public RetrieveHandler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
-        this(tableApi, tableName, methodNameToColumnNameMap, false);
-    }
-
-    public RetrieveHandler(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
         this.tableName = tableName;
-        methodToColumnNameMap = getOrCreateMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap, isUnambiguous);
+        methodToColumnNameMap = getOrCreateMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap);
     }
 
-    public static RetrieveHandler getFor(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+    public static RetrieveHandler getFor(Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
         if (!FSDocStoreGetApi.class.isAssignableFrom(tableApi)) {
-            return new RelationalRetrieveHandler(tableApi, tableName, methodNameToColumnNameMap, isUnambiguous);
+            return new RelationalRetrieveHandler(tableApi, tableName, methodNameToColumnNameMap);
         }
         Class baseClass = Object.class;
         try {
@@ -40,7 +36,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
             System.out.println("could not get BASE_CLASS for : " + tableApi.getName());
             e.printStackTrace();
         }
-        return new DocStoreRetrieveHandler<>(baseClass, tableApi, tableName, methodNameToColumnNameMap, isUnambiguous);
+        return new DocStoreRetrieveHandler<>(baseClass, tableApi, tableName, methodNameToColumnNameMap);
     }
 
     /**
@@ -102,23 +98,23 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         return null;
     }
 
-    private Map<Method, String> getOrCreateMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+    private Map<Method, String> getOrCreateMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap) {
         Map<Method, String> ret = methodToColumnNameMapCache.get(tableName);
         if (ret == null) {
-            ret = createMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap, isUnambiguous);
+            ret = createMethodToColumnNameMap(tableName, tableApi, methodNameToColumnNameMap);
             methodToColumnNameMapCache.put(tableName, ret);
         }
         return ret;
     }
 
-    private Map<Method, String> createMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap, boolean isUnambiguous) {
+    private Map<Method, String> createMethodToColumnNameMap(String tableName, Class<?> tableApi, Map<String, String> methodNameToColumnNameMap) {
         Map<Method, String> ret = new HashMap<>();
         for (Method m : tableApi.getDeclaredMethods()) {
             String columnName = methodNameToColumnNameMap.get(m.getName());
             if (isNullOrEmpty(columnName)) {
                 continue;
             }
-            ret.put(m, (isUnambiguous ? tableName + "_" : "") + columnName);
+            ret.put(m, tableName + "_" + columnName);
         }
         for (Class<?> superTableApi : tableApi.getInterfaces()) {
             for (Method m : superTableApi.getDeclaredMethods()) {
@@ -126,7 +122,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
                 if (isNullOrEmpty(columnName)) {
                     continue;
                 }
-                ret.put(m, (isUnambiguous ? tableName + "_" : "") + columnName);
+                ret.put(m, tableName + "_" + columnName);
             }
         }
         return ret;

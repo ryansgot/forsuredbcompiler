@@ -53,7 +53,7 @@ public abstract class RetrieveHandlerTest<U> {
 
         @Test
         public void shouldSelectCorrectSubclass() {
-            RetrieveHandler rhut = RetrieveHandler.getFor(fsGetApiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse(), true);
+            RetrieveHandler rhut = RetrieveHandler.getFor(fsGetApiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse());
             assertEquals(expectedRetrieveHandlerClass, rhut.getClass());
         }
     }
@@ -72,7 +72,7 @@ public abstract class RetrieveHandlerTest<U> {
         @Override
         public void setUp() {
             super.setUp();
-            rhut = RetrieveHandler.getFor(apiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse(), true);
+            rhut = RetrieveHandler.getFor(apiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse());
         }
 
         @Test
