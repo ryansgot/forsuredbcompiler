@@ -57,7 +57,8 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
             dir: 'build/classes',
             excludes: [
                     '**/*Test.class',
-                    '**/TestData.class'
+                    '**/TestData.class',
+                    '**/TestData$*.class'
             ]
     )
 
