@@ -48,7 +48,8 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
                     '**/com/fsryan/forsuredb/api/adapter/DocStoreTestBase.class',
                     '**/com/fsryan/forsuredb/api/adapter/DocStoreTestBase$*.class',
                     '**/com/fsryan/forsuredb/api/adapter/SharedData.class',
-                    '**/com/fsryan/forsuredb/api/adapter/SaveHandlerTest$*.class'
+                    '**/com/fsryan/forsuredb/api/adapter/SaveHandlerTest$*.class',
+                    '**/com/fsryan/forsuredb/api/adapter/RetrieveHandlerTest$*.class'
             ]
     )
 

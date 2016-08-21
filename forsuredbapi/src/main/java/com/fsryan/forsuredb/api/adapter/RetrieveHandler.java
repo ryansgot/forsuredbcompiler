@@ -44,14 +44,16 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
     /**
      * <p>
-     *     Generates a Proxy for the FSApi interface created by the client.
+     *     Generates a Proxy for the {@link FSGetApi} interface created by the client.
      * </p>
-     * @param proxy
+     * @param proxy The {@link FSGetApi} interface proxy
      * @param method not actually ever called, rather, it stores the meta-data associated with a
-     *               call to one of the Cursor class methods
+     *               call to one of the Cursor class methods. The {@link FSGetAdapter} pre-stores
+     *               the appropriate retriever methods to call based upon the column's associated
+     *               Java type
      * @param args The Retriever object on which one of the get methods will be called
      *
-     * @return
+     * @return An object of the type guaranteed by the {@link FSGetApi} extension this proxy is implementing
      * @throws Throwable
      */
     @Override
