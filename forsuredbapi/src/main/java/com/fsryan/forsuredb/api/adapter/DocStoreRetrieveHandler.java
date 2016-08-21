@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
 import com.google.gson.Gson;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -24,11 +25,19 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
         // TODO: don't do aliasing of columns in the stupid way it's currently done. just use the unambiguous name
         switch (m.getName()) {
             case "doc":
-                return callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
+                return getDoc((Retriever) args[0]);
             case "className":
                 return callRetrieverMethod((Retriever) args[0], tableName + "_class_name", String.class);
+            case "getClass":
+                String className = (String) callRetrieverMethod((Retriever) args[0], tableName + "_class_name", String.class);
+                try {
+                    return Class.forName(className);
+                } catch(ClassNotFoundException cnfe) {
+                    cnfe.printStackTrace();
+                }
+                return null;
             case "get":
-                String doc = (String) callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
+                String doc = getDoc((Retriever) args[0]);
                 try {
                     return gson.fromJson(doc, baseClass);
                 } catch (Exception e) {
@@ -36,7 +45,7 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
                 }
                 return null;
             case "getAs":
-                doc = (String) callRetrieverMethod((Retriever) args[1], tableName + "_doc", String.class);
+                doc = getDoc((Retriever) args[1]);
                 try {
                     return gson.fromJson(doc, (Type) args[0]);
                 } catch (Exception e) {
@@ -45,5 +54,9 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
                 return null;
         }
         return super.invoke(proxy, m, args);
+    }
+
+    private String getDoc(Retriever retriever) throws IllegalAccessException, InvocationTargetException {
+        return (String) callRetrieverMethod(retriever, tableName + "_doc", String.class);
     }
 }

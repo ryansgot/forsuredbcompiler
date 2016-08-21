@@ -56,7 +56,6 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      *     the base type, T.
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
-     * @param <C> the type to deserialize
      * @return an object of type S deseralized from the string in the doc column
      * @see #doc(Retriever)
      */
@@ -78,6 +77,20 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return the fully-qualified java class name of the
+     * @see #getClass()
      */
     @FSColumn("class_name") String className(Retriever retriever);
+
+    /**
+     * <p>
+     *     Use this method to get the Class object of the java class that is stored in this record.
+     * </p>
+     * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
+     * @param <C> an extension of the base class, T
+     * @return a {@link Class} object that specifies the java class of the object or null if the class could
+     * not be found. Null will typically be returned only if the class name or package name has been changed
+     * since the object was initially stored.
+     * @see #className(Retriever)
+     */
+    <C extends T> Class<C> getClass(Retriever retriever);
 }

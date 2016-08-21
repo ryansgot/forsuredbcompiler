@@ -16,9 +16,8 @@ import java.util.Date;
 
 import static com.fsryan.forsuredb.api.adapter.SharedData.COLUMN_NAME_TO_METHOD_NAME_BI_MAP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public abstract class RetrieveHandlerTest<U> {
@@ -205,7 +204,6 @@ public abstract class RetrieveHandlerTest<U> {
                 }
             }
 
-
             @Test
             public void shouldDeserializeDocToInputClassWhenGetAsMethodInvoked() throws Throwable {
                 DocStoreTestBase.Extension extensionObj = new DocStoreTestBase.Extension(DocStoreTestBase.builder()
@@ -244,6 +242,20 @@ public abstract class RetrieveHandlerTest<U> {
                         assertEquals("field " + f.getName() + " was different than expected", f.get(extensionObj), f.get(out));
                     }
                 }
+            }
+
+            @Test
+            public void shouldGetCorrectClassWhenGetClassMethodInvokedAndClassExists() throws Throwable {
+                when(mockRetriever.getString(tableName + "_class_name")).thenReturn(DocStoreTestBase.class.getName());
+                Object out = rhut.invoke(rhut, apiClass.getMethod("getClass", Retriever.class), new Object[]{mockRetriever});
+                assertEquals(DocStoreTestBase.class, out);
+            }
+
+            @Test
+            public void shouldGetNullWhenGetClassMethodInvokedAndClassDoesNotExist() throws Throwable {
+                when(mockRetriever.getString(tableName + "_class_name")).thenReturn("some.nonexistent.class.Name");
+                Object out = rhut.invoke(rhut, apiClass.getMethod("getClass", Retriever.class), new Object[]{mockRetriever});
+                assertNull(out);
             }
         }
     }
