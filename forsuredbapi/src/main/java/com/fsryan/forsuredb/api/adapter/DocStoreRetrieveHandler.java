@@ -36,9 +36,9 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
                 }
                 return null;
             case "getAs":
-                doc = (String) callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
+                doc = (String) callRetrieverMethod((Retriever) args[1], tableName + "_doc", String.class);
                 try {
-                    return gson.fromJson(doc, (Type) args[1]);
+                    return gson.fromJson(doc, (Type) args[0]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

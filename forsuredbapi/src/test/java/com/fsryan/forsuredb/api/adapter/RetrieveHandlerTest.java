@@ -204,6 +204,47 @@ public abstract class RetrieveHandlerTest<U> {
                     }
                 }
             }
+
+
+            @Test
+            public void shouldDeserializeDocToInputClassWhenGetAsMethodInvoked() throws Throwable {
+                DocStoreTestBase.Extension extensionObj = new DocStoreTestBase.Extension(DocStoreTestBase.builder()
+                        .bigDecimalColumn(BigDecimal.ONE)
+                        .booleanColumn(true)
+                        .booleanWrapperColumn(Boolean.valueOf(false))
+                        .dateColumn(new Date())
+                        .doubleColumn(Double.MAX_VALUE)
+                        .doubleWrapperColumn(Double.valueOf(Double.MIN_VALUE))
+                        .intColumn(Integer.MAX_VALUE)
+                        .integerWrapperColumn(Integer.valueOf(Integer.MIN_VALUE))
+                        .longColumn(Long.MAX_VALUE)
+                        .longWrapperColumn(Long.valueOf(Long.MIN_VALUE))
+                        .stringColumn("a string")
+                        .build(), "extra string column");
+                when(mockRetriever.getString(tableName + "_doc")).thenReturn(new Gson().toJson(extensionObj));
+                Object out = rhut.invoke(rhut, apiClass.getMethod("getAs", Class.class, Retriever.class), new Object[]{DocStoreTestBase.Extension.class, mockRetriever});
+                assertEquals(DocStoreTestBase.Extension.class, out.getClass());
+                for (Field f : DocStoreTestBase.class.getDeclaredFields()) {
+                    f.setAccessible(true);
+                    // Typically, this sort of if-else when performing an assertion reveals a deficiency in the code,
+                    // in this case, it shows that milliseconds get pulled off the date when stored.
+                    // For the moment, we're deeming this to be an acceptable behavior, but it should be improved later,
+                    // perhaps by serializing dates as longs.
+                    if (f.getGenericType().equals(Date.class)) {
+                        assertTrue(Math.abs(((Date) f.get(extensionObj)).getTime() - ((Date) f.get(out)).getTime()) < 1000L);
+                    } else {
+                        assertEquals("field " + f.getName() + " was different than expected", f.get(extensionObj), f.get(out));
+                    }
+                }
+                for (Field f : DocStoreTestBase.Extension.class.getDeclaredFields()) {
+                    f.setAccessible(true);
+                    if (f.getGenericType().equals(Date.class)) {
+                        assertTrue(Math.abs(((Date) f.get(extensionObj)).getTime() - ((Date) f.get(out)).getTime()) < 1000L);
+                    } else {
+                        assertEquals("field " + f.getName() + " was different than expected", f.get(extensionObj), f.get(out));
+                    }
+                }
+            }
         }
     }
 }
