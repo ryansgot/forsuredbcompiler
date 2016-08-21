@@ -18,8 +18,7 @@ import static com.fsryan.forsuredb.api.adapter.SharedData.columnTypeMap;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public abstract class SaveHandlerTest<U> {
 
@@ -254,6 +253,75 @@ public abstract class SaveHandlerTest<U> {
                 verify(mockRecordContainer, times(1)).put("string_column", "a string");
                 verify(mockRecordContainer, times(1)).put("doc", new Gson().toJson(obj));
             }
+        }
+    }
+
+    public static class Upsertion extends SaveHandlerTest<String> {
+
+        private SaveHandler<String, RecordContainer> shut;
+
+        @Before
+        public void setUp() {
+            super.setUp();
+            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+        }
+
+        @Test
+        public void shouldCallInsertWhenNoSearchCriteriaUsed() throws Throwable {
+            // overwrite so that the FSSelection object is null
+            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, null, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+            shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
+            verify(mockFSQueryable, times(1)).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
+        }
+
+        @Test
+        public void shouldCallInsertWhenNoRecordsMatchingFSSelectionExist() throws Throwable {
+            when(mockFSQueryable.query(eq((FSProjection) null), any(FSSelection.class), eq((String) null))).thenReturn(null);
+            shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
+            verify(mockFSQueryable, times(1)).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
+        }
+
+        @Test
+        public void shouldCallUpdateWithSelectionCriteriaWhenRecordsMatchingFSSelectionExist() throws Throwable {
+            Retriever mockRetriever = mock(Retriever.class);
+            when(mockRetriever.getCount()).thenReturn(1);
+            when(mockFSQueryable.query(null, mockFSSelection, null)).thenReturn(mockRetriever);
+            shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
+            verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(1)).update(mockRecordContainer, mockFSSelection);
+        }
+    }
+
+    public static class Deletion extends SaveHandlerTest<String> {
+
+        private SaveHandler<String, RecordContainer> shut;
+
+        @Before
+        public void setUp() {
+            super.setUp();
+            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+        }
+
+        @Test
+        public void shouldUpdateOnlyDeletedFieldWhenSoftDeleteCalled() throws Throwable {
+            // overwrite so that the FSSelection object is null
+            shut.invoke(shut, FSSaveApi.class.getMethod("softDelete"), new Class<?>[0]);
+            verify(mockRecordContainer, times(1)).clear();
+            verify(mockRecordContainer, times(1)).put("deleted", 1);
+            verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(1)).update(mockRecordContainer, mockFSSelection);
+        }
+
+        @Test
+        public void shouldCallDeleteOnSelectionWhenDeleteCalled() throws Throwable {
+            // overwrite so that the FSSelection object is null
+            shut.invoke(shut, FSSaveApi.class.getMethod("hardDelete"), new Class<?>[0]);
+            verify(mockRecordContainer, times(1)).clear();
+            verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
+            verify(mockFSQueryable, times(1)).delete(mockFSSelection);
         }
     }
 }
