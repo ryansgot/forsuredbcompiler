@@ -6,7 +6,7 @@ import com.fsryan.forsuredb.api.FSDocStoreSaveApi;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public interface FSDocStoreGetApiExtensionTestTableSetter extends FSDocStoreSaveApi<String, DocStoreTestBase> {
+/*package*/ interface FSDocStoreGetApiExtensionTestTableSetter extends FSDocStoreSaveApi<String, DocStoreTestBase> {
     String TABLE_NAME = "forsuredb_doc_store_test";
 
     /**

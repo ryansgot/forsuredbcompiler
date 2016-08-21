@@ -20,6 +20,7 @@ public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
 
     @Override
     public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
+        // TODO: don't do aliasing of columns in the stupid way it's currently done. just use the unambiguous name
         switch (m.getName()) {
             case "doc":
                 return callRetrieverMethod((Retriever) args[0], tableName + "_doc", String.class);
