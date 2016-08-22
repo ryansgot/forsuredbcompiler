@@ -42,6 +42,7 @@ public class Migration implements Comparable<Migration> {
         ADD_FOREIGN_KEY_REFERENCE(19),
         ADD_UNIQUE_INDEX(30),
         ADD_INDEX(30),
+        MAKE_COLUMN_UNIQUE(30),
         CREATE_TEMP_TABLE_FROM_EXISTING(40),
         DROP_TABLE(100);
 
