@@ -1,10 +1,7 @@
 package com.fsryan.forsuredb.info;
 
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
-import com.fsryan.forsuredb.annotations.FSColumn;
-import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.annotations.PrimaryKey;
-import com.fsryan.forsuredb.annotations.Unique;
+import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 
@@ -14,7 +11,7 @@ import javax.lang.model.element.ExecutableElement;
 
 public class ColumnInfoFactory {
 
-    public static ColumnInfo create(ExecutableElement ee) {
+    public static ColumnInfo create(ExecutableElement ee, boolean isDocStoreColumn) {
         if (ee.getKind() != ElementKind.METHOD) {
             return null;
         }
@@ -22,6 +19,10 @@ public class ColumnInfoFactory {
         ColumnInfo.Builder builder = ColumnInfo.builder();
         for (AnnotationMirror am : ee.getAnnotationMirrors()) {
             appendAnnotationInfo(builder, am);
+        }
+
+        if (isDocStoreColumn) {
+            builder.index(true);
         }
 
         return builder.methodName(ee.getSimpleName().toString())
@@ -45,6 +46,14 @@ public class ColumnInfoFactory {
             builder.primaryKey(true);
         } else if (annotationClass.equals(Unique.class.getName())) {
             builder.unique(true);
+            if (at.property("index").as(boolean.class)) {
+                builder.index(true);
+            }
+        } else if (annotationClass.equals(Index.class.getName())) {
+            builder.index(true);
+            if (at.property("unique").as(boolean.class)) {
+                builder.unique(true);
+            }
         }
     }
 }

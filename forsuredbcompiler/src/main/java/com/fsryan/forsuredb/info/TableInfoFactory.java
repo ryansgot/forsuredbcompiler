@@ -27,15 +27,14 @@ public class TableInfoFactory {
         }
 
         final Map<String, ColumnInfo> columnMap = new HashMap<>();
-        for (ExecutableElement me : ElementFilter.methodsIn(intf.getEnclosedElements())) {
-            final ColumnInfo column = ColumnInfoFactory.create(me);
-            columnMap.put(column.getColumnName(), column);
-        }
-
         // docStoreParametrization will be non-null only for doc store tables, so add the doc store columns in this case
         String docStoreParameterization = getDocStoreParametrizationFrom(intf);
         if (docStoreParameterization != null) {
             columnMap.putAll(TableInfo.DOC_STORE_COLUMNS);
+        }
+        for (ExecutableElement me : ElementFilter.methodsIn(intf.getEnclosedElements())) {
+            final ColumnInfo column = ColumnInfoFactory.create(me, docStoreParameterization != null);
+            columnMap.put(column.getColumnName(), column);
         }
 
         return TableInfo.builder().columnMap(columnMap)
