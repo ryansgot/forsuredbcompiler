@@ -18,7 +18,6 @@
 package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.TestData;
 
 import com.fsryan.forsuredb.api.migration.Migration;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
@@ -33,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.fsryan.forsuredb.TestData.*;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -173,7 +171,7 @@ public class DiffGeneratorTest {
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(9)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
                                         .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
                                         .build()))
@@ -187,32 +185,23 @@ public class DiffGeneratorTest {
                         newTableContext()
                                 .addTable(table()
                                         .tableName("table_1")
-                                        .columnMap(columnMapOf(
-                                                idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                stringCol().columnName("table_1_string").build()))
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put("table_1_string", stringCol().columnName("table_1_string").build())
+                                                .build())
                                         .build())
                                 .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(columnMapOf(
-                                                idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                stringCol().columnName("table_2_string").build()))
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
+                                                .build())
                                         .build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(columnMapOf(
-                                                idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                stringCol().columnName("table_2_string").build()))
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
+                                                .build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(48)
@@ -222,12 +211,139 @@ public class DiffGeneratorTest {
                                         .build()))
                                 .targetSchema(tableMapOf(table()
                                         .tableName("table_2")
-                                        .columnMap(columnMapOf(
-                                                idCol(),
-                                                modifiedCol(),
-                                                createdCol(),
-                                                deletedCol(),
-                                                stringCol().columnName("table_2_string").build()))
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
+                                                .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 08: add non-unique index to existing column
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.ADD_INDEX)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 09: add new column that is a non-unique index
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder().build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build(),
+                                        Migration.builder()
+                                                .type(Migration.Type.ADD_INDEX)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 10: make an existing column a unique index
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().unique(true).index(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.ADD_UNIQUE_INDEX)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 11: add a new column that is a unique index
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder().build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().unique(true).index(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build(),
+                                        Migration.builder()
+                                                .type(Migration.Type.ADD_INDEX)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
+                                                .build())
                                         .build()))
                                 .build()
                 }

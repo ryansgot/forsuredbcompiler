@@ -72,7 +72,7 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
             return null;
         }
 
-        return new Gson().toJson(migrationSet, new TypeToken<MigrationSet>() {}.getType());
+        return new Gson().toJson(migrationSet);
     }
 
     private String getRelativeFileName() {
