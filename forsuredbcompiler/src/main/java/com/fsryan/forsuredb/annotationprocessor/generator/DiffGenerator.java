@@ -23,7 +23,6 @@ import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.info.TableInfo;
-import com.google.common.collect.Lists;
 
 import java.util.*;
 
@@ -91,7 +90,7 @@ public class DiffGenerator {
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
                 if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
                     // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-                    retList.addAll(addMigrationsForNewColumn(targetColumn, targetTable));
+                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
                     continue;
                 }
 
@@ -135,20 +134,13 @@ public class DiffGenerator {
         return retList;
     }
 
-    private Collection<? extends Migration> addMigrationsForNewColumn(ColumnInfo targetColumn, TableInfo targetTable) {
-        List<Migration> ret = Lists.newArrayList(Migration.builder().columnName(targetColumn.getColumnName())
+    private Migration addMigrationForNewColumn(ColumnInfo targetColumn, TableInfo targetTable) {
+        return Migration.builder().columnName(targetColumn.getColumnName())
                 .tableName(targetTable.getTableName())
                 .type(targetColumn.isForeignKey() ? Migration.Type.ADD_FOREIGN_KEY_REFERENCE
                         : targetColumn.isUnique() ? Migration.Type.ALTER_TABLE_ADD_UNIQUE
                         : Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                .build());
-        if (targetColumn.isIndex()) {
-            ret.add(Migration.builder().type(Migration.Type.ADD_INDEX)
-                    .columnName(targetColumn.getColumnName())
-                    .tableName(targetTable.getTableName())
-                    .build());
-        }
-        return ret;
+                .build();
     }
 
     private Set<ColumnInfo> nonDefaultColumnsIn(TableInfo targetTable) {
@@ -176,7 +168,7 @@ public class DiffGenerator {
 //            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
 //                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
 //                    // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-//                    retList.add(addMigrationsForNewColumn(targetColumn, targetTable));
+//                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
 //                    continue;
 //                }
 //

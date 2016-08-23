@@ -35,23 +35,10 @@ import static com.fsryan.forsuredb.TestData.*;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class DiffGeneratorTest {
+public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
 
-    private MigrationSet actualMigrationSet;
-
-    private final int sourceDbVersion;
-    private final TableContext migrationContext;
-    private final TableContext processingContext;
-    private final MigrationSet expectedMigrationSet;
-
-    public DiffGeneratorTest(int sourceDbVersion,
-                             TableContext migrationContext,
-                             TableContext processingContext,
-                             MigrationSet expectedMigrationSet) {
-        this.sourceDbVersion = sourceDbVersion;
-        this.migrationContext = migrationContext;
-        this.processingContext = processingContext;
-        this.expectedMigrationSet = expectedMigrationSet;
+    public SmallDiffGeneratorTest(int sourceDbVersion, TableContext migrationContext, TableContext processingContext, MigrationSet expectedMigrationSet) {
+        super(sourceDbVersion, migrationContext, processingContext, expectedMigrationSet);
     }
 
     @Parameterized.Parameters
@@ -350,32 +337,8 @@ public class DiffGeneratorTest {
         });
     }
 
-    @Before
-    public void setUp() {
-        actualMigrationSet = new DiffGenerator(migrationContext, sourceDbVersion).analyzeDiff(processingContext);
-    }
-
-    @Test
-    public void shouldHaveCorrectTargetDbVersion() {
-        assertEquals(expectedMigrationSet.getDbVersion(), actualMigrationSet.getDbVersion());
-    }
-
     @Test
     public void shouldHaveCorrectNumberOfMigrations() {
         assertEquals(expectedMigrationSet.getOrderedMigrations().size(), actualMigrationSet.getOrderedMigrations().size());
-    }
-
-    @Test
-    public void shouldMatchMigrationsInOrderAndContent() {
-        final List<Migration> expected = expectedMigrationSet.getOrderedMigrations();
-        final List<Migration> actual = actualMigrationSet.getOrderedMigrations();
-        for (int i = 0; i < expected.size(); i++) {
-            assertEquals("migration index " + i, expected.get(i), actual.get(i));
-        }
-    }
-
-    @Test
-    public void shouldContainTargetContext() {
-        assertEquals(processingContext.tableMap(), actualMigrationSet.getTargetSchema());
     }
 }
