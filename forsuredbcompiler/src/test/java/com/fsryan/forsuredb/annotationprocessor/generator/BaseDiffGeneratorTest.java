@@ -13,7 +13,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class BaseDiffGeneratorTest {
+public abstract class BaseDiffGeneratorTest {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 

@@ -22,14 +22,12 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.api.migration.Migration;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.google.common.collect.Lists;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static com.fsryan.forsuredb.TestData.*;
 import static org.junit.Assert.assertEquals;
@@ -256,11 +254,6 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build(),
-                                        Migration.builder()
-                                                .type(Migration.Type.ADD_INDEX)
-                                                .tableName(TABLE_NAME)
-                                                .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
                                         .columnMap(baseColumnMapBuilder()
@@ -321,11 +314,6 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build(),
-                                        Migration.builder()
-                                                .type(Migration.Type.ADD_INDEX)
-                                                .tableName(TABLE_NAME)
-                                                .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
                                         .columnMap(baseColumnMapBuilder()
@@ -338,7 +326,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
     }
 
     @Test
-    public void shouldHaveCorrectNumberOfMigrations() {
-        assertEquals(expectedMigrationSet.getOrderedMigrations().size(), actualMigrationSet.getOrderedMigrations().size());
+    public void shouldHaveCorrectDbVersion() {
+        assertEquals(expectedMigrationSet.getDbVersion(), actualMigrationSet.getDbVersion());
     }
 }
