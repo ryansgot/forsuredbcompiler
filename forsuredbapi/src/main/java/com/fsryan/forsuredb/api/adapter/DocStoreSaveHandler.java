@@ -44,17 +44,33 @@ import java.util.Map;
                 continue;
             }
             Object val = null;
+
+            Field f = getFieldForClassOrSuperclass(methodName, obj);
             try {
-                Field f = obj.getClass().getDeclaredField(methodName);
                 f.setAccessible(true);
                 val = f.get(obj);
+                if (val == null) {
+                    continue;
+                }
                 performSet(methodToColumnDescriptorEntry.getValue(), val);
             } catch (Exception e) {
                 e.printStackTrace();
-                return;
             }
         }
         performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());
         performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj, obj.getClass()));
+    }
+
+    private Field getFieldForClassOrSuperclass(String fieldName, Object obj) {
+        Class<?> cls = obj.getClass();
+        Field ret = null;
+        while (cls != Object.class && ret == null) {
+            try {
+                ret = cls.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException nsfe) {
+                cls = cls.getSuperclass();
+            }
+        }
+        return ret;
     }
 }

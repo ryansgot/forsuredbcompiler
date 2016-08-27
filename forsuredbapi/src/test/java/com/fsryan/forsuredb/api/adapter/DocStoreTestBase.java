@@ -23,6 +23,7 @@ import java.util.Date;
     private String stringColumn;
 
     @lombok.Data
+    @lombok.ToString(callSuper = true)
     public static class Extension extends DocStoreTestBase {
 
         private String extraStringColumn;
@@ -48,5 +49,4 @@ import java.util.Date;
             this.extraStringColumn = extraStringColumn;
         }
     }
-
 }

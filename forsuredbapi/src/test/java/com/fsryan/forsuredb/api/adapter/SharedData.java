@@ -5,10 +5,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 /*package*/ class SharedData {
+
+    public static final Date DATE = new Date();
+    public static final String DATE_STRING = FSGetAdapter.DATETIME_FORMAT.format(DATE);
+
     public static final BiMap<String, String> COLUMN_NAME_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
             .put("_id", "id")
             .put("big_decimal_column", "bigDecimalColumn")

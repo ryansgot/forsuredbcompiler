@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 
+import static com.fsryan.forsuredb.api.adapter.SharedData.DATE;
+import static com.fsryan.forsuredb.api.adapter.SharedData.DATE_STRING;
 import static com.fsryan.forsuredb.api.adapter.SharedData.columnTypeMap;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -218,31 +220,45 @@ public abstract class SaveHandlerTest<U> {
             }
         }
 
+        @RunWith(Parameterized.class)
         public static class DocStore extends Set {
-            public DocStore() {
+
+            private static final DocStoreTestBase dstb = DocStoreTestBase.builder()
+                    .bigDecimalColumn(BigDecimal.ONE)
+                    .booleanColumn(true)
+                    .booleanWrapperColumn(Boolean.valueOf(false))
+                    .dateColumn(DATE)
+                    .doubleColumn(Double.MAX_VALUE)
+                    .doubleWrapperColumn(Double.valueOf(Double.MIN_VALUE))
+                    .intColumn(Integer.MAX_VALUE)
+                    .integerWrapperColumn(Integer.valueOf(Integer.MIN_VALUE))
+                    .longColumn(Long.MAX_VALUE)
+                    .longWrapperColumn(Long.valueOf(Long.MIN_VALUE))
+                    .stringColumn("a string")
+                    .build();
+
+            private final DocStoreTestBase dstObject;
+
+            public DocStore(DocStoreTestBase dstObject) {
                 super(FSDocStoreGetApiExtensionTestTableSetter.class);
+                this.dstObject = dstObject;
+            }
+
+            @Parameterized.Parameters
+            public static Iterable<Object[]> data() {
+                return Arrays.asList(new Object[][] {
+                        {dstb},
+                        {new DocStoreTestBase.Extension(dstb, "another string")}
+                });
             }
 
             @Test
-            public void shouldCallPutForAllDeclaredMethodsInApi() throws Throwable {
-                DocStoreTestBase obj = DocStoreTestBase.builder()
-                        .bigDecimalColumn(BigDecimal.ONE)
-                        .booleanColumn(true)
-                        .booleanWrapperColumn(Boolean.valueOf(false))
-                        .dateColumn(new Date())
-                        .doubleColumn(Double.MAX_VALUE)
-                        .doubleWrapperColumn(Double.valueOf(Double.MIN_VALUE))
-                        .intColumn(Integer.MAX_VALUE)
-                        .integerWrapperColumn(Integer.valueOf(Integer.MIN_VALUE))
-                        .longColumn(Long.MAX_VALUE)
-                        .longWrapperColumn(Long.valueOf(Long.MIN_VALUE))
-                        .stringColumn("a string")
-                        .build();
-                shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{obj});
+            public void shouldUpdateAllIndicesSaveDocAndSaveClassName() throws Throwable {
+                shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{dstObject});
                 verify(mockRecordContainer, times(1)).put("big_decimal_column", BigDecimal.ONE.toString());
                 verify(mockRecordContainer, times(1)).put("boolean_column", 1);
                 verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 0);
-                verify(mockRecordContainer, times(1)).put(eq("date_column"), any(String.class));
+                verify(mockRecordContainer, times(1)).put("date_column", DATE_STRING);
                 verify(mockRecordContainer, times(1)).put("double_column", Double.MAX_VALUE);
                 verify(mockRecordContainer, times(1)).put("double_wrapper_column", Double.valueOf(Double.MIN_VALUE));
                 verify(mockRecordContainer, times(1)).put("int_column", Integer.MAX_VALUE);
@@ -250,7 +266,8 @@ public abstract class SaveHandlerTest<U> {
                 verify(mockRecordContainer, times(1)).put("long_column", Long.MAX_VALUE);
                 verify(mockRecordContainer, times(1)).put("long_wrapper_column", Long.valueOf(Long.MIN_VALUE));
                 verify(mockRecordContainer, times(1)).put("string_column", "a string");
-                verify(mockRecordContainer, times(1)).put("doc", new Gson().toJson(obj));
+                verify(mockRecordContainer, times(1)).put("class_name", dstObject.getClass().getName());
+                verify(mockRecordContainer, times(1)).put("doc", new Gson().toJson(dstObject));
             }
         }
     }
