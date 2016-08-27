@@ -255,6 +255,7 @@ public abstract class SaveHandlerTest<U> {
             @Test
             public void shouldUpdateAllIndicesSaveDocAndSaveClassName() throws Throwable {
                 shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{dstObject});
+                // verifies that, for each index, the correct value gets put into the record container
                 verify(mockRecordContainer, times(1)).put("big_decimal_column", BigDecimal.ONE.toString());
                 verify(mockRecordContainer, times(1)).put("boolean_column", 1);
                 verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 0);
@@ -266,6 +267,7 @@ public abstract class SaveHandlerTest<U> {
                 verify(mockRecordContainer, times(1)).put("long_column", Long.MAX_VALUE);
                 verify(mockRecordContainer, times(1)).put("long_wrapper_column", Long.valueOf(Long.MIN_VALUE));
                 verify(mockRecordContainer, times(1)).put("string_column", "a string");
+                // verifies that the doc and class name got put into the record container
                 verify(mockRecordContainer, times(1)).put("class_name", dstObject.getClass().getName());
                 verify(mockRecordContainer, times(1)).put("doc", new Gson().toJson(dstObject));
             }
