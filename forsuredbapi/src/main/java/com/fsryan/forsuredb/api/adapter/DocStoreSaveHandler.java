@@ -12,13 +12,15 @@ import java.util.Map;
 
 /*package*/ class DocStoreSaveHandler<U, R extends RecordContainer> extends SaveHandler<U, R> {
 
-    private static final Gson gson = new Gson();
-    // TODO: if using BSON, then change this to byte[].class
+    private static Gson gson;
     private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
     private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
 
     protected DocStoreSaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
         super(queryable, selection, recordContainer, columnTypeMap);
+        if (gson == null) {
+            gson = new JsonAdapterHelper().getNew();
+        }
     }
 
     @Override
@@ -53,6 +55,6 @@ import java.util.Map;
             }
         }
         performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());
-        performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj));
+        performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj, obj.getClass()));
     }
 }

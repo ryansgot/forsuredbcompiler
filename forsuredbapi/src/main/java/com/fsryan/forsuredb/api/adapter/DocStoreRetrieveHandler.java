@@ -9,15 +9,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class DocStoreRetrieveHandler<T> extends RetrieveHandler {
+/*package*/ class DocStoreRetrieveHandler<T> extends RetrieveHandler {
 
-    private static final Gson gson = new Gson();
+    private static Gson gson;
 
     private final Class<T> baseClass;
 
     public DocStoreRetrieveHandler(Class<T> baseClass, Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
         super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
+        if (gson == null) {
+            gson = new JsonAdapterHelper().getNew();
+        }
     }
 
     @Override

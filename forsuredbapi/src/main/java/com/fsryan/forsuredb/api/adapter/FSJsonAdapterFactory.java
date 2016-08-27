@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.api.adapter;
 
-/**
- * Created by ryan on 8/27/16.
- */
+import com.google.gson.Gson;
+
 public interface FSJsonAdapterFactory {
+    Gson create();
 }
