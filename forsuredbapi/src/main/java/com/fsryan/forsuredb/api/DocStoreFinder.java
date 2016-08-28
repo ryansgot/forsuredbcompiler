@@ -362,6 +362,114 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
         return conjunction;
     }
 
+    /**
+     * <p>
+     *   add criteria to a query that requires exactMatch for class_name
+     * </p>
+     * @param exactMatch
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassName(String exactMatch) {
+        addToBuf("class_name", Finder.Operator.EQ, exactMatch);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires exclusion for class_name
+     * </p>
+     * @param exclusion
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameNot(String exclusion) {
+        addToBuf("class_name", Finder.Operator.NE, exclusion);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires nonInclusiveUpperBound for class_name
+     * </p>
+     * @param nonInclusiveUpperBound
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameLessThan(String nonInclusiveUpperBound) {
+        addToBuf("class_name", Finder.Operator.LT, nonInclusiveUpperBound);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires nonInclusiveLowerBound for class_name
+     * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameGreaterThan(String nonInclusiveLowerBound) {
+        addToBuf("class_name", Finder.Operator.GT, nonInclusiveLowerBound);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires inclusiveUpperBound for class_name
+     * </p>
+     * @param inclusiveUpperBound
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameLessThanInclusive(String inclusiveUpperBound) {
+        addToBuf("class_name", Finder.Operator.LE, inclusiveUpperBound);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires inclusiveLowerBound for class_name
+     * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameGreaterThanInclusive(String inclusiveLowerBound) {
+        addToBuf("class_name", Finder.Operator.GE, inclusiveLowerBound);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires nonInclusiveLowerBound for class_name
+     * </p>
+     * @param nonInclusiveLowerBound
+     * @return a {@link Between} that allows you to provide an upper bound for this criteria
+     */
+    public Between<T, U, R, G, S, F, O> byClassNameBetween(String nonInclusiveLowerBound) {
+        addToBuf("class_name", Finder.Operator.GT, nonInclusiveLowerBound);
+        return createBetween(String.class, "class_name");
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires inclusiveLowerBound for class_name
+     * </p>
+     * @param inclusiveLowerBound
+     * @return a {@link Between} that allows you to provide an upper bound for this criteria
+     */
+    public Between<T, U, R, G, S, F, O> byClassNameBetweenInclusive(String inclusiveLowerBound) {
+        addToBuf("class_name", Finder.Operator.GE, inclusiveLowerBound);
+        return createBetween(String.class, "class_name");
+    }
+
+    /**
+     * <p>
+     *   add criteria to a query that requires like for class_name
+     * </p>
+     * @param like
+     * @return a {@link Conjunction} that allows you to continue adding more query criteria
+     */
+    public Conjunction<T, U, R, G, S, F, O> byClassNameLike(String like) {
+        addToBuf("class_name", Finder.Operator.LIKE, like);
+        return conjunction;
+    }
+
     protected final <Typ> Between<T, U, R, G, S, F, O> createBetween(final Class<Typ> cls, final String column) {
         return new Between<T, U, R, G, S, F, O>() {
             @Override
