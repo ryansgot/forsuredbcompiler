@@ -116,13 +116,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
             ret.put(m, tableName + "_" + columnName);
         }
         for (Class<?> superTableApi : tableApi.getInterfaces()) {
-            for (Method m : superTableApi.getDeclaredMethods()) {
-                String columnName = methodNameToColumnNameMap.get(m.getName());
-                if (isNullOrEmpty(columnName)) {
-                    continue;
-                }
-                ret.put(m, tableName + "_" + columnName);
-            }
+            ret.putAll(createMethodToColumnNameMap(tableName, superTableApi, methodNameToColumnNameMap));
         }
         return ret;
     }
