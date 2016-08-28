@@ -101,7 +101,7 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
      * adding other query parameters
      */
     public Conjunction<U, R, G, S, F, O> byModified(Order order) {
-        appendOrder("updated", order);
+        appendOrder("modified", order);
         return conjunction;
     }
 }

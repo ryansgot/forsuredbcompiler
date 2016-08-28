@@ -75,7 +75,7 @@ public class DocStoreOrderBy<T, U, R extends RecordContainer, G extends FSDocSto
      * adding other query parameters
      */
     public Conjunction<T, U, R, G, S, F, O> byModified(Order order) {
-        appendOrder("updated", order);
+        appendOrder("modified", order);
         return conjunction;
     }
 }
