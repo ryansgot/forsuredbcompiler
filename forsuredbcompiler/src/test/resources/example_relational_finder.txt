@@ -5,7 +5,6 @@ import com.fsryan.forsuredb.api.Finder;
 import com.fsryan.forsuredb.api.RelationalFinder;
 import com.fsryan.forsuredb.api.RelationalResolver;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
-import java.math.BigDecimal;
 
 /**
  * <p>
@@ -130,102 +129,6 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
         addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
         return createBetween(double.class, "app_rating");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exactMatch for competitor_app_rating
-     * </p>
-     * @param exactMatch
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRating(BigDecimal exactMatch) {
-        addToBuf("competitor_app_rating", Finder.Operator.EQ, exactMatch);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires exclusion for competitor_app_rating
-     * </p>
-     * @param exclusion
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingNot(BigDecimal exclusion) {
-        addToBuf("competitor_app_rating", Finder.Operator.NE, exclusion);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveUpperBound for competitor_app_rating
-     * </p>
-     * @param nonInclusiveUpperBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingLessThan(BigDecimal nonInclusiveUpperBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for competitor_app_rating
-     * </p>
-     * @param nonInclusiveLowerBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingGreaterThan(BigDecimal nonInclusiveLowerBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveUpperBound for competitor_app_rating
-     * </p>
-     * @param inclusiveUpperBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingLessThanInclusive(BigDecimal inclusiveUpperBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.LE, inclusiveUpperBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for competitor_app_rating
-     * </p>
-     * @param inclusiveLowerBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
-     */
-    public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingGreaterThanInclusive(BigDecimal inclusiveLowerBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
-        return conjunction;
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for competitor_app_rating
-     * </p>
-     * @param nonInclusiveLowerBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
-     */
-    public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingBetween(BigDecimal nonInclusiveLowerBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
-        return createBetween(java.math.BigDecimal.class, "competitor_app_rating");
-    }
-
-    /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for competitor_app_rating
-     * </p>
-     * @param inclusiveLowerBound
-     * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
-     */
-    public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRatingBetweenInclusive(BigDecimal inclusiveLowerBound) {
-        addToBuf("competitor_app_rating", Finder.Operator.GE, inclusiveLowerBound);
-        return createBetween(java.math.BigDecimal.class, "competitor_app_rating");
     }
 
     /**

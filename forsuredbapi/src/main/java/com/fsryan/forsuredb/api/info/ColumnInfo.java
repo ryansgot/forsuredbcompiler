@@ -44,6 +44,8 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @Getter @SerializedName("unique") private final boolean unique;
     @Getter @SerializedName("primary_key") private final boolean primaryKey;
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
+    @Getter @SerializedName("searchable") private final boolean searchable;
+    @Getter @SerializedName("orderable") private final boolean orderable;
 
     public boolean isValid() {
         return (methodName != null && !methodName.isEmpty()) || (columnName != null && !columnName.isEmpty());

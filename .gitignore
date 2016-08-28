@@ -8,3 +8,4 @@ local.properties
 # Java
 classes/*
 **/*.class
+classes/*
