@@ -39,4 +39,39 @@ public @interface FSColumn {
      * @return the name of the column
      */
     String value();
+
+    /**
+     * <p>
+     *     defaults to true. changing to false will cause the compiler to fail to generate the appropriate
+     *     method that will allow you to filter results by this column. In other words, if set to false,
+     *     queries will not contain WHERE clauses with this column.
+     * </p>
+     * <p>
+     *     Why would you want to flip this to false? forsuredbcompiler will generate methods as part of the
+     *     fluent api for querying allowing you filter results by some property of the column. For some
+     *     data types, there are several methods that get generated. You may not want to generate methods
+     *     that you will never use.
+     * </p>
+     * <p>
+     *     Note that flipping this to false will mean that you cannot filter your results by this column
+     *     at all.
+     * </p>
+     * @return whether the table is searchable by this column
+     */
+    boolean searchable() default true;
+
+    /**
+     * <p>
+     *     defaults to true. changing to false will cause the compiler to fail to generate the appropriate
+     *     method that will allow you to order results by this column. In other words, if set to false,
+     *     queries will not contain ORDER BY clauses including this column
+     * </p>
+     * <p>
+     *     Why would you want to flip this to false? forsuredbcompiler will generate methods as part of the
+     *     fluent api for querying allowing you to set arbitrary orders to your data set. However, you may
+     *     not want to generate methods that you will not use.
+     * </p>
+     * @return whether retrieval of records may be ordered by this column
+     */
+    boolean orderable() default true;
 }

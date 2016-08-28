@@ -180,7 +180,11 @@ public class TestData {
     // Helpers for covenience methods
 
     private static ColumnInfo.Builder columnFrom(String qualifiedType) {
-        return ColumnInfo.builder().columnName(nameFrom(qualifiedType)).qualifiedType(qualifiedType);
+        return ColumnInfo.builder()
+                .columnName(nameFrom(qualifiedType))
+                .qualifiedType(qualifiedType)
+                .orderable(true)
+                .searchable(true);
     }
 
     private static String nameFrom(String qualifiedType) {
@@ -252,9 +256,11 @@ public class TestData {
                                                 .build(),
                                         bigDecimalCol().columnName("competitor_app_rating")
                                                 .methodName("competitorAppRating")
+                                                .searchable(false)
                                                 .build(),
                                         longCol().columnName("global_id")
                                                 .methodName("globalId")
+                                                .orderable(false)
                                                 .build(),
                                         intCol().columnName("login_count")
                                                 .methodName("loginCount")
