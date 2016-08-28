@@ -1,0 +1,52 @@
+package com.fsryan.annotationprocessor.generator.code;
+
+import com.fsryan.forsuredb.annotationprocessor.generator.code.orderby.OrderByGeneratorTest;
+import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.RelationalOrderBy;
+import com.fsryan.forsuredb.api.RelationalResolver;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
+
+public class TestTable3OrderBy extends RelationalOrderBy<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+    TestTable3OrderBy(RelationalResolver<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> resolver) {
+        super(resolver);
+    }
+
+    /**
+     * <p>
+     *   Order the results of the query by app_rating
+     * </p>
+     * @param order the direction to order the results
+     * @return a {@link com.fsryan.forsuredb.api.RelationalOrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * adding other query parameters
+     */
+    public RelationalOrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRating(OrderBy.Order order) {
+        appendOrder("app_rating", order);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   Order the results of the query by competitor_app_rating
+     * </p>
+     * @param order the direction to order the results
+     * @return a {@link com.fsryan.forsuredb.api.RelationalOrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * adding other query parameters
+     */
+    public RelationalOrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byCompetitorAppRating(OrderBy.Order order) {
+        appendOrder("competitor_app_rating", order);
+        return conjunction;
+    }
+
+    /**
+     * <p>
+     *   Order the results of the query by login_count
+     * </p>
+     * @param order the direction to order the results
+     * @return a {@link com.fsryan.forsuredb.api.RelationalOrderBy.Conjunction} that allows for either adding to the orderBy or continue
+     * adding other query parameters
+     */
+    public RelationalOrderBy.Conjunction<OrderByGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCount(OrderBy.Order order) {
+        appendOrder("login_count", order);
+        return conjunction;
+    }
+}

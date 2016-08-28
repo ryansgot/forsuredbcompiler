@@ -2,9 +2,9 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 
-/*package*/ class NumberFinderMethodGenerator extends FinderMethodSpecGenerator {
-    public NumberFinderMethodGenerator(ColumnInfo column) {
-        super(column);
+/*package*/ class NumberFinderMethodGenerator<C, B> extends FinderMethodSpecGenerator<C, B> {
+    public NumberFinderMethodGenerator(ColumnInfo column, Class<C> conjuntionClass, Class<B> betweenClass) {
+        super(column, conjuntionClass, betweenClass);
     }
 
     @Override

@@ -24,12 +24,7 @@ import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.info.TableInfo;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 // TODO: make this TableContext and MigrationContext agnostic.
 /**
@@ -95,20 +90,40 @@ public class DiffGenerator {
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
                 if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
                     // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-                    retList.add(addColumnMigrationFor(targetColumn, targetTable));
+                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
                     continue;
                 }
 
                 ColumnInfo sourceColumn = sourceTable.getColumn(targetColumn.getColumnName());
-                if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
-                    retList.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
-                            .columnName(sourceColumn.getColumnName())
-                            .tableName(targetTable.getTableName())
-                            .build());
+                Migration migration = getExistingColumnMigration(sourceColumn, targetColumn, targetTable.getTableName());
+                if (migration != null) {
+                    retList.add(migration);
                 }
             }
         }
         return retList;
+    }
+
+    private Migration getExistingColumnMigration(ColumnInfo sourceColumn, ColumnInfo targetColumn, String tableName) {
+        if (!sourceColumn.isIndex() && !sourceColumn.isUnique() && targetColumn.isIndex() && targetColumn.isUnique()) {
+            return Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+                    .columnName(sourceColumn.getColumnName())
+                    .tableName(tableName)
+                    .build();
+        }
+        if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
+            return Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
+                    .columnName(sourceColumn.getColumnName())
+                    .tableName(tableName)
+                    .build();
+        }
+        if (!sourceColumn.isIndex() && targetColumn.isIndex()) {
+            return Migration.builder().type(Migration.Type.ADD_INDEX)
+                    .columnName(sourceColumn.getColumnName())
+                    .tableName(tableName)
+                    .build();
+        }
+        return null;
     }
 
     private List<Migration> toList(PriorityQueue<Migration> migrationQueue) {
@@ -119,7 +134,7 @@ public class DiffGenerator {
         return retList;
     }
 
-    private Migration addColumnMigrationFor(ColumnInfo targetColumn, TableInfo targetTable) {
+    private Migration addMigrationForNewColumn(ColumnInfo targetColumn, TableInfo targetTable) {
         return Migration.builder().columnName(targetColumn.getColumnName())
                 .tableName(targetTable.getTableName())
                 .type(targetColumn.isForeignKey() ? Migration.Type.ADD_FOREIGN_KEY_REFERENCE
@@ -153,7 +168,7 @@ public class DiffGenerator {
 //            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
 //                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
 //                    // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
-//                    retList.add(addColumnMigrationFor(targetColumn, targetTable));
+//                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
 //                    continue;
 //                }
 //

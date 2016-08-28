@@ -16,8 +16,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import java.util.List;
 
-import static com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil.snakeToCamel;
-
 public class ForSureGenerator extends JavaSourceGenerator {
 
     private final List<TableInfo> tablesSortedByName;

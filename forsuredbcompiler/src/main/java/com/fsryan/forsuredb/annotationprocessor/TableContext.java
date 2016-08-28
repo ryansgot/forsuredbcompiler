@@ -48,7 +48,7 @@ public interface TableContext {
     Collection<TableInfo> allTables();
 
     /**
-     * @return a map from table_name -> TableInfo for all tables
+     * @return a map from table_name -&gt; TableInfo for all tables
      */
     Map<String, TableInfo> tableMap();
 }

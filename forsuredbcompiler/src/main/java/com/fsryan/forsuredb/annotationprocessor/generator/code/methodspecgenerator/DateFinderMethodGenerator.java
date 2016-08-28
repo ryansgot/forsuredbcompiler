@@ -2,9 +2,9 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 
-/*package*/ class DateFinderMethodGenerator extends FinderMethodSpecGenerator {
-    public DateFinderMethodGenerator(ColumnInfo column) {
-        super(column);
+/*package*/ class DateFinderMethodGenerator<C, B> extends FinderMethodSpecGenerator<C, B> {
+    public DateFinderMethodGenerator(ColumnInfo column, Class<C> conjuntionClass, Class<B> betweenClass) {
+        super(column, conjuntionClass, betweenClass);
     }
 
     @Override

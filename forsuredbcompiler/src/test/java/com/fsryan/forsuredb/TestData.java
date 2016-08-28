@@ -22,6 +22,7 @@ import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.api.info.TableInfo;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +61,14 @@ public class TestData {
     public static TableInfo.Builder table() {
         return TableInfo.builder().tableName(TABLE_NAME)
                 .qualifiedClassName(TABLE_CLASS_NAME);
+    }
+
+    public static ImmutableMap.Builder<String, ColumnInfo> baseColumnMapBuilder() {
+        return new ImmutableMap.Builder<String, ColumnInfo>()
+                .put(idCol().getColumnName(), idCol())
+                .put(createdCol().getColumnName(), createdCol())
+                .put(modifiedCol().getColumnName(), modifiedCol())
+                .put(deletedCol().getColumnName(), deletedCol());
     }
 
     public static Map<String, ColumnInfo> columnMapOf(ColumnInfo... columns) {

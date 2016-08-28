@@ -17,24 +17,14 @@
  */
 package com.fsryan.forsuredb.api.info;
 
-import com.fsryan.forsuredb.annotations.FSStaticData;
-import com.fsryan.forsuredb.annotations.FSTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
+import java.util.*;
 
 import lombok.Getter;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * <p>
@@ -68,12 +58,12 @@ public class TableInfo {
                     .build())
             .put("created", ColumnInfo.builder().columnName("created")
                     .methodName("created")
-                    .qualifiedType("java.util.Date")
+                    .qualifiedType(Date.class.getName())
                     .defaultValue("CURRENT_TIMESTAMP")
                     .build())
             .put("modified", ColumnInfo.builder().columnName("modified")
                     .methodName("modified")
-                    .qualifiedType("java.util.Date")
+                    .qualifiedType(Date.class.getName())
                     .defaultValue("CURRENT_TIMESTAMP")
                     .build())
             .put("deleted", ColumnInfo.builder().columnName("deleted")
@@ -83,17 +73,32 @@ public class TableInfo {
                     .build())
             .build();
 
+    public static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new ImmutableMap.Builder<String, ColumnInfo>()
+            .put("class_name", ColumnInfo.builder()
+                    .methodName("className")
+                    .qualifiedType(String.class.getName())
+                    .columnName("class_name")
+                    .build())
+            .put("doc", ColumnInfo.builder()
+                    .methodName("doc")
+                    .qualifiedType(String.class.getName())
+                    .columnName("doc")
+                    .build())
+            .build();
+
     @Getter @SerializedName("column_info_map") private final Map<String, ColumnInfo> columnMap;
     @Getter @SerializedName("table_name") private final String tableName;
     @Getter @SerializedName("qualified_class_name") private final String qualifiedClassName;
     @Getter @SerializedName("static_data_asset") private final String staticDataAsset;
     @Getter @SerializedName("static_data_record_name") private final String staticDataRecordName;
+    @Getter @SerializedName("doc_store_parameterization") private final String docStoreParameterization;
 
     private TableInfo(Map<String, ColumnInfo> columnMap,
                       String tableName,
                       String qualifiedClassName,
                       String staticDataAsset,
-                      String staticDataRecordName) {
+                      String staticDataRecordName,
+                      String docStoreParameterization) {
         this.tableName = createTableName(tableName, qualifiedClassName);
         this.qualifiedClassName = qualifiedClassName;
 
@@ -105,6 +110,7 @@ public class TableInfo {
 
         this.staticDataAsset = staticDataAsset;
         this.staticDataRecordName = staticDataRecordName;
+        this.docStoreParameterization = docStoreParameterization;
     }
 
     public boolean isValid() {
@@ -129,6 +135,10 @@ public class TableInfo {
             buf.append(".").append(split[i]);
         }
         return buf.toString();
+    }
+
+    public boolean isDocStore() {
+        return docStoreParameterization != null;
     }
 
     public boolean hasStaticData() {

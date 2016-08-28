@@ -24,6 +24,13 @@ import javax.lang.model.element.ExecutableElement;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <p>
+ *     This is a tricky singleton that depends upon the processing environment to run. Mocking
+ *     the necessary values to test would be difficult, so this class will remain without tests
+ *     until I can really dig in to the javax.lang and javax.annotation.processing packages.
+ * </p>
+ */
 public class AnnotationTranslatorFactory {
 
     private static AnnotationTranslatorFactory instance;
@@ -69,7 +76,7 @@ public class AnnotationTranslatorFactory {
             for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementToValueMap.entrySet()) {
                 ExecutableElement ee = entry.getKey();
                 AnnotationValue av = entry.getValue();
-                this.annotation.put(ee.getSimpleName().toString(), av.getValue());
+                annotation.put(ee.getSimpleName().toString(), av.getValue());
             }
         }
 
