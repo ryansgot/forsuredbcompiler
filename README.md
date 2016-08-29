@@ -37,12 +37,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'android-apt'             // <-- enables the forsuredbcompiler annotation processor
 apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 
-android {
-    packagingOptions {
-        // the forsuredbcompiler project uses project lombok, which also has the below file
-        exclude 'META-INF/services/javax.annotation.processing.Processor'
-    }
-}
+/*...*/
 
 dependencies {
     compile 'com.google.guava:guava:19.0'
