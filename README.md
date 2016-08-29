@@ -19,9 +19,9 @@ buildscript {
         jcenter() // <-- all jar/aar files for forsuredb are hosted on jcenter
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.6'  // <-- forsuredbcompiler needs this plugin to generate code
-        classpath 'com.fsryan:forsuredbplugin:0.2.0'
+        classpath 'com.fsryan:forsuredbplugin:0.3.1'
     }
 }
 
@@ -45,14 +45,14 @@ android {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:18.0'
+    compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.7.0'           // common API for your code and the supporting libraries
-    compile 'com.fsryan.forsuredb:sqlitelib:0.2.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.7.0@aar'   // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.8.1'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:sqlitelib:0.3.0'              // the SQLite DBMS integration
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.8.0@aar'   // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.7.0'     // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.7.0'          // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.8.0'     // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.8.0'          // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -69,6 +69,10 @@ forsuredb {
     migrationDirectory = 'app/src/main/assets'
     // Your app's base directory
     appProjectDirectory = 'app'
+    // (optional) this is the directory in which your META-INF/services files will go for your custom plugins. Note that this is not the same directory as your Android resources (res)
+    resourcesDircectory = 'app/src/main/resources'
+    // (optional) fully-qualified class name of an implementation of FSJsonAdapterFactory. You must define both resourcesDirectory and fsJsonAdapterFactoryClass in order for your doc store to perorm custom JSON serialization
+    fsJsonAdapterFactoryClass = 'com.my.application.json.AdapterFactory'
 }
 ```
 - Declare an application class and the ```FSDefaultProvider``` in your app's AndroidManifest.xml file:
@@ -113,16 +117,44 @@ public interface UserTable extends FSGetApi {   // <-- you must extend FSGetApi 
 ```
 ./gradlew dbmigrate
 ```
+
+## Using the Doc Store feature
+Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store interface regardless of whether it is backed by a real doc store implementation or by some relational database (as in the current sqlite version). Here are the main differences:
+- Your ```@FSTable``` annotated interface must extend ```FSDocStoreGetApi``` instead of ```FSGetApi```.
+- This interface must be parameterized with the most basic class (could be ```Object```) that will be stored in this table.
+- This interface must have a ```public Class BASE_CLASS``` field that is the ```Class``` object of the most basic class that will be stored in this table.
+- Any additional columns that you add must be fields of the base class (just the base class for now). These columns will be indices for fast lookup of records as well as fast retrieval of important data.
+- Starting with forsuredbapi-0.8.1, you can use a custom ```Gson``` object to serialize/deserialize objects you have persisted. Use forsuredbplugin 0.3.1 and provide the ```resourcesDirectory``` and ```fsJsonAdapterFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsJsonAdapterFactoryClass``` must be the fully-qualified class name of an implementation of ```FSJsonAdapterFactory```.
+
 ## Supported Migrations
 - Add a table
 - Add a column to a table
+- Add an index to a table (single-column only)
 - Add a unique index column to a table
 - Make an existing column a unique index
 - Add a foreign key column to a table
-Note that these migrations are supported by forsuredbcompiler, but if you want to use a different DBMS, then you'll have
-to implement your own ```DBMSIntegrator```
 
 ## Coming up
-- support for inverse migrations of each of the currently supported migrations
-- abstractions for using forsuredb as a docstore
-- more robust where-clause editing when doing joins
+- support for inverse migrations of each of the currently supported migrations (0.10.0)
+- more robust where-clause editing when doing joins (?)
+- Full separation from any DBMS by means of a DBMSIntegrator plugin (0.9.0)
+- More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.8.x)
+- An Android Studio plugin (?)
+
+## Revisions
+
+### forsuredbapi-0.8.1
+- Support for custom ```Gson``` objects by means of a plugin defined by the ```FSJsonAdapterFactory``` interface. You must use forsuredbplugin 0.3.1 or greater and add the ```resourcesDirectory``` and ```fsJsonAdapterFactoryClass``` properties to the ```forsuredb``` gradle extension (or really know what you're doing writing Java plugins).
+
+### 0.8.0  (compiler and api)
+- Added doc store feature that stores objects as JSON using ```Gson```. Instead of extending ```FSGetApi``` to define your table's schema, extend ```FSDocStoreGetApi``` and give it a parameter that is the most basic possible object that will get stored in this table. Additionaly, define a ```Class``` field called ```BASE_CLASS``` with the class that you used to parameterize the ```FSDocStoreGetApi``` extension.
+
+### 0.7.1 (compiler and api)
+- ```FSColumn``` annotation now has searchable and orderable properties in order to tell the compiler whether to generate the order-by and finder methods for a column in the fluent querying api. Setting these properties to ```false``` will cause the compiler to not generate the order by and finder methods associated with the column.
+
+### 0.7.0 (compiler and api)
+- Split into two modules: compiler and api
+- No functional changes, but a lot of the cruft that was getting compiled into projects will now be removed
+
+### 0.6.4
+- No longer compile lombok into the compiler in order to avoid pulling in a bunch of stuff that is not needed
