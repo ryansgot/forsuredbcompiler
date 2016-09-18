@@ -16,7 +16,7 @@ As the central part of the forsuredb project, it is one of libraries necessary f
 ```groovy
 buildscript {
     repositories {
-        jcenter() // <-- all jar/aar files for forsuredb are hosted on jcenter
+        jcenter()   // <-- all jar/aar files for forsuredb are hosted on jcenter
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.0'
@@ -28,6 +28,9 @@ buildscript {
 allprojects {
     repositories {
         jcenter() // <-- all jar/aar files for forsuredb are hosted on jcenter
+        maven {     // <-- except for forsuredbcompiler 7.0 and up . . . which are currently hosted here
+            url  "http://dl.bintray.com/ryansgot/maven"
+        }
     }
 }
 ```
