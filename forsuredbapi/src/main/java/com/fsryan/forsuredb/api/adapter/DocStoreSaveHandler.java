@@ -3,7 +3,6 @@ package com.fsryan.forsuredb.api.adapter;
 import com.fsryan.forsuredb.api.FSQueryable;
 import com.fsryan.forsuredb.api.FSSelection;
 import com.fsryan.forsuredb.api.RecordContainer;
-import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,14 +11,15 @@ import java.util.Map;
 
 /*package*/ class DocStoreSaveHandler<U, R extends RecordContainer> extends SaveHandler<U, R> {
 
-    private static Gson gson;
+    private static FSSerializer serializer;
     private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
+    private static final ColumnDescriptor DOC_BLOB_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc_blob", byte[].class);
     private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
 
     protected DocStoreSaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
         super(queryable, selection, recordContainer, columnTypeMap);
-        if (gson == null) {
-            gson = new JsonAdapterHelper().getNew();
+        if (serializer == null) {
+            serializer = new FSSerializerAdapterHelper().getNew();
         }
     }
 
@@ -34,7 +34,8 @@ import java.util.Map;
 
     @Override
     protected void handleTypeMiss(String columnName, Type type, Object val) {
-        recordContainer.put(columnName, gson.toJson(val, type));
+        // TODO: this assumes the underlying type was a string type. This is not a safe assumption.
+        recordContainer.put(columnName, serializer.createStringDoc(type, val));
     }
 
     private void updateDocProperties(Object obj) {
@@ -57,8 +58,14 @@ import java.util.Map;
                 e.printStackTrace();
             }
         }
+
         performSet(CLASS_NAME_COLUMN_DESCRIPTOR, obj.getClass().getName());
-        performSet(DOC_COLUMN_DESCRIPTOR, gson.toJson(obj, obj.getClass()));
+
+        if (serializer.storeAsBlob()) {
+            performSet(DOC_BLOB_COLUMN_DESCRIPTOR, serializer.createBlobDoc(obj.getClass(), obj));
+        } else {
+            performSet(DOC_COLUMN_DESCRIPTOR, serializer.createStringDoc(obj.getClass(), obj));
+        }
     }
 
     private Field getFieldForClassOrSuperclass(String fieldName, Object obj) {

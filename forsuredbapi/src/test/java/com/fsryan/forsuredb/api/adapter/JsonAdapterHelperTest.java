@@ -23,7 +23,7 @@ public abstract class JsonAdapterHelperTest {
 
     @Test
     public void outputShouldNotBeNull() {
-        assertNotNull(new JsonAdapterHelper(fsJsonAdapterFactoryClass).getNew());
+        assertNotNull(new FSSerializerAdapterHelper(fsJsonAdapterFactoryClass).getNew());
     }
 
     @RunWith(Parameterized.class)
@@ -46,7 +46,7 @@ public abstract class JsonAdapterHelperTest {
 
         @Test
         public void shouldBeNewGsonInstance() {
-            assertNotEquals(FSJsonAdapterFactoryImpl.GSON, new JsonAdapterHelper(fsJsonAdapterFactoryClass).getNew());
+            assertNotEquals(FSJsonAdapterFactoryImpl.GSON, new FSSerializerAdapterHelper(fsJsonAdapterFactoryClass).getNew());
         }
 
     }
@@ -59,11 +59,11 @@ public abstract class JsonAdapterHelperTest {
 
         @Test
         public void shouldBeFSJsonAdapterFactoryImplInstance() {
-            assertEquals(FSJsonAdapterFactoryImpl.GSON, new JsonAdapterHelper(fsJsonAdapterFactoryClass).getNew());
+            assertEquals(FSJsonAdapterFactoryImpl.GSON, new FSSerializerAdapterHelper(fsJsonAdapterFactoryClass).getNew());
         }
     }
 
-    /*package*/ static class FSJsonAdapterFactoryImpl implements FSJsonAdapterFactory {
+    /*package*/ static class FSJsonAdapterFactoryImpl implements FSSerializationAdapterFactory {
 
         /*package*/ static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -73,7 +73,7 @@ public abstract class JsonAdapterHelperTest {
         }
     }
 
-    /*package*/ static class FSJsonAdapterFactoryNullImpl implements FSJsonAdapterFactory {
+    /*package*/ static class FSJsonAdapterFactoryNullImpl implements FSSerializationAdapterFactory {
         @Override
         public Gson create() {
             return null;

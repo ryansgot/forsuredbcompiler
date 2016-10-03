@@ -69,8 +69,8 @@ forsuredb {
     appProjectDirectory = 'app'
     // (optional) this is the directory in which your META-INF/services files will go for your custom plugins. Note that this is not the same directory as your Android resources (res)
     resourcesDircectory = 'app/src/main/resources'
-    // (optional) fully-qualified class name of an implementation of FSJsonAdapterFactory. You must define both resourcesDirectory and fsJsonAdapterFactoryClass in order for your doc store to perorm custom JSON serialization
-    fsJsonAdapterFactoryClass = 'com.my.application.json.AdapterFactory'
+    // (optional) fully-qualified class name of an implementation of FSJsonAdapterFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom JSON serialization
+    fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
 }
 ```
 - Declare an application class and the ```FSDefaultProvider``` in your app's AndroidManifest.xml file:
@@ -122,7 +122,7 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - This interface must be parameterized with the most basic class (could be ```Object```) that will be stored in this table.
 - This interface must have a ```public Class BASE_CLASS``` field that is the ```Class``` object of the most basic class that will be stored in this table.
 - Any additional columns that you add must be fields of the base class (just the base class for now). These columns will be indices for fast lookup of records as well as fast retrieval of important data.
-- Starting with forsuredbapi-0.8.1, you can use a custom ```Gson``` object to serialize/deserialize objects you have persisted. Use forsuredbplugin 0.3.1 and provide the ```resourcesDirectory``` and ```fsJsonAdapterFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsJsonAdapterFactoryClass``` must be the fully-qualified class name of an implementation of ```FSJsonAdapterFactory```.
+- Starting with forsuredbapi-0.8.1, you can use a custom ```Gson``` object to serialize/deserialize objects you have persisted. Use forsuredbplugin 0.3.1 and provide the ```resourcesDirectory``` and ```fsSerializerFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsSerializerFactoryClass``` must be the fully-qualified class name of an implementation of ```FSJsonAdapterFactory```.
 
 ## Supported Migrations
 - Add a table
@@ -142,7 +142,7 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 ## Revisions
 
 ### forsuredbapi-0.8.1
-- Support for custom ```Gson``` objects by means of a plugin defined by the ```FSJsonAdapterFactory``` interface. You must use forsuredbplugin 0.3.1 or greater and add the ```resourcesDirectory``` and ```fsJsonAdapterFactoryClass``` properties to the ```forsuredb``` gradle extension (or really know what you're doing writing Java plugins).
+- Support for custom ```Gson``` objects by means of a plugin defined by the ```FSJsonAdapterFactory``` interface. You must use forsuredbplugin 0.3.1 or greater and add the ```resourcesDirectory``` and ```fsSerializerFactoryClass``` properties to the ```forsuredb``` gradle extension (or really know what you're doing writing Java plugins).
 
 ### 0.8.0  (compiler and api)
 - Added doc store feature that stores objects as JSON using ```Gson```. Instead of extending ```FSGetApi``` to define your table's schema, extend ```FSDocStoreGetApi``` and give it a parameter that is the most basic possible object that will get stored in this table. Additionaly, define a ```Class``` field called ```BASE_CLASS``` with the class that you used to parameterize the ```FSDocStoreGetApi``` extension.
