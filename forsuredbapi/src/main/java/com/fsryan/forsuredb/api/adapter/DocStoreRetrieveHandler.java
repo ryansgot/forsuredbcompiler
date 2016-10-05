@@ -18,7 +18,7 @@ import java.util.Map;
         super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
         if (serializer == null) {
-            serializer = new FSSerializerAdapterHelper().getNew();
+            serializer = new FSSerializerFactoryHelper().getNew();
         }
     }
 

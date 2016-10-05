@@ -13,13 +13,13 @@ import java.util.Map;
 
     private static FSSerializer serializer;
     private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
-    private static final ColumnDescriptor DOC_BLOB_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc_blob", byte[].class);
+    private static final ColumnDescriptor DOC_BLOB_COLUMN_DESCRIPTOR = new ColumnDescriptor("blob_doc", byte[].class);
     private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
 
     protected DocStoreSaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
         super(queryable, selection, recordContainer, columnTypeMap);
         if (serializer == null) {
-            serializer = new FSSerializerAdapterHelper().getNew();
+            serializer = new FSSerializerFactoryHelper().getNew();
         }
     }
 

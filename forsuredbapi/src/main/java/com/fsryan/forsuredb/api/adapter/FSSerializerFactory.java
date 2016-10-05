@@ -1,5 +1,5 @@
 package com.fsryan.forsuredb.api.adapter;
 
-public interface FSSerializationAdapterFactory {
+public interface FSSerializerFactory {
     FSSerializer create();
 }

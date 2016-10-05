@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,18 +9,18 @@ import java.io.InputStreamReader;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-/*package*/ class FSSerializerAdapterHelper {
+/*package*/ class FSSerializerFactoryHelper {
 
     private static final String FACTORY_CLASS = createFSSerializerFactoryClass();
 
     private final String fsSerializerFactoryClass;
 
-    public FSSerializerAdapterHelper() {
+    public FSSerializerFactoryHelper() {
         this(FACTORY_CLASS);
     }
 
     @VisibleForTesting
-    /*package*/ FSSerializerAdapterHelper(String fsSerializerFactoryClass) {
+    /*package*/ FSSerializerFactoryHelper(String fsSerializerFactoryClass) {
         this.fsSerializerFactoryClass = fsSerializerFactoryClass;
     }
 
@@ -31,10 +30,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         }
         try {
             Class c = Class.forName(fsSerializerFactoryClass);
-            if (!FSSerializationAdapterFactory.class.isAssignableFrom(c)) {
+            if (!FSSerializerFactory.class.isAssignableFrom(c)) {
                 return new FSGsonSerializer();
             }
-            FSSerializer ret = ((FSSerializationAdapterFactory) c.newInstance()).create();
+            FSSerializer ret = ((FSSerializerFactory) c.newInstance()).create();
             return ret == null ? new FSGsonSerializer() : ret;
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,8 +42,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
     }
 
     private static String createFSSerializerFactoryClass() {
-        InputStream is = FSSerializerAdapterHelper.class.getClassLoader()
-                .getResourceAsStream("META-INF/services/" + FSSerializationAdapterFactory.class.getName());
+        InputStream is = FSSerializerFactoryHelper.class.getClassLoader()
+                .getResourceAsStream("META-INF/services/" + FSSerializerFactory.class.getName());
         if (is == null) {
             return null;
         }

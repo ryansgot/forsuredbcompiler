@@ -21,7 +21,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.6'  // <-- forsuredbcompiler needs this plugin to generate code
-        classpath 'com.fsryan:forsuredbplugin:0.3.1'
+        classpath 'com.fsryan:forsuredbplugin:0.3.2'                // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
     }
 }
 
@@ -45,12 +45,12 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.8.1'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.8.2'           // common API for your code and the supporting libraries
     compile 'com.fsryan.forsuredb:sqlitelib:0.3.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.8.0@aar'   // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.8.1@aar'   // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.8.0'     // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.8.0'          // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.8.1'     // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.8.1'          // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -62,14 +62,14 @@ forsuredb {
     // The fully-qualified class name of the parameterization of the generated
     // ForSure class. It is the class that stores a record before it is 
     // deleted/inserted/updated etc.
-    recordContainer = "com.fsryan.provider.FSContentValues"
+    recordContainer = "com.fsryan.fosuredb.provider.FSContentValues"
     // the assets directory of your app starting at your project's base directory
     migrationDirectory = 'app/src/main/assets'
-    // Your app's base directory
+    // Your application module's base directory
     appProjectDirectory = 'app'
     // (optional) this is the directory in which your META-INF/services files will go for your custom plugins. Note that this is not the same directory as your Android resources (res)
     resourcesDircectory = 'app/src/main/resources'
-    // (optional) fully-qualified class name of an implementation of FSJsonAdapterFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom JSON serialization
+    // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
     fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
 }
 ```
@@ -122,7 +122,11 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - This interface must be parameterized with the most basic class (could be ```Object```) that will be stored in this table.
 - This interface must have a ```public Class BASE_CLASS``` field that is the ```Class``` object of the most basic class that will be stored in this table.
 - Any additional columns that you add must be fields of the base class (just the base class for now). These columns will be indices for fast lookup of records as well as fast retrieval of important data.
-- Starting with forsuredbapi-0.8.1, you can use a custom ```Gson``` object to serialize/deserialize objects you have persisted. Use forsuredbplugin 0.3.1 and provide the ```resourcesDirectory``` and ```fsSerializerFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsSerializerFactoryClass``` must be the fully-qualified class name of an implementation of ```FSJsonAdapterFactory```.
+- Starting with forsuredbapi-0.8.1, you can provide custom JSON serialization/deserialization for persisting/retrieving objects as JSON documents via Gson. Use forsuredbplugin 0.3.1 and provide the ```resourcesDirectory``` and ```fsJsonAdapterFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsJsonAdapterFactoryClass``` must be the fully-qualified class name of an implementation of ```FSJsonAdapterFactory```.
+- Starting with forsuredbapi-0.8.2 and forsuredbcompiler-0.8.1, you can provide custom ```String``` or ```byte[]``` serialization/deserialization for persisting/retrieving objects via any serializer you want. Use forsuredbplugin 0.3.2 and provide the ```resourcesDirectory``` and ```fsSerializerFactoryClass``` properties to the ```forsuredb``` gradle extension. Note that the value of ```fsSerializerFactoryClass``` must be the fully-qualified class name of an implementation of ```FSSerializerFactory```.
+  - Additionally, to implementations of ```FSSerializer``` have been written for you.
+    1. ```FSGsonSerializer```, which may be initialized with a custom ```Gson``` object for custom JSON serialization
+    2. ```FSSerializableSerializer```, which uses Java's typical object serialization via ```ObjectOutputStream``` and ```ObjectInputStream```.
 
 ## Supported Migrations
 - Add a table
@@ -140,6 +144,10 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - An Android Studio plugin (?)
 
 ## Revisions
+
+### forsuredbapi-0.8.2 and forsuredbcompiler-0.8.1
+- Support for any kind of serialization you want (either to ```String``` or ```byte[]```), using whatever library you want or your own idea of what serialization should be.
+- In order to take advantage of this, you should use forsuredbplugin 0.3.2 or greater
 
 ### forsuredbapi-0.8.1
 - Support for custom ```Gson``` objects by means of a plugin defined by the ```FSJsonAdapterFactory``` interface. You must use forsuredbplugin 0.3.1 or greater and add the ```resourcesDirectory``` and ```fsSerializerFactoryClass``` properties to the ```forsuredb``` gradle extension (or really know what you're doing writing Java plugins).

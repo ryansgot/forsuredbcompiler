@@ -56,7 +56,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
 
     /**
      * <p>
-     *     Deserializes the document into a an object of the base type. You may lose information if you
+     *     Deserializes the document into a an object of the base type T. You may lose information if you
      *     chose this method of retrieval, but it is guaranteed to work across class name refactors.
      * </p>
      * <p>

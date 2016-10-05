@@ -9,7 +9,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: "jacoco"
 
 group = 'com.fsryan.forsuredb'
-version = '0.8.1'
+version = '0.8.2'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
@@ -41,6 +41,8 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
             excludes: [
                     '**/*Test.class',
                     '**/TestData.class',
+                    '**/*Test$*.class',
+                    '**/com/fsryan/forsuredb/api/adapter/ColumnDescriptor.class',   // Implementation by lombok
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTable.class',
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTableSetter.class',
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTable.class',
@@ -48,8 +50,6 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
                     '**/com/fsryan/forsuredb/api/adapter/DocStoreTestBase.class',
                     '**/com/fsryan/forsuredb/api/adapter/DocStoreTestBase$*.class',
                     '**/com/fsryan/forsuredb/api/adapter/SharedData.class',
-                    '**/com/fsryan/forsuredb/api/adapter/SaveHandlerTest$*.class',
-                    '**/com/fsryan/forsuredb/api/adapter/RetrieveHandlerTest$*.class'
             ]
     )
 
@@ -75,10 +75,10 @@ bintray {
         vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
         publicDownloadNumbers = true
         version {
-            name = '0.8.1'
+            name = '0.8.2'
             desc = 'Classes necessary for integration with forsuredb'
             released  = new Date()
-            vcsTag = 'forsuredbapi-0.8.1'
+            vcsTag = 'forsuredbapi-0.8.2'
         }
     }
 }
@@ -89,7 +89,7 @@ publishing {
             from components.java
             groupId = 'com.fsryan.forsuredb'
             artifactId = 'forsuredbapi'
-            version = '0.8.1'
+            version = '0.8.2'
 
             Artifact sourcesJar
             Artifact javadocJar
