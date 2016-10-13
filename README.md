@@ -62,7 +62,7 @@ forsuredb {
     // The fully-qualified class name of the parameterization of the generated
     // ForSure class. It is the class that stores a record before it is 
     // deleted/inserted/updated etc.
-    recordContainer = "com.fsryan.fosuredb.provider.FSContentValues"
+    recordContainer = "com.fsryan.forsuredb.provider.FSContentValues"
     // the assets directory of your app starting at your project's base directory
     migrationDirectory = 'app/src/main/assets'
     // Your application module's base directory
