@@ -68,7 +68,7 @@ forsuredb {
     // Your application module's base directory
     appProjectDirectory = 'app'
     // (optional) this is the directory in which your META-INF/services files will go for your custom plugins. Note that this is not the same directory as your Android resources (res)
-    resourcesDircectory = 'app/src/main/resources'
+    resourcesDirectory = 'app/src/main/resources'
     // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
     fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
 }
