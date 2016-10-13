@@ -32,12 +32,6 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * <p>
      *     Deserializes the document into a an object of type C.
      * </p>
-     * <p>
-     *     You must make an assignment with this call for S to be non-ambiguously inferred. In other
-     *     words, you must assign a temporary variable and then call a method on that in order for
-     *     the compiler to know about additional members of the object that are not guaranteed by
-     *     the base type, T.
-     * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @param <C> the type to deserialize
      * @return an object of type S deseralized from the string in the doc column
@@ -47,13 +41,12 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
 
     /**
      * <p>
-     *     Deserializes the document into a an object of type T.
+     *     Deserializes the document into a an object of the type stored. Even though the compile-time
+     *     type is the same as the parameterization, the deserialization will occur on the type of the
+     *     object when it was originally stored.
      * </p>
      * <p>
-     *     You must make an assignment with this call for S to be non-ambiguously inferred. In other
-     *     words, you must assign a temporary variable and then call a method on that in order for
-     *     the compiler to know about additional members of the object that are not guaranteed by
-     *     the base type, T.
+     *     Note that this will most-likely lead to errors if you refactor the class name after storage.
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return an object of type S deseralized from the string in the doc column
@@ -62,10 +55,39 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
     T get(Retriever retriever);
 
     /**
+     * <p>
+     *     Deserializes the document into a an object of the base type T. You may lose information if you
+     *     chose this method of retrieval, but it is guaranteed to work across class name refactors.
+     * </p>
+     * <p>
+     *     Note that this will most-likely lead to errors if you change the fields of this class and their
+     *     serialization
+     * </p>
+     * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
+     * @return an object of type S deseralized from the string in the doc column
+     * @see #doc(Retriever)
+     */
+    T getAsBaseType(Retriever retriever);
+
+    /**
+     * <p>
+     *     Use this only if you want to perform your own deserialization and that the initial serialization
+     *     was to a String.
+     * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return A string representation of the document
      */
     @FSColumn("doc") String doc(Retriever retriever);
+
+    /**
+     * <p>
+     *     Use this only if you want to perform your own deserialization and that the original serialization
+     *     was into a byte array.
+     * </p>
+     * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
+     * @return A byte array representation of the object
+     */
+    @FSColumn("blob_doc") String blobDoc(Retriever retriever);
 
     // TODO: create a migration that is designed to update records whenever a class name changes
     /**

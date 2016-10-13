@@ -24,8 +24,6 @@ import java.util.*;
 
 import lombok.Getter;
 
-import javax.lang.model.type.TypeMirror;
-
 /**
  * <p>
  *     The complete description of a table. Each table will have the
@@ -83,6 +81,11 @@ public class TableInfo {
                     .methodName("doc")
                     .qualifiedType(String.class.getName())
                     .columnName("doc")
+                    .build())
+            .put("blob_doc", ColumnInfo.builder()
+                    .methodName("blobDoc")
+                    .qualifiedType(byte[].class.getCanonicalName())
+                    .columnName("blob_doc")
                     .build())
             .build();
 

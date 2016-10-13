@@ -30,6 +30,7 @@ public class TableInfoFactory {
         // docStoreParametrization will be non-null only for doc store tables, so add the doc store columns in this case
         String docStoreParameterization = getDocStoreParametrizationFrom(intf);
         if (docStoreParameterization != null) {
+            APLog.i(TableInfoFactory.class.getSimpleName(), "Doc store parameterization found (" + docStoreParameterization + ") for table: " + createTableName(intf));
             columnMap.putAll(TableInfo.DOC_STORE_COLUMNS);
         }
         for (ExecutableElement me : ElementFilter.methodsIn(intf.getEnclosedElements())) {
