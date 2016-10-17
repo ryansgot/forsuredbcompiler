@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.api;
 public class DocStoreOrderBy<T, U, R extends RecordContainer, G extends FSDocStoreGetApi<T>, S extends FSDocStoreSaveApi<U, T>, F extends DocStoreFinder<T, U, R, G, S, F, O>, O extends DocStoreOrderBy<T, U, R, G, S, F, O>> extends OrderBy {
 
     public interface Conjunction<T, U, R extends RecordContainer, G extends FSDocStoreGetApi<T>, S extends FSDocStoreSaveApi<U, T>, F extends DocStoreFinder<T, U, R, G, S, F, O>, O extends DocStoreOrderBy<T, U, R, G, S, F, O>> {
-        DocStoreResolver<T, U, R, G, S, F, O> andFinally();
+        DocStoreResolver<T, U, R, G, S, F, O> then();
         O and();
     }
 
@@ -13,7 +13,7 @@ public class DocStoreOrderBy<T, U, R extends RecordContainer, G extends FSDocSto
         super(resolver.tableName());
         conjunction = new Conjunction<T, U, R, G, S, F, O>() {
             @Override
-            public DocStoreResolver<T, U, R, G, S, F, O> andFinally() {
+            public DocStoreResolver<T, U, R, G, S, F, O> then() {
                 return resolver;
             }
 

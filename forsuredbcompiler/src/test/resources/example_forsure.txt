@@ -16,7 +16,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
  *     {@code
  *             Retriever retriever = ForSure.testTableTable().find()
  *             .byId(1)
- *             .andFinally()
+ *             .then()
  *             .get();
  *             if (retriever.moveToFirst()) {
  *                 do {
@@ -37,7 +37,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
  *     {@code
  *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
- *             .andFinally()
+ *             .then()
  *             .set()
  *             .id(2)
  *             .save();
@@ -60,7 +60,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
  *     {@code
  *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
- *             .andFinally()
+ *             .then()
  *             .set()
  *             .softDelete();
  *     }
@@ -72,7 +72,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
  *     {@code
  *             SaveResult<com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGeneratorTest> result = ForSure.testTableTable().find()
  *             .byId(1)
- *             .andFinally()
+ *             .then()
  *             .set()
  *             .hardDelete();
  *     }

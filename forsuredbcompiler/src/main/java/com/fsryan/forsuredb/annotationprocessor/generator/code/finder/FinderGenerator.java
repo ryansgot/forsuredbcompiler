@@ -74,7 +74,7 @@ public abstract class FinderGenerator extends JavaSourceGenerator {
                 .addLine(".byIdBetweenInclusive($L)", CodeUtil.javaExampleOf("long"))
                 .addLine(".andInclusive($L)", CodeUtil.javaExampleOf("long"))
                 .addLine(".byCreatedBefore($L)", CodeUtil.javaExampleOf("java.util.Date"))
-                .addLine(".andFinally()")
+                .addLine(".then()")
                 .addLine(".get();")
                 .endCode()
                 .addLine("The above will create the following query:")

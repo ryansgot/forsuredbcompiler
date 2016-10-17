@@ -29,7 +29,7 @@ package com.fsryan.forsuredb.api;
 public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> extends OrderBy {
 
     public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> {
-        Resolver<U, R, G, S, F, O> andFinally();
+        Resolver<U, R, G, S, F, O> then();
         O and();
     }
 
@@ -39,7 +39,7 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
         super(resolver.tableName());
         conjunction = new Conjunction<U, R, G, S, F, O>() {
             @Override
-            public Resolver<U, R, G, S, F, O> andFinally() {
+            public Resolver<U, R, G, S, F, O> then() {
                 return resolver;
             }
 

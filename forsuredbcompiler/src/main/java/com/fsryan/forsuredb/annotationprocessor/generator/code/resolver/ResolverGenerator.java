@@ -107,7 +107,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
                 .startCode()
                 .addLine("ForSure.$L().find()", CodeUtil.snakeToCamel(table.getTableName()))
                 .addLine(".byIdLessThan($L)", CodeUtil.javaExampleOf("long"))
-                .addLine(".andFinally()")
+                .addLine(".then()")
                 .addLine(".get();")
                 .endCode()
                 .endParagraph()
