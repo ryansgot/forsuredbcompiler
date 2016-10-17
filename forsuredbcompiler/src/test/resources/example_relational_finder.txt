@@ -20,7 +20,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
  *             .byIdBetweenInclusive(23545494583L)
  *             .andInclusive(23545494583L)
  *             .byCreatedBefore(new Date())
- *             .andFinally()
+ *             .then()
  *             .get();
  *     }
  *   </pre>

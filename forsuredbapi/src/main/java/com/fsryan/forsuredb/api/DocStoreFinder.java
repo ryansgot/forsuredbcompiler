@@ -5,7 +5,7 @@ import java.util.Date;
 public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStoreGetApi<T>, S extends FSDocStoreSaveApi<U, T>, F extends DocStoreFinder<T, U, R, G, S, F, O>, O extends DocStoreOrderBy<T, U, R, G, S, F, O>> extends Finder {
 
     public interface Conjunction<T, U, R extends RecordContainer, G extends FSDocStoreGetApi<T>, S extends FSDocStoreSaveApi<U, T>, F extends DocStoreFinder<T, U, R, G, S, F, O>, O extends DocStoreOrderBy<T, U, R, G, S, F, O>> {
-        DocStoreResolver<T, U, R, G, S, F, O> andFinally();
+        DocStoreResolver<T, U, R, G, S, F, O> then();
         F and();
         F or();
     }
@@ -22,7 +22,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
         super(resolver.tableName());
         conjunction = new Conjunction<T, U, R, G, S, F, O>() {
             @Override
-            public DocStoreResolver<T, U, R, G, S, F, O> andFinally() {
+            public DocStoreResolver<T, U, R, G, S, F, O> then() {
                 return resolver;
             }
 

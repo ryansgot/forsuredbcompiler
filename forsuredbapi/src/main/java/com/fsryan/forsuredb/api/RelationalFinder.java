@@ -5,7 +5,7 @@ import java.util.Date;
 public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> extends Finder {
 
     public interface Conjunction<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> {
-        Resolver<U, R, G, S, F, O> andFinally();
+        Resolver<U, R, G, S, F, O> then();
         F and();
         F or();
     }
@@ -21,7 +21,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
         super(resolver.tableName());
         conjunction = new Conjunction<U, R, G, S, F, O>() {
             @Override
-            public Resolver<U, R, G, S, F, O> andFinally() {
+            public Resolver<U, R, G, S, F, O> then() {
                 return resolver;
             }
 
