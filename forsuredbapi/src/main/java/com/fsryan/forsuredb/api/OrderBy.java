@@ -1,5 +1,7 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public abstract class OrderBy {
 
     protected void appendOrder(String columnName, Order order) {
         if (order != null) {
-            orderByList.add(tableName + "." + columnName + " " + order.name());
+            orderByList.add(Sql.generator().unambiguousColumn(tableName, columnName) + " " + order.name());
         }
     }
 }

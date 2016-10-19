@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.api.adapter;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -113,7 +114,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
             if (isNullOrEmpty(columnName)) {
                 continue;
             }
-            ret.put(m, tableName + "_" + columnName);
+            ret.put(m, Sql.generator().unambiguousRetrievalColumn(tableName, columnName));
         }
         for (Class<?> superTableApi : tableApi.getInterfaces()) {
             ret.putAll(createMethodToColumnNameMap(tableName, superTableApi, methodNameToColumnNameMap));

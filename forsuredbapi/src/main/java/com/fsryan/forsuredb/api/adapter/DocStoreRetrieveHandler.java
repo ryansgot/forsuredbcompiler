@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,18 +19,17 @@ import java.util.Map;
         super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
         if (serializer == null) {
-            serializer = new FSSerializerFactoryHelper().getNew();
+            serializer = new FSSerializerFactoryPluginHelper().getNew().create();
         }
     }
 
     @Override
     public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
-        // TODO: don't do aliasing of columns in the stupid way it's currently done. just use the unambiguous name
         switch (m.getName()) {
             case "doc":
                 return getStringDoc((Retriever) args[0]);
             case "className":
-                return callRetrieverMethod((Retriever) args[0], tableName + "_class_name", String.class);
+                return callRetrieverMethod((Retriever) args[0], Sql.generator().unambiguousRetrievalColumn(tableName, "class_name"), String.class);
             case "getClass":
                 return getClassOfObject((Retriever) args[0]);
             // TODO: this logic makes the assumption that the same serailizer in use when storing is the one used when retrieving
@@ -65,7 +65,8 @@ import java.util.Map;
     }
 
     private <C extends T> Class<C> getClassOfObject(Retriever retriever) throws IllegalAccessException, InvocationTargetException {
-        String className = (String) callRetrieverMethod(retriever, tableName + "_class_name", String.class);
+        final String cNameCol = Sql.generator().unambiguousRetrievalColumn(tableName, "class_name");
+        final String className = (String) callRetrieverMethod(retriever, cNameCol, String.class);
         try {
             return (Class<C>) Class.forName(className).asSubclass(baseClass);
         } catch(Exception e) {
@@ -75,10 +76,12 @@ import java.util.Map;
     }
 
     private String getStringDoc(Retriever retriever) throws IllegalAccessException, InvocationTargetException {
-        return (String) callRetrieverMethod(retriever, tableName + "_doc", String.class);
+        final String docCol = Sql.generator().unambiguousRetrievalColumn(tableName, "doc");
+        return (String) callRetrieverMethod(retriever, docCol, String.class);
     }
 
     private byte[] getBlobDoc(Retriever retriever) throws IllegalAccessException, InvocationTargetException {
-        return (byte[]) callRetrieverMethod(retriever, tableName + "_blob_doc", byte[].class);
+        final String docBlobCol = Sql.generator().unambiguousRetrievalColumn(tableName, "blob_doc");
+        return (byte[]) callRetrieverMethod(retriever, docBlobCol, byte[].class);
     }
 }

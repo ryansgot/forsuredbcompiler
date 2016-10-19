@@ -17,6 +17,7 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.common.base.Strings;
 
 import java.text.SimpleDateFormat;
@@ -73,7 +74,7 @@ public abstract class Finder{
             return;
         }
 
-        column = tableName + "." + column;  // <-- disambiguate column from other tables that have same name column
+        column = Sql.generator().unambiguousColumn(tableName, column);
         whereBuf.append(column)
                 .append(" ").append(operator.getSymbol())
                 .append(" ").append(operator == Operator.LIKE ? "%?%" : "?");

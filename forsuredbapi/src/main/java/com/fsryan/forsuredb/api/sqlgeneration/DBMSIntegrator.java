@@ -39,4 +39,27 @@ public interface DBMSIntegrator {
      * @return the raw SQL query for insertion of a record in the table.
      */
     String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap);
+
+    /**
+     * <p>
+     *     Creates the unambiguous column name for a table and column.
+     * </p>
+     * @param tableName the name of the table
+     * @param columnName the name of the column of the table
+     * @return the unambiguous column name given the table and column names
+     */
+    String unambiguousColumn(String tableName, String columnName);
+
+    /**
+     * <p>
+     *     Creates an unambiguous name for column retrieval. This can be the same as
+     *     {@link #unambiguousColumn(String, String)} if the framework/platform you're using supports the same
+     *     unambiguous notation as the DBMS you're using. Strangely, Android/SQLiteCursor does not support
+     *     the table.column notation for disambiguating columns, so this method was added to work around that.
+     * </p>
+     * @param tableName the name of the table
+     * @param columnName the name of the column of the table
+     * @return the unambiguous column name specifically for disambugating column names after a join
+     */
+    String unambiguousRetrievalColumn(String tableName, String columnName);
 }
