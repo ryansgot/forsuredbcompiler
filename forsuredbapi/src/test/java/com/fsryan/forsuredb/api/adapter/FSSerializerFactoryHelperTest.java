@@ -8,7 +8,6 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public abstract class FSSerializerFactoryHelperTest {
@@ -21,7 +20,7 @@ public abstract class FSSerializerFactoryHelperTest {
 
     @Test
     public void outputShouldNotBeNull() {
-        assertNotNull(new FSSerializerFactoryHelper(fsSerializerFactoryClass).getNew());
+        assertNotNull(new FSSerializerFactoryPluginHelper(fsSerializerFactoryClass).getNew());
     }
 
     @RunWith(Parameterized.class)
@@ -44,8 +43,8 @@ public abstract class FSSerializerFactoryHelperTest {
         }
 
         @Test
-        public void shouldBeNewGsonInstance() {
-            assertNotEquals(FSGsonSerializerFactoryImpl.gsonSerializer, new FSSerializerFactoryHelper(fsSerializerFactoryClass).getNew());
+        public void shouldDefaultToGsonSerializer() {
+            assertEquals(FSGsonSerializer.class, new FSSerializerFactoryPluginHelper(fsSerializerFactoryClass).getNew().create().getClass());
         }
 
     }
@@ -58,11 +57,11 @@ public abstract class FSSerializerFactoryHelperTest {
 
         @Test
         public void shouldBeFSJsonAdapterFactoryImplInstance() {
-            assertEquals(FSGsonSerializerFactoryImpl.gsonSerializer, new FSSerializerFactoryHelper(fsSerializerFactoryClass).getNew());
+            assertEquals(FSGsonSerializerFactoryImpl.gsonSerializer, new FSSerializerFactoryPluginHelper(fsSerializerFactoryClass).getNew().create());
         }
     }
 
-    /*package*/ static class FSGsonSerializerFactoryImpl implements FSSerializerFactory {
+    public static class FSGsonSerializerFactoryImpl implements FSSerializerFactory {
 
         /*package*/ static FSSerializer gsonSerializer = new FSGsonSerializer(new GsonBuilder().setPrettyPrinting().create());
 
