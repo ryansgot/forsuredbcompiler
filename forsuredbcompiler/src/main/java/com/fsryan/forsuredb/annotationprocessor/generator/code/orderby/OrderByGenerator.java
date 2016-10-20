@@ -6,12 +6,10 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.OrderBy;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -88,7 +86,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
         JavadocInfo jd = javadocInfoFor(column.getColumnName());
         return MethodSpec.methodBuilder("by" + CodeUtil.snakeToCamel(column.getColumnName(), true))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
-                .addParameter(TypeName.get(OrderBy.Order.class), "order")
+                .addParameter(int.class, "order")
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("appendOrder($S, $L)", column.getColumnName(), "order")
                 .addStatement("return conjunction")
@@ -101,7 +99,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
                 .startParagraph()
                 .addLine("Order the results of the query by $L", columnName)
                 .endParagraph()
-                .param("order", "the direction to order the results")
+                .param("order", "the direction to order the results {@link #ORDER_ASC} (or 0 or more) or {@link #ORDER_DESC} (or -1 or less)")
                 .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(conjunctionClass()))
                 .addLine("adding other query parameters")
                 .addLine()

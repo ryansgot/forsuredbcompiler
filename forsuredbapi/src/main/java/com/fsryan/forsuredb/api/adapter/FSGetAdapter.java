@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +38,6 @@ import java.util.Map;
  */
 public class FSGetAdapter {
 
-    /*package*/ static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    // This prefixes each column with tableName + "_"
     private static final Map<Class<? extends FSGetApi>, RetrieveHandler> unambiguousHandlerMap = new HashMap<>();
 
     /*package*/ static final Map<Type, Method> methodMap = new HashMap<>();
@@ -76,7 +72,6 @@ public class FSGetAdapter {
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
     public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
-        // TODO: determine whether you should gather the arguments for the Handler or whether the handler should know about resolvers.
         return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getHandlerFor(resolver));
     }
 

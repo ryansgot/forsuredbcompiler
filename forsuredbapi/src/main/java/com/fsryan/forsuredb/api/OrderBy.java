@@ -1,5 +1,7 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +15,8 @@ import java.util.List;
  */
 public abstract class OrderBy {
 
-    public enum Order {
-        ASC, DESC
-    }
+    public static final int ORDER_ASC = 0;
+    public static final int ORDER_DESC = -1;
 
     private final List<String> orderByList;
     private final String tableName;
@@ -29,14 +30,13 @@ public abstract class OrderBy {
      * @return the SQL string for the order by portion of the query
      */
     public String getOrderByString() {
-        // kind of a trick, but it so happens that the toString method for ArrayList almost works
-        // for the ORDER BY syntax.
-        return orderByList.size() == 0 ? "" : orderByList.toString().replaceAll("(\\[|\\])", "");
+        return Sql.generator().combineOrderByExpressions(orderByList);
     }
 
-    protected void appendOrder(String columnName, Order order) {
-        if (order != null) {
-            orderByList.add(tableName + "." + columnName + " " + order.name());
-        }
+    protected void appendOrder(String columnName, int order) {
+        // Since we allow app developer to set the order, assume >= 0 means "ascending" and
+        // < 0 means "descending"
+        orderByList.add(order >= ORDER_ASC ? Sql.generator().orderByAsc(tableName, columnName)
+                : Sql.generator().orderByDesc(tableName, columnName));
     }
 }

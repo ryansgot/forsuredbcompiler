@@ -19,7 +19,7 @@ import java.util.Map;
     protected DocStoreSaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
         super(queryable, selection, recordContainer, columnTypeMap);
         if (serializer == null) {
-            serializer = new FSSerializerFactoryHelper().getNew();
+            serializer = new FSSerializerFactoryPluginHelper().getNew().create();
         }
     }
 

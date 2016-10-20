@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.Finder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
@@ -15,8 +16,21 @@ import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import static com.fsryan.forsuredb.api.Finder.*;
 
 public abstract class FinderMethodSpecGenerator<C, B> {
+
+    private static final Map<Integer, String> opToOpNameMap = new ImmutableMap.Builder<Integer, String>()
+            .put(OP_EQ, "OP_EQ")
+            .put(OP_GE, "OP_GE")
+            .put(OP_GT, "OP_GT")
+            .put(OP_LE, "OP_LE")
+            .put(OP_LIKE, "OP_LIKE")
+            .put(OP_LT, "OP_LT")
+            .put(OP_NE, "OP_NE")
+            .build();
 
     private final ColumnInfo column;
     private final Class<C> conjunctionClass;
@@ -72,14 +86,14 @@ public abstract class FinderMethodSpecGenerator<C, B> {
             retList.addAll(isIsNotMethodSpecs(methodNameInsertion, conjunctionType));
         }
         if (hasOnNotOnGrammar()) {
-            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "On", "exactMatch", Finder.Operator.EQ));
-            retList.add(createSpec(conjunctionType, "byNot" + methodNameInsertion + "On", "exclusion", Finder.Operator.NE));
+            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "On", "exactMatch", Finder.OP_EQ));
+            retList.add(createSpec(conjunctionType, "byNot" + methodNameInsertion + "On", "exclusion", OP_NE));
         }
         if (hasGreaterThanLessThanGrammar()) {
             retList.addAll(greaterThanLessThanMethodSpecs("by" + methodNameInsertion, conjunctionType, betweenType));
         }
         if (hasLikeGrammar()) {
-            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "Like", "like", Finder.Operator.LIKE));
+            retList.add(createSpec(conjunctionType, "by" + methodNameInsertion + "Like", "like", Finder.OP_LIKE));
         }
 
         return retList;
@@ -104,15 +118,15 @@ public abstract class FinderMethodSpecGenerator<C, B> {
 
     private List<MethodSpec> beforeAfterMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
         List<MethodSpec> retList = Lists.newArrayList(
-                createSpec(conjunctionType, methodNamePrefix + "Before", "nonInclusiveUpperBound", Finder.Operator.LT),
-                createSpec(conjunctionType, methodNamePrefix + "After", "nonInclusiveLowerBound", Finder.Operator.GT),
-                createSpec(conjunctionType, methodNamePrefix + "BeforeInclusive", "inclusiveUpperBound", Finder.Operator.LE),
-                createSpec(conjunctionType, methodNamePrefix + "AfterInclusive", "inclusiveLowerBound", Finder.Operator.GE)
+                createSpec(conjunctionType, methodNamePrefix + "Before", "nonInclusiveUpperBound", OP_LT),
+                createSpec(conjunctionType, methodNamePrefix + "After", "nonInclusiveLowerBound", OP_GT),
+                createSpec(conjunctionType, methodNamePrefix + "BeforeInclusive", "inclusiveUpperBound", OP_LE),
+                createSpec(conjunctionType, methodNamePrefix + "AfterInclusive", "inclusiveLowerBound", Finder.OP_GE)
         );
 
         if (hasBetweenGrammar()) {
-            retList.add(createSpec(betweenType, methodNamePrefix + "Between", "nonInclusiveLowerBound", Finder.Operator.GT));
-            retList.add(createSpec(betweenType, methodNamePrefix + "BetweenInclusive", "inclusiveLowerBound", Finder.Operator.GE));
+            retList.add(createSpec(betweenType, methodNamePrefix + "Between", "nonInclusiveLowerBound", OP_GT));
+            retList.add(createSpec(betweenType, methodNamePrefix + "BetweenInclusive", "inclusiveLowerBound", Finder.OP_GE));
         }
 
         return retList;
@@ -120,36 +134,36 @@ public abstract class FinderMethodSpecGenerator<C, B> {
 
     private List<MethodSpec> isIsNotMethodSpecs(String methodNameInsertion, ParameterizedTypeName conjunctionType) {
         List<MethodSpec> retList = new ArrayList<>();
-        retList.add(createSpec(conjunctionType, "by" + methodNameInsertion, "exactMatch", Finder.Operator.EQ));
+        retList.add(createSpec(conjunctionType, "by" + methodNameInsertion, "exactMatch", Finder.OP_EQ));
         retList.add(createSpec(conjunctionType,
                 column.getQualifiedType().equals("boolean") ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
                 "exclusion",
-                Finder.Operator.NE));
+                OP_NE));
         return retList;
     }
 
     private <C, B> List<MethodSpec> greaterThanLessThanMethodSpecs(String methodNamePrefix, ParameterizedTypeName conjunctionType, ParameterizedTypeName betweenType) {
         List<MethodSpec> retList = Lists.newArrayList(
-                createSpec(conjunctionType, methodNamePrefix + "LessThan", "nonInclusiveUpperBound", Finder.Operator.LT),
-                createSpec(conjunctionType, methodNamePrefix + "GreaterThan", "nonInclusiveLowerBound", Finder.Operator.GT),
-                createSpec(conjunctionType, methodNamePrefix + "LessThanInclusive", "inclusiveUpperBound", Finder.Operator.LE),
-                createSpec(conjunctionType, methodNamePrefix + "GreaterThanInclusive", "inclusiveLowerBound", Finder.Operator.GE)
+                createSpec(conjunctionType, methodNamePrefix + "LessThan", "nonInclusiveUpperBound", OP_LT),
+                createSpec(conjunctionType, methodNamePrefix + "GreaterThan", "nonInclusiveLowerBound", OP_GT),
+                createSpec(conjunctionType, methodNamePrefix + "LessThanInclusive", "inclusiveUpperBound", OP_LE),
+                createSpec(conjunctionType, methodNamePrefix + "GreaterThanInclusive", "inclusiveLowerBound", OP_GE)
         );
 
         if (hasBetweenGrammar()) {
-            retList.add(createSpec(betweenType, methodNamePrefix + "Between", "nonInclusiveLowerBound", Finder.Operator.GT));
-            retList.add(createSpec(betweenType, methodNamePrefix + "BetweenInclusive", "inclusiveLowerBound", Finder.Operator.GE));
+            retList.add(createSpec(betweenType, methodNamePrefix + "Between", "nonInclusiveLowerBound", OP_GT));
+            retList.add(createSpec(betweenType, methodNamePrefix + "BetweenInclusive", "inclusiveLowerBound", OP_GE));
         }
 
         return retList;
     }
 
-    private <C, B> MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, Finder.Operator op) {
+    private <C, B> MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, int op) {
         JavadocInfo jd = javadocInfoFor(returnType, parameterName);
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("addToBuf($S, $T.$L, $L)", column.getColumnName(), op.getClass(), op.name(), translateParameter(parameterName))
+                .addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName))
                 .returns(returnType);
 
         if (!column.getQualifiedType().equals("boolean")) {

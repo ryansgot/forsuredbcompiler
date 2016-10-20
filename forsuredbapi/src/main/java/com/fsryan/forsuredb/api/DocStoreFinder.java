@@ -1,5 +1,7 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+
 import java.util.Date;
 
 public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStoreGetApi<T>, S extends FSDocStoreSaveApi<U, T>, F extends DocStoreFinder<T, U, R, G, S, F, O>, O extends DocStoreOrderBy<T, U, R, G, S, F, O>> extends Finder {
@@ -30,7 +32,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
             public F and() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" AND ");
+                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 }
                 return (F) DocStoreFinder.this;
             }
@@ -39,7 +41,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" OR ");
+                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
                 }
                 return (F) DocStoreFinder.this;
             }
@@ -50,11 +52,11 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * <p>
      *   add criteria to a query that requires exactMatch for _id
      * </p>
-     * @param exactMatch
+     * @param exactMatch the _id of the only record to include in the results
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byId(long exactMatch) {
-        addToBuf("_id", Finder.Operator.EQ, exactMatch);
+        addToBuf("_id", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -62,11 +64,11 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * <p>
      *   add criteria to a query that requires exclusion for _id
      * </p>
-     * @param exclusion
+     * @param exclusion the _id of the record to exclude from the results
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byIdNot(long exclusion) {
-        addToBuf("_id", Finder.Operator.NE, exclusion);
+        addToBuf("_id", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -78,7 +80,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byIdLessThan(long nonInclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("_id", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -90,7 +92,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byIdGreaterThan(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("_id", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -102,7 +104,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byIdLessThanInclusive(long inclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("_id", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -114,7 +116,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byIdGreaterThanInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("_id", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -126,7 +128,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byIdBetween(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("_id", OP_GT, nonInclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
 
@@ -138,7 +140,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byIdBetweenInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("_id", OP_GE, inclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
 
@@ -150,7 +152,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byCreatedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("created", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -162,7 +164,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byCreatedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("created", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -174,7 +176,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byCreatedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("created", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -186,7 +188,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byCreatedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("created", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -198,7 +200,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byCreatedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("created", OP_GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
 
@@ -210,7 +212,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byCreatedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("created", OP_GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
 
@@ -222,7 +224,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byCreatedOn(Date exactMatch) {
-        addToBuf("created", Finder.Operator.EQ, exactMatch);
+        addToBuf("created", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -234,7 +236,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byNotCreatedOn(Date exclusion) {
-        addToBuf("created", Finder.Operator.NE, exclusion);
+        addToBuf("created", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -248,7 +250,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @see #byNotDeleted()
      */
     public Conjunction<T, U, R, G, S, F, O> byDeleted() {
-        addToBuf("deleted", Finder.Operator.EQ, 1);
+        addToBuf("deleted", OP_EQ, 1);
         return conjunction;
     }
 
@@ -262,7 +264,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @see #byDeleted()
      */
     public Conjunction<T, U, R, G, S, F, O> byNotDeleted() {
-        addToBuf("deleted", Finder.Operator.NE, 1);
+        addToBuf("deleted", OP_NE, 1);
         return conjunction;
     }
 
@@ -274,7 +276,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byModifiedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("modified", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -286,7 +288,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byModifiedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("modified", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -298,7 +300,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byModifiedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("modified", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -310,7 +312,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byModifiedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("modified", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -322,7 +324,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byModifiedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("modified", OP_GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
 
@@ -334,7 +336,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("modified", OP_GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
 
@@ -346,7 +348,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byModifiedOn(Date exactMatch) {
-        addToBuf("modified", Finder.Operator.EQ, exactMatch);
+        addToBuf("modified", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -358,7 +360,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byNotModifiedOn(Date exclusion) {
-        addToBuf("modified", Finder.Operator.NE, exclusion);
+        addToBuf("modified", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -370,7 +372,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassName(String exactMatch) {
-        addToBuf("class_name", Finder.Operator.EQ, exactMatch);
+        addToBuf("class_name", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -382,7 +384,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameNot(String exclusion) {
-        addToBuf("class_name", Finder.Operator.NE, exclusion);
+        addToBuf("class_name", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -394,7 +396,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameLessThan(String nonInclusiveUpperBound) {
-        addToBuf("class_name", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("class_name", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -406,7 +408,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameGreaterThan(String nonInclusiveLowerBound) {
-        addToBuf("class_name", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("class_name", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -418,7 +420,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameLessThanInclusive(String inclusiveUpperBound) {
-        addToBuf("class_name", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("class_name", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -430,7 +432,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameGreaterThanInclusive(String inclusiveLowerBound) {
-        addToBuf("class_name", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("class_name", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -442,7 +444,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byClassNameBetween(String nonInclusiveLowerBound) {
-        addToBuf("class_name", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("class_name", OP_GT, nonInclusiveLowerBound);
         return createBetween(String.class, "class_name");
     }
 
@@ -454,7 +456,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<T, U, R, G, S, F, O> byClassNameBetweenInclusive(String inclusiveLowerBound) {
-        addToBuf("class_name", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("class_name", OP_GE, inclusiveLowerBound);
         return createBetween(String.class, "class_name");
     }
 
@@ -466,7 +468,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<T, U, R, G, S, F, O> byClassNameLike(String like) {
-        addToBuf("class_name", Finder.Operator.LIKE, like);
+        addToBuf("class_name", OP_LIKE, like);
         return conjunction;
     }
 
@@ -474,17 +476,17 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
         return new Between<T, U, R, G, S, F, O>() {
             @Override
             public <Typ> Conjunction<T, U, R, G, S, F, O> and(Typ high) {
-                return conjoin(Operator.LT, high);
+                return conjoin(OP_LT, high);
             }
 
             @Override
             public <Typ> Conjunction<T, U, R, G, S, F, O> andInclusive(Typ high) {
-                return conjoin(Operator.LE, high);
+                return conjoin(OP_LE, high);
             }
 
-            private <Typ> Conjunction<T, U, R, G, S, F, O> conjoin(Operator o, Typ high) {
-                whereBuf.append(" AND ");
-                addToBuf(column, o, high);
+            private <Typ> Conjunction<T, U, R, G, S, F, O> conjoin(int operator, Typ high) {
+                whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
+                addToBuf(column, operator, high);
                 return conjunction;
             }
         };

@@ -1,5 +1,7 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+
 import java.util.Date;
 
 public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> extends Finder {
@@ -29,7 +31,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
             public F and() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" AND ");
+                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 }
                 return (F) RelationalFinder.this;
             }
@@ -38,7 +40,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" OR ");
+                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
                 }
                 return (F) RelationalFinder.this;
             }
@@ -53,7 +55,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byId(long exactMatch) {
-        addToBuf("_id", Finder.Operator.EQ, exactMatch);
+        addToBuf("_id", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -65,7 +67,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O> byIdNot(long exclusion) {
-        addToBuf("_id", Finder.Operator.NE, exclusion);
+        addToBuf("_id", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -77,7 +79,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byIdLessThan(long nonInclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("_id", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -89,7 +91,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byIdGreaterThan(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("_id", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -101,7 +103,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byIdLessThanInclusive(long inclusiveUpperBound) {
-        addToBuf("_id", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("_id", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -113,7 +115,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byIdGreaterThanInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("_id", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -125,7 +127,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O>  byIdBetween(long nonInclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("_id", OP_GT, nonInclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
 
@@ -137,7 +139,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O>  byIdBetweenInclusive(long inclusiveLowerBound) {
-        addToBuf("_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("_id", OP_GE, inclusiveLowerBound);
         return createBetween(long.class, "_id");
     }
 
@@ -149,7 +151,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byCreatedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("created", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -161,7 +163,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byCreatedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("created", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -173,7 +175,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byCreatedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("created", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("created", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -185,7 +187,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byCreatedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("created", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -197,7 +199,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O>  byCreatedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("created", OP_GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
 
@@ -209,7 +211,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O>  byCreatedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("created", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("created", OP_GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "created");
     }
 
@@ -221,7 +223,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byCreatedOn(Date exactMatch) {
-        addToBuf("created", Finder.Operator.EQ, exactMatch);
+        addToBuf("created", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -233,7 +235,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byNotCreatedOn(Date exclusion) {
-        addToBuf("created", Finder.Operator.NE, exclusion);
+        addToBuf("created", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -247,7 +249,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @see #byNotDeleted()
      */
     public Conjunction<U, R, G, S, F, O>  byDeleted() {
-        addToBuf("deleted", Finder.Operator.EQ, 1);
+        addToBuf("deleted", OP_EQ, 1);
         return conjunction;
     }
 
@@ -261,7 +263,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @see #byDeleted()
      */
     public Conjunction<U, R, G, S, F, O>  byNotDeleted() {
-        addToBuf("deleted", Finder.Operator.NE, 1);
+        addToBuf("deleted", OP_NE, 1);
         return conjunction;
     }
 
@@ -273,7 +275,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byModifiedBefore(Date nonInclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("modified", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -285,7 +287,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byModifiedAfter(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("modified", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -297,7 +299,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byModifiedBeforeInclusive(Date inclusiveUpperBound) {
-        addToBuf("modified", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("modified", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -309,7 +311,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byModifiedAfterInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("modified", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -321,7 +323,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O>  byModifiedBetween(Date nonInclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("modified", OP_GT, nonInclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
 
@@ -333,7 +335,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Between} that allows you to provide an upper bound for this criteria
      */
     public Between<U, R, G, S, F, O> byModifiedBetweenInclusive(Date inclusiveLowerBound) {
-        addToBuf("modified", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("modified", OP_GE, inclusiveLowerBound);
         return createBetween(java.util.Date.class, "modified");
     }
 
@@ -345,7 +347,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byModifiedOn(Date exactMatch) {
-        addToBuf("modified", Finder.Operator.EQ, exactMatch);
+        addToBuf("modified", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -357,7 +359,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
      * @return a {@link Conjunction} that allows you to continue adding more query criteria
      */
     public Conjunction<U, R, G, S, F, O>  byNotModifiedOn(Date exclusion) {
-        addToBuf("modified", Finder.Operator.NE, exclusion);
+        addToBuf("modified", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -365,17 +367,17 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
         return new Between<U, R, G, S, F, O>() {
             @Override
             public <T> Conjunction<U, R, G, S, F, O> and(T high) {
-                return conjoin(Operator.LT, high);
+                return conjoin(OP_LT, high);
             }
 
             @Override
             public <T> Conjunction<U, R, G, S, F, O> andInclusive(T high) {
-                return conjoin(Operator.LE, high);
+                return conjoin(OP_LE, high);
             }
 
-            private <T> Conjunction<U, R, G, S, F, O> conjoin(Operator o, T high) {
-                whereBuf.append(" AND ");
-                addToBuf(column, o, high);
+            private <T> Conjunction<U, R, G, S, F, O> conjoin(int operator, T high) {
+                whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
+                addToBuf(column, operator, high);
                 return conjunction;
             }
         };

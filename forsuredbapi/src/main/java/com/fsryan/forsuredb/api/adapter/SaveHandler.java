@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.*;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -68,7 +69,7 @@ import java.util.Map;
         } else if (type.equals(BigDecimal.class) || type.equals(BigInteger.class)) {
             recordContainer.put(columnName, arg.toString());
         } else if (type.equals(Date.class)) {
-            recordContainer.put(columnName, FSGetAdapter.DATETIME_FORMAT.format((Date) arg));
+            recordContainer.put(columnName, Sql.generator().formatDate((Date) arg));
         } else if (type.equals(byte[].class)) {
             recordContainer.put(columnName, (byte[]) arg);
         } else {
