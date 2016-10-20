@@ -81,14 +81,14 @@ public abstract class Finder{
         replacementsList.add(Date.class.equals(value.getClass()) ? dateFormat.format((Date) value) : value.toString());
     }
 
-    private boolean canAddClause(String column, Operator operator, Object value) {
-        return !Strings.isNullOrEmpty(column) && operator != null && value != null && !value.toString().isEmpty();
-    }
-
     protected void surroundCurrentWhereWithParens() {
         String currentWhere = whereBuf.toString();
         whereBuf.delete(0, whereBuf.length());
         whereBuf.trimToSize();
         whereBuf.append("(").append(currentWhere).append(")");
+    }
+
+    private boolean canAddClause(String column, Operator operator, Object value) {
+        return !Strings.isNullOrEmpty(column) && operator != null && value != null && !value.toString().isEmpty();
     }
 }

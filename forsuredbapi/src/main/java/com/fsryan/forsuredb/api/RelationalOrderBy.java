@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.api;
 
 /**
- *
  * <p>
  *   Use this class to order the results of any of your queries. For the purpose of type
  *   safety, it is parameterized the same way as the {@link Resolver} class.
@@ -9,10 +8,10 @@ package com.fsryan.forsuredb.api;
  * <p>
  *   The order-by methods for all of the base columns are defined within this class:
  *   <ul>
- *     <li>{@link #byId(Order)}</li>
- *     <li>{@link #byCreated(Order)}</li>
- *     <li>{@link #byDeleted(Order)}</li>
- *     <li>{@link #byModified(Order)}</li>
+ *     <li>{@link #byId(int)}</li>
+ *     <li>{@link #byCreated(int)}</li>
+ *     <li>{@link #byDeleted(int)}</li>
+ *     <li>{@link #byModified(int)}</li>
  *   </ul>
  *   Other order-by methods will be defined within the concrete implementations of the
  *   OrderBy class.
@@ -24,7 +23,9 @@ package com.fsryan.forsuredb.api;
  *           your project uses that was generated from the {@link FSGetApi}
  * @param <F> The extension of {@link Finder} parameterized with the same parameters
  *           as this class. This {@link Finder} was also generated from the {@link FSGetApi}
- * @param <O> The specific extension of the OrderBy class
+ * @param <O> The specific extension of the RelationalOrderBy class
+ * @see OrderBy
+ * @see DocStoreOrderBy
  */
 public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends RelationalFinder<U, R, G, S, F, O>, O extends RelationalOrderBy<U, R, G, S, F, O>> extends OrderBy {
 
@@ -54,11 +55,12 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
      * <p>
      *   Order the results of the query by _id
      * </p>
-     * @param order the direction to order the results
+     * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or
+     * {@link #ORDER_DESC} (or -1 or less)
      * @return a {@link Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction<U, R, G, S, F, O> byId(Order order) {
+    public Conjunction<U, R, G, S, F, O> byId(int order) {
         appendOrder("_id", order);
         return conjunction;
     }
@@ -66,15 +68,16 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
     /**
      * <p>
      *   Order the results of the query by deleted. Because it is assumed that true and false
-     *   values are stored as 1 and 0 respectively, {@link Order#ASC} will cause all
-     *   non-deleted records to be followed by all deleted records. {@link Order#DESC} will
+     *   values are stored as 1 and 0 respectively, {@link #ORDER_ASC} will cause all
+     *   non-deleted records to be followed by all deleted records. {@link #ORDER_DESC} will
      *   have the opposite effect.
      * </p>
-     * @param order the direction to order the results
+     * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or
+     * {@link #ORDER_DESC} (or -1 or less)
      * @return a {@link Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction<U, R, G, S, F, O> byDeleted(Order order) {
+    public Conjunction<U, R, G, S, F, O> byDeleted(int order) {
         appendOrder("deleted", order);
         return conjunction;
     }
@@ -83,11 +86,12 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
      * <p>
      *   Order the results of the query by date created
      * </p>
-     * @param order the direction to order the results
+     * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or
+     * {@link #ORDER_DESC} (or -1 or less)
      * @return a {@link Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction<U, R, G, S, F, O> byCreated(Order order) {
+    public Conjunction<U, R, G, S, F, O> byCreated(int order) {
         appendOrder("created", order);
         return conjunction;
     }
@@ -96,11 +100,12 @@ public abstract class RelationalOrderBy<U, R extends RecordContainer, G extends 
      * <p>
      *   Order the results of the query by date updated
      * </p>
-     * @param order the direction to order the results
+     * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or
+     * {@link #ORDER_DESC} (or -1 or less)
      * @return a {@link Conjunction} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction<U, R, G, S, F, O> byModified(Order order) {
+    public Conjunction<U, R, G, S, F, O> byModified(int order) {
         appendOrder("modified", order);
         return conjunction;
     }

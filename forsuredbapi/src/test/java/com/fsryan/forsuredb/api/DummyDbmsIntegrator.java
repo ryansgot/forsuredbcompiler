@@ -28,4 +28,24 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     public String unambiguousColumn(String tableName, String columnName) {
         return tableName + "_" + columnName;
     }
+
+    @Override
+    public String unambiguousRetrievalColumn(String tableName, String columnName) {
+        return unambiguousColumn(tableName, columnName);
+    }
+
+    @Override
+    public String orderByAsc(String tableName, String columnName) {
+        return "";
+    }
+
+    @Override
+    public String orderByDesc(String tableName, String columnName) {
+        return "";
+    }
+
+    @Override
+    public String combineOrderByExpressions(List<String> orderByList) {
+        return "";
+    }
 }

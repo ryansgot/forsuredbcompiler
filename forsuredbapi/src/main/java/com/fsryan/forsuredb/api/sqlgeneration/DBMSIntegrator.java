@@ -47,6 +47,7 @@ public interface DBMSIntegrator {
      * @param tableName the name of the table
      * @param columnName the name of the column of the table
      * @return the unambiguous column name given the table and column names
+     * @see #unambiguousRetrievalColumn(String, String)
      */
     String unambiguousColumn(String tableName, String columnName);
 
@@ -54,12 +55,51 @@ public interface DBMSIntegrator {
      * <p>
      *     Creates an unambiguous name for column retrieval. This can be the same as
      *     {@link #unambiguousColumn(String, String)} if the framework/platform you're using supports the same
-     *     unambiguous notation as the DBMS you're using. Strangely, Android/SQLiteCursor does not support
-     *     the table.column notation for disambiguating columns, so this method was added to work around that.
+     *     unambiguous notation as the DBMS you're using.
+     * </p>
+     * <p>
+     *     Strangely, Android/SQLiteCursor does not support the table.column notation for disambiguating columns
+     *     when getting datat out of a Cursor. Therefore, this method was added to work around that. See bug
+     *     903852 for more details.
      * </p>
      * @param tableName the name of the table
      * @param columnName the name of the column of the table
      * @return the unambiguous column name specifically for disambugating column names after a join
+     * @see #unambiguousColumn(String, String)
      */
     String unambiguousRetrievalColumn(String tableName, String columnName);
+
+    /**
+     * <p>
+     *     Creates an ascending ORDER BY expression. This should use the unambiguous column name because it
+     *     could be used in a join wherein there are columns with the same name.
+     * </p>
+     * @param tableName the name of the table
+     * @param columnName the name of the column of the table
+     * @return the unambiguous ORDER BY expression
+     * @see #orderByDesc(String, String)
+     */
+    String orderByAsc(String tableName, String columnName);
+
+    /**
+     * <p>
+     *     Creates a descending ORDER BY expression. This should use the unambiguous column name because it
+     *     could be used in a join wherein there are columns with the same name.
+     * </p>
+     * @param tableName the name of the table
+     * @param columnName the name of the column of the table
+     * @return the unambiguous ORDER BY expression
+     * @see #orderByAsc(String, String)
+     */
+    String orderByDesc(String tableName, String columnName);
+
+    /**
+     * <p>
+     *     Formats zero or more ORDER BY expressions into one correctly formatted string for the ORDER BY
+     *     clause of a query
+     * </p>
+     * @param orderByList a possibly-empty list of ORDER BY expressions
+     * @return A string that correctly combines the ORDER BY expressions
+     */
+    String combineOrderByExpressions(List<String> orderByList);
 }
