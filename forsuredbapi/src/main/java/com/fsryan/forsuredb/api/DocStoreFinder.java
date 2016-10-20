@@ -32,7 +32,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
             public F and() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().and()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 }
                 return (F) DocStoreFinder.this;
             }
@@ -41,7 +41,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().or()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
                 }
                 return (F) DocStoreFinder.this;
             }
@@ -485,7 +485,7 @@ public class DocStoreFinder<T, U, R extends RecordContainer, G extends FSDocStor
             }
 
             private <Typ> Conjunction<T, U, R, G, S, F, O> conjoin(int operator, Typ high) {
-                whereBuf.append(" ").append(Sql.generator().and()).append(" ");
+                whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 addToBuf(column, operator, high);
                 return conjunction;
             }

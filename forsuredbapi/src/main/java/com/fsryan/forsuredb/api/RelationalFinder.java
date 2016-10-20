@@ -31,7 +31,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
             public F and() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().and()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 }
                 return (F) RelationalFinder.this;
             }
@@ -40,7 +40,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().or()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
                 }
                 return (F) RelationalFinder.this;
             }
@@ -376,7 +376,7 @@ public class RelationalFinder<U, R extends RecordContainer, G extends FSGetApi, 
             }
 
             private <T> Conjunction<U, R, G, S, F, O> conjoin(int operator, T high) {
-                whereBuf.append(" ").append(Sql.generator().and()).append(" ");
+                whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 addToBuf(column, operator, high);
                 return conjunction;
             }

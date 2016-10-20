@@ -148,10 +148,10 @@ public interface DBMSIntegrator {
     /**
      * @return the AND symbol/keyword
      */
-    String and();
+    String andKeyword();
 
     /**
      * @return the OR symbol/keyword
      */
-    String or();
+    String orKeyword();
 }
