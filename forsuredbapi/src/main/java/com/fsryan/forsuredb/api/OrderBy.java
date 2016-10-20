@@ -34,7 +34,9 @@ public abstract class OrderBy {
     }
 
     protected void appendOrder(String columnName, int order) {
-        orderByList.add(order == ORDER_ASC ? Sql.generator().orderByAsc(tableName, columnName)
+        // Since we allow app developer to set the order, assume >= 0 means "ascending" and
+        // < 0 means "descending"
+        orderByList.add(order >= ORDER_ASC ? Sql.generator().orderByAsc(tableName, columnName)
                 : Sql.generator().orderByDesc(tableName, columnName));
     }
 }
