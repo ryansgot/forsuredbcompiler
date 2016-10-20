@@ -141,6 +141,16 @@ public interface DBMSIntegrator {
     String formatDate(Date date);
 
     /**
+     * <p>
+     *     Parse the date from the string. This is intended only for returns from the database.
+     *     On a parse error, return null.
+     * </p>
+     * @param dateStr the dateStr read from the database column
+     * @return a Date representation of the date string
+     */
+    Date parseDate(String dateStr);
+
+    /**
      * @return The wildcard symbol/keyword
      */
     String wildcardKeyword();

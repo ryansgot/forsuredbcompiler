@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.FSSaveApi;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -12,7 +13,7 @@ import java.util.Map;
 /*package*/ class SharedData {
 
     public static final Date DATE = new Date();
-    public static final String DATE_STRING = FSGetAdapter.DATETIME_FORMAT.format(DATE);
+    public static final String DATE_STRING = Sql.generator().formatDate(DATE);
 
     public static final BiMap<String, String> COLUMN_NAME_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
             .put("_id", "id")

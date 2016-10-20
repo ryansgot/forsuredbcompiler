@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +37,6 @@ import java.util.Map;
  * @author Ryan Scott
  */
 public class FSGetAdapter {
-
-    /*package*/ static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private static final Map<Class<? extends FSGetApi>, RetrieveHandler> unambiguousHandlerMap = new HashMap<>();
 

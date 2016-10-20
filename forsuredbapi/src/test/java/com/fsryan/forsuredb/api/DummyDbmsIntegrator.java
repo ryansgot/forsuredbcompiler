@@ -3,6 +3,8 @@ package com.fsryan.forsuredb.api;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.Map;
  * </p>
  */
 public class DummyDbmsIntegrator implements DBMSIntegrator {
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Override
     public List<String> generateMigrationSql(MigrationSet migrationSet) {
@@ -57,7 +61,17 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
 
     @Override
     public String formatDate(Date date) {
-        return "";
+        return DATE_FORMAT.format(date);
+    }
+
+    @Override
+    public Date parseDate(String dateStr) {
+        try {
+            return DATE_FORMAT.parse(dateStr);
+        } catch (ParseException pe) {
+            pe.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -66,12 +80,12 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String and() {
+    public String andKeyword() {
         return "";
     }
 
     @Override
-    public String or() {
+    public String orKeyword() {
         return "";
     }
 }

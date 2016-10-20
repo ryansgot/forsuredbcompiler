@@ -7,7 +7,6 @@ import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,13 +77,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
     private Date getDateFrom(Method cursorMethod, Retriever retriever, String column)
             throws InvocationTargetException, IllegalAccessException {
-        try {
-            final Object returned = cursorMethod.invoke(retriever, column);
-            return returned == null ? null : FSGetAdapter.DATETIME_FORMAT.parse((String) returned);
-        } catch (ParseException pe) {
-            pe.printStackTrace();
-        }
-        return null;
+        final Object returned = cursorMethod.invoke(retriever, column);
+        return returned == null ? null : Sql.generator().parseDate((String) returned);
     }
 
     private BigDecimal getBigDecimalFrom(Method retrieverMethod, Retriever retriever, String column)
