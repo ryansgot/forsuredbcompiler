@@ -20,29 +20,19 @@ package com.fsryan.forsuredb.api;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.common.base.Strings;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// TODO: More than any other class, this class highlights the need to separate SQL generation concerns from the forsuredbapi
-public abstract class Finder{
+public abstract class Finder {
 
-    public enum Operator {
-        EQ("="), NE("!="), LE("<="), LT("<"), GE(">="), GT(">"), LIKE("LIKE");
-
-        private String symbol;
-
-        Operator(String symbol) {
-            this.symbol = symbol;
-        }
-
-        public String getSymbol() {
-            return symbol;
-        }
-    }
-
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final int OP_LT = -3;
+    public static final int OP_LE = -2;
+    public static final int OP_NE = -1;
+    public static final int OP_EQ = 0;
+    public static final int OP_GE = 1;
+    public static final int OP_GT = 2;
+    public static final int OP_LIKE = 3;
 
     protected final String tableName;
     protected final StringBuffer whereBuf = new StringBuffer();
@@ -69,16 +59,20 @@ public abstract class Finder{
         };
     }
 
-    protected final void addToBuf(String column, Operator operator, Object value) {
-        if (!canAddClause(column, operator, value)) {
+    protected final void addToBuf(String column, int operator, Object value) {
+        if (!canAddClause(column, value)) {
             return;
         }
 
         column = Sql.generator().unambiguousColumn(tableName, column);
-        whereBuf.append(column)
-                .append(" ").append(operator.getSymbol())
-                .append(" ").append(operator == Operator.LIKE ? "%?%" : "?");
-        replacementsList.add(Date.class.equals(value.getClass()) ? dateFormat.format((Date) value) : value.toString());
+        whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
+        if (operator == OP_LIKE) {
+            whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
+        } else {
+            whereBuf.append("?");
+        }
+
+        replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
     }
 
     protected void surroundCurrentWhereWithParens() {
@@ -88,7 +82,7 @@ public abstract class Finder{
         whereBuf.append("(").append(currentWhere).append(")");
     }
 
-    private boolean canAddClause(String column, Operator operator, Object value) {
-        return !Strings.isNullOrEmpty(column) && operator != null && value != null && !value.toString().isEmpty();
+    private boolean canAddClause(String column, Object value) {
+        return !Strings.isNullOrEmpty(column) && value != null && !value.toString().isEmpty();
     }
 }

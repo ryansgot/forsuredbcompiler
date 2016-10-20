@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.api.sqlgeneration;
 
 import com.fsryan.forsuredb.api.migration.MigrationSet;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -102,4 +103,55 @@ public interface DBMSIntegrator {
      * @return A string that correctly combines the ORDER BY expressions
      */
     String combineOrderByExpressions(List<String> orderByList);
+
+    /**
+     * <p>
+     *     Creates a where operation without resolving the comparison value--this will be resolved later
+     *     as a part of the {@link com.fsryan.forsuredb.api.FSSelection} that is sent to the
+     *     {@link com.fsryan.forsuredb.api.FSQueryable} in order to run the query.
+     * </p>
+     * <p>
+     *     Possible values are:
+     *     <ul>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_LT}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_LE}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_NE}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_EQ}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_GE}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_GT}</li>
+     *         <li>{@link com.fsryan.forsuredb.api.Finder#OP_LIKE}</li>
+     *     </ul>
+     *     In the case that one of these values is not input, you should output an empty string.
+     * </p>
+     * @param tableName the name of the table
+     * @param column the name of the column of the table
+     * @param operator the operator to use
+     * @return A partial WHERE clause that ends with the operator
+     * @see com.fsryan.forsuredb.api.Finder
+     */
+    String whereOperation(String tableName, String column, int operator);
+
+    /**
+     * <p>
+     *     Format the date in the way the DBMS cares to store it
+     * </p>
+     * @param date the date to format
+     * @return A string representation of the date
+     */
+    String formatDate(Date date);
+
+    /**
+     * @return The wildcard symbol/keyword
+     */
+    String wildcardKeyword();
+
+    /**
+     * @return the AND symbol/keyword
+     */
+    String and();
+
+    /**
+     * @return the OR symbol/keyword
+     */
+    String or();
 }

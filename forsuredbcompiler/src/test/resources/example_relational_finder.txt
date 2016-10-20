@@ -1,7 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.finder.FinderGeneratorTest;
-import com.fsryan.forsuredb.api.Finder;
 import com.fsryan.forsuredb.api.RelationalFinder;
 import com.fsryan.forsuredb.api.RelationalResolver;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
@@ -43,7 +42,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRating(double exactMatch) {
-        addToBuf("app_rating", Finder.Operator.EQ, exactMatch);
+        addToBuf("app_rating", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -55,7 +54,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingNot(double exclusion) {
-        addToBuf("app_rating", Finder.Operator.NE, exclusion);
+        addToBuf("app_rating", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -67,7 +66,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingLessThan(double nonInclusiveUpperBound) {
-        addToBuf("app_rating", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("app_rating", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -79,7 +78,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingGreaterThan(double nonInclusiveLowerBound) {
-        addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("app_rating", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -91,7 +90,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingLessThanInclusive(double inclusiveUpperBound) {
-        addToBuf("app_rating", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("app_rating", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -103,7 +102,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingGreaterThanInclusive(double inclusiveLowerBound) {
-        addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("app_rating", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -115,7 +114,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingBetween(double nonInclusiveLowerBound) {
-        addToBuf("app_rating", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("app_rating", OP_GT, nonInclusiveLowerBound);
         return createBetween(double.class, "app_rating");
     }
 
@@ -127,7 +126,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
-        addToBuf("app_rating", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("app_rating", OP_GE, inclusiveLowerBound);
         return createBetween(double.class, "app_rating");
     }
 
@@ -139,7 +138,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalId(long exactMatch) {
-        addToBuf("global_id", Finder.Operator.EQ, exactMatch);
+        addToBuf("global_id", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -151,7 +150,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdNot(long exclusion) {
-        addToBuf("global_id", Finder.Operator.NE, exclusion);
+        addToBuf("global_id", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -163,7 +162,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdLessThan(long nonInclusiveUpperBound) {
-        addToBuf("global_id", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("global_id", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -175,7 +174,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdGreaterThan(long nonInclusiveLowerBound) {
-        addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("global_id", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -187,7 +186,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdLessThanInclusive(long inclusiveUpperBound) {
-        addToBuf("global_id", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("global_id", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -199,7 +198,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdGreaterThanInclusive(long inclusiveLowerBound) {
-        addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("global_id", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -211,7 +210,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdBetween(long nonInclusiveLowerBound) {
-        addToBuf("global_id", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("global_id", OP_GT, nonInclusiveLowerBound);
         return createBetween(long.class, "global_id");
     }
 
@@ -223,7 +222,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byGlobalIdBetweenInclusive(long inclusiveLowerBound) {
-        addToBuf("global_id", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("global_id", OP_GE, inclusiveLowerBound);
         return createBetween(long.class, "global_id");
     }
 
@@ -235,7 +234,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCount(int exactMatch) {
-        addToBuf("login_count", Finder.Operator.EQ, exactMatch);
+        addToBuf("login_count", OP_EQ, exactMatch);
         return conjunction;
     }
 
@@ -247,7 +246,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountNot(int exclusion) {
-        addToBuf("login_count", Finder.Operator.NE, exclusion);
+        addToBuf("login_count", OP_NE, exclusion);
         return conjunction;
     }
 
@@ -259,7 +258,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountLessThan(int nonInclusiveUpperBound) {
-        addToBuf("login_count", Finder.Operator.LT, nonInclusiveUpperBound);
+        addToBuf("login_count", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
 
@@ -271,7 +270,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountGreaterThan(int nonInclusiveLowerBound) {
-        addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("login_count", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
 
@@ -283,7 +282,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountLessThanInclusive(int inclusiveUpperBound) {
-        addToBuf("login_count", Finder.Operator.LE, inclusiveUpperBound);
+        addToBuf("login_count", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
 
@@ -295,7 +294,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Conjunction} that allows you to continue adding more query criteria
      */
     public RelationalFinder.Conjunction<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountGreaterThanInclusive(int inclusiveLowerBound) {
-        addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("login_count", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
 
@@ -307,7 +306,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountBetween(int nonInclusiveLowerBound) {
-        addToBuf("login_count", Finder.Operator.GT, nonInclusiveLowerBound);
+        addToBuf("login_count", OP_GT, nonInclusiveLowerBound);
         return createBetween(int.class, "login_count");
     }
 
@@ -319,7 +318,7 @@ public class TestTable3Finder extends RelationalFinder<FinderGeneratorTest, Type
      * @return a {@link com.fsryan.forsuredb.api.RelationalFinder.Between} that allows you to provide an upper bound for this criteria
      */
     public RelationalFinder.Between<FinderGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> byLoginCountBetweenInclusive(int inclusiveLowerBound) {
-        addToBuf("login_count", Finder.Operator.GE, inclusiveLowerBound);
+        addToBuf("login_count", OP_GE, inclusiveLowerBound);
         return createBetween(int.class, "login_count");
     }
 }

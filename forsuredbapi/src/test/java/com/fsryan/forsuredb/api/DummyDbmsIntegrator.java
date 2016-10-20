@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,31 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
 
     @Override
     public String combineOrderByExpressions(List<String> orderByList) {
+        return "";
+    }
+
+    @Override
+    public String whereOperation(String tableName, String column, int operator) {
+        return "";
+    }
+
+    @Override
+    public String formatDate(Date date) {
+        return "";
+    }
+
+    @Override
+    public String wildcardKeyword() {
+        return "";
+    }
+
+    @Override
+    public String and() {
+        return "";
+    }
+
+    @Override
+    public String or() {
         return "";
     }
 }
