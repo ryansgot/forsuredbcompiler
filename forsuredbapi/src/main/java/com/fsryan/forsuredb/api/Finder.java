@@ -64,7 +64,6 @@ public abstract class Finder {
             return;
         }
 
-        column = Sql.generator().unambiguousColumn(tableName, column);
         whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
         if (operator == OP_LIKE) {
             whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
