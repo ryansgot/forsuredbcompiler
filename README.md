@@ -21,7 +21,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.6'  // <-- forsuredbcompiler needs this plugin to generate code
-        classpath 'com.fsryan:forsuredbplugin:0.3.2'                // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
+        classpath 'com.fsryan:forsuredbplugin:0.4.0'                // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
     }
 }
 
@@ -45,12 +45,12 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.8.2'           // common API for your code and the supporting libraries
-    compile 'com.fsryan.forsuredb:sqlitelib:0.3.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.8.1@aar'   // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.9.0'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:sqlitelib:0.4.0'              // the SQLite DBMS integration
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.9.0@aar'   // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.8.1'     // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.8.1'          // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.9.0'     // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.9.0'          // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -71,6 +71,10 @@ forsuredb {
     resourcesDirectory = 'app/src/main/resources'
     // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
     fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
+    // (required) This is the glue that ties in your chosen DBMS. forsuresqlitelib 0.4.0 contains a version for SQLite,
+    // however, for Android projects, this must be used in conjunction with forsuredbandroid 0.9.+ because there are
+    // additional Android platform considerations here to allow for smooth integration with android.database.sqlite
+    dbmsIntegratorClass = 'com.fsryan.forsuredb.FSAndroidSQLiteGenerator'
 }
 ```
 - Declare an application class and the ```FSDefaultProvider``` in your app's AndroidManifest.xml file:
@@ -93,6 +97,7 @@ public class App extends Application {
         super.onCreate();
         // creates the tables based upon your FSGetApi extensions
         // pass your custom authority in to TableGenerator.generate() if you don't want the default
+        // if your app has a debug mode, you can call FSDBHelper.initDebug() method instead to get queries spit out to the log
         FSDBHelper.init(this, "testapp.db", TableGenerator.generate());
         // the String is your Content Provider's authority
         ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content")
@@ -139,11 +144,14 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 ## Coming up
 - support for inverse migrations of each of the currently supported migrations (0.10.0)
 - more robust where-clause editing when doing joins (?)
-- Full separation from any DBMS by means of a DBMSIntegrator plugin (0.9.0)
 - More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.8.x)
 - An Android Studio plugin (?)
 
 ## Revisions
+
+### forsuredbapi-0.9.0 and forsuredbcompiler-0.9.0
+- Full separation from any DBMS by means of a DBMSIntegrator plugin. Use forsuredbplugin-0.4.0 in order to supply the correct class to the compiler via the forsuredb.dbmsIntegratorClass property in your build.gradle file.
+- There was a pretty big problem when switching contexts between adding clauses to your query in the generated querying API. The ```andFinally()``` method is kind of misleading because it could appear several times. This has been changed to ```then()``` in an attempt to make things less confusing. If you're upgrading, you'll have to change all ```andFinally()``` methods to ```then()```
 
 ### forsuredbapi-0.8.2 and forsuredbcompiler-0.8.1
 - Support for any kind of serialization you want (either to ```String``` or ```byte[]```), using whatever library you want or your own idea of what serialization should be.
