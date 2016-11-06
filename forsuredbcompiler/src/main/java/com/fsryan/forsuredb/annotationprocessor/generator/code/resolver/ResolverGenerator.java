@@ -29,6 +29,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
     private final TableContext targetContext;
     private List<ColumnInfo> columnsSortedByName;
     private final ClassName[] parameterNames;
+    private final ClassName generatedClassName;
     private final ClassName getClassName;
     private final ClassName setClassName;
     private final ClassName finderClassName;
@@ -39,6 +40,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
         this.table = table;
         this.targetContext = targetContext;
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
+        generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
         getClassName = ClassName.bestGuess(table.getQualifiedClassName());
         setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
         finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
@@ -55,6 +57,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
      */
     protected List<ClassName> createParameterNames(TableInfo table) {
         List<ClassName> ret = new LinkedList<>();
+        ret.add(generatedClassName);
         ret.add(ClassName.bestGuess(getResultParameter()));
         ret.add(ClassName.get(getRecordContainerClass()));
         ret.add(getClassName);

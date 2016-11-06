@@ -32,7 +32,7 @@ import java.lang.String;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable2Resolver extends RelationalResolver<ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder, TestTable2OrderBy> {
+public class TestTable2Resolver extends RelationalResolver<TestTable2Resolver, ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder, TestTable2OrderBy> {
     public static final String TABLE_NAME = "test_table_2";
 
     public static final String[] columns = {"_id","created","deleted","modified","test_table_3_id",};

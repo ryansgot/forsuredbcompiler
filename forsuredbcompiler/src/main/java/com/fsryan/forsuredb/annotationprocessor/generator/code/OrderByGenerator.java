@@ -1,9 +1,7 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code.orderby;
+package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
+import com.fsryan.forsuredb.api.Conjunction;
+import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.squareup.javapoet.ClassName;
@@ -14,44 +12,19 @@ import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
-import java.util.LinkedList;
 import java.util.List;
 
-public abstract class OrderByGenerator extends JavaSourceGenerator {
+public class OrderByGenerator extends JavaSourceGenerator {
 
     private final List<ColumnInfo> columnsSortedByName;
-    private final ClassName[] parameterClasses;
+    private final ClassName resolverClassName;
+    private final ClassName generatedClassName;
 
-    protected OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
+    public OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "OrderBy");
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
-        parameterClasses = createParameterClasses(table).toArray(new ClassName[0]);
-    }
-
-    public static OrderByGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
-        return table.isDocStore() ? new DocStoreOrderByGenerator(processingEnv, table) : new RelationalOrderByGenerator(processingEnv, table);
-    }
-
-    protected abstract ClassName extendsFromClassName();
-    protected abstract ClassName resolverClassName();
-    protected abstract Class<?> conjunctionClass();
-
-    /**
-     * <p>
-     *     If you override this method, then you must call the super class method.
-     * </p>
-     * @param table the table information for which the Finder class extension should be generated
-     * @return a List of ClassName describing the type parameters of the OrderBy class extension
-     */
-    protected List<ClassName> createParameterClasses(TableInfo table) {
-        List<ClassName> ret = new LinkedList<>();
-        ret.add(ClassName.bestGuess(getResultParameter()));                         // U (the resultParameter)
-        ret.add(ClassName.get(getRecordContainerClass()));                          // R extends RecordContainer
-        ret.add(ClassName.bestGuess(table.getQualifiedClassName()));                // G extends FSGetApi
-        ret.add(ClassName.bestGuess(table.getQualifiedClassName() + "Setter"));     // S extends FSSaveApi<U>
-        ret.add(ClassName.bestGuess(table.getQualifiedClassName() + "Finder"));     // F extends Finder<U, R, G, S, F, O>
-        ret.add(ClassName.bestGuess(getOutputClassName(true)));                     // O extends OrderBy<U, R, G, S, F, O>
-        return ret;
+        resolverClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
+        generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
     }
 
     @Override
@@ -59,7 +32,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
 //                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(extendsFromClassName(), parameterClasses));
+                .superclass(ParameterizedTypeName.get(ClassName.get(OrderBy.class), resolverClassName, generatedClassName));
         addConstructor(codeBuilder);
         addOrderByMethods(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
@@ -67,7 +40,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addParameter(ParameterizedTypeName.get(resolverClassName(), parameterClasses), "resolver")
+                .addParameter(resolverClassName, "resolver")
                 .addStatement("super(resolver)")
                 .build());
     }
@@ -90,7 +63,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("appendOrder($S, $L)", column.getColumnName(), "order")
                 .addStatement("return conjunction")
-                .returns(ParameterizedTypeName.get(ClassName.get(conjunctionClass()), parameterClasses))
+                .returns(ParameterizedTypeName.get(ClassName.get(Conjunction.And.class), resolverClassName, generatedClassName))
                 .build();
     }
 
@@ -100,7 +73,7 @@ public abstract class OrderByGenerator extends JavaSourceGenerator {
                 .addLine("Order the results of the query by $L", columnName)
                 .endParagraph()
                 .param("order", "the direction to order the results {@link #ORDER_ASC} (or 0 or more) or {@link #ORDER_DESC} (or -1 or less)")
-                .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(conjunctionClass()))
+                .returns("a $L that allows for either adding to the orderBy or continue", JavadocInfo.inlineClassLink(Conjunction.And.class))
                 .addLine("adding other query parameters")
                 .addLine()
                 .build();
