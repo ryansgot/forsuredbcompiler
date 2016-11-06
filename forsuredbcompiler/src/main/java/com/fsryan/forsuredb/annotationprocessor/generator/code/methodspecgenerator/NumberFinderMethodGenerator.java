@@ -1,10 +1,11 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenerator;
 
 import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.squareup.javapoet.ParameterizedTypeName;
 
-/*package*/ class NumberFinderMethodGenerator<C, B> extends FinderMethodSpecGenerator<C, B> {
-    public NumberFinderMethodGenerator(ColumnInfo column, Class<C> conjuntionClass, Class<B> betweenClass) {
-        super(column, conjuntionClass, betweenClass);
+/*package*/ class NumberFinderMethodGenerator extends FinderMethodSpecGenerator {
+    public NumberFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName) {
+        super(column, conjuntionTypeName, betweenTypeName);
     }
 
     @Override
