@@ -28,12 +28,12 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
     private final TableInfo table;
     private final TableContext targetContext;
     private List<ColumnInfo> columnsSortedByName;
-    private final ClassName[] parameterNames;
-    private final ClassName generatedClassName;
-    private final ClassName getClassName;
-    private final ClassName setClassName;
-    private final ClassName finderClassName;
-    private final ClassName orderByClassName;
+    private final TypeName[] parameterNames;
+    private final TypeName generatedClassName;
+    private final TypeName getClassName;
+    private final TypeName setClassName;
+    private final TypeName finderClassName;
+    private final TypeName orderByClassName;
 
     protected ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.getQualifiedClassName() + "Resolver");
@@ -55,8 +55,8 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
      * @param table the table information for which the Finder class extension should be generated
      * @return a List of ClassName describing the type parameters of the Resolver class extension
      */
-    protected List<ClassName> createParameterNames(TableInfo table) {
-        List<ClassName> ret = new LinkedList<>();
+    protected List<TypeName> createParameterNames(TableInfo table) {
+        List<TypeName> ret = new LinkedList<>();
         ret.add(generatedClassName);
         ret.add(ClassName.bestGuess(getResultParameter()));
         ret.add(ClassName.get(getRecordContainerClass()));

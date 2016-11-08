@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.api.DocStoreResolver;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeName;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.List;
@@ -19,8 +20,8 @@ import java.util.List;
     }
 
     @Override
-    protected List<ClassName> createParameterNames(TableInfo table) {
-        List<ClassName> ret = super.createParameterNames(table);
+    protected List<TypeName> createParameterNames(TableInfo table) {
+        List<TypeName> ret = super.createParameterNames(table);
         ret.add(0, ClassName.bestGuess(table.getDocStoreParameterization()));
         return ret;
     }
