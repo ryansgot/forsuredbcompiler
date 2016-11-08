@@ -1,10 +1,7 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code.resolver;
+package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
+import com.fsryan.forsuredb.api.DocStoreResolver;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
@@ -23,7 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class ResolverGenerator extends JavaSourceGenerator {
+public class ResolverGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
     private final TableContext targetContext;
@@ -35,7 +32,7 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
     private final TypeName finderClassName;
     private final TypeName orderByClassName;
 
-    protected ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
+    public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.getQualifiedClassName() + "Resolver");
         this.table = table;
         this.targetContext = targetContext;
@@ -45,40 +42,17 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
         setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
         finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
         orderByClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
-        parameterNames = createParameterNames(table).toArray(new ClassName[0]);
-    }
-
-    /**
-     * <p>
-     *     If you override this method, then you must call the super class method.
-     * </p>
-     * @param table the table information for which the Finder class extension should be generated
-     * @return a List of ClassName describing the type parameters of the Resolver class extension
-     */
-    protected List<TypeName> createParameterNames(TableInfo table) {
-        List<TypeName> ret = new LinkedList<>();
-        ret.add(generatedClassName);
-        ret.add(ClassName.bestGuess(getResultParameter()));
-        ret.add(ClassName.get(getRecordContainerClass()));
-        ret.add(getClassName);
-        ret.add(setClassName);
-        ret.add(finderClassName);
-        ret.add(orderByClassName);
-        return ret;
-    }
-
-    public static ResolverGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
-        return table.isDocStore() ? new DocStoreResolverGenerator(processingEnv, table, targetContext)
-                : new RelationalResolverGenerator(processingEnv, table, targetContext);
+        parameterNames = createParameterNames(table).toArray(new TypeName[0]);
     }
 
     @Override
     protected String getCode() {
         JavadocInfo jd = classJavadoc();
+        ClassName superClassName = ClassName.get(table.isDocStore() ? DocStoreResolver.class : Resolver.class);
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(extendsFromClassName(), parameterNames));
+                .superclass(ParameterizedTypeName.get(superClassName, parameterNames));
         addFields(codeBuilder);
         addConstructor(codeBuilder);
         addColumnMethodNameMapMethod(codeBuilder);
@@ -86,8 +60,6 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
-
-    protected abstract ClassName extendsFromClassName();
 
     private void addColumnMethodNameMapMethod(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.methodBuilder("columnNameToMethodNameBiMap")
@@ -328,5 +300,20 @@ public abstract class ResolverGenerator extends JavaSourceGenerator {
                         .returns(String.class)
                         .addStatement("return TABLE_NAME")
                         .build());
+    }
+
+    private List<TypeName> createParameterNames(TableInfo table) {
+        List<TypeName> ret = new LinkedList<>();
+        ret.add(generatedClassName);
+        if (table.isDocStore()) {
+            ret.add(ClassName.bestGuess(table.getDocStoreParameterization()));
+        }
+        ret.add(ClassName.bestGuess(getResultParameter()));
+        ret.add(ClassName.get(getRecordContainerClass()));
+        ret.add(getClassName);
+        ret.add(setClassName);
+        ret.add(finderClassName);
+        ret.add(orderByClassName);
+        return ret;
     }
 }
