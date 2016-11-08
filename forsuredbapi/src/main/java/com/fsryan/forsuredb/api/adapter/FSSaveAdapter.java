@@ -66,7 +66,7 @@ public class FSSaveAdapter {
     public static <S extends FSSaveApi<U>, U, R extends RecordContainer> S create(FSQueryable<U, R> queryable,
                                                                                   FSSelection selection,
                                                                                   R emptyRecord,
-                                                                                  Resolver<U, R, ?, S, ?, ?> resolver) {
+                                                                                  Resolver<?, U, R, ?, S, ?, ?> resolver) {
         Class<S> setApiClass = resolver.setApiClass();
         S proxyInstance = (S) Proxy.newProxyInstance(setApiClass.getClassLoader(),
                                           InterfaceHelper.getInterfaces(setApiClass),
@@ -75,7 +75,7 @@ public class FSSaveAdapter {
     }
 
     // lazily create the column type maps for each api so that they are not created each time a new handler is created
-    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> getColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resolver) {
+    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> getColumnTypeMapFor(Resolver<?, U, R, ?, S, ?, ?> resolver) {
         Class<S> setApi = resolver.setApiClass();
         Map<Method, ColumnDescriptor> retMap = API_TO_COLUMNS_MAP.get(setApi);
         if (retMap == null) {
@@ -85,7 +85,7 @@ public class FSSaveAdapter {
         return retMap;
     }
 
-    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Resolver<U, R, ?, S, ?, ?> resolver) {
+    private static <S extends FSSaveApi<U>, U, R extends RecordContainer> Map<Method, ColumnDescriptor> createColumnTypeMapFor(Resolver<?, U, R, ?, S, ?, ?> resolver) {
         Map<Method, ColumnDescriptor> retMap = new HashMap<>();
         // This means there can be no overloading of methods in Setter interfaces. That is fine because
         // Setter methods must take one and only one argument.

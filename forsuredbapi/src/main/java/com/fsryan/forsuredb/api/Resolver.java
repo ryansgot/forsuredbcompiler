@@ -74,7 +74,7 @@ import java.util.List;
  * @see Finder
  * @author Ryan Scott
  */
-public abstract class Resolver<U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder, O extends OrderBy> {
+public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
     private final ForSureInfoFactory<U, R> infoFactory;
     private final List<FSJoin> joins = new ArrayList<>();

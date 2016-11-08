@@ -22,7 +22,7 @@ import java.util.List;
     @Override
     protected List<TypeName> createParameterNames(TableInfo table) {
         List<TypeName> ret = super.createParameterNames(table);
-        ret.add(0, ClassName.bestGuess(table.getDocStoreParameterization()));
+        ret.add(1, ClassName.bestGuess(table.getDocStoreParameterization()));
         return ret;
     }
 }
