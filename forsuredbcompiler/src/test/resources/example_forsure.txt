@@ -104,9 +104,9 @@ public class ForSure {
      * @see com.fsryan.annotationprocessor.generator.code.TestTableFinder
      * @see com.fsryan.annotationprocessor.generator.code.TestTableResolver
      */
-    public static TestTableResolver testTableTable() {
+    public static TestTableResolver.Base testTableTable() {
         throwIfUninitialized();
-        return new TestTableResolver(instance.infoFactory);
+        return new TestTableResolver.Base(instance.infoFactory);
     }
 
     /**
@@ -118,9 +118,9 @@ public class ForSure {
      * @see com.fsryan.annotationprocessor.generator.code.TestTable2Finder
      * @see com.fsryan.annotationprocessor.generator.code.TestTable2Resolver
      */
-    public static TestTable2Resolver testTable2Table() {
+    public static TestTable2Resolver.Base testTable2Table() {
         throwIfUninitialized();
-        return new TestTable2Resolver(instance.infoFactory);
+        return new TestTable2Resolver.Base(instance.infoFactory);
     }
 
     /**
@@ -132,9 +132,9 @@ public class ForSure {
      * @see com.fsryan.annotationprocessor.generator.code.TestTable3Finder
      * @see com.fsryan.annotationprocessor.generator.code.TestTable3Resolver
      */
-    public static TestTable3Resolver testTable3Table() {
+    public static TestTable3Resolver.Base testTable3Table() {
         throwIfUninitialized();
-        return new TestTable3Resolver(instance.infoFactory);
+        return new TestTable3Resolver.Base(instance.infoFactory);
     }
 
     private static void throwIfUninitialized() {

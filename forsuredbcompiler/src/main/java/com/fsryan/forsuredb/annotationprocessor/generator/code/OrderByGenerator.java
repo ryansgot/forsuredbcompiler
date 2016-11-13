@@ -9,6 +9,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
@@ -19,12 +20,16 @@ public class OrderByGenerator extends JavaSourceGenerator {
     private final List<ColumnInfo> columnsSortedByName;
     private final ClassName resolverClassName;
     private final ClassName generatedClassName;
+    private final TypeVariableName resolverTypeVariableName;
+    private final ParameterizedTypeName orderByParameterizedTypeName;
 
     public OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "OrderBy");
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         resolverClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
         generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
+        resolverTypeVariableName = TypeVariableName.get("R", resolverClassName);
+        orderByParameterizedTypeName = ParameterizedTypeName.get(generatedClassName, TypeVariableName.get("R"));
     }
 
     @Override
@@ -32,7 +37,10 @@ public class OrderByGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
 //                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(ClassName.get(OrderBy.class), resolverClassName, generatedClassName));
+                .addTypeVariable(resolverTypeVariableName)
+                .superclass(ParameterizedTypeName.get(ClassName.get(OrderBy.class),
+                        TypeVariableName.get("R"),
+                        orderByParameterizedTypeName));
         addConstructor(codeBuilder);
         addOrderByMethods(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
@@ -40,7 +48,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addParameter(resolverClassName, "resolver")
+                .addParameter(TypeVariableName.get("R"), "resolver")
                 .addStatement("super(resolver)")
                 .build());
     }
@@ -63,7 +71,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("appendOrder($S, $L)", column.getColumnName(), "order")
                 .addStatement("return conjunction")
-                .returns(ParameterizedTypeName.get(ClassName.get(Conjunction.And.class), resolverClassName, generatedClassName))
+                .returns(ParameterizedTypeName.get(ClassName.get(Conjunction.And.class), resolverTypeVariableName, orderByParameterizedTypeName))
                 .build();
     }
 

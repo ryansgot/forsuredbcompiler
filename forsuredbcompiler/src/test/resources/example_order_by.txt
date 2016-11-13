@@ -3,8 +3,8 @@ package com.fsryan.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.OrderBy;
 
-public class TestTable3OrderBy extends OrderBy<TestTable3Resolver, TestTable3OrderBy> {
-    TestTable3OrderBy(TestTable3Resolver resolver) {
+public class TestTable3OrderBy<R extends TestTable3Resolver> extends OrderBy<R, TestTable3OrderBy<R>> {
+    TestTable3OrderBy(R resolver) {
         super(resolver);
     }
 
@@ -16,7 +16,7 @@ public class TestTable3OrderBy extends OrderBy<TestTable3Resolver, TestTable3Ord
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.And} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction.And<TestTable3Resolver, TestTable3OrderBy> byAppRating(int order) {
+    public Conjunction.And<R, TestTable3OrderBy<R>> byAppRating(int order) {
         appendOrder("app_rating", order);
         return conjunction;
     }
@@ -29,7 +29,7 @@ public class TestTable3OrderBy extends OrderBy<TestTable3Resolver, TestTable3Ord
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.And} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction.And<TestTable3Resolver, TestTable3OrderBy> byCompetitorAppRating(int order) {
+    public Conjunction.And<R, TestTable3OrderBy<R>> byCompetitorAppRating(int order) {
         appendOrder("competitor_app_rating", order);
         return conjunction;
     }
@@ -42,7 +42,7 @@ public class TestTable3OrderBy extends OrderBy<TestTable3Resolver, TestTable3Ord
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.And} that allows for either adding to the orderBy or continue
      * adding other query parameters
      */
-    public Conjunction.And<TestTable3Resolver, TestTable3OrderBy> byLoginCount(int order) {
+    public Conjunction.And<R, TestTable3OrderBy<R>> byLoginCount(int order) {
         appendOrder("login_count", order);
         return conjunction;
     }

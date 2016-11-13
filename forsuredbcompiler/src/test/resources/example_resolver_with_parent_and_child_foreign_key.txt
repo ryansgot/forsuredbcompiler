@@ -33,7 +33,7 @@ import java.lang.String;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder, TestTable2OrderBy> {
+public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends Resolver<T, ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder<T>, TestTable2OrderBy<T>> {
     public static final String TABLE_NAME = "test_table_2";
 
     public static final String[] columns = {"_id","created","deleted","modified","test_table_3_id",};
@@ -73,7 +73,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
      *   to the query
      * </p>
      */
-    public JoinTestTable3 joinTestTable3(final FSJoin.Type type) {
+    public JoinTestTable3<T> joinTestTable3(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -109,7 +109,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
      *   to the query
      * </p>
      */
-    public JoinTestTable joinTestTable(final FSJoin.Type type) {
+    public JoinTestTable<T> joinTestTable(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -169,16 +169,22 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
         return TABLE_NAME;
     }
 
+    public static class Base extends TestTable2Resolver<Base> {
+        public Base(ForSureInfoFactory infoFactory) {
+            super(infoFactory);
+        }
+    }
+
     /**
      * <p>
      *   Changes contexts from the test_table_2 table's Resolver context to the test_table_3 table's Resolver context
      *   You can exit the test_table_3 table's Resolver context by calling the then() method.
      * </p>
      */
-    public static class JoinTestTable3 extends TestTable3Resolver {
-        private final TestTable2Resolver parent;
+    public static class JoinTestTable3<T extends TestTable2Resolver> extends TestTable3Resolver<JoinTestTable3<T>> {
+        private final T parent;
 
-        JoinTestTable3(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, TestTable2Resolver parent) {
+        JoinTestTable3(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, T parent) {
             super(infoFactory);
             this.parent = parent;
         }
@@ -193,7 +199,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
             return then().preserveQueryStateAndGet();
         }
 
-        public TestTable2Resolver then() {
+        public T then() {
             joinResolvers(parent, this);
             return parent;
         }
@@ -210,10 +216,10 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
      *   You can exit the test_table table's Resolver context by calling the then() method.
      * </p>
      */
-    public static class JoinTestTable extends TestTableResolver {
-        private final TestTable2Resolver parent;
+    public static class JoinTestTable<T extends TestTable2Resolver> extends TestTableResolver<JoinTestTable<T>> {
+        private final T parent;
 
-        JoinTestTable(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, TestTable2Resolver parent) {
+        JoinTestTable(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, T parent) {
             super(infoFactory);
             this.parent = parent;
         }
@@ -228,7 +234,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
             return then().preserveQueryStateAndGet();
         }
 
-        public TestTable2Resolver then() {
+        public T then() {
             joinResolvers(parent, this);
             return parent;
         }

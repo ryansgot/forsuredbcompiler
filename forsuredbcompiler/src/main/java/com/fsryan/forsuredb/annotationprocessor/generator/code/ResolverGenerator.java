@@ -55,8 +55,18 @@ public class ResolverGenerator extends JavaSourceGenerator {
         ClassName superClassName = ClassName.get(table.isDocStore() ? DocStoreResolver.class : Resolver.class);
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addTypeVariable(TypeVariableName.get("T", generatedClassName))
                 .superclass(ParameterizedTypeName.get(superClassName, parameterNames));
+        codeBuilder.addType(TypeSpec.classBuilder("Base")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .superclass(ParameterizedTypeName.get((ClassName) generatedClassName, ClassName.bestGuess("Base")))
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(ForSureInfoFactory.class, "infoFactory")
+                        .addStatement("super(infoFactory)")
+                        .build())
+                .build());
         addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
@@ -107,11 +117,12 @@ public class ResolverGenerator extends JavaSourceGenerator {
         TypeSpec.Builder joinClassBuilder = TypeSpec.classBuilder(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .superclass(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"))
-                .addField(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"), "parent", Modifier.PRIVATE, Modifier.FINAL)
+                .addTypeVariable(TypeVariableName.get("T", generatedClassName))
+                .superclass(ParameterizedTypeName.get(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"), ParameterizedTypeName.get(ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true)), TypeVariableName.get("T"))))
+                .addField(TypeVariableName.get("T"), "parent", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class), ClassName.bestGuess(getResultParameter()), ClassName.get(getRecordContainerClass())), "infoFactory")
-                        .addParameter(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"), "parent")
+                        .addParameter(TypeVariableName.get("T"), "parent")
                         .addCode(CodeBlock.builder()
                                 .addStatement("super($N)", "infoFactory")
                                 .addStatement("$N.$N = $N", "this", "parent", "parent")
@@ -131,7 +142,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .build())
                 .addMethod(MethodSpec.methodBuilder("then")
                         .addModifiers(Modifier.PUBLIC)
-                        .returns(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"))
+                        .returns(TypeVariableName.get("T"))
                         .addStatement("joinResolvers($N, this)", "parent")
                         .addStatement("return $N", "parent")
                         .build())
@@ -345,7 +356,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return MethodSpec.methodBuilder("join" + apiClassSimpleName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .returns(returnClass)
+                .returns(ParameterizedTypeName.get(returnClass, TypeVariableName.get("T")))
                 .addParameter(FSJoin.Type.class, "type", Modifier.FINAL)
                 .addStatement("addJoin($L, $L.PROJECTION)", childTableJoinSpec, apiClassSimpleName + "Resolver")
                 .addStatement("return new $T($L, $L)", returnClass, "infoFactory", "this")
@@ -393,7 +404,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private List<TypeName> createParameterNames(TableInfo table) {
         List<TypeName> ret = new LinkedList<>();
-        ret.add(generatedClassName);
+        ret.add(TypeVariableName.get("T"));
         if (table.isDocStore()) {
             ret.add(ClassName.bestGuess(table.getDocStoreParameterization()));
         }
@@ -401,8 +412,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
         ret.add(ClassName.get(getRecordContainerClass()));
         ret.add(getClassName);
         ret.add(setClassName);
-        ret.add(finderClassName);
-        ret.add(orderByClassName);
+        ret.add(ParameterizedTypeName.get((ClassName) finderClassName, TypeVariableName.get("T")));
+        ret.add(ParameterizedTypeName.get((ClassName) orderByClassName, TypeVariableName.get("T")));
         return ret;
     }
 }

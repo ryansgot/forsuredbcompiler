@@ -27,8 +27,8 @@ import com.fsryan.forsuredb.api.Finder;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finder> {
-    TestTable3Finder(TestTable3Resolver resolver) {
+public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, TestTable3Finder<R>> {
+    TestTable3Finder(R resolver) {
         super(resolver);
     }
 
@@ -39,7 +39,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRating(double exactMatch) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRating(double exactMatch) {
         addToBuf("app_rating", OP_EQ, exactMatch);
         return conjunction;
     }
@@ -51,7 +51,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRatingNot(double exclusion) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRatingNot(double exclusion) {
         addToBuf("app_rating", OP_NE, exclusion);
         return conjunction;
     }
@@ -63,7 +63,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRatingLessThan(double nonInclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRatingLessThan(double nonInclusiveUpperBound) {
         addToBuf("app_rating", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -75,7 +75,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRatingGreaterThan(double nonInclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRatingGreaterThan(double nonInclusiveLowerBound) {
         addToBuf("app_rating", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -87,7 +87,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRatingLessThanInclusive(double inclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRatingLessThanInclusive(double inclusiveUpperBound) {
         addToBuf("app_rating", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -99,7 +99,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byAppRatingGreaterThanInclusive(double inclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRatingGreaterThanInclusive(double inclusiveLowerBound) {
         addToBuf("app_rating", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -111,7 +111,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byAppRatingBetween(double nonInclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byAppRatingBetween(double nonInclusiveLowerBound) {
         addToBuf("app_rating", OP_GT, nonInclusiveLowerBound);
         return createBetween(double.class, "app_rating");
     }
@@ -123,7 +123,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byAppRatingBetweenInclusive(double inclusiveLowerBound) {
         addToBuf("app_rating", OP_GE, inclusiveLowerBound);
         return createBetween(double.class, "app_rating");
     }
@@ -135,7 +135,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalId(long exactMatch) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalId(long exactMatch) {
         addToBuf("global_id", OP_EQ, exactMatch);
         return conjunction;
     }
@@ -147,7 +147,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalIdNot(long exclusion) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalIdNot(long exclusion) {
         addToBuf("global_id", OP_NE, exclusion);
         return conjunction;
     }
@@ -159,7 +159,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalIdLessThan(long nonInclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalIdLessThan(long nonInclusiveUpperBound) {
         addToBuf("global_id", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -171,7 +171,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalIdGreaterThan(long nonInclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalIdGreaterThan(long nonInclusiveLowerBound) {
         addToBuf("global_id", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -183,7 +183,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalIdLessThanInclusive(long inclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalIdLessThanInclusive(long inclusiveUpperBound) {
         addToBuf("global_id", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -195,7 +195,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byGlobalIdGreaterThanInclusive(long inclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalIdGreaterThanInclusive(long inclusiveLowerBound) {
         addToBuf("global_id", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -207,7 +207,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byGlobalIdBetween(long nonInclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byGlobalIdBetween(long nonInclusiveLowerBound) {
         addToBuf("global_id", OP_GT, nonInclusiveLowerBound);
         return createBetween(long.class, "global_id");
     }
@@ -219,7 +219,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byGlobalIdBetweenInclusive(long inclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byGlobalIdBetweenInclusive(long inclusiveLowerBound) {
         addToBuf("global_id", OP_GE, inclusiveLowerBound);
         return createBetween(long.class, "global_id");
     }
@@ -231,7 +231,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCount(int exactMatch) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCount(int exactMatch) {
         addToBuf("login_count", OP_EQ, exactMatch);
         return conjunction;
     }
@@ -243,7 +243,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCountNot(int exclusion) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCountNot(int exclusion) {
         addToBuf("login_count", OP_NE, exclusion);
         return conjunction;
     }
@@ -255,7 +255,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCountLessThan(int nonInclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCountLessThan(int nonInclusiveUpperBound) {
         addToBuf("login_count", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -267,7 +267,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCountGreaterThan(int nonInclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCountGreaterThan(int nonInclusiveLowerBound) {
         addToBuf("login_count", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -279,7 +279,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveUpperBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCountLessThanInclusive(int inclusiveUpperBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCountLessThanInclusive(int inclusiveUpperBound) {
         addToBuf("login_count", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -291,7 +291,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<TestTable3Resolver, TestTable3Finder> byLoginCountGreaterThanInclusive(int inclusiveLowerBound) {
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCountGreaterThanInclusive(int inclusiveLowerBound) {
         addToBuf("login_count", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -303,7 +303,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param nonInclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byLoginCountBetween(int nonInclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byLoginCountBetween(int nonInclusiveLowerBound) {
         addToBuf("login_count", OP_GT, nonInclusiveLowerBound);
         return createBetween(int.class, "login_count");
     }
@@ -315,7 +315,7 @@ public class TestTable3Finder extends Finder<TestTable3Resolver, TestTable3Finde
      * @param inclusiveLowerBound
      * @return a {@link com.fsryan.forsuredb.api.Finder.Between} that allows you to provide an upper bound for this criteria
      */
-    public Finder.Between<TestTable3Resolver, TestTable3Finder> byLoginCountBetweenInclusive(int inclusiveLowerBound) {
+    public Finder.Between<R, TestTable3Finder<R>> byLoginCountBetweenInclusive(int inclusiveLowerBound) {
         addToBuf("login_count", OP_GE, inclusiveLowerBound);
         return createBetween(int.class, "login_count");
     }

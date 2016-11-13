@@ -167,7 +167,7 @@ public class ForSureGenerator extends JavaSourceGenerator {
 
     private void addResolverMethods(TypeSpec.Builder codeBuilder) {
         for (TableInfo table : tablesSortedByName) {
-            ClassName resolverTypeName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
+            ClassName resolverTypeName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver.Base");
             JavadocInfo jd = javadocInfoFor(table);
             codeBuilder.addMethod(MethodSpec.methodBuilder(CodeUtil.snakeToCamel(table.getTableName()) + "Table")
                     .addJavadoc(jd.stringToFormat(), jd.replacements())
