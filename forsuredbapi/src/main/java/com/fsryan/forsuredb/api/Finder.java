@@ -420,6 +420,16 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
     }
 
+    protected final void incorporate(Finder finder) {
+        if (finder == null || finder.replacementsList == null || finder.replacementsList.isEmpty() || finder.whereBuf == null) {
+            return;
+        }
+        surroundCurrentWhereWithParens();
+        finder.surroundCurrentWhereWithParens();
+        whereBuf.append(" AND ").append(finder.whereBuf);
+        replacementsList.addAll(finder.replacementsList);
+    }
+
     protected void surroundCurrentWhereWithParens() {
         String currentWhere = whereBuf.toString();
         whereBuf.delete(0, whereBuf.length());
