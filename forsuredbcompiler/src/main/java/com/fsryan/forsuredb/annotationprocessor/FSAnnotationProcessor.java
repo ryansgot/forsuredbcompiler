@@ -22,7 +22,7 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGe
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.FinderGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.ResolverGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.api.info.TableInfo;
@@ -139,7 +139,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private void createResolverClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            ResolverGenerator.getFor(processingEnv, tableInfo, pc).generate();
+            new ResolverGenerator(processingEnv, tableInfo, pc).generate();
         }
         resolverClassesCreated = true;
     }

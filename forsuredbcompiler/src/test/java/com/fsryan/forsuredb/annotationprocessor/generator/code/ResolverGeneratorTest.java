@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code.resolver;
+package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
@@ -32,12 +32,12 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        resourceText("example_relational_resolver_with_child_foreign_key.txt"),
+                        resourceText("example_resolver_with_child_foreign_key.txt"),
                         targetTableWithChildForeignKey(),
                         testTargetContext()
                 },
                 {
-                        resourceText("example_relational_resolver_with_parent_and_child_foreign_key.txt"),
+                        resourceText("example_resolver_with_parent_and_child_foreign_key.txt"),
                         targetTableWithParentAndChildForeignKey(),
                         testTargetContext()
                 },
@@ -47,7 +47,7 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
 
     @Before
     public void setUp() {
-        gut = ResolverGenerator.getFor(mockProcessingEnv, inputTable, inputTargetContext);
+        gut = new ResolverGenerator(mockProcessingEnv, inputTable, inputTargetContext);
     }
 
     @Override

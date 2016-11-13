@@ -1,10 +1,11 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.resolver.ResolverGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGeneratorTest;
 import com.fsryan.forsuredb.api.FSJoin;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
-import com.fsryan.forsuredb.api.RelationalResolver;
+import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -32,7 +33,7 @@ import java.lang.String;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public class TestTable3Resolver extends RelationalResolver<TestTable3Resolver, ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
+public class TestTable3Resolver extends Resolver<TestTable3Resolver, ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder, TestTable3OrderBy> {
     public static final String TABLE_NAME = "test_table_3";
 
     public static final String[] columns = {"_id","app_rating","competitor_app_rating","created","deleted","global_id","login_count","modified",};
@@ -75,7 +76,7 @@ public class TestTable3Resolver extends RelationalResolver<TestTable3Resolver, R
      *   to the query
      * </p>
      */
-    public TestTable3Resolver joinTestTable2(final FSJoin.Type type) {
+    public JoinTestTable2 joinTestTable2(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -102,7 +103,7 @@ public class TestTable3Resolver extends RelationalResolver<TestTable3Resolver, R
                 return "test_table_3_id";
             }
         }, TestTable2Resolver.PROJECTION);
-        return this;
+        return new JoinTestTable2(infoFactory, this);
     }
 
     @Override
@@ -133,5 +134,40 @@ public class TestTable3Resolver extends RelationalResolver<TestTable3Resolver, R
     @Override
     public String tableName() {
         return TABLE_NAME;
+    }
+
+    /**
+     * <p>
+     *   Changes contexts from the test_table_3 table's Resolver context to the test_table_2 table's Resolver context
+     *   You can exit the test_table_2 table's Resolver context by calling the then() method.
+     * </p>
+     */
+    public static class JoinTestTable2 extends TestTable2Resolver {
+        private final TestTable3Resolver parent;
+
+        JoinTestTable2(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, TestTable3Resolver parent) {
+            super(infoFactory);
+            this.parent = parent;
+        }
+
+        @Override
+        public Retriever get() {
+            return then().get();
+        }
+
+        @Override
+        public Retriever preserveQueryStateAndGet() {
+            return then().preserveQueryStateAndGet();
+        }
+
+        public TestTable3Resolver then() {
+            joinResolvers(parent, this);
+            return parent;
+        }
+
+        @Override
+        protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
+            parent.addJoin(join, foreignTableProjection);
+        }
     }
 }

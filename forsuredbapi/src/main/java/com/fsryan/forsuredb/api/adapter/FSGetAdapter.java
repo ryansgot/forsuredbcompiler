@@ -71,11 +71,11 @@ public class FSGetAdapter {
      * @param <G> The {@link FSGetApi} extension's type
      * @return an instance of the {@link FSGetApi} interface class passed in
      */
-    public static <G extends FSGetApi> G create(Resolver<?, ?, G, ?, ?, ?> resolver) {
+    public static <G extends FSGetApi> G create(Resolver<?, ?, ?, G, ?, ?, ?> resolver) {
         return (G) Proxy.newProxyInstance(resolver.getClass().getClassLoader(), new Class<?>[] {resolver.getApiClass()}, getHandlerFor(resolver));
     }
 
-    private static <G extends FSGetApi> RetrieveHandler getHandlerFor(Resolver<?, ?, G, ?, ?, ?> resolver) {
+    private static <G extends FSGetApi> RetrieveHandler getHandlerFor(Resolver<?, ?, ?, G, ?, ?, ?> resolver) {
         RetrieveHandler h = unambiguousHandlerMap.get(resolver.getApiClass());
         if (h == null) {
             h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse());
