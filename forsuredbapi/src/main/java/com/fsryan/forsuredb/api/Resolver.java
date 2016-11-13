@@ -76,7 +76,7 @@ import java.util.List;
  */
 public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
-    private final ForSureInfoFactory<U, R> infoFactory;
+    protected final ForSureInfoFactory<U, R> infoFactory;
     private final List<FSJoin> joins = new ArrayList<>();
     private final List<FSProjection> projections = new ArrayList<>();
 
@@ -90,15 +90,23 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         lookupResource = tableLocator();
     }
 
+    public static void joinResolvers(Resolver parent, Resolver child) {
+        if (child.orderBy != null) {
+            parent.orderBy = parent.orderBy == null ? parent.newOrderByInstance() : parent.orderBy;
+            parent.orderBy.appendOrderByList(child.orderBy.getOrderByList());
+        }
+        parent.finder = parent.finder == null ? parent.newFinderInstance() : parent.finder;
+        parent.finder.incorporate(child.finder);
+    }
+
     public final G getApi() {
         if (getApi == null) {
-            // TODO: In order to decruftify, the FSColumn and FSTable annotations must be
             getApi = FSGetAdapter.create(this);
         }
         return getApi;
     }
 
-    public final Retriever get() {
+    public Retriever get() {
         try {
             return preserveQueryStateAndGet();
         } finally {
@@ -110,7 +118,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         }
     }
 
-    public final Retriever preserveQueryStateAndGet() {
+    public Retriever preserveQueryStateAndGet() {
         final String orderByString = orderBy == null ? null : orderBy.getOrderByString();
         final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
@@ -120,7 +128,9 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     }
 
     public final O order() {
-        orderBy = newOrderByInstance();
+        if (orderBy == null) {
+            orderBy = newOrderByInstance();
+        }
         return orderBy;
     }
 
@@ -133,7 +143,9 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     }
 
     public final F find() {
-        finder = newFinderInstance();
+        if (finder == null) {
+            finder = newFinderInstance();
+        }
         return finder;
     }
 
