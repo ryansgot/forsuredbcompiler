@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+import lombok.AccessLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
     public static final int ORDER_ASC = 0;
     public static final int ORDER_DESC = -1;
 
-    private final List<String> orderByList;
+    @lombok.Getter(AccessLevel.PROTECTED) private final List<String> orderByList;
     private final String tableName;
     protected final Conjunction.And<R, O> conjunction;
 
@@ -109,5 +110,12 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
         // < 0 means "descending"
         orderByList.add(order >= ORDER_ASC ? Sql.generator().orderByAsc(tableName, columnName)
                 : Sql.generator().orderByDesc(tableName, columnName));
+    }
+
+    protected void appendOrderByList(List<String> orderByList) {
+        if (orderByList == null || orderByList.isEmpty()) {
+            return;
+        }
+        this.orderByList.addAll(orderByList);
     }
 }
