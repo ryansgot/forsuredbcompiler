@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.api.FSJoin;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -72,7 +73,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
      *   to the query
      * </p>
      */
-    public TestTable2Resolver joinTestTable3(final FSJoin.Type type) {
+    public JoinTestTable3 joinTestTable3(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -99,7 +100,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
                 return "test_table_3_id";
             }
         }, TestTable3Resolver.PROJECTION);
-        return this;
+        return new JoinTestTable3(infoFactory, this);
     }
 
     /**
@@ -108,7 +109,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
      *   to the query
      * </p>
      */
-    public TestTable2Resolver joinTestTable(final FSJoin.Type type) {
+    public JoinTestTable joinTestTable(final FSJoin.Type type) {
         addJoin(new FSJoin() {
             @Override
             public FSJoin.Type type() {
@@ -135,7 +136,7 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
                 return "test_table_2_id";
             }
         }, TestTableResolver.PROJECTION);
-        return this;
+        return new JoinTestTable(infoFactory, this);
     }
 
     @Override
@@ -166,5 +167,75 @@ public class TestTable2Resolver extends Resolver<TestTable2Resolver, ResolverGen
     @Override
     public String tableName() {
         return TABLE_NAME;
+    }
+
+    /**
+     * <p>
+     *   Changes contexts from the test_table_2 table's Resolver context to the test_table_3 table's Resolver context
+     *   You can exit the test_table_3 table's Resolver context by calling the then() method.
+     * </p>
+     */
+    public static class JoinTestTable3 extends TestTable3Resolver {
+        private final TestTable2Resolver parent;
+
+        JoinTestTable3(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, TestTable2Resolver parent) {
+            super(infoFactory);
+            this.parent = parent;
+        }
+
+        @Override
+        public Retriever get() {
+            return then().get();
+        }
+
+        @Override
+        public Retriever preserveQueryStateAndGet() {
+            return then().preserveQueryStateAndGet();
+        }
+
+        public TestTable2Resolver then() {
+            joinResolvers(parent, this);
+            return parent;
+        }
+
+        @Override
+        protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
+            parent.addJoin(join, foreignTableProjection);
+        }
+    }
+
+    /**
+     * <p>
+     *   Changes contexts from the test_table_2 table's Resolver context to the test_table table's Resolver context
+     *   You can exit the test_table table's Resolver context by calling the then() method.
+     * </p>
+     */
+    public static class JoinTestTable extends TestTableResolver {
+        private final TestTable2Resolver parent;
+
+        JoinTestTable(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, TestTable2Resolver parent) {
+            super(infoFactory);
+            this.parent = parent;
+        }
+
+        @Override
+        public Retriever get() {
+            return then().get();
+        }
+
+        @Override
+        public Retriever preserveQueryStateAndGet() {
+            return then().preserveQueryStateAndGet();
+        }
+
+        public TestTable2Resolver then() {
+            joinResolvers(parent, this);
+            return parent;
+        }
+
+        @Override
+        protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
+            parent.addJoin(join, foreignTableProjection);
+        }
     }
 }
