@@ -88,15 +88,24 @@ public class ResolverGenerator extends JavaSourceGenerator {
         }
         for (ColumnInfo column : table.getForeignKeyColumns()) {
             final TableInfo referencedTable = targetContext.getTable(column.getForeignKeyInfo().getTableName());
-            codeBuilder.addType(createJoinResolverClass(referencedTable));
+            final ColumnInfo referencedColumn = referencedTable.getColumn(column.getForeignKeyInfo().getColumnName());
+            codeBuilder.addType(createJoinResolverClass(referencedTable, referencedColumn));
         }
         for (Pair<TableInfo, ColumnInfo> parentJoin : parentJoins) {
-            codeBuilder.addType(createJoinResolverClass(parentJoin.first));
+            codeBuilder.addType(createJoinResolverClass(parentJoin.first, parentJoin.second));
         }
     }
 
-    private TypeSpec createJoinResolverClass(TableInfo referencedTable) {
+    private TypeSpec createJoinResolverClass(TableInfo referencedTable, ColumnInfo referencedColumn) {
+        JavadocInfo jd = JavadocInfo.builder()
+                .startParagraph()
+                .addLine("Changes contexts from the $L table's Resolver context to the $L table's Resolver context", table.getTableName(), referencedTable.getTableName())
+                .addLine("You can exit the $L table's Resolver context by calling the then() method.", referencedTable.getTableName())
+                .endParagraph()
+                .addLine()
+                .build();
         TypeSpec.Builder joinClassBuilder = TypeSpec.classBuilder(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true))
+                .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .superclass(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"))
                 .addField(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"), "parent", Modifier.PRIVATE, Modifier.FINAL)
@@ -123,7 +132,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .addMethod(MethodSpec.methodBuilder("then")
                         .addModifiers(Modifier.PUBLIC)
                         .returns(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"))
-                        .addStatement("$T.joinResolvers($N, this)", ClassName.get(Resolver.class), "parent")
+                        .addStatement("joinResolvers($N, this)", "parent")
                         .addStatement("return $N", "parent")
                         .build())
                 .addMethod(MethodSpec.methodBuilder("addJoin")
