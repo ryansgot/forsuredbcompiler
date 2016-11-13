@@ -53,6 +53,8 @@ import java.util.List;
  *     instances of this resolver is made available through the generated
  *     ForSure class that will be specific to each project.
  * </p>
+ * @param <T> The class of resolver that gets passed back when context is reverted
+ *           to Resolver context from Finder or OrderBy context
  * @param <U> The uniform locator for records
  *           You set the "resultParameter" property of the fsryan
  *           gradle extension with the fully-qualified class name of this
