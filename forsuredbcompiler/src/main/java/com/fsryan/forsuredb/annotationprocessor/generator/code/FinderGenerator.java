@@ -12,6 +12,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
@@ -23,12 +24,16 @@ public class FinderGenerator extends JavaSourceGenerator {
     private final ClassName resolverClass;
     private final ClassName generatedClassName;
     private final TableInfo table;
+    private final ParameterizedTypeName paramaterizedFinderType;
+    private final ParameterizedTypeName parameterizedResolverType;
 
     public FinderGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Finder");
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         resolverClass = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
         generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
+        paramaterizedFinderType = ParameterizedTypeName.get(generatedClassName, TypeVariableName.get("R"));
+        parameterizedResolverType = ParameterizedTypeName.get(resolverClass, TypeVariableName.get("R"));
         this.table = table;
     }
 
@@ -62,7 +67,8 @@ public class FinderGenerator extends JavaSourceGenerator {
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(superClassName, resolverClass, generatedClassName));
+                .addTypeVariable(TypeVariableName.get("R", resolverClass))
+                .superclass(ParameterizedTypeName.get(superClassName, TypeVariableName.get("R"), paramaterizedFinderType));
 
         addConstructor(codeBuilder);
         addQueryBuilderMethods(codeBuilder);
@@ -71,14 +77,14 @@ public class FinderGenerator extends JavaSourceGenerator {
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addParameter(resolverClass, "resolver")
+                .addParameter(TypeVariableName.get("R"), "resolver")
                 .addStatement("super(resolver)")
                 .build());
     }
 
     private void addQueryBuilderMethods(TypeSpec.Builder codeBuilder) {
-        ParameterizedTypeName conjunctionTypeName = ParameterizedTypeName.get(ClassName.get(Conjunction.AndOr.class), resolverClass, generatedClassName);
-        ParameterizedTypeName betweenTypeName = ParameterizedTypeName.get(ClassName.get(Finder.Between.class), resolverClass, generatedClassName);
+        ParameterizedTypeName conjunctionTypeName = ParameterizedTypeName.get(ClassName.get(Conjunction.AndOr.class), TypeVariableName.get("R"), paramaterizedFinderType);
+        ParameterizedTypeName betweenTypeName = ParameterizedTypeName.get(ClassName.get(Finder.Between.class), TypeVariableName.get("R"), paramaterizedFinderType);
         for (ColumnInfo column : columnsSortedByName) {
             if (!column.isSearchable() || TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())) {
                 continue;

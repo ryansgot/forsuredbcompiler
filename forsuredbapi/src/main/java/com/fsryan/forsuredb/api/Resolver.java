@@ -81,6 +81,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     protected final ForSureInfoFactory<U, R> infoFactory;
     private final List<FSJoin> joins = new ArrayList<>();
     private final List<FSProjection> projections = new ArrayList<>();
+    private boolean addedThisProjection = false;
 
     private U lookupResource;
     private G getApi;
@@ -117,6 +118,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
             joins.clear();  // <-- the state of the joins must be empty at the start of each query
             projections.clear();    // <-- the state of the projections must be empty at the start of each query
             lookupResource = tableLocator();
+            addedThisProjection = false;
         }
     }
 
@@ -124,7 +126,10 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         final String orderByString = orderBy == null ? null : orderBy.getOrderByString();
         final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
-        projections.add(projection());
+        if (!addedThisProjection) {
+            projections.add(projection());
+            addedThisProjection = true;
+        }
         return joins.size() == 0 ? queryable.query(projection(), selection, orderByString)
                 : queryable.query(joins, projections, selection, orderByString);
     }

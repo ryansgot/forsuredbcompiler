@@ -43,6 +43,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     protected final Conjunction.AndOr<R, F> conjunction;
     protected final StringBuffer whereBuf = new StringBuffer();
     protected final List<String> replacementsList = new ArrayList<>();
+    private boolean incorporatedExternalFinder = false;
 
     public Finder(final R resolver) {
         this.tableName = resolver.tableName();
@@ -410,6 +411,11 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             return;
         }
 
+        if (incorporatedExternalFinder) {
+            whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
+            incorporatedExternalFinder = false;
+        }
+
         whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
         if (operator == OP_LIKE) {
             whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
@@ -421,13 +427,25 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     protected final void incorporate(Finder finder) {
-        if (finder == null || finder.replacementsList == null || finder.replacementsList.isEmpty() || finder.whereBuf == null) {
+        if (finder == null
+                || finder.replacementsList == null
+                || finder.replacementsList.isEmpty()
+                || finder.whereBuf == null
+                || finder.whereBuf.length() == 0) {
             return;
         }
+
+        if (whereBuf.length() == 0) {
+            whereBuf.append(finder.whereBuf);
+            replacementsList.addAll(finder.replacementsList);
+            return;
+        }
+
         surroundCurrentWhereWithParens();
         finder.surroundCurrentWhereWithParens();
-        whereBuf.append(" AND ").append(finder.whereBuf);
+        whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ").append(finder.whereBuf);
         replacementsList.addAll(finder.replacementsList);
+        incorporatedExternalFinder = true;
     }
 
     protected void surroundCurrentWhereWithParens() {
