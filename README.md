@@ -149,7 +149,15 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 
 ## Revisions
 
-### forsuredbapi-0.9.0 and forsuredbcompiler-0.9.0
+### 0.9.2
+- You can call ```find()```/```orderBy()``` methods on resolvers for joined tables.
+- There is no more RelationalResolver.
+- Order sometimes matters when performing a query
+
+### 0.9.1
+- You can call the join methods and ```find()```/```orderBy()``` methods to switch contexts in any order.
+
+### 0.9.0
 - Full separation from any DBMS by means of a DBMSIntegrator plugin. Use forsuredbplugin-0.4.0 in order to supply the correct class to the compiler via the forsuredb.dbmsIntegratorClass property in your build.gradle file.
 - There was a pretty big problem when switching contexts between adding clauses to your query in the generated querying API. The ```andFinally()``` method is kind of misleading because it could appear several times. This has been changed to ```then()``` in an attempt to make things less confusing. If you're upgrading, you'll have to change all ```andFinally()``` methods to ```then()```
 
