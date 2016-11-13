@@ -1,7 +1,9 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
+import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.api.DocStoreResolver;
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
@@ -24,6 +26,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
     private final TableContext targetContext;
+    private final List<Pair<TableInfo, ColumnInfo>> parentJoins;
     private List<ColumnInfo> columnsSortedByName;
     private final TypeName[] parameterNames;
     private final TypeName generatedClassName;
@@ -36,6 +39,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         super(processingEnv, table.getQualifiedClassName() + "Resolver");
         this.table = table;
         this.targetContext = targetContext;
+        parentJoins = createParentJoins(table, targetContext);
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
         getClassName = ClassName.bestGuess(table.getQualifiedClassName());
@@ -53,12 +57,87 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(ParameterizedTypeName.get(superClassName, parameterNames));
+        addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
         addColumnMethodNameMapMethod(codeBuilder);
         addJoinMethods(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private static List<Pair<TableInfo, ColumnInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
+        List<Pair<TableInfo, ColumnInfo>> ret = new ArrayList<>();
+        for (TableInfo otherTable : targetContext.allTables()) {
+            if (!otherTable.referencesOtherTable() || table.getTableName().equals(otherTable.getTableName())) {
+                continue;
+            }
+            for (ColumnInfo column : otherTable.getForeignKeyColumns()) {
+                if (!column.getForeignKeyInfo().getTableName().equals(table.getTableName())) {
+                    continue;
+                }
+                ret.add(new Pair<>(otherTable, column));
+            }
+        }
+        return ret;
+    }
+
+    private void addJoinResolverClasses(TypeSpec.Builder codeBuilder) {
+        if (!hasJoins()) {
+            return;
+        }
+        for (ColumnInfo column : table.getForeignKeyColumns()) {
+            final TableInfo referencedTable = targetContext.getTable(column.getForeignKeyInfo().getTableName());
+            codeBuilder.addType(createJoinResolverClass(referencedTable));
+        }
+        for (Pair<TableInfo, ColumnInfo> parentJoin : parentJoins) {
+            codeBuilder.addType(createJoinResolverClass(parentJoin.first));
+        }
+    }
+
+    private TypeSpec createJoinResolverClass(TableInfo referencedTable) {
+        TypeSpec.Builder joinClassBuilder = TypeSpec.classBuilder(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true))
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .superclass(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"))
+                .addField(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"), "parent", Modifier.PRIVATE, Modifier.FINAL)
+                .addMethod(MethodSpec.constructorBuilder()
+                        .addParameter(ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class), ClassName.bestGuess(getResultParameter()), ClassName.get(getRecordContainerClass())), "infoFactory")
+                        .addParameter(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"), "parent")
+                        .addCode(CodeBlock.builder()
+                                .addStatement("super($N)", "infoFactory")
+                                .addStatement("$N.$N = $N", "this", "parent", "parent")
+                                .build())
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("get")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(Retriever.class)
+                        .addStatement("return then().get()")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("preserveQueryStateAndGet")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .returns(Retriever.class)
+                        .addStatement("return then().preserveQueryStateAndGet()")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("then")
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(ClassName.bestGuess(table.getQualifiedClassName() + "Resolver"))
+                        .addStatement("$T.joinResolvers($N, this)", ClassName.get(Resolver.class), "parent")
+                        .addStatement("return $N", "parent")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("addJoin")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PROTECTED)
+                        .addParameter(FSJoin.class, "join")
+                        .addParameter(FSProjection.class, "foreignTableProjection")
+                        .addStatement("$N.addJoin($N, $N)", "parent", "join", "foreignTableProjection")
+                        .build());
+        return joinClassBuilder.build();
+    }
+
+    private boolean hasJoins() {
+        return table.referencesOtherTable() || !parentJoins.isEmpty();
     }
 
     private void addColumnMethodNameMapMethod(TypeSpec.Builder codeBuilder) {
@@ -167,7 +246,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                     column.getForeignKeyInfo().getColumnName(),
                     table.getTableName(),
                     column.getColumnName());
-            codeBuilder.addMethod(createMethodSpecForJoin(column.getForeignKeyInfo().getApiClassName(),
+            codeBuilder.addMethod(createMethodSpecForJoin(targetContext.getTable(column.getForeignKeyInfo().getTableName()),
                             createChildTableJoinSpec(column),
                             jd));
         }
@@ -185,7 +264,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                                 column.getForeignKeyInfo().getColumnName(),
                                 targetTable.getTableName(),
                                 column.getColumnName());
-                codeBuilder.addMethod(createMethodSpecForJoin(targetTable.getQualifiedClassName(), joinSpec, jd));
+                codeBuilder.addMethod(createMethodSpecForJoin(targetTable, joinSpec, jd));
             }
         }
     }
@@ -251,15 +330,16 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .build();
     }
 
-    private MethodSpec createMethodSpecForJoin(String joinedTableApiClass, TypeSpec childTableJoinSpec, JavadocInfo jd) {
-        final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTableApiClass);
+    private MethodSpec createMethodSpecForJoin(TableInfo joinedTable, TypeSpec childTableJoinSpec, JavadocInfo jd) {
+        final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTable.getQualifiedClassName());
+        final ClassName returnClass = ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + joinedTable.getTableName(), true));
         return MethodSpec.methodBuilder("join" + apiClassSimpleName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .returns(ClassName.bestGuess(getOutputClassName(false)))
+                .returns(returnClass)
                 .addParameter(FSJoin.Type.class, "type", Modifier.FINAL)
                 .addStatement("addJoin($L, $L.PROJECTION)", childTableJoinSpec, apiClassSimpleName + "Resolver")
-                .addStatement("return this")
+                .addStatement("return new $T($L, $L)", returnClass, "infoFactory", "this")
                 .build();
     }
 
