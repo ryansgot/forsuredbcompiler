@@ -185,6 +185,10 @@ public class TableInfo {
         return retList;
     }
 
+    public boolean referencesOtherTable() {
+        return !getForeignKeyColumns().isEmpty();
+    }
+
     private String createTableName(String tableName, String qualifiedClassName) {
         if (tableName != null && !tableName.isEmpty()) {
             return tableName;
