@@ -57,7 +57,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             public F or() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
                 }
                 return (F) Finder.this;
             }
@@ -66,7 +66,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             public F and() {
                 if (whereBuf.length() > 0) {
                     surroundCurrentWhereWithParens();
-                    whereBuf.append(" ").append(Sql.generator().orKeyword()).append(" ");
+                    whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
                 }
                 return (F) Finder.this;
             }
