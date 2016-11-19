@@ -9,7 +9,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: "jacoco"
 
 group = 'com.fsryan.forsuredb'
-version = '0.9.3'
+version = '0.9.4'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
@@ -84,10 +84,10 @@ bintray {
         vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
         publicDownloadNumbers = true
         version {
-            name = '0.9.3'
+            name = '0.9.4'
             desc = 'Guts of the ForSureDB project, containing code to generate source and assets'
             released  = new Date()
-            vcsTag = 'v0.9.3'
+            vcsTag = 'v0.9.4'
         }
     }
 }
@@ -98,7 +98,7 @@ publishing {
             from components.java
             groupId = 'com.fsryan.forsuredb'
             artifactId = 'forsuredbcompiler'
-            version = '0.9.3'
+            version = '0.9.4'
 
             Artifact sourcesJar
             Artifact javadocJar

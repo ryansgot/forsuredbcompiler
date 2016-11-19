@@ -266,9 +266,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
                     column.getForeignKeyInfo().getColumnName(),
                     table.getTableName(),
                     column.getColumnName());
-            codeBuilder.addMethod(createMethodSpecForJoin(targetContext.getTable(column.getForeignKeyInfo().getTableName()),
-                            createChildTableJoinSpec(column),
-                            jd));
+            TableInfo targetTable = targetContext.getTable(column.getForeignKeyInfo().getTableName());
+            codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createChildTableJoinSpec(column, targetTable.getSimpleClassName()), jd));
         }
 
         // add join methods where this table is the parent in the join relationship
@@ -279,7 +278,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         || !table.getTableName().equals(column.getForeignKeyInfo().getTableName())) {
                     continue;
                 }
-                final TypeSpec joinSpec = createParentTableJoinSpec(column, targetTable.getTableName());
+                final CodeBlock joinSpec = createParentTableJoinSpec(column, targetTable.getTableName(), targetTable.getSimpleClassName());
                 JavadocInfo jd = javadocFor(table.getTableName(),
                                 column.getForeignKeyInfo().getColumnName(),
                                 targetTable.getTableName(),
@@ -304,53 +303,30 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .build();
     }
 
-    private TypeSpec createChildTableJoinSpec(ColumnInfo column) {
+    private CodeBlock createChildTableJoinSpec(ColumnInfo column, String apiSimpleClassName) {
         final ForeignKeyInfo fki = column.getForeignKeyInfo();
-        return createJoinSpec(fki.getTableName(), fki.getColumnName(), table.getTableName(), column.getColumnName());
+        return createJoinSpec(fki.getTableName(), fki.getColumnName(), table.getTableName(), column.getColumnName(), apiSimpleClassName);
     }
 
-    private TypeSpec createParentTableJoinSpec(ColumnInfo column, String childTableName) {
+    private CodeBlock createParentTableJoinSpec(ColumnInfo column, String childTableName, String apiSimpleClassName) {
         final ForeignKeyInfo fki = column.getForeignKeyInfo();
-        return createJoinSpec(table.getTableName(), fki.getColumnName(), childTableName, column.getColumnName());
+        return createJoinSpec(table.getTableName(), fki.getColumnName(), childTableName, column.getColumnName(), apiSimpleClassName);
     }
 
-    private TypeSpec createJoinSpec(String parentTableName, String parentColumnName, String childTableName, String childColumnName) {
-        return TypeSpec.anonymousClassBuilder("")
-                .addSuperinterface(FSJoin.class)
-                .addMethod(MethodSpec.methodBuilder("type")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(FSJoin.Type.class)
-                        .addStatement("return type")
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("parentTable")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(String.class)
-                        .addStatement("return $S", parentTableName)
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("parentColumn")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(String.class)
-                        .addStatement("return $S", parentColumnName)
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("childTable")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(String.class)
-                        .addStatement("return $S", childTableName)
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("childColumn")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(String.class)
-                        .addStatement("return $S", childColumnName)
-                        .build())
+    private CodeBlock createJoinSpec(String parentTableName, String parentColumnName, String childTableName, String childColumnName, String apiClassSimpleName) {
+        return CodeBlock.builder()
+                .addStatement("addJoin(new $T($N, $S, $S, $S, $S), $L.$N)", FSJoin.class,
+                        "type",
+                        parentTableName,
+                        parentColumnName,
+                        childTableName,
+                        childColumnName,
+                        apiClassSimpleName + "Resolver",
+                        "PROJECTION")
                 .build();
     }
 
-    private MethodSpec createMethodSpecForJoin(TableInfo joinedTable, TypeSpec childTableJoinSpec, JavadocInfo jd) {
+    private MethodSpec createMethodSpecForJoin(TableInfo joinedTable, CodeBlock joinCodeBlock, JavadocInfo jd) {
         final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTable.getQualifiedClassName());
         final ClassName returnClass = ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + joinedTable.getTableName(), true));
         return MethodSpec.methodBuilder("join" + apiClassSimpleName)
@@ -358,7 +334,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(returnClass, TypeVariableName.get("T")))
                 .addParameter(FSJoin.Type.class, "type", Modifier.FINAL)
-                .addStatement("addJoin($L, $L.PROJECTION)", childTableJoinSpec, apiClassSimpleName + "Resolver")
+                .addCode(joinCodeBlock)
                 .addStatement("return new $T($L, $L)", returnClass, "infoFactory", "this")
                 .build();
     }

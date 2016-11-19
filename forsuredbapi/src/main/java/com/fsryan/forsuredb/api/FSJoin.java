@@ -17,7 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
-public interface FSJoin {
+@lombok.AllArgsConstructor
+public class FSJoin {
 
     /**
      * <p>
@@ -25,7 +26,7 @@ public interface FSJoin {
      *     have more joins, but the most common is the {@link #INNER} type.
      * </p>
      */
-    enum Type {
+    public enum Type {
         /**
          * <p>
          *     It is debatable whether this is useful, given the choices that have been made
@@ -52,35 +53,9 @@ public interface FSJoin {
         }
     }
 
-    /**
-     * @return the {@link FSJoin.Type} of this join
-     */
-    Type type();
-
-    /**
-     * @return the name of the table that is the parent in this relationship. This need not be
-     * the table you're querying.
-     * @see #childTable()
-     */
-    String parentTable();
-
-    /**
-     * @return The column in the parent table that should correspond to the {@link #childColumn()}.
-     * These columns need not have the same name.
-     * @see #childColumn()
-     */
-    String parentColumn();
-
-    /**
-     * @return the name of the table that is the child in this relationship.
-     * @see #parentTable()
-     */
-    String childTable();
-
-    /**
-     * @return The column in the child table that should correspond to the {@link #parentColumn()}.
-     * These columns need not have the same name.
-     * @see #parentColumn()
-     */
-    String childColumn();
+    @lombok.Getter private Type type;
+    @lombok.Getter private String parentTable;
+    @lombok.Getter private String parentColumn;
+    @lombok.Getter private String childTable;
+    @lombok.Getter private String childColumn;
 }
