@@ -149,6 +149,10 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 
 ## Revisions
 
+## 0.9.4
+- more efficient Resolver class generation
+- breaks API for your platform's use because the FSJoin class has changed.
+
 ### 0.9.3
 - More robust querying API for finding/ordering by columns of joined tables.
 - Generated Resolver classes are now abstract and have their own ```Base``` class declaration.
