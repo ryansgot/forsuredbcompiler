@@ -45,12 +45,12 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.9.3'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.9.4'           // common API for your code and the supporting libraries
     compile 'com.fsryan.forsuredb:sqlitelib:0.4.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.9.3@aar'   // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.9.4@aar'   // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.9.3'     // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.9.3'          // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.9.4'     // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.9.4'          // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
