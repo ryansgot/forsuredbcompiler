@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /*package*/ public class CodeUtil {
 
     private static final Map<String, String> primitiveToWrapperNameMap = new ImmutableMap.Builder<String, String>()
@@ -23,10 +25,8 @@ import java.util.Map;
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
     public static String simpleClassNameFrom(String fqClassName) {
-        if (fqClassName == null) {
-            return null;
-        } else if (fqClassName.isEmpty()) {
-            return "";
+        if (fqClassName == null || fqClassName.isEmpty()) {
+            return Object.class.getSimpleName();
         }
 
         final String[] split = fqClassName.split("\\.");
@@ -34,10 +34,8 @@ import java.util.Map;
     }
 
     public static String packageNameFrom(String fqClassName) {
-        if (fqClassName == null) {
-            return null;
-        } else if (fqClassName.isEmpty()) {
-            return "";
+        if (fqClassName == null || fqClassName.isEmpty()) {
+            fqClassName = Object.class.getName();
         }
 
         String[] split = fqClassName.split("\\.");
@@ -128,12 +126,14 @@ import java.util.Map;
         return typeFromName(fqTypeName, true);
     }
 
-    // TODO: remove the need for this method by updating the ColumnInfo model to retain TypeMirror
     public static Type typeFromName(String fqTypeName) {
         return typeFromName(fqTypeName, false);
     }
 
-    private static Type typeFromName(String fqTypeName, boolean array) {
+    public static Type typeFromName(String fqTypeName, boolean array) {
+        if (isNullOrEmpty(fqTypeName)) {
+            return array ? Object[].class : Object.class;
+        }
         switch (fqTypeName) {
             case "char":
                 return array ? char[].class : char.class;
@@ -161,7 +161,7 @@ import java.util.Map;
             APLog.e(LOG_TAG, "could not find type for class: " + fqTypeName);
         }
 
-        throw new IllegalStateException("could not find type for class: " + fqTypeName);
+        return array ? Object[].class : Object.class;
     }
 
     public static String primitiveToWrapperName(String fqTypeName) {
