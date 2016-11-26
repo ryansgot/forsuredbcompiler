@@ -8,8 +8,7 @@ import com.fsryan.forsuredb.api.Finder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.*;
 
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
@@ -83,7 +82,7 @@ public abstract class FinderMethodSpecGenerator {
             retList.addAll(isIsNotMethodSpecs(methodNameInsertion));
         }
         if (hasOnNotOnGrammar()) {
-            retList.add(createSpec(conjunctionTypeName, "by" + methodNameInsertion + "On", "exactMatch", Finder.OP_EQ));
+            retList.add(createSpec(conjunctionTypeName, "by" + methodNameInsertion + "On", "exactMatch", OP_EQ));
             retList.add(createSpec(conjunctionTypeName, "byNot" + methodNameInsertion + "On", "exclusion", OP_NE));
         }
         if (hasGreaterThanLessThanGrammar()) {
@@ -160,11 +159,19 @@ public abstract class FinderMethodSpecGenerator {
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName))
                 .returns(returnType);
 
         if (!column.getQualifiedType().equals("boolean")) {
             codeBuilder.addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName);
+        }
+
+        if (op == OP_EQ && !column.getQualifiedType().equals("boolean")) {
+            codeBuilder.varargs()
+                    .addParameter(ParameterSpec.builder(ClassName.get(CodeUtil.arrayTypeFromName(column.getQualifiedType())), "orExactMatches")
+                    .build())
+                    .addCode(inclusionFilterCodeBlock(parameterName, op));
+        } else {
+            codeBuilder.addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName));
         }
 
         if (returnType.rawType.simpleName().equals("Between")) {
@@ -174,6 +181,23 @@ public abstract class FinderMethodSpecGenerator {
         }
 
         return codeBuilder.build();
+    }
+
+    private CodeBlock inclusionFilterCodeBlock(String parameterName, int op) {
+        String listParameterization = CodeUtil.primitiveToWrapperName(column.getQualifiedType());
+        return CodeBlock.builder()
+                .beginControlFlow("if ($N.length == 0)", "orExactMatches")
+                .addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName))
+                .endControlFlow()
+                .beginControlFlow("else")
+                .addStatement("$T<$L> $N = new $T<$L>(1 + $N.length)", ClassName.get(List.class), listParameterization, "inclusionFilter", ClassName.get(ArrayList.class), listParameterization, "orExactMatches")
+                .addStatement("$N.add($N)", "inclusionFilter", "exactMatch")
+                .beginControlFlow("for ($L $N : $N)", CodeUtil.simpleClassNameFrom(column.getQualifiedType()), "toInclude", "orExactMatches")
+                .addStatement("$N.add($N)", "inclusionFilter", "toInclude")
+                .endControlFlow()
+                .addStatement("addEqualsOrChainToBuf($S, $N)", column.getColumnName(), "inclusionFilter")
+                .endControlFlow()
+                .build();
     }
 
     private JavadocInfo javadocInfoFor(ParameterizedTypeName returnType, String parameterName) {

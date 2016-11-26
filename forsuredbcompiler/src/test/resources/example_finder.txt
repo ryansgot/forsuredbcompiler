@@ -2,6 +2,8 @@ package com.fsryan.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.Finder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -39,8 +41,18 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRating(double exactMatch) {
-        addToBuf("app_rating", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byAppRating(double exactMatch, double... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("app_rating", OP_EQ, exactMatch);
+        }
+        else {
+            List<Double> inclusionFilter = new ArrayList<Double>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (double toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("app_rating", inclusionFilter);
+        }
         return conjunction;
     }
 
@@ -135,8 +147,18 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalId(long exactMatch) {
-        addToBuf("global_id", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byGlobalId(long exactMatch, long... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("global_id", OP_EQ, exactMatch);
+        }
+        else {
+            List<Long> inclusionFilter = new ArrayList<Long>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (long toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("global_id", inclusionFilter);
+        }
         return conjunction;
     }
 
@@ -231,8 +253,18 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exactMatch
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCount(int exactMatch) {
-        addToBuf("login_count", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, TestTable3Finder<R>> byLoginCount(int exactMatch, int... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("login_count", OP_EQ, exactMatch);
+        }
+        else {
+            List<Integer> inclusionFilter = new ArrayList<Integer>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (int toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("login_count", inclusionFilter);
+        }
         return conjunction;
     }
 

@@ -1,5 +1,10 @@
 package com.fsryan.forsuredb.api;
 
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder<R, F>> extends Finder<R, F> {
     
     public DocStoreFinder(R resolver) {
@@ -8,15 +13,20 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
 
     /**
      * <p>
-     *     add criteria to a query that is a convenience for calling {@link #byClassName(String)} with the
+     *     add criteria to a query that is a convenience for calling {@link #byClassName(String, String...)} with the
      *     {@link Class} object instead of the fully qualified class name.
      * </p>
-     * @param exactClassMatch
+     * @param exactClassMatch the exact class you want
+     * @param orExactClassMatches the other possible class matches
      * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
-     * @see #byClassName(String)
+     * @see #byClassName(String, String...)
      */
-    public Conjunction.AndOr<R, F> byClass(Class exactClassMatch) {
-        return byClassName(exactClassMatch == null ? "" : exactClassMatch.getName());
+    public Conjunction.AndOr<R, F> byClass(Class exactClassMatch, Class... orExactClassMatches) {
+        String[] otherClassNames = new String[orExactClassMatches.length];
+        for (int i = 0; i < orExactClassMatches.length; i++) {
+            otherClassNames[i] = orExactClassMatches[i].getName();
+        }
+        return byClassName(exactClassMatch == null ? "" : exactClassMatch.getName(), otherClassNames);
     }
 
     /**
@@ -36,11 +46,21 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * <p>
      *   add criteria to a query that requires exact match for class_name
      * </p>
-     * @param exactMatch
+     * @param exactMatch the exact class name of the class you want
+     * @param orExactMatches the other possible matches
      * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassName(String exactMatch) {
-        addToBuf("class_name", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, F> byClassName(String exactMatch, String... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("class_name", OP_EQ, exactMatch);
+        } else {
+            List<String> inclusionFilter = new ArrayList<String>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (String toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("class_name", inclusionFilter);
+        }
         return conjunction;
     }
 

@@ -2,18 +2,31 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 
 import java.lang.reflect.Type;
+import java.util.Map;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /*package*/ public class CodeUtil {
+
+    private static final Map<String, String> primitiveToWrapperNameMap = new ImmutableMap.Builder<String, String>()
+            .put(char.class.getName(), Character.class.getSimpleName())
+            .put(byte.class.getName(), Byte.class.getSimpleName())
+            .put(boolean.class.getName(), Boolean.class.getSimpleName())
+            .put(short.class.getName(), Short.class.getSimpleName())
+            .put(int.class.getName(), Integer.class.getSimpleName())
+            .put(long.class.getName(), Long.class.getSimpleName())
+            .put(float.class.getName(), Float.class.getSimpleName())
+            .put(double.class.getName(), Double.class.getSimpleName())
+            .build();
 
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
     public static String simpleClassNameFrom(String fqClassName) {
-        if (fqClassName == null) {
-            return null;
-        } else if (fqClassName.isEmpty()) {
-            return "";
+        if (fqClassName == null || fqClassName.isEmpty()) {
+            return Object.class.getSimpleName();
         }
 
         final String[] split = fqClassName.split("\\.");
@@ -21,10 +34,8 @@ import java.lang.reflect.Type;
     }
 
     public static String packageNameFrom(String fqClassName) {
-        if (fqClassName == null) {
-            return null;
-        } else if (fqClassName.isEmpty()) {
-            return "";
+        if (fqClassName == null || fqClassName.isEmpty()) {
+            fqClassName = Object.class.getName();
         }
 
         String[] split = fqClassName.split("\\.");
@@ -111,35 +122,50 @@ import java.lang.reflect.Type;
         throw new IllegalStateException("Unsupported type: " + qualifiedType);
     }
 
-    // TODO: remove the need for this method by updating the ColumnInfo model to retain TypeMirror
+    public static Type arrayTypeFromName(String fqTypeName) {
+        return typeFromName(fqTypeName, true);
+    }
+
     public static Type typeFromName(String fqTypeName) {
+        return typeFromName(fqTypeName, false);
+    }
+
+    public static Type typeFromName(String fqTypeName, boolean array) {
+        if (isNullOrEmpty(fqTypeName)) {
+            return array ? Object[].class : Object.class;
+        }
         switch (fqTypeName) {
             case "char":
-                return char.class;
+                return array ? char[].class : char.class;
             case "byte":
-                return byte.class;
+                return array ? byte[].class : byte.class;
             case "byte[]":
                 return byte[].class;
             case "boolean":
-                return boolean.class;
+                return array ? boolean[].class : boolean.class;
             case "short":
-                return short.class;
+                return array ? short[].class : short.class;
             case "int":
-                return int.class;
+                return array ? int[].class : int.class;
             case "long":
-                return long.class;
+                return array ? long[].class : long.class;
             case "float":
-                return float.class;
+                return array ? float[].class : float.class;
             case "double":
-                return double.class;
-            default:
-                try {
-                    return Class.forName(fqTypeName);
-                } catch (ClassNotFoundException cnfe) {
-                    APLog.e(LOG_TAG, "could not find type for class: " + fqTypeName);
-                }
+                return array ? double[].class : double.class;
         }
 
-        throw new IllegalStateException("could not find type for class: " + fqTypeName);
+        try {
+            return array ? Class.forName("[L" + fqTypeName + ";") : Class.forName(fqTypeName);
+        } catch (ClassNotFoundException cnfe) {
+            APLog.e(LOG_TAG, "could not find type for class: " + fqTypeName);
+        }
+
+        return array ? Object[].class : Object.class;
+    }
+
+    public static String primitiveToWrapperName(String fqTypeName) {
+        String name = primitiveToWrapperNameMap.get(fqTypeName);
+        return name == null ? simpleClassNameFrom(fqTypeName) : name;
     }
 }

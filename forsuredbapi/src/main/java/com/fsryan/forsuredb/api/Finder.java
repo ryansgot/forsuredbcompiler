@@ -19,10 +19,13 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
@@ -41,8 +44,8 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
     protected final String tableName;
     protected final Conjunction.AndOr<R, F> conjunction;
-    protected final StringBuffer whereBuf = new StringBuffer();
-    protected final List<String> replacementsList = new ArrayList<>();
+    private final StringBuffer whereBuf = new StringBuffer();
+    private final List<String> replacementsList = new ArrayList<>();
     private boolean incorporatedExternalFinder = false;
 
     public Finder(final R resolver) {
@@ -94,11 +97,21 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * <p>
      *   add criteria to a query that requires exactMatch for _id
      * </p>
-     * @param exactMatch
+     * @param exactMatch the exact value to match
+     * @param orExactMatches alternative exact values to match
      * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byId(long exactMatch) {
-        addToBuf("_id", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, F> byId(long exactMatch, long... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("_id", OP_EQ, exactMatch);
+        } else {
+            List<Long> inclusionFilter = new ArrayList<Long>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (long toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("_id", inclusionFilter);
+        }
         return conjunction;
     }
 
@@ -262,11 +275,21 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * <p>
      *   add criteria to a query that requires exactMatch for created
      * </p>
-     * @param exactMatch
+     * @param exactMatch the exact value to match
+     * @param orExactMatches alternative exact values to match
      * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byCreatedOn(Date exactMatch) {
-        addToBuf("created", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, F> byCreatedOn(Date exactMatch, Date... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("created", OP_EQ, exactMatch);
+        } else {
+            List<Date> inclusionFilter = new ArrayList<Date>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (Date toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("created", inclusionFilter);
+        }
         return conjunction;
     }
 
@@ -386,11 +409,21 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * <p>
      *   add criteria to a query that requires exactMatch for modified
      * </p>
-     * @param exactMatch
+     * @param exactMatch the exact value to match
+     * @param orExactMatches alternative exact values to match
      * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byModifiedOn(Date exactMatch) {
-        addToBuf("modified", OP_EQ, exactMatch);
+    public Conjunction.AndOr<R, F> byModifiedOn(Date exactMatch, Date... orExactMatches) {
+        if (orExactMatches.length == 0) {
+            addToBuf("modified", OP_EQ, exactMatch);
+        } else {
+            List<Date> inclusionFilter = new ArrayList<Date>(1 + orExactMatches.length);
+            inclusionFilter.add(exactMatch);
+            for (Date toInclude : orExactMatches) {
+                inclusionFilter.add(toInclude);
+            }
+            addEqualsOrChainToBuf("created", inclusionFilter);
+        }
         return conjunction;
     }
 
@@ -424,6 +457,29 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
+    }
+
+    protected final void addEqualsOrChainToBuf(String column, List orValues) {
+        if (orValues == null || orValues.isEmpty() || !canAddClause(column, orValues.get(0))) {
+            return;
+        }
+
+        if (incorporatedExternalFinder) {
+            whereBuf.append(" ").append(Sql.generator().andKeyword()).append(" ");
+            incorporatedExternalFinder = false;
+        }
+
+        Object first = orValues.get(0);
+        whereBuf.append("(").append(Sql.generator().whereOperation(tableName, column, OP_EQ)).append(" ? ");
+        replacementsList.add(Date.class.equals(first.getClass()) ? Sql.generator().formatDate((Date) first) : first.toString());
+        for (int i = 1; i < orValues.size(); i++) {
+            Object orValue = orValues.get(i);
+            whereBuf.append(Sql.generator().orKeyword()).append(" ")
+                    .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
+                    .append(" ?");
+            replacementsList.add(Date.class.equals(orValue.getClass()) ? Sql.generator().formatDate((Date) orValue) : orValue.toString());
+        }
+        whereBuf.append(")");
     }
 
     protected final void incorporate(Finder finder) {
@@ -476,6 +532,6 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     private boolean canAddClause(String column, Object value) {
-        return !Strings.isNullOrEmpty(column) && value != null && !value.toString().isEmpty();
+        return !isNullOrEmpty(column) && value != null && !value.toString().isEmpty();
     }
 }
