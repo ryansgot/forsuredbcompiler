@@ -28,4 +28,9 @@ public interface FSProjection {
      * @return All of the columns to be retrieved in a SELECT query
      */
     String[] columns();
+
+    /**
+     * @return Whether the query should be for distinct column values.
+     */
+    boolean isDistinct();
 }
