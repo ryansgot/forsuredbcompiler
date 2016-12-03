@@ -45,12 +45,12 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.9.5'           // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.10.0'          // common API for your code and the supporting libraries
     compile 'com.fsryan.forsuredb:sqlitelib:0.4.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.9.5@aar'   // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.10.0@aar'  // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.9.5'     // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.9.5'          // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'    // these classes are not needed at runtime--they do code generation
+    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'         // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -142,13 +142,16 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - Add a foreign key column to a table
 
 ## Coming up
-- support for inverse migrations of each of the currently supported migrations in 0.10.0. This is going to be a big change because it will mean no need to delete or manually edit migration json files.
-- More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.11.0?)
+- support for inverse migrations of each of the currently supported migrations in 0.11.0? This is going to be a big change because it will mean no need to delete or manually edit migration json files.
+- More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.12.0?)
 - More querying API improvement?
 - An Android Studio/Intellij plugin. Not sure when I'll be able to get to this, though, and it will almost assuredly be part of a separate repo.
 - A library for making use of the ```FSSerializer``` plugin which allows for encryption/decryption of stored documents. I'm not sure exactly when I'll be able to get to this, but it will allow you to partially encrypt your database as opposed to using a tool like SQL Cipher.
 
 ## Revisions
+
+## 0.10.0
+- You can now narrow down the columns returned by any query by calling the ```Finder``` methods ```columns(String...)``` or ```distinct(String...)```. Calling ```distinct(String...)``` will query for distinct values. Note that if you call either of these methods, then your table API will contain methods that are invalid for the ```Retriever``` that gets returned when you call the ```Resolver.get()``` method.
 
 ## 0.9.5
 - varargs argument when you want to query for different exact values of the same column. Previously, you had to store an intermediate reference to a Finder class, which, based upon the way resolvers nest, could be really difficult to find the correct type to reference.
