@@ -2,15 +2,10 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
-import com.fsryan.forsuredb.api.DocStoreResolver;
-import com.fsryan.forsuredb.api.Retriever;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.FSJoin;
-import com.fsryan.forsuredb.api.FSProjection;
-import com.fsryan.forsuredb.api.ForSureInfoFactory;
-import com.fsryan.forsuredb.api.Resolver;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -107,6 +102,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     }
 
     private TypeSpec createJoinResolverClass(TableInfo referencedTable, ColumnInfo referencedColumn) {
+        String innerClassName = CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true);
         JavadocInfo jd = JavadocInfo.builder()
                 .startParagraph()
                 .addLine("Changes contexts from the $L table's Resolver context to the $L table's Resolver context", table.getTableName(), referencedTable.getTableName())
@@ -114,7 +110,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .endParagraph()
                 .addLine()
                 .build();
-        TypeSpec.Builder joinClassBuilder = TypeSpec.classBuilder(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true))
+        return TypeSpec.classBuilder(innerClassName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addTypeVariable(TypeVariableName.get("T", generatedClassName))
@@ -150,10 +146,9 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PROTECTED)
                         .addParameter(FSJoin.class, "join")
-                        .addParameter(FSProjection.class, "foreignTableProjection")
-                        .addStatement("$N.addJoin($N, $N)", "parent", "join", "foreignTableProjection")
-                        .build());
-        return joinClassBuilder.build();
+                        .addStatement("$N.addJoin($N)", "parent", "join")
+                        .build())
+                .build();
     }
 
     private boolean hasJoins() {
@@ -232,6 +227,12 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addModifiers(Modifier.PUBLIC)
                         .returns(String[].class)
                         .addStatement("return columns")
+                        .build())
+                .addMethod(MethodSpec.methodBuilder("isDistinct")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(boolean.class)
+                        .addStatement("return false")
                         .build())
                 .build();
     }
@@ -315,14 +316,12 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private CodeBlock createJoinSpec(String parentTableName, String parentColumnName, String childTableName, String childColumnName, String apiClassSimpleName) {
         return CodeBlock.builder()
-                .addStatement("addJoin(new $T($N, $S, $S, $S, $S), $L.$N)", FSJoin.class,
+                .addStatement("addJoin(new $T($N, $S, $S, $S, $S))", FSJoin.class,
                         "type",
                         parentTableName,
                         parentColumnName,
                         childTableName,
-                        childColumnName,
-                        apiClassSimpleName + "Resolver",
-                        "PROJECTION")
+                        childColumnName)
                 .build();
     }
 

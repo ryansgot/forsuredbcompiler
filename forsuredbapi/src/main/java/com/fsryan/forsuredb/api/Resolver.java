@@ -79,6 +79,7 @@ import java.util.List;
 public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
     protected final ForSureInfoFactory<U, R> infoFactory;
+
     private final List<FSJoin> joins = new ArrayList<>();
     private final List<FSProjection> projections = new ArrayList<>();
     private boolean addedThisProjection = false;
@@ -100,6 +101,10 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         }
         parent.finder = parent.finder == null ? parent.newFinderInstance() : parent.finder;
         parent.finder.incorporate(child.finder);
+
+        // If the child also had projections (via a joinResolvers call) then they need to be included as well
+        parent.projections.add(child.finder == null ? child.projection() : child.finder.projection());
+        parent.projections.addAll(child.projections);
     }
 
     public final G getApi() {
@@ -113,10 +118,10 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         try {
             return preserveQueryStateAndGet();
         } finally {
-            orderBy = null; // <-- When a finder's get method is called, avoid leaking into the next query
-            finder = null;  // <-- When a finder's get method is called, avoid leaking into the next query
-            joins.clear();  // <-- the state of the joins must be empty at the start of each query
-            projections.clear();    // <-- the state of the projections must be empty at the start of each query
+            orderBy = null;             // <-- When a finder's get method is called, avoid leaking into the next query
+            finder = null;              // <-- When a finder's get method is called, avoid leaking into the next query
+            joins.clear();              // <-- the state of the joins must be empty at the start of each query
+            projections.clear();        // <-- the state of the projections must be empty at the start of each query
             lookupResource = tableLocator();
             addedThisProjection = false;
         }
@@ -127,7 +132,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         if (!addedThisProjection) {
-            projections.add(projection());
+            projections.add(finder == null ? projection() : finder.projection());
             addedThisProjection = true;
         }
         return joins.size() == 0 ? queryable.query(projection(), selection, orderByString)
@@ -178,8 +183,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     protected abstract F newFinderInstance();
     protected abstract O newOrderByInstance();
 
-    protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
-        projections.add(foreignTableProjection);
+    protected void addJoin(FSJoin join) {
         joins.add(join);
         lookupResource = infoFactory.locatorWithJoins(lookupResource, joins);
     }
