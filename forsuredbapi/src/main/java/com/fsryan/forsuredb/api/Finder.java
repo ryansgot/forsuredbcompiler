@@ -18,17 +18,47 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+/**
+ * <p>
+ *     Finder provides a rich, type-safe, custom querying API for querying
+ *     your database. It is rich in that you can create many different kinds
+ *     of queries using the fluent API it provides. It is custom in that all
+ *     concrete extensions of the Finder class have custom methods generated
+ *     specifically for querying a table you have defined your extension of
+ *     {@link FSGetApi}.
+ * </p>
+ * <p>
+ *     Think of this class as a means of narrowing the amount of records
+ *     returned by a query and the width of each record returned. The
+ *     {@link #columns(String...)} and {@link #distinct(String...)} methods
+ *     serve to narrow the width of each record returned (that is--the number
+ *     of columns), and the various by... methods such as {@link #byId(long, long...)}
+ *     serve to filter the returned records by the values of the columns.
+ * </p>
+ * @param <R> The type of {@link Resolver} to return when leaving the Finder context
+ * @param <F> The Finder type to appropriately continue modifying the query when the
+ *           API requires a {@link Between} or a {@link Conjunction.And} or
+ *           {@link Conjunction.AndOr} in order to continue querying.
+ */
 public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
+    /**
+     * <p>
+     *     The type to allow for filtering on columns with values between
+     *     two values.
+     * </p>
+     * @param <R> The type of {@link Resolver} to return when leaving the Finder
+     *           context
+     * @param <F> The Finder type to appropriately continue modifying the query
+     *           when the API requires a {@link Between} or a
+     *           {@link Conjunction.And} or {@link Conjunction.AndOr} in order
+     *           to continue querying.
+     */
     public interface Between<R extends Resolver, F extends Finder<R, F>> {
         <T> Conjunction.AndOr<R, F> and(T high);
         <T> Conjunction.AndOr<R, F> andInclusive(T high);
@@ -44,12 +74,26 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
     protected final String tableName;
     protected final Conjunction.AndOr<R, F> conjunction;
+    private final Set<String> columns = new HashSet<>();
+    private final FSProjection defaultProjection;
+    private final Set<String> possibleColumns;
     private final StringBuffer whereBuf = new StringBuffer();
     private final List<String> replacementsList = new ArrayList<>();
+    private boolean queryDistinct = false;
+
     private boolean incorporatedExternalFinder = false;
 
+    /**
+     * <p>
+     *     Creates a {@link Finder} that is purpose-built for the table described by the {@link Resolver}
+     *     passed in as an argument to this constructor
+     * </p>
+     * @param resolver The resolver to return when you leave the Finder context of the method call chain
+     */
     public Finder(final R resolver) {
         this.tableName = resolver.tableName();
+        defaultProjection = resolver.projection();
+        possibleColumns = (Set<String>) resolver.columnNameToMethodNameBiMap().keySet();
         conjunction = new Conjunction.AndOr<R, F>() {
             @Override
             public R then() {
@@ -76,6 +120,91 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         };
     }
 
+    /**
+     * <p>
+     *     Specify the exact subset of columns to return on the query. You shouldn't often need to do this if your
+     *     tables have a reasonable number of columns.
+     * </p>
+     * <p>
+     *     Note that calling this method will result in overwriting the columns in any previous calls to
+     *     {@link #distinct(String...)} on this {@link Finder}. The reason for this is that a projection cannot be both
+     *     DISTINCT and non DISTINCT.
+     * </p>
+     * <p>
+     *     Does nothing if you pass in no arguments or if you pass in no arguments that match column names of this
+     *     finder's table.
+     * </p>
+     * @param projection the case-sensitive names of the columns to return
+     * @return this {@link Finder} instance
+     * @see #distinct(String...)
+     */
+    public F columns(String... projection) {
+        project(false, projection);
+        return (F) this;
+    }
+
+    /**
+     * <p>
+     *     Specify that the query should be for distinct values.
+     * </p>
+     * <p>
+     *     Note that calling this method will result in overwriting the columns in any previous calls to
+     *     {@link #columns(String...)} on this {@link Finder}. The reason for this is that a projection cannot be both
+     *     DISTINCT and non DISTINCT.
+     * </p>
+     * <p>
+     *     Does nothing if you pass in no arguments or if you pass in no arguments that match column names of this
+     *     finder's table.
+     * </p>
+     * @param distinctProjection the case-sensitive names of the columns to return
+     * @return this {@link Finder} instance
+     */
+    public F distinct(String... distinctProjection) {
+        project(true, distinctProjection);
+        return (F) this;
+    }
+
+    /**
+     * @return true if this {@link Finder} is filtering any results--false otherwise
+     */
+    public boolean isFilteringResultSet() {
+        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0);
+    }
+
+    /**
+     * @return true if this {@link Finder} is applying some filtering to the columns that appear in the results--
+     * false otherwise
+     */
+    public boolean containsNonDefaultProjection() {
+        return !columns.isEmpty();
+    }
+
+    /**
+     * @return the {@link FSProjection} built by this finder if any was built--a non-distinct projection with all
+     * columns otherwise
+     */
+    public final FSProjection projection() {
+        return !containsNonDefaultProjection() ? defaultProjection : new FSProjection() {
+            @Override
+            public String tableName() {
+                return tableName;
+            }
+
+            @Override
+            public String[] columns() {
+                return columns.toArray(new String[columns.size()]);
+            }
+
+            @Override
+            public boolean isDistinct() {
+                return queryDistinct;
+            }
+        };
+    }
+
+    /**
+     * @return the {@link FSSelection} built by this finder
+     */
     public final FSSelection selection() {
         return new FSSelection() {
             String where = whereBuf.toString();
@@ -482,12 +611,15 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         whereBuf.append(")");
     }
 
-    protected final void incorporate(Finder finder) {
-        if (finder == null
-                || finder.replacementsList == null
-                || finder.replacementsList.isEmpty()
-                || finder.whereBuf == null
-                || finder.whereBuf.length() == 0) {
+    /**
+     * <p>
+     *     Binds the {@link Finder} class and {@link Resolver} class together so that they must be in
+     *     the same package. I'm a little disappointed about this.
+     * </p>
+     * @param finder the child {@link Finder} to subsume within this one
+     */
+    /*package*/ final void incorporate(Finder finder) {
+        if (finder == null || !finder.isFilteringResultSet()) {
             return;
         }
 
@@ -533,5 +665,22 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
     private boolean canAddClause(String column, Object value) {
         return !isNullOrEmpty(column) && value != null && !value.toString().isEmpty();
+    }
+
+    private void project(boolean distinct, String... projection) {
+        if (projection == null || projection.length == 0) {
+            return;
+        }
+        columns.clear();
+        for (int i = 0; i < projection.length; i++) {
+            final String column = projection[i];
+            if (isNullOrEmpty(column) || !possibleColumns.contains(column)) {
+                continue;
+            }
+            columns.add(column);
+        }
+        // It is possible that none of the columns could be valid for this table. In that case, we want to revert to
+        // the default projection
+        queryDistinct = distinct && !columns.isEmpty();
     }
 }
