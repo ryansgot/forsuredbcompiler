@@ -48,6 +48,11 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
         public String[] columns() {
             return columns;
         }
+
+        @Override
+        public boolean isDistinct() {
+            return false;
+        }
     };
 
     private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
@@ -77,7 +82,7 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
      * </p>
      */
     public JoinTestTable2<T> joinTestTable2(final FSJoin.Type type) {
-        addJoin(new FSJoin(type, "test_table_3", "_id", "test_table_2", "test_table_3_id"), TestTable2Resolver.PROJECTION);
+        addJoin(new FSJoin(type, "test_table_3", "_id", "test_table_2", "test_table_3_id"));
         return new JoinTestTable2(infoFactory, this);
     }
 
@@ -147,8 +152,8 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
         }
 
         @Override
-        protected void addJoin(FSJoin join, FSProjection foreignTableProjection) {
-            parent.addJoin(join, foreignTableProjection);
+        protected void addJoin(FSJoin join) {
+            parent.addJoin(join);
         }
     }
 }
