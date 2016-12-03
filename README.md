@@ -150,17 +150,17 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 
 ## Revisions
 
-## 0.10.0
+### 0.10.0
 - You can now narrow down the columns returned by any query by calling the ```Finder``` methods ```columns(String...)``` or ```distinct(String...)```. Calling ```distinct(String...)``` will query for distinct values. Note that if you call either of these methods, then your table API will contain methods that are invalid for the ```Retriever``` that gets returned when you call the ```Resolver.get()``` method.
 
-## 0.9.5
+### 0.9.5
 - varargs argument when you want to query for different exact values of the same column. Previously, you had to store an intermediate reference to a Finder class, which, based upon the way resolvers nest, could be really difficult to find the correct type to reference.
 - You can now pass multiple values to exact match methods in the case where you want to create something like:
 ```sql
 SELECT * FROM table1 JOIN table2 ON table1._id = table2.table1_id WHERE (table1.column = 1 OR table1.column = 10 OR table1.column = 100) AND (table2.column = 2 OR table2.column = 20 OR table2.column = 200);
 ```
 
-## 0.9.4
+### 0.9.4
 - more efficient Resolver class generation
 - breaks API for your platform's use because the FSJoin class has changed.
 
