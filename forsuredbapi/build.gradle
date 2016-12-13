@@ -78,7 +78,7 @@ bintray {
             name = '0.10.1'
             desc = 'Classes necessary for integration with forsuredb'
             released  = new Date()
-            vcsTag = 'v0.10.1'
+            vcsTag = 'forsuredbapi-v0.10.1'
         }
     }
 }
