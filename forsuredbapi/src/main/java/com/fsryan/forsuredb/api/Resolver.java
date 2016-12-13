@@ -135,7 +135,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
             projections.add(finder == null ? projection() : finder.projection());
             addedThisProjection = true;
         }
-        return joins.size() == 0 ? queryable.query(projection(), selection, orderByString)
+        return joins.size() == 0 ? queryable.query(projections.get(0), selection, orderByString)
                 : queryable.query(joins, projections, selection, orderByString);
     }
 
