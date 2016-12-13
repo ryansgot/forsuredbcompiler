@@ -45,9 +45,9 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.10.0'          // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.10.1'          // common API for your code and the supporting libraries
     compile 'com.fsryan.forsuredb:sqlitelib:0.4.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.10.0@aar'  // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.10.1@aar'  // the Android integration and useful tools
 
     provided 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'    // these classes are not needed at runtime--they do code generation
     apt 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'         // runs the forsuredb annotation processor at compile time
@@ -149,6 +149,9 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - A library for making use of the ```FSSerializer``` plugin which allows for encryption/decryption of stored documents. I'm not sure exactly when I'll be able to get to this, but it will allow you to partially encrypt your database as opposed to using a tool like SQL Cipher.
 
 ## Revisions
+
+### forsuredbapi-0.10.1
+- Fix issue wherein you had to join to another table in order to do a DISTINCT projection.
 
 ### 0.10.0
 - You can now narrow down the columns returned by any query by calling the ```Finder``` methods ```columns(String...)``` or ```distinct(String...)```. Calling ```distinct(String...)``` will query for distinct values. Note that if you call either of these methods, then your table API will contain methods that are invalid for the ```Retriever``` that gets returned when you call the ```Resolver.get()``` method.
