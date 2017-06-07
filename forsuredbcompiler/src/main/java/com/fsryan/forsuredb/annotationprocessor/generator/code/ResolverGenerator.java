@@ -11,10 +11,7 @@ import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResolverGenerator extends JavaSourceGenerator {
 
@@ -239,9 +236,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
     }
 
     private void columnNameToMethodNameMapField(TypeSpec.Builder codeBuilder) {
-        TypeName mapStringStringType = ParameterizedTypeName.get(Map.class, String.class, String.class);
-        codeBuilder.addField(FieldSpec.builder(mapStringStringType, methodNameToColumnNameMapName)
-                .initializer("new $T()", mapStringStringType)
+        codeBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), methodNameToColumnNameMapName)
+                .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                 .build());
 
