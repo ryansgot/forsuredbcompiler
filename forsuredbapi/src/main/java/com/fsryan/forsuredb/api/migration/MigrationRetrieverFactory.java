@@ -18,9 +18,8 @@
 package com.fsryan.forsuredb.api.migration;
 
 import com.fsryan.forsuredb.api.FSLogger;
-import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import java.io.File;
@@ -56,10 +55,12 @@ public class MigrationRetrieverFactory {
 
             @Override
             public List<MigrationSet> getMigrationSets() {
+                List<MigrationSet> ret = new ArrayList<>(1);
                 if (migrationSet == null) {
                     migrationSet = createMigrationSet();
                 }
-                return Lists.newArrayList(migrationSet);
+                ret.add(migrationSet);
+                return ret;
             }
 
             @Override

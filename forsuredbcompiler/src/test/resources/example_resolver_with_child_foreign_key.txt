@@ -7,11 +7,10 @@ import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
+import java.util.Map;
 
 /**
  * <p>
@@ -55,24 +54,26 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
         }
     };
 
-    private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
-            .put("_id", "id")
-            .put("app_rating", "appRating")
-            .put("competitor_app_rating", "competitorAppRating")
-            .put("created", "created")
-            .put("deleted", "deleted")
-            .put("global_id", "globalId")
-            .put("login_count", "loginCount")
-            .put("modified", "modified")
-            .build();
+    private static final Map<String, String> methodNameToColumnNameMap = new Map<String, String>();
+
+    static {
+        methodNameToColumnNameMap.put("id", "_id");
+        methodNameToColumnNameMap.put("appRating", "app_rating");
+        methodNameToColumnNameMap.put("competitorAppRating", "competitor_app_rating");
+        methodNameToColumnNameMap.put("created", "created");
+        methodNameToColumnNameMap.put("deleted", "deleted");
+        methodNameToColumnNameMap.put("globalId", "global_id");
+        methodNameToColumnNameMap.put("loginCount", "login_count");
+        methodNameToColumnNameMap.put("modified", "modified");
+    }
 
     public TestTable3Resolver(ForSureInfoFactory infoFactory) {
         super(infoFactory);
     }
 
     @Override
-    public BiMap<String, String> columnNameToMethodNameBiMap() {
-        return COLUMN_TO_METHOD_NAME_BI_MAP;
+    public Map<String, String> methodNameToColumnNameMap() {
+        return methodNameToColumnNameMap;
     }
 
     /**

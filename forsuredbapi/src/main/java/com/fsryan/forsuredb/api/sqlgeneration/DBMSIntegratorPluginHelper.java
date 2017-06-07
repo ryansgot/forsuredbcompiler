@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
 import com.fsryan.forsuredb.api.PluginHelper;
-import com.google.common.annotations.VisibleForTesting;
 
 /*package*/ class DBMSIntegratorPluginHelper extends PluginHelper<DBMSIntegrator> {
 
@@ -11,7 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
         this(DBMS_INTEGRATOR_CLASS);
     }
 
-    @VisibleForTesting
+    // visible for testing
     /*package*/ DBMSIntegratorPluginHelper(String dbmsIntegratorClass) {
         super(DBMSIntegrator.class, dbmsIntegratorClass);
     }

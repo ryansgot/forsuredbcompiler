@@ -19,8 +19,6 @@ package com.fsryan.forsuredb.api.staticdata;
 
 import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.RecordContainer;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +32,8 @@ import java.util.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import static com.fsryan.forsuredb.api.CollectionUtil.arrayListOf;
+import static com.fsryan.forsuredb.api.CollectionUtil.mapOf;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -77,11 +77,10 @@ public class ParseHandlerTest {
                                           .append("</static_data>")
                                           .toString(),
                         "user",
-                        Lists.newArrayList(new ImmutableMap.Builder<String, String>().put("global_id", "1")
-                                                                                     .put("login_count", "2")
-                                                                                     .put("app_rating", "4.3")
-                                                                                     .put("competitor_app_rating", "3.5")
-                                                                                     .build())
+                        arrayListOf(mapOf("global_id", "1",
+                                                 "login_count", "2",
+                                                 "app_rating", "4.3",
+                                                 "competitor_app_rating", "3.5"))
                 },
                 // wrong record name (users instead of user)
                 {
@@ -90,7 +89,7 @@ public class ParseHandlerTest {
                                           .append("</static_data>")
                                           .toString(),
                         "users",
-                        Lists.newArrayList()
+                        Collections.<Map<String, String>>emptyList()
                 },
                 // multiple records
                 {
@@ -100,19 +99,19 @@ public class ParseHandlerTest {
                                           .append("</static_data>")
                                           .toString(),
                         "user",
-                        Lists.newArrayList(new ImmutableMap.Builder<String, String>().put("global_id", "1")
-                                                                                     .put("login_count", "2")
-                                                                                     .put("app_rating", "4.3")
-                                                                                     .put("competitor_app_rating", "3.5")
-                                                                                     .build(),
-                                           new ImmutableMap.Builder<String, String>().put("global_id", "2")
-                                                                                     .put("login_count", "3")
-                                                                                     .put("app_rating", "5.4")
-                                                                                     .put("competitor_app_rating", "4.6")
-                                                                                     .build())
+                        arrayListOf(mapOf("global_id", "1",
+                                          "login_count", "2",
+                                          "app_rating", "4.3",
+                                          "competitor_app_rating", "3.5"),
+                                    mapOf("global_id", "2",
+                                          "login_count", "3",
+                                          "app_rating", "5.4",
+                                          "competitor_app_rating", "4.6"))
                 },
         });
     }
+
+
 
     @Before
     public void setUp() throws Exception {

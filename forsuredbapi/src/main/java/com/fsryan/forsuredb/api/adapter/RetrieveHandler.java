@@ -11,8 +11,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 /*package*/ abstract class RetrieveHandler implements InvocationHandler {
 
     private static final Map<String, Map<Method, String>> methodToColumnNameMapCache = new HashMap<>();
@@ -105,7 +103,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
         Map<Method, String> ret = new HashMap<>();
         for (Method m : tableApi.getDeclaredMethods()) {
             String columnName = methodNameToColumnNameMap.get(m.getName());
-            if (isNullOrEmpty(columnName)) {
+            if (columnName == null || columnName.isEmpty()) {
                 continue;
             }
             ret.put(m, Sql.generator().unambiguousRetrievalColumn(tableName, columnName));

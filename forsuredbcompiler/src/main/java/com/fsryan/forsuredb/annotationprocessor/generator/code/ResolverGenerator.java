@@ -7,8 +7,6 @@ import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,8 +14,11 @@ import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class ResolverGenerator extends JavaSourceGenerator {
+
+    private static final String methodNameToColumnNameMapName = "methodNameToColumnNameMap";
 
     private final TableInfo table;
     private final TableContext targetContext;
@@ -65,7 +66,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
-        addColumnMethodNameMapMethod(codeBuilder);
+        adMethodNameToColumnNameMapMethod(codeBuilder);
         addJoinMethods(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
@@ -155,12 +156,12 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return table.referencesOtherTable() || !parentJoins.isEmpty();
     }
 
-    private void addColumnMethodNameMapMethod(TypeSpec.Builder codeBuilder) {
-        codeBuilder.addMethod(MethodSpec.methodBuilder("columnNameToMethodNameBiMap")
+    private void adMethodNameToColumnNameMapMethod(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("methodNameToColumnNameMap")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .returns(ParameterizedTypeName.get(BiMap.class, String.class, String.class))
-                .addStatement("return $L", "COLUMN_TO_METHOD_NAME_BI_MAP")
+                .returns(ParameterizedTypeName.get(Map.class, String.class, String.class))
+                .addStatement("return $N", methodNameToColumnNameMapName)
                 .build());
     }
 
@@ -202,7 +203,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                                 .add("$L", anonymousFSProjection())
                                 .build())
                         .build());
-        codeBuilder.addField(columnNameToMethodNameMapField());
+        columnNameToMethodNameMapField(codeBuilder);
     }
 
     private String[] orderedColumnNames() {
@@ -237,16 +238,18 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .build();
     }
 
-    private FieldSpec columnNameToMethodNameMapField() {
-        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder()
-                .add("new $T()", ParameterizedTypeName.get(ImmutableBiMap.Builder.class, String.class, String.class));
+    private void columnNameToMethodNameMapField(TypeSpec.Builder codeBuilder) {
+        TypeName mapStringStringType = ParameterizedTypeName.get(Map.class, String.class, String.class);
+        codeBuilder.addField(FieldSpec.builder(mapStringStringType, methodNameToColumnNameMapName)
+                .initializer("new $T()", mapStringStringType)
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                .build());
+
+        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder();
         for (ColumnInfo column : columnsSortedByName) {
-            mapBlockBuilder.add("$L($S, $S)", "\n        .put", column.getColumnName(), column.getMethodName());
+            mapBlockBuilder.addStatement("$N.put($S, $S)", methodNameToColumnNameMapName, column.getMethodName(), column.getColumnName());
         }
-        mapBlockBuilder.add("\n        .build()");
-        return FieldSpec.builder(ParameterizedTypeName.get(ImmutableBiMap.class, String.class, String.class), "COLUMN_TO_METHOD_NAME_BI_MAP", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
-                .initializer(mapBlockBuilder.build())
-                .build();
+        codeBuilder.addStaticBlock(mapBlockBuilder.build());
     }
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {

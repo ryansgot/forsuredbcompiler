@@ -19,10 +19,10 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.adapter.FSGetAdapter;
 import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
-import com.google.common.collect.BiMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -175,7 +175,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
 
     // the following methods fill in the details for the Resolver class
 
-    public abstract BiMap<String, String> columnNameToMethodNameBiMap();
+    public abstract Map<String, String> methodNameToColumnNameMap();
     public abstract Class<G> getApiClass();
     public abstract Class<S> setApiClass();
     public abstract FSProjection projection();

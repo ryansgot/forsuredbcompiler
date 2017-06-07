@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 public abstract class PluginHelper<I> {
 
     private final String className;
@@ -18,7 +16,7 @@ public abstract class PluginHelper<I> {
     }
 
     public I getNew() {
-        if (isNullOrEmpty(className)) {
+        if (className == null || className.isEmpty()) {
             return defaultImplementation();
         }
         try {

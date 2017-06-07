@@ -19,9 +19,11 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
-import java.util.*;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Date;
 
 /**
  * <p>
@@ -93,7 +95,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public Finder(final R resolver) {
         this.tableName = resolver.tableName();
         defaultProjection = resolver.projection();
-        possibleColumns = (Set<String>) resolver.columnNameToMethodNameBiMap().keySet();
+        possibleColumns = (Set<String>) resolver.methodNameToColumnNameMap().keySet();
         conjunction = new Conjunction.AndOr<R, F>() {
             @Override
             public R then() {
@@ -664,7 +666,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     private boolean canAddClause(String column, Object value) {
-        return !isNullOrEmpty(column) && value != null && !value.toString().isEmpty();
+        return column != null && !column.isEmpty() && value != null && !value.toString().isEmpty();
     }
 
     private void project(boolean distinct, String... projection) {
@@ -674,7 +676,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         columns.clear();
         for (int i = 0; i < projection.length; i++) {
             final String column = projection[i];
-            if (isNullOrEmpty(column) || !possibleColumns.contains(column)) {
+            if (column != null && !column.isEmpty() || !possibleColumns.contains(column)) {
                 continue;
             }
             columns.add(column);

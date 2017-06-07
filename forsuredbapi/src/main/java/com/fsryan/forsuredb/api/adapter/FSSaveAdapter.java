@@ -89,13 +89,12 @@ public class FSSaveAdapter {
         Map<Method, ColumnDescriptor> retMap = new HashMap<>();
         // This means there can be no overloading of methods in Setter interfaces. That is fine because
         // Setter methods must take one and only one argument.
-        Map<String, String> methodNameToColumnNameMap = resolver.columnNameToMethodNameBiMap().inverse();
-        if (methodNameToColumnNameMap == null) {
+        if (resolver.methodNameToColumnNameMap() == null) {
             return retMap;
         }
 
         for (Method m : resolver.setApiClass().getDeclaredMethods()) {
-            String columnName = methodNameToColumnNameMap.get(m.getName());
+            String columnName = resolver.methodNameToColumnNameMap().get(m.getName());
             if (columnName == null) {
                 continue;
             }
