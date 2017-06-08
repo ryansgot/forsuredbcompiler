@@ -34,7 +34,7 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
     description = 'Generate Jacoco coverage reports after running tests.'
 
     executionData = files('build/jacoco/test.exec')
-    sourceDirectories = files('/src/main/java')
+    sourceDirectories = files('src/main/java')
     classDirectories = fileTree(
             dir: 'build/classes',
             excludes: [
@@ -77,7 +77,7 @@ bintray {
             name = '0.11.0'
             desc = 'Classes necessary for integration with forsuredb'
             released  = new Date()
-            vcsTag = 'forsuredbapi-v0.11.0'
+            vcsTag = 'v0.11.0'
         }
     }
 }
