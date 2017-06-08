@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.PluginHelper;
-import com.google.common.annotations.VisibleForTesting;
 
 /*package*/ class FSSerializerFactoryPluginHelper extends PluginHelper<FSSerializerFactory> {
 
@@ -11,7 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
         this(FACTORY_CLASS);
     }
 
-    @VisibleForTesting
+    // visible for testing
     /*package*/ FSSerializerFactoryPluginHelper(String fsSerializerFactoryClass) {
         super(FSSerializerFactory.class, fsSerializerFactoryClass);
     }

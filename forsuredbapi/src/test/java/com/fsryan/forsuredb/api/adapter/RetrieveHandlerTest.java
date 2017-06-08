@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
 
-import static com.fsryan.forsuredb.api.adapter.SharedData.COLUMN_NAME_TO_METHOD_NAME_BI_MAP;
+import static com.fsryan.forsuredb.api.adapter.SharedData.METHOD_NAME_TO_COLUMN_NAME_MAP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +55,7 @@ public abstract class RetrieveHandlerTest<U> {
 
         @Test
         public void shouldSelectCorrectSubclass() {
-            RetrieveHandler rhut = RetrieveHandler.getFor(fsGetApiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse());
+            RetrieveHandler rhut = RetrieveHandler.getFor(fsGetApiClass, tableName, METHOD_NAME_TO_COLUMN_NAME_MAP);
             assertEquals(expectedRetrieveHandlerClass, rhut.getClass());
         }
     }
@@ -74,7 +74,7 @@ public abstract class RetrieveHandlerTest<U> {
         @Override
         public void setUp() {
             super.setUp();
-            rhut = RetrieveHandler.getFor(apiClass, tableName, COLUMN_NAME_TO_METHOD_NAME_BI_MAP.inverse());
+            rhut = RetrieveHandler.getFor(apiClass, tableName, METHOD_NAME_TO_COLUMN_NAME_MAP);
         }
 
         @Test

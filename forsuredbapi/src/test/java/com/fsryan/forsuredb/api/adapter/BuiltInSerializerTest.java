@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 // TODO: more rigorous testing--perhaps using ParametrizedRunner
 

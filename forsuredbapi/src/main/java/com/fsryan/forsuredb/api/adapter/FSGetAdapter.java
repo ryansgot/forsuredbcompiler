@@ -78,7 +78,7 @@ public class FSGetAdapter {
     private static <G extends FSGetApi> RetrieveHandler getHandlerFor(Resolver<?, ?, ?, G, ?, ?, ?> resolver) {
         RetrieveHandler h = unambiguousHandlerMap.get(resolver.getApiClass());
         if (h == null) {
-            h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.columnNameToMethodNameBiMap().inverse());
+            h = RetrieveHandler.getFor(resolver.getApiClass(), resolver.tableName(), resolver.methodNameToColumnNameMap());
             unambiguousHandlerMap.put(resolver.getApiClass(), h);
         }
         return h;

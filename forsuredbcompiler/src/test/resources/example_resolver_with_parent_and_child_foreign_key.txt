@@ -7,11 +7,11 @@ import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -55,21 +55,23 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
         }
     };
 
-    private static final ImmutableBiMap<String, String> COLUMN_TO_METHOD_NAME_BI_MAP = new ImmutableBiMap.Builder<String, String>()
-            .put("_id", "id")
-            .put("created", "created")
-            .put("deleted", "deleted")
-            .put("modified", "modified")
-            .put("test_table_3_id", "testTable3Id")
-            .build();
+    private static final Map<String, String> methodNameToColumnNameMap = new HashMap<String, String>();
+
+    static {
+        methodNameToColumnNameMap.put("id", "_id");
+        methodNameToColumnNameMap.put("created", "created");
+        methodNameToColumnNameMap.put("deleted", "deleted");
+        methodNameToColumnNameMap.put("modified", "modified");
+        methodNameToColumnNameMap.put("testTable3Id", "test_table_3_id");
+    }
 
     public TestTable2Resolver(ForSureInfoFactory infoFactory) {
         super(infoFactory);
     }
 
     @Override
-    public BiMap<String, String> columnNameToMethodNameBiMap() {
-        return COLUMN_TO_METHOD_NAME_BI_MAP;
+    public Map<String, String> methodNameToColumnNameMap() {
+        return methodNameToColumnNameMap;
     }
 
     /**

@@ -17,12 +17,17 @@
  */
 package com.fsryan.forsuredb.api.info;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.*;
-
 import lombok.Getter;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -48,46 +53,48 @@ public class TableInfo {
      *     <li>deleted: an integer (either 0 or 1) describing whether the record is deleted</li>
      * </ul>
      */
-    public static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new ImmutableMap.Builder<String, ColumnInfo>()
-            .put("_id", ColumnInfo.builder().columnName("_id")
-                    .methodName("id")
-                    .primaryKey(true)
-                    .qualifiedType("long")
-                    .build())
-            .put("created", ColumnInfo.builder().columnName("created")
-                    .methodName("created")
-                    .qualifiedType(Date.class.getName())
-                    .defaultValue("CURRENT_TIMESTAMP")
-                    .build())
-            .put("modified", ColumnInfo.builder().columnName("modified")
-                    .methodName("modified")
-                    .qualifiedType(Date.class.getName())
-                    .defaultValue("CURRENT_TIMESTAMP")
-                    .build())
-            .put("deleted", ColumnInfo.builder().columnName("deleted")
-                    .methodName("deleted")
-                    .qualifiedType("boolean")
-                    .defaultValue("0")
-                    .build())
-            .build();
+    public static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new HashMap<>();
+    static {
+        DEFAULT_COLUMNS.put("_id", ColumnInfo.builder().columnName("_id")
+                .methodName("id")
+                .primaryKey(true)
+                .qualifiedType("long")
+                .build());
+        DEFAULT_COLUMNS.put("created", ColumnInfo.builder().columnName("created")
+                .methodName("created")
+                .qualifiedType(Date.class.getName())
+                .defaultValue("CURRENT_TIMESTAMP")
+                .build());
+        DEFAULT_COLUMNS.put("modified", ColumnInfo.builder().columnName("modified")
+                .methodName("modified")
+                .qualifiedType(Date.class.getName())
+                .defaultValue("CURRENT_TIMESTAMP")
+                .build());
+        DEFAULT_COLUMNS.put("deleted", ColumnInfo.builder().columnName("deleted")
+                .methodName("deleted")
+                .qualifiedType("boolean")
+                .defaultValue("0")
+                .build());
+    }
 
-    public static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new ImmutableMap.Builder<String, ColumnInfo>()
-            .put("class_name", ColumnInfo.builder()
-                    .methodName("className")
-                    .qualifiedType(String.class.getName())
-                    .columnName("class_name")
-                    .build())
-            .put("doc", ColumnInfo.builder()
-                    .methodName("doc")
-                    .qualifiedType(String.class.getName())
-                    .columnName("doc")
-                    .build())
-            .put("blob_doc", ColumnInfo.builder()
-                    .methodName("blobDoc")
-                    .qualifiedType(byte[].class.getCanonicalName())
-                    .columnName("blob_doc")
-                    .build())
-            .build();
+    public static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new HashMap<>();
+    static {
+        DOC_STORE_COLUMNS.put("class_name", ColumnInfo.builder()
+                .methodName("className")
+                .qualifiedType(String.class.getName())
+                .columnName("class_name")
+                .build());
+        DOC_STORE_COLUMNS.put("doc", ColumnInfo.builder()
+                .methodName("doc")
+                .qualifiedType(String.class.getName())
+                .columnName("doc")
+                .build());
+        DOC_STORE_COLUMNS.put("blob_doc", ColumnInfo.builder()
+                .methodName("blobDoc")
+                .qualifiedType(byte[].class.getCanonicalName())
+                .columnName("blob_doc")
+                .build());
+    }
 
     @Getter @SerializedName("column_info_map") private final Map<String, ColumnInfo> columnMap;
     @Getter @SerializedName("table_name") private final String tableName;
@@ -164,7 +171,7 @@ public class TableInfo {
     }
 
     public List<ColumnInfo> getForeignKeyColumns() {
-        List<ColumnInfo> retList = new LinkedList<>();
+        List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
             if (column.isForeignKey()) {
                 retList.add(column);
@@ -175,7 +182,7 @@ public class TableInfo {
     }
 
     public List<ColumnInfo> getNonForeignKeyColumns() {
-        List<ColumnInfo> retList = new LinkedList<>();
+        List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
             if (!column.isForeignKey()) {
                 retList.add(column);

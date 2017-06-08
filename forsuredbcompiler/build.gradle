@@ -9,7 +9,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: "jacoco"
 
 group = 'com.fsryan.forsuredb'
-version = '0.10.0'
+version = '0.11.0'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
@@ -52,7 +52,7 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
     description = 'Generate Jacoco coverage reports after running tests.'
 
     executionData = files('build/jacoco/test.exec')
-    sourceDirectories = files('/src/main/java')
+    sourceDirectories = files('src/main/java')
     classDirectories = fileTree(
             dir: 'build/classes',
             excludes: [
@@ -84,10 +84,10 @@ bintray {
         vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
         publicDownloadNumbers = true
         version {
-            name = '0.10.0'
+            name = '0.11.0'
             desc = 'Guts of the ForSureDB project, containing code to generate source and assets'
             released  = new Date()
-            vcsTag = 'v0.10.0'
+            vcsTag = 'v0.11.0'
         }
     }
 }
@@ -98,7 +98,7 @@ publishing {
             from components.java
             groupId = 'com.fsryan.forsuredb'
             artifactId = 'forsuredbcompiler'
-            version = '0.10.0'
+            version = '0.11.0'
 
             Artifact sourcesJar
             Artifact javadocJar
