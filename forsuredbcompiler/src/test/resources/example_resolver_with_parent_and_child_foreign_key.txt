@@ -10,6 +10,7 @@ import com.fsryan.forsuredb.api.TypedRecordContainer;
 import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -54,7 +55,7 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
         }
     };
 
-    private static final Map<String, String> methodNameToColumnNameMap = new Map<String, String>();
+    private static final Map<String, String> methodNameToColumnNameMap = new HashMap<String, String>();
 
     static {
         methodNameToColumnNameMap.put("id", "_id");
