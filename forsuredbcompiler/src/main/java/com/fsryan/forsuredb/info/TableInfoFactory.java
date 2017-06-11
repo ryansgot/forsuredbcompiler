@@ -3,9 +3,11 @@ package com.fsryan.forsuredb.info;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotations.FSStaticData;
 import com.fsryan.forsuredb.annotations.FSTable;
+import com.fsryan.forsuredb.annotations.PrimaryKey;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
+import com.google.common.collect.Sets;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -15,6 +17,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TableInfoFactory {
 
@@ -44,6 +47,8 @@ public class TableInfoFactory {
                 .staticDataAsset(createStaticDataAsset(intf))
                 .staticDataRecordName(createStaticDataRecordName(intf))
                 .docStoreParameterization(docStoreParameterization)
+                .primaryKey(primaryKeyFrom(intf))
+                .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
                 .build();
     }
 
@@ -70,5 +75,17 @@ public class TableInfoFactory {
     private static String createStaticDataRecordName(TypeElement intf) {
         FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
         return staticData == null ? null : staticData.recordName();
+    }
+
+    private static String primaryKeyOnConflictFrom(TypeElement intf) {
+        PrimaryKey primaryKey = intf.getAnnotation(PrimaryKey.class);
+        return primaryKey == null ? "" : primaryKey.onConflict();
+    }
+
+    private static Set<String> primaryKeyFrom(TypeElement intf) {
+        PrimaryKey primaryKey = intf.getAnnotation(PrimaryKey.class);
+        return primaryKey == null || primaryKey.columns().length == 0   // <-- do not allow user to specify no primary key
+                ? Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)
+                : Sets.newHashSet(primaryKey.columns());
     }
 }
