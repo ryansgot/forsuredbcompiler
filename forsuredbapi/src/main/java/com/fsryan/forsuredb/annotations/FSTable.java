@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * <p>
  * @author Ryan Scott
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface FSTable {
 

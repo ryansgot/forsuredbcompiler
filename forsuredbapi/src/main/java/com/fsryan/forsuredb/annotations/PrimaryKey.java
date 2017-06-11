@@ -32,6 +32,6 @@ import java.lang.annotation.Target;
  * </p>
  * @author Ryan Scott
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface PrimaryKey {}

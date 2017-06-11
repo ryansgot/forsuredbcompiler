@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *     true.
  * </p>
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface Index {
     boolean unique() default false;

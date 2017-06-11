@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  *
  * @author Ryan Scott
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface ForeignKey {
 
