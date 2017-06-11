@@ -18,7 +18,6 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.annotations.FSColumn;
-import com.fsryan.forsuredb.annotations.PrimaryKey;
 
 import java.util.Date;
 
@@ -39,8 +38,7 @@ public interface FSGetApi {
      * @param retriever A Retriever object that can get records of the table this extension of FSGetApi defines
      * @return the id of the record
      */
-    @FSColumn("_id") @PrimaryKey
-    long id(Retriever retriever);
+    @FSColumn("_id") long id(Retriever retriever);
 
     /**
      * @param retriever A Retriever object that can get records of the table this extension of FSGetApi defines

@@ -17,21 +17,49 @@
  */
 package com.fsryan.forsuredb.annotations;
 
-import com.fsryan.forsuredb.api.FSGetApi;
+import com.fsryan.forsuredb.api.info.TableInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+
 /**
  * <p>
- *     Use the PrimaryKey annotation on methods defined in your extensions of
- *     {@link FSGetApi FSGetApi} in order to specify that the column is a primary
- *     key in the table.
+ *     Use the PrimaryKey annotation on your extensions of
+ *     {@link com.fsryan.forsuredb.api.FSGetApi FSGetApi} in order to specify
+ *     that the columns are a primary key in the table.
  * </p>
  * @author Ryan Scott
  */
 @Retention(RetentionPolicy.CLASS)
-@Target(ElementType.METHOD)
-public @interface PrimaryKey {}
+@Target(ElementType.TYPE)
+public @interface PrimaryKey {
+    /**
+     * <p>
+     *     Defaults to {@link TableInfo#DEFAULT_PRIMARY_KEY_COLUMN}
+     * </p>
+     * @return the names of the columns of the primary key
+     */
+    String[] columns() default {TableInfo.DEFAULT_PRIMARY_KEY_COLUMN};
+
+    /**
+     * <p>
+     *     Defaults to the empty string, which will result in the DBMS default
+     *     being used
+     * </p>
+     * <p>
+     *     If your DBMS is SQLite, then the following values are possible:
+     *     <ul>
+     *         <li>ROLLBACK</li>
+     *         <li>ABORT (which is default for SQLite)</li>
+     *         <li>FAIL</li>
+     *         <li>IGNORE</li>
+     *         <li>REPLACE</li>
+     *     </ul>
+     * </p>
+     * @return
+     */
+    String onConflict() default "";
+}

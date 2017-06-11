@@ -42,6 +42,7 @@ public class Migration implements Comparable<Migration> {
         ADD_INDEX(30),
         MAKE_COLUMN_UNIQUE(30),
         CREATE_TEMP_TABLE_FROM_EXISTING(40),
+        UPDATE_PRIMARY_KEY(70),
         DROP_TABLE(100);
 
         private int priority;

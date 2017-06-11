@@ -107,6 +107,8 @@ public class MigrationContext implements TableContext {
             case CREATE_TABLE:
                 handleCreateTable(m, tableBuilderMap, columnBuilderMap);
                 break;
+            case UPDATE_PRIMARY_KEY:
+                handleUpdatePrimaryKey(table, m, tableBuilderMap);
             case ADD_FOREIGN_KEY_REFERENCE:
                 handleAddForeignKeyReference(table, m, columnBuilderMap);
                 break;
@@ -116,6 +118,15 @@ public class MigrationContext implements TableContext {
             case ALTER_TABLE_ADD_UNIQUE:
                 handleAddUniqueColumn(table, m, columnBuilderMap);
         }
+    }
+
+    private void handleUpdatePrimaryKey(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap) {
+        TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
+        if (tb == null) {
+            throw new RuntimeException("cannot find table " + m.getTableName() + " in prior migration context");
+        }
+        tb.primaryKey(table.getPrimaryKey());
+
     }
 
     private void handleAddForeignKeyReference(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {

@@ -321,6 +321,36 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build())
                                         .build()))
                                 .build()
+                },
+                {   // 12: change the primary key of a table
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(false).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.UPDATE_PRIMARY_KEY)
+                                                .tableName(TABLE_NAME)
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
+                                                .build())
+                                        .build()))
+                                .build()
                 }
         });
     }

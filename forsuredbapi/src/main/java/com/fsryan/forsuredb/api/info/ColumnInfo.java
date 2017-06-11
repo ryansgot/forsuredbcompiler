@@ -21,6 +21,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 
 /**
@@ -42,7 +43,8 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @Getter @SerializedName("index") private final boolean index;
     @Getter @SerializedName("default_value") private final String defaultValue;
     @Getter @SerializedName("unique") private final boolean unique;
-    @Getter @SerializedName("primary_key") private final boolean primaryKey;
+    @Deprecated
+    @SerializedName("primary_key") private final boolean primaryKey;
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
     @Getter @SerializedName("searchable") private final boolean searchable;
     @Getter @SerializedName("orderable") private final boolean orderable;
@@ -103,12 +105,16 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
      * </p>
      * @param allTables
      */
-    /*package*/
     public void enrichWithForeignTableInfoFrom(List<TableInfo> allTables) {
         if (!isForeignKey()) {
             return;
         }
         setForeignKeyTableName(allTables);
+    }
+
+    @Deprecated
+    public boolean isPrimaryKey() {
+        return primaryKey;
     }
 
     private String setForeignKeyTableName(List<TableInfo> allTables) {

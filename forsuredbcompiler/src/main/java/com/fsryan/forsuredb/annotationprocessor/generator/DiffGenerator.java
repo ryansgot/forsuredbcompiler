@@ -78,17 +78,25 @@ public class DiffGenerator {
     private List<Migration> additiveChanges(TableContext targetContext) {
         List<Migration> retList = new ArrayList<>();
         for (TableInfo targetTable : targetContext.allTables()) {
-            boolean tableCreateMigrationCreated = false;
             if (!sourceContext.hasTable(targetTable.getTableName())) {
                 retList.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
                         .tableName(targetTable.getTableName())
                         .build());
-                tableCreateMigrationCreated = true;
+                for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
+                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
+                }
+                continue;
             }
 
             TableInfo sourceTable = sourceContext.getTable(targetTable.getTableName());
+            if (sourceTable != null && !sourceTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
+                retList.add(Migration.builder().type(Migration.Type.UPDATE_PRIMARY_KEY)
+                        .tableName(targetTable.getTableName())
+                        .build());
+            }
+
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
-                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
+                if (!sourceTable.hasColumn(targetColumn.getColumnName())) {
                     // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
                     retList.add(addMigrationForNewColumn(targetColumn, targetTable));
                     continue;

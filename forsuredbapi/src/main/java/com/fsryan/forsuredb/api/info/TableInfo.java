@@ -21,13 +21,7 @@ import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <p>
@@ -41,6 +35,8 @@ import java.util.ArrayList;
 @lombok.EqualsAndHashCode
 @lombok.Builder(builderClassName = "Builder")
 public class TableInfo {
+
+    public static final String DEFAULT_PRIMARY_KEY_COLUMN = "_id";
 
     /**
      * <p>
@@ -102,13 +98,17 @@ public class TableInfo {
     @Getter @SerializedName("static_data_asset") private final String staticDataAsset;
     @Getter @SerializedName("static_data_record_name") private final String staticDataRecordName;
     @Getter @SerializedName("doc_store_parameterization") private final String docStoreParameterization;
+    @SerializedName("primary_key") private final Set<String> primaryKey;
+    @Getter @SerializedName("primary_key_on_conflict") private final String primaryKeyOnConflict;
 
     private TableInfo(Map<String, ColumnInfo> columnMap,
                       String tableName,
                       String qualifiedClassName,
                       String staticDataAsset,
                       String staticDataRecordName,
-                      String docStoreParameterization) {
+                      String docStoreParameterization,
+                      Set<String> primaryKey,
+                      String primaryKeyOnConflict) {
         this.tableName = createTableName(tableName, qualifiedClassName);
         this.qualifiedClassName = qualifiedClassName;
 
@@ -121,6 +121,20 @@ public class TableInfo {
         this.staticDataAsset = staticDataAsset;
         this.staticDataRecordName = staticDataRecordName;
         this.docStoreParameterization = docStoreParameterization;
+
+        this.primaryKey = new HashSet<>();
+        if (primaryKey != null) {
+            this.primaryKey.addAll(primaryKey);
+        } else if (columnMap != null) {
+            for (ColumnInfo column : columnMap.values()) {
+                if (column.isPrimaryKey()) {
+                    this.primaryKey.add(column.getColumnName());
+                }
+            }
+        } else {
+            this.primaryKey.add(DEFAULT_PRIMARY_KEY_COLUMN);
+        }
+        this.primaryKeyOnConflict = primaryKeyOnConflict;
     }
 
     public boolean isValid() {
@@ -190,6 +204,26 @@ public class TableInfo {
         }
         Collections.sort(retList);
         return retList;
+    }
+
+    public Set<String> getPrimaryKey() {
+        if (primaryKey != null && !primaryKey.isEmpty()) {
+            return new HashSet<>(primaryKey);
+        }
+
+        Set<String> ret = new HashSet<>();
+        for (ColumnInfo column : getColumns()) {
+            if (DEFAULT_PRIMARY_KEY_COLUMN.equals(column.getColumnName())) {
+                continue;
+            }
+            if (column.isPrimaryKey()) {
+                ret.add(column.getColumnName());
+            }
+        }
+        if (ret.isEmpty()) {
+            ret.add(DEFAULT_PRIMARY_KEY_COLUMN);
+        }
+        return ret;
     }
 
     public boolean referencesOtherTable() {

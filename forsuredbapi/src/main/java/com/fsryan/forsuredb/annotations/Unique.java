@@ -40,11 +40,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface Unique {
-    /**
-     * <p>
-     *
-     * </p>
-     * @return
-     */
     boolean index() default false;
 }
