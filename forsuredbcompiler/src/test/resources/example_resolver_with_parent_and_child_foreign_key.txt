@@ -81,7 +81,9 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
      * </p>
      */
     public JoinTestTable3<T> joinTestTable3(final FSJoin.Type type) {
-        addJoin(new FSJoin(type, "test_table_3", "_id", "test_table_2", "test_table_3_id"));
+        final Map<String, String> localToForeignColumnMap = new HashMap<String, String>(1);
+        localToForeignColumnMap.put("test_table_3_id", "_id");
+        addJoin(new FSJoin(type, "test_table_3", "test_table_2", localToForeignColumnMap));
         return new JoinTestTable3(infoFactory, this);
     }
 
@@ -92,7 +94,9 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
      * </p>
      */
     public JoinTestTable<T> joinTestTable(final FSJoin.Type type) {
-        addJoin(new FSJoin(type, "test_table_2", "_id", "test_table", "test_table_2_id"));
+        final Map<String, String> localToForeignColumnMap = new HashMap<String, String>(1);
+        localToForeignColumnMap.put("test_table_2_id", "_id");
+        addJoin(new FSJoin(type, "test_table_2", "test_table", localToForeignColumnMap));
         return new JoinTestTable(infoFactory, this);
     }
 

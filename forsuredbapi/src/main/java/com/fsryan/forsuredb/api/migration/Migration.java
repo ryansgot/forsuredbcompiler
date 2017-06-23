@@ -21,6 +21,8 @@ import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
 
+import java.util.Map;
+
 /**
  * <p>
  *     The Migration class holds all of the information necessary for a {@link QueryGenerator} to generate the
@@ -33,16 +35,26 @@ import lombok.Getter;
 @lombok.Builder(builderClassName = "Builder")
 public class Migration implements Comparable<Migration> {
 
+    // TODO: these should just be strings.
     public enum Type {
         CREATE_TABLE(0),
         ALTER_TABLE_ADD_COLUMN(10),
         ALTER_TABLE_ADD_UNIQUE(10),
+        /**
+         * <p>
+         *     Foreign keys may or may not be marked on columns. If you use this, I'm not sure what will happen.
+         *     It is only around for compatibility with previous versions
+         *     @deprecated since 0.11.0
+         * </p>
+         */
+        @Deprecated
         ADD_FOREIGN_KEY_REFERENCE(19),
         ADD_UNIQUE_INDEX(30),
         ADD_INDEX(30),
         MAKE_COLUMN_UNIQUE(30),
         CREATE_TEMP_TABLE_FROM_EXISTING(40),
         UPDATE_PRIMARY_KEY(70),
+        UPDATE_FOREIGN_KEYS(71),
         DROP_TABLE(100);
 
         private int priority;
@@ -68,6 +80,15 @@ public class Migration implements Comparable<Migration> {
     @Getter @SerializedName("table_name") private final String tableName;
     @Getter @SerializedName("column_name") private final String columnName;
     @Getter @SerializedName("migration_type") private final Type type;
+    @Getter @SerializedName("extras") private final Map<String, String> extras;
+
+    public Migration(String tableName, String columnName, Type type) {
+        this(tableName, columnName, type, null);
+    }
+
+    public boolean hasAdditionalInfo() {
+        return extras != null;
+    }
 
     @Override
     public int compareTo(Migration o) {
@@ -78,17 +99,22 @@ public class Migration implements Comparable<Migration> {
             return 1;
         }
 
-        int priorityDiff = type.getPriority() - o.getType().getPriority();
-        if (priorityDiff != 0) {
-            return priorityDiff;
-        }
+        final int priorityDiff = type.getPriority() - o.getType().getPriority();
         // Unambiguously determine order based upon comparing table or column name in the case of equal priority
-        return isTableMigration()
-                ? (tableName == null ? "" : tableName).compareTo(o.getTableName())
+        return priorityDiff != 0 ? priorityDiff
+                : isTableMigration() ? (tableName == null ? "" : tableName).compareTo(o.getTableName())
                 : (columnName == null ? "" : columnName).compareTo(o.getColumnName());
     }
 
     public boolean isTableMigration() {
-        return type == Type.CREATE_TABLE || type == Type.DROP_TABLE || type == Type.CREATE_TEMP_TABLE_FROM_EXISTING;
+        switch (type) {
+            case CREATE_TABLE:
+            case DROP_TABLE:
+            case CREATE_TEMP_TABLE_FROM_EXISTING:
+            case UPDATE_PRIMARY_KEY:
+            case UPDATE_FOREIGN_KEYS:
+                return true;
+        }
+        return false;
     }
 }

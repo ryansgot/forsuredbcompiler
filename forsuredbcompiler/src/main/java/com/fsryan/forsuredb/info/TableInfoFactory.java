@@ -1,14 +1,15 @@
 package com.fsryan.forsuredb.info;
 
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
-import com.fsryan.forsuredb.annotations.FSStaticData;
-import com.fsryan.forsuredb.annotations.FSTable;
-import com.fsryan.forsuredb.annotations.PrimaryKey;
+import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
+import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.google.common.collect.Sets;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -16,6 +17,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,6 +43,7 @@ public class TableInfoFactory {
             columnMap.put(column.getColumnName(), column);
         }
 
+        // TODO: validation check so that you can fail fast during compilation
         return TableInfo.builder().columnMap(columnMap)
                 .qualifiedClassName(intf.getQualifiedName().toString())
                 .tableName(createTableName(intf))
@@ -49,6 +52,7 @@ public class TableInfoFactory {
                 .docStoreParameterization(docStoreParameterization)
                 .primaryKey(primaryKeyFrom(intf))
                 .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
+                .foreignKeys(foreignKeysFrom(intf))
                 .build();
     }
 
@@ -78,14 +82,73 @@ public class TableInfoFactory {
     }
 
     private static String primaryKeyOnConflictFrom(TypeElement intf) {
-        PrimaryKey primaryKey = intf.getAnnotation(PrimaryKey.class);
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
         return primaryKey == null ? "" : primaryKey.onConflict();
     }
 
     private static Set<String> primaryKeyFrom(TypeElement intf) {
-        PrimaryKey primaryKey = intf.getAnnotation(PrimaryKey.class);
-        return primaryKey == null || primaryKey.columns().length == 0   // <-- do not allow user to specify no primary key
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
+        return primaryKey == null || primaryKey.value().length == 0   // <-- do not allow user to specify no primary key
                 ? Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)
-                : Sets.newHashSet(primaryKey.columns());
+                : Sets.newHashSet(primaryKey.value());
+    }
+
+    // pretty much screwed up due to transition between ForeignKey and FSForeignKey, which allows for composites
+    private static Set<TableForeignKeyInfo> foreignKeysFrom(TypeElement intf) {
+        HashMap<String, TableForeignKeyInfo> compositeMap = new HashMap<>();
+        Set<TableForeignKeyInfo> ret = new HashSet<>();
+        for (ExecutableElement columnElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
+            for (AnnotationMirror am : columnElement.getAnnotationMirrors()) {
+                AnnotationTranslatorFactory.AnnotationTranslator at = AnnotationTranslatorFactory.inst().create(am);
+                String localColumn = columnNameFrom(columnElement);
+                if (ForeignKey.class.getName().equals(am.getAnnotationType().toString())) {
+                    ret.add(new TableForeignKeyInfo.Builder()
+                            .deleteChangeAction(at.property("deleteAction").asString())
+                            .updateChangeAction(at.property("updateAction").asString())
+                            .foreignTableApiClassName(at.property("apiClass").asString())
+                            .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                            .build());
+                } else if (FSForeignKey.class.getName().equals(am.getAnnotationType().toString())) {
+                    final String compositeId = at.property("compositeId").asString();
+                    TableForeignKeyInfo existing = compositeMap.get(compositeId);
+                    if (existing == null) {
+                        compositeMap.put(compositeId, new TableForeignKeyInfo.Builder()
+                                .foreignTableApiClassName(at.property("apiClass").asString())
+                                .deleteChangeAction(at.property("deleteAction").asString())
+                                .updateChangeAction(at.property("updateAction").asString())
+                                .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                                .build());
+                    } else {
+                        validateForeignKeyUpdate(existing, at);
+                        compositeMap.put(compositeId, existing.newBuilder()
+                                .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                                .build());
+                    }
+                }
+            }
+        }
+
+        ret.addAll(compositeMap.values());
+        return ret;
+    }
+
+    private static void validateForeignKeyUpdate(TableForeignKeyInfo existing, AnnotationTranslatorFactory.AnnotationTranslator at) {
+        final String decalredApiClass = at.property("apiClass").asString();
+        final String updateAction = at.property("updateAction").asString();
+        final String deleteAction = at.property("deleteAction").asString();
+        if (!existing.getForeignTableApiClassName().equals(decalredApiClass)) {
+            throw new IllegalArgumentException("apiClass mismatch: expected " + existing.getForeignTableApiClassName() + " but was " + decalredApiClass);
+        }
+        if (!existing.getUpdateChangeAction().equals(updateAction)) {
+            throw new IllegalArgumentException("updateAction mismatch: expected " + existing.getUpdateChangeAction() + " but was " + updateAction);
+        }
+        if (!existing.getDeleteChangeAction().equals(deleteAction)) {
+            throw new IllegalArgumentException("deleteAction mismatch: expected " + existing.getDeleteChangeAction() + " but was " + deleteAction);
+        }
+    }
+
+    private static String columnNameFrom(ExecutableElement columnElement) {
+        FSColumn fsColumn = columnElement.getAnnotation(FSColumn.class);
+        return fsColumn == null ? columnElement.getSimpleName().toString() : fsColumn.value();
     }
 }

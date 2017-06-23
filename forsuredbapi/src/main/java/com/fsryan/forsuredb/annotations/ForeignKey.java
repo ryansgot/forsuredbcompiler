@@ -26,24 +26,31 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
+ *     Do not use this. This is an inflexible means of specifying foreign keys that worked
+ *     well for non-composite foreign keys. However, it will be going away soon.
+ * </p>
+ * <p>
  *     Use the ForeignKey annotation on methods in your {@link FSGetApi} extension in order
  *     to indicate that a column is a foreign key to another table, defined by
  *     {@link #apiClass()}, on its column, defined by {@link #columnName()}. The default
  *     {@link ChangeAction} is CASCADE.
  * </p>
- * <p>
- *     Note that there is currently a limitation that you can only put one ForeignKey annotation per
- *     {@link FSGetApi} extension per time that you run ./gradlew dbmigrate. Unfortunately,
- *     too, this will not generate a compilation error. You'll have to wait until your database
- *     migrations occur for a {@link RuntimeException RuntimeException} to get generated.
- * </p>
  *
  * @author Ryan Scott
+ * @see FSForeignKey
  */
+@Deprecated
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface ForeignKey {
-
+    /**
+     * <p>
+     *     Do not use this. This is prescriptive regarding DBMS. Most DBMSs support these
+     *     change actions, but there is no need to allow only this set supposing that
+     *     some different action may need to to take place.
+     * </p>
+     */
+    @Deprecated
     enum ChangeAction {
         NO_ACTION(0), RESTRICT(1), SET_NULL(2), SET_DEFAULT(3), CASCADE(4);
 

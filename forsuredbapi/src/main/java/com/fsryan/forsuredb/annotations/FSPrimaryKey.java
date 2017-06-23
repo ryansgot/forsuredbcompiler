@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- *     Use the PrimaryKey annotation on your extensions of
+ *     Use the FSPrimaryKey annotation on your extensions of
  *     {@link com.fsryan.forsuredb.api.FSGetApi FSGetApi} in order to specify
  *     that the columns are a primary key in the table.
  * </p>
@@ -35,14 +35,14 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
-public @interface PrimaryKey {
+public @interface FSPrimaryKey {
     /**
      * <p>
      *     Defaults to {@link TableInfo#DEFAULT_PRIMARY_KEY_COLUMN}
      * </p>
      * @return the names of the columns of the primary key
      */
-    String[] columns() default {TableInfo.DEFAULT_PRIMARY_KEY_COLUMN};
+    String[] value() default {TableInfo.DEFAULT_PRIMARY_KEY_COLUMN};
 
     /**
      * <p>

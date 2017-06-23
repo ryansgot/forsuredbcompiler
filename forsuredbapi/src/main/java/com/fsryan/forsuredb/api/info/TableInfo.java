@@ -100,6 +100,7 @@ public class TableInfo {
     @Getter @SerializedName("doc_store_parameterization") private final String docStoreParameterization;
     @SerializedName("primary_key") private final Set<String> primaryKey;
     @Getter @SerializedName("primary_key_on_conflict") private final String primaryKeyOnConflict;
+    @Getter @SerializedName("foreign_keys") private final Set<TableForeignKeyInfo> foreignKeys;
 
     private TableInfo(Map<String, ColumnInfo> columnMap,
                       String tableName,
@@ -108,7 +109,8 @@ public class TableInfo {
                       String staticDataRecordName,
                       String docStoreParameterization,
                       Set<String> primaryKey,
-                      String primaryKeyOnConflict) {
+                      String primaryKeyOnConflict,
+                      Set<TableForeignKeyInfo> foreignKeys) {
         this.tableName = createTableName(tableName, qualifiedClassName);
         this.qualifiedClassName = qualifiedClassName;
 
@@ -122,8 +124,12 @@ public class TableInfo {
         this.staticDataRecordName = staticDataRecordName;
         this.docStoreParameterization = docStoreParameterization;
 
+        // This nasty code preserves backwards compatibility.
+        // primary key properties were serialized on columns pre 0.11.0
+        // in actuality, primary keys are table properties.
+        // TODO: remove this code when no longer necessary
         this.primaryKey = new HashSet<>();
-        if (primaryKey != null) {
+        if (primaryKey != null && !primaryKey.isEmpty()) {
             this.primaryKey.addAll(primaryKey);
         } else if (columnMap != null) {
             for (ColumnInfo column : columnMap.values()) {
@@ -135,6 +141,29 @@ public class TableInfo {
             this.primaryKey.add(DEFAULT_PRIMARY_KEY_COLUMN);
         }
         this.primaryKeyOnConflict = primaryKeyOnConflict;
+
+        // This nasty code preserves backwards compatibility.
+        // foreign key properties were serialized on columns pre 0.11.0
+        // in actuality, primary keys are table properties.
+        // TODO: remove this code when no longer necessary
+        this.foreignKeys = new HashSet<>();
+        if (foreignKeys != null && !foreignKeys.isEmpty()) {
+            this.foreignKeys.addAll(foreignKeys);
+        } else if (columnMap != null) {
+            for (ColumnInfo column : columnMap.values()) {
+                ForeignKeyInfo legacyForeignKey = column.getForeignKeyInfo();
+                if (legacyForeignKey == null) {
+                    continue;
+                }
+                this.foreignKeys.add(new TableForeignKeyInfo.Builder()
+                        .foreignTableApiClassName(legacyForeignKey.getApiClassName())
+                        .foreignTableName(legacyForeignKey.getTableName())
+                        .mapLocalToForeignColumn(column.getColumnName(), legacyForeignKey.getColumnName())
+                        .updateChangeAction(legacyForeignKey.getUpdateAction().toString())
+                        .deleteChangeAction(legacyForeignKey.getDeleteAction().toString())
+                        .build());
+            }
+        }
     }
 
     public boolean isValid() {
@@ -187,7 +216,7 @@ public class TableInfo {
     public List<ColumnInfo> getForeignKeyColumns() {
         List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
-            if (column.isForeignKey()) {
+            if (isForeignKeyColumn(column)) {
                 retList.add(column);
             }
         }
@@ -198,7 +227,7 @@ public class TableInfo {
     public List<ColumnInfo> getNonForeignKeyColumns() {
         List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
-            if (!column.isForeignKey()) {
+            if (!isForeignKeyColumn(column)) {
                 retList.add(column);
             }
         }
@@ -227,7 +256,41 @@ public class TableInfo {
     }
 
     public boolean referencesOtherTable() {
-        return !getForeignKeyColumns().isEmpty();
+        return (foreignKeys != null && !foreignKeys.isEmpty()) || !getForeignKeyColumns().isEmpty();
+    }
+
+    public boolean isForeignKeyColumn(String columnName) {
+        return isForeignKeyColumn(getColumn(columnName));
+    }
+
+    public TableForeignKeyInfo getForeignKeyForColumn(String columnName) {
+        if (foreignKeys == null) {
+            return null;
+        }
+        for (TableForeignKeyInfo foreignKey : foreignKeys) {
+            if (foreignKey.getLocalToForeignColumnMap().keySet().contains(columnName)) {
+                return foreignKey;
+            }
+        }
+        return null;
+    }
+
+    private boolean isForeignKeyColumn(ColumnInfo column) {
+        if (column == null) {
+            return false;
+        }
+        if (column.isForeignKey()) {
+            return true;
+        }
+        if (foreignKeys == null || foreignKeys.isEmpty()) {
+            return false;
+        }
+        for (TableForeignKeyInfo foreignKey : foreignKeys) {
+            if (foreignKey.getLocalToForeignColumnMap().containsKey(column.getColumnName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String createTableName(String tableName, String qualifiedClassName) {

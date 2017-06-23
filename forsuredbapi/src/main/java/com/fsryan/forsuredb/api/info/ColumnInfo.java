@@ -21,7 +21,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 /**
@@ -61,6 +60,7 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
         return qualifiedType == null || qualifiedType.isEmpty() ? "java.lang.String" : qualifiedType;
     }
 
+    @Deprecated
     public boolean isForeignKey() {
         return foreignKeyInfo != null;
     }
