@@ -53,6 +53,26 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                         .build())
                                 .build()
                                 .tableMap()
+                },
+                {   // 03: two tables--composite primary and foreign keys
+                        Arrays.asList(createTableMigration("table1"), createTableMigration("table2")),
+                        newTableContext()
+                                .addTable(defaultPkTable("table1")
+                                        .addToColumns(stringCol().columnName("table2_project").build())
+                                        .addToColumns(longCol().columnName("table2_build").build())
+                                        .addTableForeignKey(cascadeTFKI("table2")
+                                                .mapLocalToForeignColumn("table2_project", "project")
+                                                .mapLocalToForeignColumn("table2_build", "build")
+                                                .build())
+                                        .build())
+                                .addTable(table("table2")
+                                        .addToColumns(stringCol().columnName("project").build())
+                                        .addToColumns(longCol().columnName("build").build())
+                                        .addToPrimaryKey("project")
+                                        .addToPrimaryKey("build")
+                                        .build())
+                                .build()
+                                .tableMap()
                 }
         });
     }

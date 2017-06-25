@@ -125,6 +125,49 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                         .build())
                                 .build()
                                 .tableMap()
+                },
+                {   // 05: two tables--composite primary and foreign keys in first migration--add one column in next
+                        Arrays.asList(createTableMigration("table1"), createTableMigration("table2")),
+                        newTableContext()
+                                .addTable(defaultPkTable("table1")
+                                        .addToColumns(stringCol().columnName("table2_project").build())
+                                        .addToColumns(longCol().columnName("table2_build").build())
+                                        .addTableForeignKey(cascadeTFKI("table2")
+                                                .mapLocalToForeignColumn("table2_project", "project")
+                                                .mapLocalToForeignColumn("table2_build", "build")
+                                                .build())
+                                        .build())
+                                .addTable(table("table2")
+                                        .addToColumns(stringCol().columnName("project").build())
+                                        .addToColumns(longCol().columnName("build").build())
+                                        .addToPrimaryKey("project")
+                                        .addToPrimaryKey("build")
+                                        .build())
+                                .build()
+                                .tableMap(),
+                        Arrays.asList(
+                                addColumnMigration("table1")
+                                        .columnName(longCol().build().getColumnName())
+                                        .build()
+                        ),
+                        newTableContext()
+                                .addTable(defaultPkTable("table1")
+                                        .addToColumns(stringCol().columnName("table2_project").build())
+                                        .addToColumns(longCol().columnName("table2_build").build())
+                                        .addToColumns(longCol().build())
+                                        .addTableForeignKey(cascadeTFKI("table2")
+                                                .mapLocalToForeignColumn("table2_project", "project")
+                                                .mapLocalToForeignColumn("table2_build", "build")
+                                                .build())
+                                        .build())
+                                .addTable(table("table2")
+                                        .addToColumns(stringCol().columnName("project").build())
+                                        .addToColumns(longCol().columnName("build").build())
+                                        .addToPrimaryKey("project")
+                                        .addToPrimaryKey("build")
+                                        .build())
+                                .build()
+                                .tableMap()
                 }
         });
     }

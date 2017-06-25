@@ -76,7 +76,10 @@ public class MigrationContext implements TableContext {
 
         for (Map.Entry<String, Map<String, ColumnInfo>> entry : createTableBuilderKeyToColumnMapMap(columnBuilderMap).entrySet()) {
             TableInfo.Builder tb = tableBuilderMap.get(entry.getKey());
-            tb.columnMap(entry.getValue());
+            TableInfo temp = tb.build();
+            Map<String, ColumnInfo> previousColumnMap = temp.getColumnMap();    // <-- cannot overwrite previous
+            previousColumnMap.putAll(entry.getValue());
+            tb.columnMap(previousColumnMap);
         }
 
         Map<String, TableInfo> retMap = new HashMap<>();
@@ -103,6 +106,7 @@ public class MigrationContext implements TableContext {
         return retMap;
     }
 
+    // TODO: drop table handling; consider changing the structure from a big switch
     private void update(TableInfo table,
                         Migration m,
                         Map<String, TableInfo.Builder> tableBuilderMap,
@@ -137,12 +141,12 @@ public class MigrationContext implements TableContext {
                     }
                 }
                 break;
-                // TODO: test the below
-            case ALTER_TABLE_ADD_COLUMN:
-                handleAddColumn(table, m, columnBuilderMap);
-                break;
             case ALTER_TABLE_ADD_UNIQUE:
-                handleAddUniqueColumn(table, m, columnBuilderMap);
+                // intentionally falling through
+            case MAKE_COLUMN_UNIQUE:
+                // intentionally falling through
+            case ALTER_TABLE_ADD_COLUMN:
+                columnBuilderMap.put(columnKey(m), table.getColumn(m.getColumnName()).newBuilder());
         }
     }
 
@@ -160,21 +164,6 @@ public class MigrationContext implements TableContext {
             throw new RuntimeException("cannot find table " + m.getTableName() + " in prior migration context");
         }
         tb.foreignKeys(table.getForeignKeys());
-    }
-
-    private void handleAddUniqueColumn(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        handleAddColumn(table, m, true, columnBuilderMap);
-    }
-
-    private void handleAddColumn(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        handleAddColumn(table, m, false, columnBuilderMap);
-    }
-
-    private void handleAddColumn(TableInfo table, Migration m, boolean unique, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        ColumnInfo.Builder b = columnBuilderMap.get(columnKey(m));
-        if (b == null) {
-            columnBuilderMap.put(columnKey(m), table.getColumn(m.getColumnName()).newBuilder());
-        }
     }
 
     private String tableKey(Migration m) {

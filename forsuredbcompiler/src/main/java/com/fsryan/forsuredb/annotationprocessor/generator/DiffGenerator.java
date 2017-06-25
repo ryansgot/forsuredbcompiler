@@ -68,6 +68,7 @@ public class DiffGenerator {
      */
     public MigrationSet analyzeDiff(TableContext targetContext) {
         APLog.i(LOG_TAG, "analyzing diff: targetContext.allTables().size() = " + targetContext.allTables().size());
+
         PriorityQueue<Migration> migrationQueue = new PriorityQueue<>();
         migrationQueue.addAll(additiveChanges(targetContext));
         migrationQueue.addAll(subtractiveChanges(targetContext));
