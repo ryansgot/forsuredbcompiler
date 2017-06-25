@@ -37,14 +37,8 @@ import java.lang.annotation.Target;
  * </p>
  * @author Ryan Scott
  */
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-@Retention(RetentionPolicy.SOURCE)
 public @interface Unique {
-    /**
-     * <p>
-     *
-     * </p>
-     * @return
-     */
     boolean index() default false;
 }

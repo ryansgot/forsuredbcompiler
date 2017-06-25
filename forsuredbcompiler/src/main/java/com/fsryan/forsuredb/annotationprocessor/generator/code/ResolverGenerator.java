@@ -1,10 +1,12 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
+import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.google.common.base.Strings;
 import com.squareup.javapoet.*;
@@ -19,7 +21,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private final TableInfo table;
     private final TableContext targetContext;
-    private final List<Pair<TableInfo, ColumnInfo>> parentJoins;
+    private final List<Pair<TableInfo, TableForeignKeyInfo>> parentJoins;
     private List<ColumnInfo> columnsSortedByName;
     private final TypeName[] parameterNames;
     private final TypeName generatedClassName;
@@ -69,17 +71,17 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
     }
 
-    private static List<Pair<TableInfo, ColumnInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
-        List<Pair<TableInfo, ColumnInfo>> ret = new ArrayList<>();
+    private static List<Pair<TableInfo, TableForeignKeyInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
+        List<Pair<TableInfo, TableForeignKeyInfo>> ret = new ArrayList<>();
         for (TableInfo otherTable : targetContext.allTables()) {
             if (!otherTable.referencesOtherTable() || table.getTableName().equals(otherTable.getTableName())) {
                 continue;
             }
-            for (ColumnInfo column : otherTable.getForeignKeyColumns()) {
-                if (!column.getForeignKeyInfo().getTableName().equals(table.getTableName())) {
+            for (TableForeignKeyInfo foreignKey : otherTable.getForeignKeys()) {
+                if (!foreignKey.getForeignTableName().equals(table.getTableName())) {
                     continue;
                 }
-                ret.add(new Pair<>(otherTable, column));
+                ret.add(new Pair<>(otherTable, foreignKey));
             }
         }
         return ret;
@@ -89,17 +91,16 @@ public class ResolverGenerator extends JavaSourceGenerator {
         if (!hasJoins()) {
             return;
         }
-        for (ColumnInfo column : table.getForeignKeyColumns()) {
-            final TableInfo referencedTable = targetContext.getTable(column.getForeignKeyInfo().getTableName());
-            final ColumnInfo referencedColumn = referencedTable.getColumn(column.getForeignKeyInfo().getColumnName());
-            codeBuilder.addType(createJoinResolverClass(referencedTable, referencedColumn));
+        for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+            final TableInfo referencedTable = targetContext.getTable(foreignKey.getForeignTableName());
+            codeBuilder.addType(createJoinResolverClass(referencedTable, foreignKey));
         }
-        for (Pair<TableInfo, ColumnInfo> parentJoin : parentJoins) {
+        for (Pair<TableInfo, TableForeignKeyInfo> parentJoin : parentJoins) {
             codeBuilder.addType(createJoinResolverClass(parentJoin.first, parentJoin.second));
         }
     }
 
-    private TypeSpec createJoinResolverClass(TableInfo referencedTable, ColumnInfo referencedColumn) {
+    private TypeSpec createJoinResolverClass(TableInfo referencedTable, TableForeignKeyInfo foreignKey) {
         String innerClassName = CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true);
         JavadocInfo jd = JavadocInfo.builder()
                 .startParagraph()
@@ -258,69 +259,62 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private void addJoinMethods(TypeSpec.Builder codeBuilder) {
         // Add join methods where this table is the child in the join relationship
-        for (ColumnInfo column : columnsSortedByName) {
-            if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName()) || !column.isForeignKey()) {
-                continue;
-            }
-            JavadocInfo jd = javadocFor(column.getForeignKeyInfo().getTableName(),
-                    column.getForeignKeyInfo().getColumnName(),
-                    table.getTableName(),
-                    column.getColumnName());
-            TableInfo targetTable = targetContext.getTable(column.getForeignKeyInfo().getTableName());
-            codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createChildTableJoinSpec(column, targetTable.getSimpleClassName()), jd));
+        for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+            JavadocInfo jd = javadocFor(foreignKey, table.getTableName());
+            TableInfo targetTable = targetContext.getTable(foreignKey.getForeignTableName());
+            codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createJoinSpec(foreignKey, table.getTableName()), jd));
         }
 
         // add join methods where this table is the parent in the join relationship
         for (TableInfo targetTable : TableDataUtil.tablesSortedByName(targetContext, table)) {
-            for (ColumnInfo column : TableDataUtil.columnsSortedByName(targetTable.getColumns())) {
-                if (TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())
-                        || !column.isForeignKey()
-                        || !table.getTableName().equals(column.getForeignKeyInfo().getTableName())) {
+            for (TableForeignKeyInfo foreignKey : targetTable.getForeignKeys()) {
+                if (!table.getTableName().equals(foreignKey.getForeignTableName())) {
                     continue;
                 }
-                final CodeBlock joinSpec = createParentTableJoinSpec(column, targetTable.getTableName(), targetTable.getSimpleClassName());
-                JavadocInfo jd = javadocFor(table.getTableName(),
-                                column.getForeignKeyInfo().getColumnName(),
-                                targetTable.getTableName(),
-                                column.getColumnName());
+                final CodeBlock joinSpec = createJoinSpec(foreignKey, targetTable.getTableName());
+                JavadocInfo jd = javadocFor(foreignKey, targetTable.getTableName());
                 codeBuilder.addMethod(createMethodSpecForJoin(targetTable, joinSpec, jd));
             }
         }
     }
 
-    private JavadocInfo javadocFor(String parentTable, String parentColumn, String childTable, String childColumn) {
+    private JavadocInfo javadocFor(TableForeignKeyInfo foreignKey, String childTable) {
+        StringBuilder onPart = new StringBuilder();
+        for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+            onPart.append(childTable).append(".").append(entry.getKey())
+                    .append(" = ")
+                    .append(foreignKey.getForeignTableName()).append(".").append(entry.getValue())
+                    .append(" AND ");
+        }
         return JavadocInfo.builder()
                 .startParagraph()
-                .addLine("Add a join to $L on $L.$L = $L.$L",
-                        table.getTableName().equals(parentTable) ? childTable : parentTable,
-                        childTable,
-                        childColumn,
-                        parentTable,
-                        parentColumn)
+                .addLine("Add a join to $L on $L",
+                        table.getTableName().equals(foreignKey.getForeignTableName()) ? childTable : foreignKey.getForeignTableName(),
+                        onPart.delete(onPart.length() - 5, onPart.length()).toString()
+                )
                 .addLine("to the query")
                 .endParagraph()
                 .addLine()
                 .build();
     }
 
-    private CodeBlock createChildTableJoinSpec(ColumnInfo column, String apiSimpleClassName) {
-        final ForeignKeyInfo fki = column.getForeignKeyInfo();
-        return createJoinSpec(fki.getTableName(), fki.getColumnName(), table.getTableName(), column.getColumnName(), apiSimpleClassName);
-    }
-
-    private CodeBlock createParentTableJoinSpec(ColumnInfo column, String childTableName, String apiSimpleClassName) {
-        final ForeignKeyInfo fki = column.getForeignKeyInfo();
-        return createJoinSpec(table.getTableName(), fki.getColumnName(), childTableName, column.getColumnName(), apiSimpleClassName);
-    }
-
-    private CodeBlock createJoinSpec(String parentTableName, String parentColumnName, String childTableName, String childColumnName, String apiClassSimpleName) {
-        return CodeBlock.builder()
-                .addStatement("addJoin(new $T($N, $S, $S, $S, $S))", FSJoin.class,
+    // TODO: make sure the column maps to the correct table
+    private CodeBlock createJoinSpec(TableForeignKeyInfo foreignKey, String childTableName) {
+        CodeBlock.Builder builder = CodeBlock.builder();
+        builder.addStatement("final $T localToForeignColumnMap = new $T($L)",
+                ParameterizedTypeName.get(Map.class, String.class, String.class),
+                ParameterizedTypeName.get(HashMap.class, String.class, String.class),
+                foreignKey.getLocalToForeignColumnMap().size()
+        );
+        for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+            builder.addStatement("$N.put($S, $S)", "localToForeignColumnMap", entry.getKey(), entry.getValue());
+        }
+        return builder.addStatement("addJoin(new $T($N, $S, $S, $N))",
+                        FSJoin.class,
                         "type",
-                        parentTableName,
-                        parentColumnName,
+                        foreignKey.getForeignTableName(),
                         childTableName,
-                        childColumnName)
+                        "localToForeignColumnMap")
                 .build();
     }
 

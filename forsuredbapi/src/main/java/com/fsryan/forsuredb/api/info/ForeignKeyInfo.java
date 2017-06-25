@@ -27,6 +27,7 @@ import lombok.Setter;
 @lombok.EqualsAndHashCode
 @lombok.Builder(builderClassName = "Builder")
 @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+@Deprecated
 public class ForeignKeyInfo {
 
     @Getter @SerializedName("update_action") private final ForeignKey.ChangeAction updateAction;

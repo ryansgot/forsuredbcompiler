@@ -28,7 +28,6 @@ import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.fsryan.forsuredb.migration.MigrationContext;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.Date;
@@ -53,10 +52,10 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
     private final MigrationRetriever mr;
 
     public MigrationGenerator(ProcessingEnvironment processingEnv, String migrationDirectory, ProcessingContext pContext)  {
-            super(processingEnv);
-            date = new Date();
-            this.pContext = pContext;
-            mr = new MigrationRetrieverFactory(new FSLogger.DefaultFSLogger()).fromDirectory(migrationDirectory);
+        super(processingEnv);
+        date = new Date();
+        this.pContext = pContext;
+        mr = new MigrationRetrieverFactory(new FSLogger.DefaultFSLogger()).fromDirectory(migrationDirectory);
     }
 
     @Override

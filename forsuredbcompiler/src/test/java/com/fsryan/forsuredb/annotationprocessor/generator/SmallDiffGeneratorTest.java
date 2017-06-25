@@ -19,9 +19,12 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.migration.Migration;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -116,9 +119,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ADD_FOREIGN_KEY_REFERENCE)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
                                         .tableName(TABLE_NAME)
-                                        .columnName(longCol().build().getColumnName())
+                                        .extras(new ImmutableMap.Builder<String, String>()
+                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
+                                                .put("current_foreign_keys", "[]")
+                                                .build())
                                         .build()))
                                 .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
                                                         .build())
@@ -319,6 +325,94 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .columnMap(baseColumnMapBuilder()
                                                 .put(longCol().build().getColumnName(), longCol().index(true).build())
                                                 .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 12: change the primary key of a table
+                        1,
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(false).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
+                                                .build())
+                                        .build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(2)
+                                .orderedMigrations(Lists.newArrayList(
+                                        Migration.builder()
+                                                .type(Migration.Type.UPDATE_PRIMARY_KEY)
+                                                .tableName(TABLE_NAME)
+                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .columnMap(baseColumnMapBuilder()
+                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
+                                                .build())
+                                        .build()))
+                                .build()
+                },
+                {   // 13: same as 04, but done via TableForeignKeyInfo instead of foreign key info on columns
+                        2,
+                        newTableContext().addTable(table().build()).build(),
+                        newTableContext()
+                                .addTable(table().columnMap(columnMapOf(longCol().build()))
+                                        .foreignKeys(Sets.newHashSet(
+                                                new TableForeignKeyInfo.Builder()
+                                                        .foreignTableName("user")
+                                                        .updateChangeAction("CASCADE")
+                                                        .deleteChangeAction("CASCADE")
+                                                        .mapLocalToForeignColumn("long_column", "_id")
+                                                        .build()
+                                        ))
+                                        .build())
+                                .build(),
+                        MigrationSet.builder().dbVersion(3)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                        .tableName(TABLE_NAME)
+                                        .extras(new ImmutableMap.Builder<String, String>()
+                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
+                                                .put("current_foreign_keys", "[]")
+                                                .build())
+                                        .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
+                                        .build())
+                                        .build()))
+                                        .build()))
+                                .build()
+                },
+                {   // 14: same as 13, but transitions an existing column to being a foreign key
+                        2,
+                        newTableContext().addTable(table().columnMap(columnMapOf(longCol().build())).build()).build(),
+                        newTableContext()
+                                .addTable(table().columnMap(columnMapOf(longCol().build()))
+                                        .foreignKeys(Sets.newHashSet(
+                                                new TableForeignKeyInfo.Builder()
+                                                        .foreignTableName("user")
+                                                        .updateChangeAction("CASCADE")
+                                                        .deleteChangeAction("CASCADE")
+                                                        .mapLocalToForeignColumn("long_column", "_id")
+                                                        .build()
+                                        ))
+                                        .build())
+                                .build(),
+                        MigrationSet.builder().dbVersion(3)
+                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                        .tableName(TABLE_NAME)
+                                        .extras(new ImmutableMap.Builder<String, String>()
+                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]")
+                                                .put("current_foreign_keys", "[]")
+                                                .build())
+                                        .build()))
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
+                                        .build())
+                                        .build()))
                                         .build()))
                                 .build()
                 }

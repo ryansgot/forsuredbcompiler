@@ -19,19 +19,13 @@ package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.JoinInfo;
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.info.TableInfoFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -86,41 +80,56 @@ public class ProcessingContext implements TableContext {
         return joins;
     }
 
+    private static TableInfo matchingTable(String qualifiedClassName, List<TableInfo> allTables) {
+        for (TableInfo table : allTables) {
+            if (!qualifiedClassName.equals(table.getQualifiedClassName())) {
+                continue;
+            }
+            return table;
+        }
+        throw new IllegalStateException("could not find table for class name: " + qualifiedClassName);
+    }
+
     private void createTableMapIfNecessary() {
         if (tableMap != null) {
             return;
         }
         joins = new LinkedList<>();
 
-        tableMap = new HashMap<String, TableInfo>();
+        tableMap = new HashMap<>();
         List<TableInfo> allTables = gatherInitialInfo();
         for (TableInfo table : allTables) {
+            for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+                final TableInfo foreignTable = matchingTable(foreignKey.getForeignTableApiClassName(), allTables);
+                foreignKey.setForeignTableName(foreignTable.getTableName());
+            }
+
+            // TODO: remove this loop when foreign key information no longer stored on columns
             for (ColumnInfo column : table.getColumns()) {
                 column.enrichWithForeignTableInfoFrom(allTables);
             }
             tableMap.put(table.getTableName(), table);
             APLog.i(LOG_TAG, "created table: " + table.toString());
         }
-        createJoinInfo();
-    }
 
-    private void createJoinInfo() {
         for (TableInfo table : tableMap.values()) {
-            for (ColumnInfo column : table.getForeignKeyColumns()) {
-                addToJoins(table, column);
+            for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+                TableInfo parent = tableMap.get(foreignKey.getForeignTableName());
+                List<ColumnInfo> childColumns = new ArrayList<>();
+                List<ColumnInfo> parentColumns = new ArrayList<>();
+                for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+                    childColumns.add(table.getColumn(entry.getKey()));
+                    parentColumns.add(parent.getColumn(entry.getValue()));
+                }
+                JoinInfo join = JoinInfo.builder().childTable(table)
+                        .childColumns(childColumns)
+                        .parentTable(parent)
+                        .parentColumns(parentColumns)
+                        .build();
+                joins.add(join);
+                APLog.i(LOG_TAG, "found join: " + join.toString());
             }
         }
-    }
-
-    private void addToJoins(TableInfo childTable, ColumnInfo childColumn) {
-        TableInfo parent = tableMap.get(childColumn.getForeignKeyInfo().getTableName());
-        JoinInfo join = JoinInfo.builder().childTable(childTable)
-                .childColumn(childColumn)
-                .parentTable(parent)
-                .parentColumn(parent.getColumn(childColumn.getForeignKeyInfo().getColumnName()))
-                .build();
-        joins.add(join);
-        APLog.i(LOG_TAG, "found join: " + join.toString());
     }
 
     private List<TableInfo> gatherInitialInfo() {

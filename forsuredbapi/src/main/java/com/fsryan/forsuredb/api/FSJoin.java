@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import java.util.Map;
+
 @lombok.AllArgsConstructor
 public class FSJoin {
 
@@ -30,7 +32,7 @@ public class FSJoin {
         /**
          * <p>
          *     It is debatable whether this is useful, given the choices that have been made
-         *     in the fsryan project thus far
+         *     in the forsuredb project thus far
          * </p>
          */
         NATURAL,
@@ -55,7 +57,6 @@ public class FSJoin {
 
     @lombok.Getter private Type type;
     @lombok.Getter private String parentTable;
-    @lombok.Getter private String parentColumn;
     @lombok.Getter private String childTable;
-    @lombok.Getter private String childColumn;
+    @lombok.Getter private Map<String, String> childToParentColumnMap;
 }

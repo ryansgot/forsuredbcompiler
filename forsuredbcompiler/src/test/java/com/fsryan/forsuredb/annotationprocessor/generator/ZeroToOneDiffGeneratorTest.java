@@ -77,11 +77,6 @@ public class ZeroToOneDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .tableName("test_table")
                                                 .columnName("unique_index_column")
                                                 .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
-                                                .build(),
-                                        Migration.builder()
-                                                .tableName("test_table2")
-                                                .columnName("test_table_unique_index_column")
-                                                .type(Migration.Type.ADD_FOREIGN_KEY_REFERENCE)
                                                 .build()
                                 ))
                                 .targetSchema(tableMapOf(table()

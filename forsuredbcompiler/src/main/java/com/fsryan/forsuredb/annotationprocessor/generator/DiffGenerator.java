@@ -23,6 +23,8 @@ import com.fsryan.forsuredb.api.migration.MigrationSet;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.info.TableInfo;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 
 import java.util.*;
 
@@ -38,6 +40,7 @@ import java.util.*;
 public class DiffGenerator {
 
     private static final String LOG_TAG = DiffGenerator.class.getSimpleName();
+    private static final Gson gson = new Gson();
 
     private final TableContext sourceContext;
     private final int sourceDbVersion;
@@ -65,6 +68,7 @@ public class DiffGenerator {
      */
     public MigrationSet analyzeDiff(TableContext targetContext) {
         APLog.i(LOG_TAG, "analyzing diff: targetContext.allTables().size() = " + targetContext.allTables().size());
+
         PriorityQueue<Migration> migrationQueue = new PriorityQueue<>();
         migrationQueue.addAll(additiveChanges(targetContext));
         migrationQueue.addAll(subtractiveChanges(targetContext));
@@ -78,18 +82,30 @@ public class DiffGenerator {
     private List<Migration> additiveChanges(TableContext targetContext) {
         List<Migration> retList = new ArrayList<>();
         for (TableInfo targetTable : targetContext.allTables()) {
-            boolean tableCreateMigrationCreated = false;
             if (!sourceContext.hasTable(targetTable.getTableName())) {
                 retList.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
                         .tableName(targetTable.getTableName())
                         .build());
-                tableCreateMigrationCreated = true;
+                // if the TABLE_CREATE migration was added, then all non-default, non-unique columns must be added
+                for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable, true)) {
+                    if (targetTable.isForeignKeyColumn(targetColumn.getColumnName())) {
+                        continue;
+                    }
+                    retList.add(addMigrationForNewColumn(targetColumn, targetTable));
+                }
+                continue;
             }
 
             TableInfo sourceTable = sourceContext.getTable(targetTable.getTableName());
-            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
-                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
-                    // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations
+            if (sourceTable != null && !sourceTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
+                retList.add(Migration.builder().type(Migration.Type.UPDATE_PRIMARY_KEY)
+                        .tableName(targetTable.getTableName())
+                        .build());
+            }
+
+            final boolean updatingForeignKeys = addUpdateForeignKeysMigration(retList, sourceTable, targetTable);
+            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable, updatingForeignKeys)) {
+                if (!sourceTable.hasColumn(targetColumn.getColumnName())) {
                     retList.add(addMigrationForNewColumn(targetColumn, targetTable));
                     continue;
                 }
@@ -126,6 +142,21 @@ public class DiffGenerator {
         return null;
     }
 
+    private boolean addUpdateForeignKeysMigration(List<Migration> retList, TableInfo sourceTable, TableInfo targetTable) {
+        if (sourceTable == null || sourceTable.getForeignKeys().equals(targetTable.getForeignKeys())) {
+            return false;
+        }
+
+        retList.add(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                .tableName(targetTable.getTableName())
+                .extras(new ImmutableMap.Builder<String, String>()
+                        .put("existing_column_names", gson.toJson(columnNamesOf(sourceTable)))
+                        .put("current_foreign_keys", gson.toJson(sourceTable.getForeignKeys()))
+                        .build())
+                .build());
+        return true;
+    }
+
     private List<Migration> toList(PriorityQueue<Migration> migrationQueue) {
         List<Migration> retList = new LinkedList<>();
         while (migrationQueue.size() > 0) {
@@ -143,9 +174,9 @@ public class DiffGenerator {
                 .build();
     }
 
-    private Set<ColumnInfo> nonDefaultColumnsIn(TableInfo targetTable) {
+    private Set<ColumnInfo> nonDefaultColumnsIn(TableInfo targetTable, boolean filterForeignKeys) {
         Set<ColumnInfo> retSet = new HashSet<>();
-        for (ColumnInfo targetColumn : targetTable.getColumns()) {
+        for (ColumnInfo targetColumn : filterForeignKeys ? targetTable.getNonForeignKeyColumns() : targetTable.getColumns()) {
             if (TableInfo.DEFAULT_COLUMNS.containsKey(targetColumn.getColumnName())) {
                 continue;
             }
@@ -182,5 +213,13 @@ public class DiffGenerator {
 //            }
         }
         return retList;
+    }
+
+    private static Set<String> columnNamesOf(TableInfo table) {
+        Set<String> ret = new HashSet<>();
+        for (ColumnInfo columnInfo : table.getColumns()) {
+            ret.add(columnInfo.getColumnName());
+        }
+        return ret;
     }
 }

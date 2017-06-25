@@ -44,7 +44,7 @@ public class ColumnInfoFactory {
                     .deleteAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()))
                     .updateAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()))
                     .build());
-        } else if (annotationClass.equals(PrimaryKey.class.getName())) {
+        } else if (annotationClass.equals(FSPrimaryKey.class.getName())) {
             builder.primaryKey(true);
         } else if (annotationClass.equals(Unique.class.getName())) {
             builder.unique(true);

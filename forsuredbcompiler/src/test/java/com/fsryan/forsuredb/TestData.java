@@ -21,16 +21,16 @@ import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
 import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.api.migration.Migration;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TestData {
 
@@ -58,9 +58,23 @@ public class TestData {
     }
 
     // Convenience methods for making data to go into the tests
-    public static TableInfo.Builder table() {
-        return TableInfo.builder().tableName(TABLE_NAME)
+    public static ProgressiveTableInfoBuilder table() {
+        return table(TABLE_NAME);
+    }
+
+    public static ProgressiveTableInfoBuilder table(String tableName, ColumnInfo... columns) {
+        ProgressiveTableInfoBuilder ret = new ProgressiveTableInfoBuilder()
+                .tableName(tableName)
                 .qualifiedClassName(TABLE_CLASS_NAME);
+        Arrays.stream(DEFAULT_COLUMNS).forEach(ret::addToColumns);
+        if (columns != null && columns.length > 0) {
+            Arrays.stream(columns).forEach(ret::addToColumns);
+        }
+        return ret;
+    }
+
+    public static ProgressiveTableInfoBuilder defaultPkTable(String tableName, ColumnInfo... columns) {
+        return table(tableName, columns).addToPrimaryKey(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN);
     }
 
     public static ImmutableMap.Builder<String, ColumnInfo> baseColumnMapBuilder() {
@@ -85,6 +99,30 @@ public class TestData {
             retMap.put(table.getTableName(), table);
         }
         return retMap;
+    }
+
+    public static ProgressiveMigrationBuilder migration(Migration.Type type) {
+        return new ProgressiveMigrationBuilder().type(type);
+    }
+
+    public static Migration createTableMigration(String tableName) {
+        return migration(Migration.Type.CREATE_TABLE).tableName(tableName).build();
+    }
+
+    public static ProgressiveMigrationBuilder addColumnMigration(String tableName) {
+        return migration(Migration.Type.ALTER_TABLE_ADD_COLUMN).tableName(tableName);
+    }
+
+    public static ProgressiveMigrationBuilder addForeignKeyReferenceMigration(String tableName) {
+        return migration(Migration.Type.ADD_FOREIGN_KEY_REFERENCE).tableName(tableName);
+    }
+
+    public static ProgressiveMigrationBuilder updateForeignKeysMigration(String tableName) {
+        return migration(Migration.Type.UPDATE_FOREIGN_KEYS).tableName(tableName);
+    }
+
+    public static ProgressiveMigrationBuilder updatePrimaryKeyMigration(String tableName) {
+        return migration(Migration.Type.UPDATE_PRIMARY_KEY).tableName(tableName);
     }
 
     public static ColumnInfo idCol() {
@@ -120,31 +158,38 @@ public class TestData {
     }
 
     public static ColumnInfo.Builder stringCol() {
-        return columnFrom("java.lang.String");
+        return columnFrom("java.lang.String").methodName("stringColumn");
     }
 
     public static ColumnInfo.Builder intCol() {
-        return columnFrom("int");
+        return columnFrom("int").methodName("intColumn");
     }
 
     public static ColumnInfo.Builder longCol() {
-        return columnFrom("long");
+        return columnFrom("long").methodName("longColumn");
     }
 
     public static ColumnInfo.Builder doubleCol() {
-        return columnFrom("double");
+        return columnFrom("double").methodName("doubleColumn");
     }
 
     public static ColumnInfo.Builder booleanCol() {
-        return columnFrom("boolean");
+        return columnFrom("boolean").methodName("booleanColumn");
     }
 
     public static ColumnInfo.Builder bigDecimalCol() {
-        return columnFrom("java.math.BigDecimal");
+        return columnFrom("java.math.BigDecimal").methodName("bigDecimalColumn");
     }
 
     public static ColumnInfo.Builder dateCol() {
-        return columnFrom("java.util.Date");
+        return columnFrom("java.util.Date").methodName("dateColumn");
+    }
+
+    public static TableForeignKeyInfo.Builder dbmsDefaultTFKI(String foreignTableName) {
+        return new TableForeignKeyInfo.Builder()
+                .foreignTableName(foreignTableName)
+                .updateChangeAction("")
+                .deleteChangeAction("");
     }
 
     public static ForeignKeyInfo.Builder cascadeFKI(String foreignKeyTableName) {
@@ -154,11 +199,19 @@ public class TestData {
                 .tableName(foreignKeyTableName);
     }
 
+    public static TableForeignKeyInfo.Builder cascadeTFKI(String foreignTableName) {
+        return dbmsDefaultTFKI(foreignTableName).updateChangeAction("CASCADE").deleteChangeAction("CASCADE");
+    }
+
     public static ForeignKeyInfo.Builder noActionFKI(String foreignKeyTableName) {
         return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION)
                 .deleteAction(ForeignKey.ChangeAction.NO_ACTION)
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
+    }
+
+    public static TableForeignKeyInfo.Builder noActionTFKI(String foreignTableName) {
+        return dbmsDefaultTFKI(foreignTableName).updateChangeAction("NO ACTION").deleteChangeAction("NO ACTION");
     }
 
     public static ForeignKeyInfo.Builder setNullFKI(String foreignKeyTableName) {
@@ -168,11 +221,19 @@ public class TestData {
                 .tableName(foreignKeyTableName);
     }
 
+    public static TableForeignKeyInfo.Builder setNullTFKI(String foreignTableName) {
+        return dbmsDefaultTFKI(foreignTableName).updateChangeAction("SET NULL").deleteChangeAction("SET NULL");
+    }
+
     public static ForeignKeyInfo.Builder setDefaultFKI(String foreignKeyTableName) {
         return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT)
                 .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT)
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
+    }
+
+    public static TableForeignKeyInfo.Builder setDefaultTFKI(String foreignTableName) {
+        return dbmsDefaultTFKI(foreignTableName).updateChangeAction("SET DEFAULT").deleteChangeAction("SET DEFAULT");
     }
 
     public static ForeignKeyInfo.Builder restrictFKI(String foreignKeyTableName) {
@@ -182,8 +243,16 @@ public class TestData {
                 .tableName(foreignKeyTableName);
     }
 
-    public static TableContextBuilder newTableContext() {
-        return new TableContextBuilder();
+    public static TableForeignKeyInfo.Builder restrictTFKI(String foreignTableName) {
+        return dbmsDefaultTFKI(foreignTableName).updateChangeAction("RESTRICT").deleteChangeAction("RESTRICT");
+    }
+
+    public static TableContextBuilder newTableContext(TableInfo... tables) {
+        TableContextBuilder ret = new TableContextBuilder();
+        if (tables != null && tables.length > 0) {
+            Arrays.stream(tables).forEach(t -> ret.addTable(t));
+        }
+        return ret;
     }
 
     // Helpers for covenience methods
@@ -225,57 +294,40 @@ public class TestData {
     }
 
     public static TableContext testTargetContext() {
-        return newTableContext().addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable")
-                        .columnMap(columnMapOf(idCol(),
-                                modifiedCol(),
-                                createdCol(),
-                                deletedCol(),
-                                longCol().columnName("test_table_2_id")
+        return newTableContext().addTable(
+                        table("test_table")
+                                .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable")
+                                .staticDataAsset("test_table_data.xml")
+                                .staticDataRecordName("test_table_data")
+                                .addToColumns(longCol().columnName("test_table_2_id")
                                         .methodName("testTable2Id")
                                         .foreignKeyInfo(cascadeFKI("test_table_2")
                                                 .columnName("_id")
                                                 .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
                                                 .build())
-                                        .build()))
-                        .tableName("test_table")
-                        .staticDataAsset("test_table_data.xml")
-                        .staticDataRecordName("test_table_data")
-                        .build())
-                .addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-                                .columnMap(columnMapOf(idCol(),
-                                        modifiedCol(),
-                                        createdCol(),
-                                        deletedCol(),
-                                        longCol().columnName("test_table_3_id")
-                                                .methodName("testTable3Id")
-                                                .foreignKeyInfo(cascadeFKI("test_table_3")
-                                                        .columnName("_id")
-                                                        .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-                                                        .build())
-                                                .build()))
-                                .tableName("test_table_2")
-                                .build())
-                .addTable(table().qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-                                .columnMap(columnMapOf(idCol(),
-                                        modifiedCol(),
-                                        createdCol(),
-                                        deletedCol(),
-                                        doubleCol().columnName("app_rating")
-                                                .methodName("appRating")
-                                                .build(),
-                                        bigDecimalCol().columnName("competitor_app_rating")
-                                                .methodName("competitorAppRating")
-                                                .searchable(false)
-                                                .build(),
-                                        longCol().columnName("global_id")
-                                                .methodName("globalId")
-                                                .orderable(false)
-                                                .build(),
-                                        intCol().columnName("login_count")
-                                                .methodName("loginCount")
-                                                .build()))
-                                .tableName("test_table_3")
-                                .build())
+                                        .build())
+                                .build()
+                )
+                .addTable(
+                        table("test_table_2")
+                                .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
+                                .addToColumns(longCol().columnName("test_table_3_id")
+                                        .methodName("testTable3Id")
+                                        .foreignKeyInfo(cascadeFKI("test_table_3")
+                                                .columnName("_id")
+                                                .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
+                                                .build())
+                                        .build())
+                                .build()
+                )
+                .addTable(table("test_table_3")
+                        .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
+                        .addToColumns(doubleCol().columnName("app_rating").methodName("appRating").build())
+                        .addToColumns(bigDecimalCol().columnName("competitor_app_rating").methodName("competitorAppRating").searchable(false).build())
+                        .addToColumns(longCol().columnName("global_id").methodName("globalId").orderable(false).build())
+                        .addToColumns(intCol().columnName("login_count").methodName("loginCount").build())
+                        .build()
+                )
                 .build();
     }
 
@@ -310,6 +362,122 @@ public class TestData {
                     return tableMap;
                 }
             };
+        }
+    }
+
+    public static class ProgressiveTableInfoBuilder {
+
+        private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
+        private Set<String> primaryKey = new HashSet<>();
+        private Map<String, ColumnInfo> columnMap = new HashMap<>();
+        private final TableInfo.Builder realBuilder = TableInfo.builder();
+
+        public ProgressiveTableInfoBuilder tableName(String tableName) {
+            realBuilder.tableName(tableName);
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder addTableForeignKey(TableForeignKeyInfo... foreignKeys) {
+            if (foreignKeys != null && foreignKeys.length > 0) {
+                Arrays.stream(foreignKeys).forEach(fk -> this.foreignKeys.add(fk));
+            }
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder foreignKeys(Set<TableForeignKeyInfo> foreignKeys) {
+            this.foreignKeys = foreignKeys;
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder addToPrimaryKey(String... primaryKeyColumns) {
+            if (primaryKeyColumns != null && primaryKeyColumns.length > 0) {
+                Arrays.stream(primaryKeyColumns).forEach(pkc -> this.primaryKey.add(pkc));
+            }
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder primaryKey(Set<String> primaryKey) {
+            this.primaryKey = primaryKey;
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder primaryKeyOnConflict(String primaryKeyOnConflict) {
+            realBuilder.primaryKeyOnConflict(primaryKeyOnConflict);
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder qualifiedClassName(String tableName) {
+            realBuilder.qualifiedClassName(tableName);
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder addToColumns(ColumnInfo... columns) {
+            if (columns != null && columns.length > 0) {
+                Arrays.stream(columns).forEach(c -> columnMap.put(c.getColumnName(), c));
+            }
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder columnMap(Map<String, ColumnInfo> columnMap) {
+            this.columnMap = columnMap;
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder docStoreParameterization(String docStoreParameterization) {
+            realBuilder.docStoreParameterization(docStoreParameterization);
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder staticDataAsset(String staticDataAsset) {
+            realBuilder.staticDataAsset(staticDataAsset);
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder staticDataRecordName(String staticDataRecordName) {
+            realBuilder.staticDataRecordName(staticDataRecordName);
+            return this;
+        }
+
+        public TableInfo build() {
+            return realBuilder.foreignKeys(foreignKeys).columnMap(columnMap).primaryKey(primaryKey).build();
+        }
+    }
+
+    public static class ProgressiveMigrationBuilder {
+
+        private Migration.Builder realBuilder = Migration.builder();
+        private Map<String, String> extras;
+
+        public ProgressiveMigrationBuilder type(Migration.Type type) {
+            realBuilder.type(type);
+            return this;
+        }
+
+        public ProgressiveMigrationBuilder tableName(String tableName) {
+            realBuilder.tableName(tableName);
+            return this;
+        }
+
+        public ProgressiveMigrationBuilder columnName(String columnName) {
+            realBuilder.columnName(columnName);
+            return this;
+        }
+
+        public ProgressiveMigrationBuilder extras(Map<String, String> extras) {
+            this.extras = extras;
+            return this;
+        }
+
+        public ProgressiveMigrationBuilder addExtra(String key, String value) {
+            if (extras == null) {
+                extras = new HashMap<>();
+            }
+            extras.put(key, value);
+            return this;
+        }
+
+        public Migration build() {
+            return realBuilder.extras(extras).build();
         }
     }
 }

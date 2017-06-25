@@ -21,13 +21,7 @@ import com.google.gson.annotations.SerializedName;
 
 import lombok.Getter;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <p>
@@ -41,6 +35,8 @@ import java.util.ArrayList;
 @lombok.EqualsAndHashCode
 @lombok.Builder(builderClassName = "Builder")
 public class TableInfo {
+
+    public static final String DEFAULT_PRIMARY_KEY_COLUMN = "_id";
 
     /**
      * <p>
@@ -102,13 +98,19 @@ public class TableInfo {
     @Getter @SerializedName("static_data_asset") private final String staticDataAsset;
     @Getter @SerializedName("static_data_record_name") private final String staticDataRecordName;
     @Getter @SerializedName("doc_store_parameterization") private final String docStoreParameterization;
+    @SerializedName("primary_key") private final Set<String> primaryKey;
+    @Getter @SerializedName("primary_key_on_conflict") private final String primaryKeyOnConflict;
+    @Getter @SerializedName("foreign_keys") private final Set<TableForeignKeyInfo> foreignKeys;
 
     private TableInfo(Map<String, ColumnInfo> columnMap,
                       String tableName,
                       String qualifiedClassName,
                       String staticDataAsset,
                       String staticDataRecordName,
-                      String docStoreParameterization) {
+                      String docStoreParameterization,
+                      Set<String> primaryKey,
+                      String primaryKeyOnConflict,
+                      Set<TableForeignKeyInfo> foreignKeys) {
         this.tableName = createTableName(tableName, qualifiedClassName);
         this.qualifiedClassName = qualifiedClassName;
 
@@ -121,6 +123,47 @@ public class TableInfo {
         this.staticDataAsset = staticDataAsset;
         this.staticDataRecordName = staticDataRecordName;
         this.docStoreParameterization = docStoreParameterization;
+
+        // This nasty code preserves backwards compatibility.
+        // primary key properties were serialized on columns pre 0.11.0
+        // in actuality, primary keys are table properties.
+        // TODO: remove this code when no longer necessary
+        this.primaryKey = new HashSet<>();
+        if (primaryKey != null && !primaryKey.isEmpty()) {
+            this.primaryKey.addAll(primaryKey);
+        } else if (columnMap != null) {
+            for (ColumnInfo column : columnMap.values()) {
+                if (column.isPrimaryKey()) {
+                    this.primaryKey.add(column.getColumnName());
+                }
+            }
+        } else {
+            this.primaryKey.add(DEFAULT_PRIMARY_KEY_COLUMN);
+        }
+        this.primaryKeyOnConflict = primaryKeyOnConflict;
+
+        // This nasty code preserves backwards compatibility.
+        // foreign key properties were serialized on columns pre 0.11.0
+        // in actuality, primary keys are table properties.
+        // TODO: remove this code when no longer necessary
+        this.foreignKeys = new HashSet<>();
+        if (foreignKeys != null && !foreignKeys.isEmpty()) {
+            this.foreignKeys.addAll(foreignKeys);
+        } else if (columnMap != null) {
+            for (ColumnInfo column : columnMap.values()) {
+                ForeignKeyInfo legacyForeignKey = column.getForeignKeyInfo();
+                if (legacyForeignKey == null) {
+                    continue;
+                }
+                this.foreignKeys.add(new TableForeignKeyInfo.Builder()
+                        .foreignTableApiClassName(legacyForeignKey.getApiClassName())
+                        .foreignTableName(legacyForeignKey.getTableName())
+                        .mapLocalToForeignColumn(column.getColumnName(), legacyForeignKey.getColumnName())
+                        .updateChangeAction(legacyForeignKey.getUpdateAction().toString())
+                        .deleteChangeAction(legacyForeignKey.getDeleteAction().toString())
+                        .build());
+            }
+        }
     }
 
     public boolean isValid() {
@@ -173,7 +216,7 @@ public class TableInfo {
     public List<ColumnInfo> getForeignKeyColumns() {
         List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
-            if (column.isForeignKey()) {
+            if (isForeignKeyColumn(column)) {
                 retList.add(column);
             }
         }
@@ -184,7 +227,7 @@ public class TableInfo {
     public List<ColumnInfo> getNonForeignKeyColumns() {
         List<ColumnInfo> retList = new ArrayList<>();
         for (ColumnInfo column : getColumns()) {
-            if (!column.isForeignKey()) {
+            if (!isForeignKeyColumn(column)) {
                 retList.add(column);
             }
         }
@@ -192,8 +235,75 @@ public class TableInfo {
         return retList;
     }
 
+    public Set<String> getPrimaryKey() {
+        if (primaryKey != null && !primaryKey.isEmpty()) {
+            return new HashSet<>(primaryKey);
+        }
+
+        Set<String> ret = new HashSet<>();
+        for (ColumnInfo column : getColumns()) {
+            if (DEFAULT_PRIMARY_KEY_COLUMN.equals(column.getColumnName())) {
+                continue;
+            }
+            if (column.isPrimaryKey()) {
+                ret.add(column.getColumnName());
+            }
+        }
+        if (ret.isEmpty()) {
+            ret.add(DEFAULT_PRIMARY_KEY_COLUMN);
+        }
+        return ret;
+    }
+
     public boolean referencesOtherTable() {
-        return !getForeignKeyColumns().isEmpty();
+        return (foreignKeys != null && !foreignKeys.isEmpty()) || !getForeignKeyColumns().isEmpty();
+    }
+
+    public boolean isForeignKeyColumn(String columnName) {
+        return isForeignKeyColumn(getColumn(columnName));
+    }
+
+    public TableForeignKeyInfo getForeignKeyForColumn(String columnName) {
+        if (foreignKeys == null) {
+            return null;
+        }
+        for (TableForeignKeyInfo foreignKey : foreignKeys) {
+            if (foreignKey.getLocalToForeignColumnMap().keySet().contains(columnName)) {
+                return foreignKey;
+            }
+        }
+        return null;
+    }
+
+    public Builder newBuilder() {
+        return builder()
+                .tableName(tableName)
+                .foreignKeys(foreignKeys)
+                .primaryKey(primaryKey)
+                .primaryKeyOnConflict(primaryKeyOnConflict)
+                .staticDataAsset(staticDataAsset)
+                .staticDataRecordName(staticDataRecordName)
+                .columnMap(columnMap)
+                .docStoreParameterization(docStoreParameterization)
+                .qualifiedClassName(qualifiedClassName);
+    }
+
+    private boolean isForeignKeyColumn(ColumnInfo column) {
+        if (column == null) {
+            return false;
+        }
+        if (column.isForeignKey()) {
+            return true;
+        }
+        if (foreignKeys == null || foreignKeys.isEmpty()) {
+            return false;
+        }
+        for (TableForeignKeyInfo foreignKey : foreignKeys) {
+            if (foreignKey.getLocalToForeignColumnMap().containsKey(column.getColumnName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String createTableName(String tableName, String qualifiedClassName) {

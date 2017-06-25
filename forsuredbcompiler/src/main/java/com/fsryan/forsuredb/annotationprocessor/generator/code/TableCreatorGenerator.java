@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.FSTableCreator;
@@ -130,8 +131,8 @@ public class TableCreatorGenerator extends JavaSourceGenerator {
                     .append(", \"").append(tableInfo.getStaticDataRecordName()).append("\"");
         }
 
-        for (ColumnInfo column : tableInfo.getForeignKeyColumns()) {
-            buf.append(", ").append(column.getForeignKeyInfo().getApiClassName()).append(".class");
+        for (TableForeignKeyInfo foreignKey : tableInfo.getForeignKeys()) {
+            buf.append(", ").append(foreignKey.getForeignTableApiClassName()).append(".class");
         }
 
         return buf.append("))").toString();

@@ -42,7 +42,9 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @Getter @SerializedName("index") private final boolean index;
     @Getter @SerializedName("default_value") private final String defaultValue;
     @Getter @SerializedName("unique") private final boolean unique;
-    @Getter @SerializedName("primary_key") private final boolean primaryKey;
+    @Deprecated
+    @SerializedName("primary_key") private final boolean primaryKey;
+    @Deprecated
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
     @Getter @SerializedName("searchable") private final boolean searchable;
     @Getter @SerializedName("orderable") private final boolean orderable;
@@ -59,6 +61,7 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
         return qualifiedType == null || qualifiedType.isEmpty() ? "java.lang.String" : qualifiedType;
     }
 
+    @Deprecated
     public boolean isForeignKey() {
         return foreignKeyInfo != null;
     }
@@ -103,12 +106,16 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
      * </p>
      * @param allTables
      */
-    /*package*/
     public void enrichWithForeignTableInfoFrom(List<TableInfo> allTables) {
         if (!isForeignKey()) {
             return;
         }
         setForeignKeyTableName(allTables);
+    }
+
+    @Deprecated
+    public boolean isPrimaryKey() {
+        return primaryKey;
     }
 
     private String setForeignKeyTableName(List<TableInfo> allTables) {
@@ -120,5 +127,19 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
         }
 
         return null;
+    }
+
+    public Builder newBuilder() {
+        return builder()
+                .primaryKey(primaryKey)
+                .columnName(columnName)
+                .qualifiedType(qualifiedType)
+                .unique(unique)
+                .methodName(methodName)
+                .defaultValue(defaultValue)
+                .foreignKeyInfo(foreignKeyInfo)
+                .index(index)
+                .orderable(orderable)
+                .searchable(searchable);
     }
 }
