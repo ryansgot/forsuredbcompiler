@@ -125,6 +125,18 @@ public class TestData {
         return migration(Migration.Type.UPDATE_PRIMARY_KEY).tableName(tableName);
     }
 
+    public static ProgressiveMigrationBuilder changeDefaultValueMigration(String tableName) {
+        return migration(Migration.Type.CHANGE_DEFAULT_VALUE).tableName(tableName);
+    }
+
+    public static ProgressiveMigrationBuilder makeColumnUniqueMigration(String tableName) {
+        return migration(Migration.Type.MAKE_COLUMN_UNIQUE).tableName(tableName);
+    }
+
+    public static ProgressiveMigrationBuilder addUniqueIndexMigration(String tableName) {
+        return migration(Migration.Type.ADD_UNIQUE_INDEX).tableName(tableName);
+    }
+
     public static ColumnInfo idCol() {
         return ColumnInfo.builder().columnName("_id")
                 .methodName("id")

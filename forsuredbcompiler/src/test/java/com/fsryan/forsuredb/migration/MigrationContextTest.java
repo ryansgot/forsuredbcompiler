@@ -1,24 +1,17 @@
 package com.fsryan.forsuredb.migration;
 
 import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.fsryan.forsuredb.api.migration.Migration;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.*;
-import java.util.function.Function;
 
-import static com.fsryan.forsuredb.TestData.*;
-import static com.fsryan.forsuredb.api.info.TableInfo.DEFAULT_PRIMARY_KEY_COLUMN;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
