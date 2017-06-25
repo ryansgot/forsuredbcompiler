@@ -349,6 +349,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .orderedMigrations(Lists.newArrayList(
                                         Migration.builder()
                                                 .type(Migration.Type.UPDATE_PRIMARY_KEY)
+                                                .extras(ImmutableMap.of("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]"))
                                                 .tableName(TABLE_NAME)
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
@@ -414,6 +415,55 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build())
                                         .build()))
                                         .build()))
+                                .build()
+                },
+                {   // 15: change the default value of an existing column
+                        2,
+                        newTableContext()
+                                .addTable(defaultPkTable("test1", longCol().build()).build())
+                                .build(),
+                        newTableContext()
+                                .addTable(defaultPkTable("test1", longCol().defaultValue("12").build()).build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(3)
+                                .orderedMigrations(Arrays.asList(
+                                        changeDefaultValueMigration("test1")
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()
+                                ))
+                                .targetSchema(tableMapOf(
+                                        defaultPkTable("test1")
+                                                .addToColumns(longCol().defaultValue("12").build())
+                                                .build()
+                                        )
+                                )
+                                .build()
+                },
+                {   // 16: change the default value of an existing column and make it a unique index
+                        2,
+                        newTableContext()
+                                .addTable(defaultPkTable("test1", longCol().build()).build())
+                                .build(),
+                        newTableContext()
+                                .addTable(defaultPkTable("test1", longCol().unique(true).index(true).defaultValue("12").build()).build())
+                                .build(),
+                        MigrationSet.builder()
+                                .dbVersion(3)
+                                .orderedMigrations(Arrays.asList(
+                                        changeDefaultValueMigration("test1")
+                                                .columnName(longCol().build().getColumnName())
+                                                .build(),
+                                        addUniqueIndexMigration("test1")
+                                                .columnName(longCol().build().getColumnName())
+                                                .build()
+                                ))
+                                .targetSchema(tableMapOf(
+                                        defaultPkTable("test1")
+                                                .addToColumns(longCol().defaultValue("12").build())
+                                                .build()
+                                        )
+                                )
                                 .build()
                 }
         });

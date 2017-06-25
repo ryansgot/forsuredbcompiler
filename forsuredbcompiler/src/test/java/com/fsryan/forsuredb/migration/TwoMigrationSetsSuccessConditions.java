@@ -168,6 +168,29 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                         .build())
                                 .build()
                                 .tableMap()
+                },
+                {   // 06: update an existing column's default value when it did not have one previously
+                        Arrays.asList(
+                                createTableMigration("table1"),
+                                addColumnMigration("table1")
+                                        .columnName(stringCol().build().getColumnName())
+                                        .build()
+                        ),
+                        newTableContext()
+                                .addTable(defaultPkTable("table1")
+                                        .addToColumns(stringCol().build())
+                                        .build())
+                                .build()
+                                .tableMap(),
+                        Arrays.asList(changeDefaultValueMigration("table1")
+                                .columnName(stringCol().build().getColumnName())
+                                .build()),
+                        newTableContext()
+                                .addTable(table("table1")
+                                        .addToColumns(stringCol().defaultValue("some default").build())
+                                        .build())
+                                .build()
+                                .tableMap()
                 }
         });
     }

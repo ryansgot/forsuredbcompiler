@@ -67,10 +67,9 @@ public class MigrationContext implements TableContext {
         Map<String, TableInfo.Builder> tableBuilderMap = new HashMap<>();
         Map<String, ColumnInfo.Builder> columnBuilderMap = new HashMap<>();
         for (MigrationSet migrationSet : mr.getMigrationSets()) {
-            Set<String> recreatedTables = new HashSet<>();  // <-- need a new set for each migration set because the end state is different for each
             for (Migration m : migrationSet.getOrderedMigrations()) {
                 final TableInfo table = migrationSet.getTargetSchema().get(m.getTableName());
-                update(table, m, tableBuilderMap, columnBuilderMap, recreatedTables);
+                update(table, m, tableBuilderMap, columnBuilderMap);
             }
         }
 
@@ -110,18 +109,13 @@ public class MigrationContext implements TableContext {
     private void update(TableInfo table,
                         Migration m,
                         Map<String, TableInfo.Builder> tableBuilderMap,
-                        Map<String, ColumnInfo.Builder> columnBuilderMap,
-                        Set<String> recreatedTables) {
+                        Map<String, ColumnInfo.Builder> columnBuilderMap) {
         switch (m.getType()) {
             case CREATE_TABLE:
                 tableBuilderMap.put(tableKey(m), table.newBuilder());
-                recreatedTables.add(table.getTableName());
                 break;
             case UPDATE_PRIMARY_KEY:
-                if (!recreatedTables.contains(table.getTableName())) {
-                    handleUpdatePrimaryKey(table, m, tableBuilderMap);
-                    recreatedTables.add(table.getTableName());
-                }
+                handleUpdatePrimaryKey(table, m, tableBuilderMap);
                 for (String primaryKeyColumnName : table.getPrimaryKey()) {
                     final String columnKey = columnKey(table.getTableName(), primaryKeyColumnName);
                     final ColumnInfo column = table.getColumn(primaryKeyColumnName);
@@ -131,16 +125,15 @@ public class MigrationContext implements TableContext {
             case ADD_FOREIGN_KEY_REFERENCE:
                 // intentionaly falling through
             case UPDATE_FOREIGN_KEYS:
-                if (!recreatedTables.contains(table.getTableName())) {
-                    handleUpdateForeignKeys(table, m, tableBuilderMap);
-                    recreatedTables.add(table.getTableName());
-                }
+                handleUpdateForeignKeys(table, m, tableBuilderMap);
                 for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
                     for (String columnName : foreignKey.getLocalToForeignColumnMap().keySet()) {
                         columnBuilderMap.put(columnKey(table.getTableName(), columnName), table.getColumn(columnName).newBuilder());
                     }
                 }
                 break;
+            case CHANGE_DEFAULT_VALUE:
+                // intentionally falling through
             case ALTER_TABLE_ADD_UNIQUE:
                 // intentionally falling through
             case MAKE_COLUMN_UNIQUE:

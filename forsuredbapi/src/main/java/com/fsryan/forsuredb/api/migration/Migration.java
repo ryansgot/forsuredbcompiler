@@ -23,6 +23,10 @@ import lombok.Getter;
 
 import java.util.Map;
 
+
+// TODO: rethink this. I think these can be simplified and more of the work can be imposed upon the DBMS integration library
+// You should not need so many different values.
+// Additionally, order need not be imposed on migrations at this level
 /**
  * <p>
  *     The Migration class holds all of the information necessary for a {@link QueryGenerator} to generate the
@@ -38,6 +42,12 @@ public class Migration implements Comparable<Migration> {
     // TODO: these should just be strings.
     public enum Type {
         CREATE_TABLE(0),
+
+        // migrations typically requiring recreation of a table
+        UPDATE_PRIMARY_KEY(5),      // SQLite requires recreation of a table for this to work. MySQL does not.
+        UPDATE_FOREIGN_KEYS(5),     // SQLite requires recreation of a table for this to work. MySQL does not.
+        CHANGE_DEFAULT_VALUE(6),    // SQLite requires recreation of a table for this to work. MySQL does not.
+
         ALTER_TABLE_ADD_COLUMN(10),
         ALTER_TABLE_ADD_UNIQUE(10),
         /**
@@ -53,8 +63,6 @@ public class Migration implements Comparable<Migration> {
         ADD_INDEX(30),
         MAKE_COLUMN_UNIQUE(30),
         CREATE_TEMP_TABLE_FROM_EXISTING(40),
-        UPDATE_PRIMARY_KEY(70),
-        UPDATE_FOREIGN_KEYS(71),
         DROP_TABLE(100);
 
         private int priority;
@@ -86,7 +94,7 @@ public class Migration implements Comparable<Migration> {
         this(tableName, columnName, type, null);
     }
 
-    public boolean hasAdditionalInfo() {
+    public boolean hasExtras() {
         return extras != null;
     }
 

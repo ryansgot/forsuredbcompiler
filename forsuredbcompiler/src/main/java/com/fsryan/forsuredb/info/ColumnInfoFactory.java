@@ -56,6 +56,8 @@ public class ColumnInfoFactory {
             if (at.property("unique").as(boolean.class)) {
                 builder.unique(true);
             }
+        } else if (annotationClass.equals(FSDefault.class.getName())) {
+            builder.defaultValue(at.property("value").asString());
         }
     }
 }

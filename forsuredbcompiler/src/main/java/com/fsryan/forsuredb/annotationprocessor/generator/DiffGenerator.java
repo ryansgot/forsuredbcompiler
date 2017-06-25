@@ -99,6 +99,7 @@ public class DiffGenerator {
             TableInfo sourceTable = sourceContext.getTable(targetTable.getTableName());
             if (sourceTable != null && !sourceTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
                 retList.add(Migration.builder().type(Migration.Type.UPDATE_PRIMARY_KEY)
+                        .extras(ImmutableMap.of("existing_column_names", gson.toJson(columnNamesOf(sourceTable))))
                         .tableName(targetTable.getTableName())
                         .build());
             }
@@ -111,35 +112,45 @@ public class DiffGenerator {
                 }
 
                 ColumnInfo sourceColumn = sourceTable.getColumn(targetColumn.getColumnName());
-                Migration migration = getExistingColumnMigration(sourceColumn, targetColumn, targetTable.getTableName());
-                if (migration != null) {
-                    retList.add(migration);
-                }
+                retList.addAll(getExistingColumnMigration(sourceColumn, targetColumn, targetTable.getTableName()));
             }
         }
         return retList;
     }
 
-    private Migration getExistingColumnMigration(ColumnInfo sourceColumn, ColumnInfo targetColumn, String tableName) {
+    private List<Migration> getExistingColumnMigration(ColumnInfo sourceColumn, ColumnInfo targetColumn, String tableName) {
+        List<Migration> ret = new ArrayList<>();
         if (!sourceColumn.isIndex() && !sourceColumn.isUnique() && targetColumn.isIndex() && targetColumn.isUnique()) {
-            return Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
+            ret.add(Migration.builder().type(Migration.Type.ADD_UNIQUE_INDEX)
                     .columnName(sourceColumn.getColumnName())
                     .tableName(tableName)
-                    .build();
-        }
-        if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
-            return Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
+                    .build());
+        } else if (!sourceColumn.isUnique() && targetColumn.isUnique()) {
+            ret.add(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
                     .columnName(sourceColumn.getColumnName())
                     .tableName(tableName)
-                    .build();
-        }
-        if (!sourceColumn.isIndex() && targetColumn.isIndex()) {
-            return Migration.builder().type(Migration.Type.ADD_INDEX)
+                    .build());
+        } else if (!sourceColumn.isIndex() && targetColumn.isIndex()) {
+            ret.add(Migration.builder().type(Migration.Type.ADD_INDEX)
                     .columnName(sourceColumn.getColumnName())
                     .tableName(tableName)
-                    .build();
+                    .build());
         }
-        return null;
+
+        // return early if neither source nor target has default value
+        if (!sourceColumn.hasDefaultValue() && !targetColumn.hasDefaultValue()) {
+            return ret;
+        }
+
+        if ((sourceColumn.hasDefaultValue() && !sourceColumn.getDefaultValue().equals(targetColumn.getDefaultValue()))
+                || (targetColumn.hasDefaultValue() && !targetColumn.getDefaultValue().equals(sourceColumn.getDefaultValue()))) {
+            ret.add(Migration.builder().type(Migration.Type.CHANGE_DEFAULT_VALUE)
+                    .columnName(sourceColumn.getColumnName())
+                    .tableName(tableName)
+                    .build());
+        }
+
+        return ret;
     }
 
     private boolean addUpdateForeignKeysMigration(List<Migration> retList, TableInfo sourceTable, TableInfo targetTable) {
