@@ -44,6 +44,7 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
     @Getter @SerializedName("unique") private final boolean unique;
     @Deprecated
     @SerializedName("primary_key") private final boolean primaryKey;
+    @Deprecated
     @Getter @SerializedName("foreign_key_info") private final ForeignKeyInfo foreignKeyInfo;
     @Getter @SerializedName("searchable") private final boolean searchable;
     @Getter @SerializedName("orderable") private final boolean orderable;
