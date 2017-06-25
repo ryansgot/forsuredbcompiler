@@ -127,4 +127,18 @@ public class ColumnInfo implements Comparable<ColumnInfo> {
 
         return null;
     }
+
+    public Builder newBuilder() {
+        return builder()
+                .primaryKey(primaryKey)
+                .columnName(columnName)
+                .qualifiedType(qualifiedType)
+                .unique(unique)
+                .methodName(methodName)
+                .defaultValue(defaultValue)
+                .foreignKeyInfo(foreignKeyInfo)
+                .index(index)
+                .orderable(orderable)
+                .searchable(searchable);
+    }
 }

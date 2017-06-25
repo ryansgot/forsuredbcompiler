@@ -275,6 +275,19 @@ public class TableInfo {
         return null;
     }
 
+    public Builder newBuilder() {
+        return builder()
+                .tableName(tableName)
+                .foreignKeys(foreignKeys)
+                .primaryKey(primaryKey)
+                .primaryKeyOnConflict(primaryKeyOnConflict)
+                .staticDataAsset(staticDataAsset)
+                .staticDataRecordName(staticDataRecordName)
+                .columnMap(columnMap)
+                .docStoreParameterization(docStoreParameterization)
+                .qualifiedClassName(qualifiedClassName);
+    }
+
     private boolean isForeignKeyColumn(ColumnInfo column) {
         if (column == null) {
             return false;

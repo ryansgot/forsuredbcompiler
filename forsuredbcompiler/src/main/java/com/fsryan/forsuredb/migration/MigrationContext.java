@@ -110,12 +110,18 @@ public class MigrationContext implements TableContext {
                         Set<String> recreatedTables) {
         switch (m.getType()) {
             case CREATE_TABLE:
-                handleCreateTable(m, tableBuilderMap, columnBuilderMap);
+                tableBuilderMap.put(tableKey(m), table.newBuilder());
+                recreatedTables.add(table.getTableName());
                 break;
             case UPDATE_PRIMARY_KEY:
                 if (!recreatedTables.contains(table.getTableName())) {
                     handleUpdatePrimaryKey(table, m, tableBuilderMap);
                     recreatedTables.add(table.getTableName());
+                }
+                for (String primaryKeyColumnName : table.getPrimaryKey()) {
+                    final String columnKey = columnKey(table.getTableName(), primaryKeyColumnName);
+                    final ColumnInfo column = table.getColumn(primaryKeyColumnName);
+                    columnBuilderMap.put(columnKey, column.newBuilder());
                 }
                 break;
             case ADD_FOREIGN_KEY_REFERENCE:
@@ -125,10 +131,13 @@ public class MigrationContext implements TableContext {
                     handleUpdateForeignKeys(table, m, tableBuilderMap);
                     recreatedTables.add(table.getTableName());
                 }
+                for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+                    for (String columnName : foreignKey.getLocalToForeignColumnMap().keySet()) {
+                        columnBuilderMap.put(columnKey(table.getTableName(), columnName), table.getColumn(columnName).newBuilder());
+                    }
+                }
                 break;
-//            case ADD_FOREIGN_KEY_REFERENCE:
-//                handleAddForeignKeyReference(table, m, tableBuilderMap, columnBuilderMap);
-//                break;
+                // TODO: test the below
             case ALTER_TABLE_ADD_COLUMN:
                 handleAddColumn(table, m, columnBuilderMap);
                 break;
@@ -153,30 +162,6 @@ public class MigrationContext implements TableContext {
         tb.foreignKeys(table.getForeignKeys());
     }
 
-    private void handleAddForeignKeyReference(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        ColumnInfo column = table.getColumn(m.getColumnName());
-        columnBuilderMap.put(columnKey(m), ColumnInfo.builder().columnName(m.getColumnName())
-                .qualifiedType(column.getQualifiedType())
-                .foreignKeyInfo(column.getForeignKeyInfo()));
-
-        // update the tableBuilder with the new foreign key info
-        TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
-        Set<TableForeignKeyInfo> tableForeignKeys = tb.build().getForeignKeys();
-        tableForeignKeys = tableForeignKeys == null ? new HashSet<TableForeignKeyInfo>() : tableForeignKeys;
-        TableForeignKeyInfo toAdd = new TableForeignKeyInfo.Builder()
-                .mapLocalToForeignColumn(column.getColumnName(), column.getForeignKeyInfo().getColumnName())
-                .updateChangeAction(column.getForeignKeyInfo().getUpdateAction().toString())
-                .deleteChangeAction(column.getForeignKeyInfo().getDeleteAction().toString())
-                .foreignTableApiClassName(column.getForeignKeyInfo().getApiClassName())
-                .foreignTableName(column.getForeignKeyInfo().getTableName())
-                .build();
-
-        APLog.i(LOG_TAG, "handleAddForeignKeyReference adding TableForeignKeyInfo to " + tableKey(m) + ": " + toAdd);
-
-        tableForeignKeys.add(toAdd);
-        tb.foreignKeys(tableForeignKeys);
-    }
-
     private void handleAddUniqueColumn(TableInfo table, Migration m, Map<String, ColumnInfo.Builder> columnBuilderMap) {
         handleAddColumn(table, m, true, columnBuilderMap);
     }
@@ -188,18 +173,7 @@ public class MigrationContext implements TableContext {
     private void handleAddColumn(TableInfo table, Migration m, boolean unique, Map<String, ColumnInfo.Builder> columnBuilderMap) {
         ColumnInfo.Builder b = columnBuilderMap.get(columnKey(m));
         if (b == null) {
-            b = ColumnInfo.builder().columnName(m.getColumnName())
-                    .qualifiedType(table.getColumn(m.getColumnName()).getQualifiedType())
-                    .unique(unique);
-            columnBuilderMap.put(columnKey(m), b);
-        }
-    }
-
-    private void handleCreateTable(Migration m, Map<String, TableInfo.Builder> tableBuilderMap, Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
-        if (tb == null) {
-            tb = TableInfo.builder().tableName(m.getTableName());
-            tableBuilderMap.put(tableKey(m), tb);
+            columnBuilderMap.put(columnKey(m), table.getColumn(m.getColumnName()).newBuilder());
         }
     }
 
@@ -208,7 +182,11 @@ public class MigrationContext implements TableContext {
     }
 
     private String columnKey(Migration m) {
-        return tableKey(m) + "." + m.getColumnName();
+        return columnKey(m.getTableName(), m.getColumnName());
+    }
+
+    private String columnKey(String tableName, String columnName) {
+        return tableName + "." + columnName;
     }
 
     private String tableKeyFromColumnKey(String columnBuilderMapKey) {
