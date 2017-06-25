@@ -129,22 +129,8 @@ public class ProcessingContext implements TableContext {
                 joins.add(join);
                 APLog.i(LOG_TAG, "found join: " + join.toString());
             }
-//            for (ColumnInfo column : table.getForeignKeyColumns()) {
-//                addToJoins(table, column);
-//            }
         }
     }
-
-//    private void addToJoins(TableInfo childTable, ColumnInfo childColumn) {
-//        TableInfo parent = tableMap.get(childColumn.getForeignKeyInfo().getTableName());
-//        JoinInfo join = JoinInfo.builder().childTable(childTable)
-//                .childColumn(childColumn)
-//                .parentTable(parent)
-//                .parentColumn(parent.getColumn(childColumn.getForeignKeyInfo().getColumnName()))
-//                .build();
-//        joins.add(join);
-//        APLog.i(LOG_TAG, "found join: " + join.toString());
-//    }
 
     private List<TableInfo> gatherInitialInfo() {
         List<TableInfo> ret = new ArrayList<>();
