@@ -95,7 +95,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public Finder(final R resolver) {
         this.tableName = resolver.tableName();
         defaultProjection = resolver.projection();
-        possibleColumns = (Set<String>) resolver.methodNameToColumnNameMap().keySet();
+        possibleColumns = new HashSet<String>(resolver.methodNameToColumnNameMap().values());
         conjunction = new Conjunction.AndOr<R, F>() {
             @Override
             public R then() {
@@ -676,7 +676,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         columns.clear();
         for (int i = 0; i < projection.length; i++) {
             final String column = projection[i];
-            if (column != null && !column.isEmpty() || !possibleColumns.contains(column)) {
+            if (column == null || !possibleColumns.contains(column)) {
                 continue;
             }
             columns.add(column);
