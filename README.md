@@ -19,9 +19,8 @@ buildscript {
         jcenter()   // <-- all jar/aar files for forsuredb are hosted on jcenter
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.6'  // <-- forsuredbcompiler needs this plugin to generate code
-        classpath 'com.fsryan:forsuredbplugin:0.4.0'                // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.fsryan:forsuredbplugin:0.4.0'    // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
     }
 }
 
@@ -37,7 +36,6 @@ allprojects {
 - Amend your app build.gradle file as such:
 ```groovy
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'             // <-- enables the forsuredbcompiler annotation processor
 apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 
 /*...*/
@@ -45,12 +43,12 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 dependencies {
     compile 'com.google.guava:guava:19.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.10.1'          // common API for your code and the supporting libraries
-    compile 'com.fsryan.forsuredb:sqlitelib:0.4.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.10.1@aar'  // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.11.0'          // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:sqlitelib:0.5.0'              // the SQLite DBMS integration
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.11.0@aar'  // the Android integration and useful tools
 
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'    // these classes are not needed at runtime--they do code generation
-    apt 'com.fsryan.forsuredb:forsuredbcompiler:0.10.0'         // runs the forsuredb annotation processor at compile time
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'    // these classes are not needed at runtime--they do code generation
+    annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'         // runs the forsuredb annotation processor at compile time
 }
 
 forsuredb {
@@ -98,7 +96,11 @@ public class App extends Application {
         // creates the tables based upon your FSGetApi extensions
         // pass your custom authority in to TableGenerator.generate() if you don't want the default
         // if your app has a debug mode, you can call FSDBHelper.initDebug() method instead to get queries spit out to the log
-        FSDBHelper.init(this, "testapp.db", TableGenerator.generate());
+        if (BuildConfig.DEBUG) {
+            FSDBHelper.initDebug(this, "testapp.db", TableGenerator.generate("com.fsryan.testapp.content"));
+        } else {
+            FSDBHelper.init(this, "testapp.db", TableGenerator.generate("com.fsryan.testapp.content"));
+        }
         // the String is your Content Provider's authority
         ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content")
         // ForSureAndroidInfoFactory tells ForSure everything it needs to know.
@@ -142,13 +144,17 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - Add a foreign key column to a table
 
 ## Coming up
-- support for inverse migrations of each of the currently supported migrations in 0.11.0? This is going to be a big change because it will mean no need to delete or manually edit migration json files.
+- support for inverse migrations of each of the currently supported migrations in 0.12.0? This is going to be a big change because it will mean no need to delete or manually edit migration json files.
 - More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.12.0?)
 - More querying API improvement?
 - An Android Studio/Intellij plugin. Not sure when I'll be able to get to this, though, and it will almost assuredly be part of a separate repo.
 - A library for making use of the ```FSSerializer``` plugin which allows for encryption/decryption of stored documents. I'm not sure exactly when I'll be able to get to this, but it will allow you to partially encrypt your database as opposed to using a tool like SQL Cipher.
 
 ## Revisions
+
+### 0.11.0
+- Removed dependency on Guava
+- Added composite key support. Now you can create composite primary and foreign keys.
 
 ### forsuredbapi-0.10.1
 - Fix issue wherein you had to join to another table in order to do a DISTINCT projection.
