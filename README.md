@@ -102,7 +102,7 @@ public class App extends Application {
             FSDBHelper.init(this, "testapp.db", TableGenerator.generate("com.fsryan.testapp.content"));
         }
         // the String is your Content Provider's authority
-        ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content")
+        ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content");
         // ForSureAndroidInfoFactory tells ForSure everything it needs to know.
         ForSure.init(ForSureAndroidInfoFactory.inst());
     }
