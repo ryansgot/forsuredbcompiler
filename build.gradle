@@ -4,15 +4,185 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.3.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.fsryan.gradle.autosemver:autosemver-git:0.1.0-alpha'
     }
 }
 
+group = 'com.fsryan.forsuredb'
+long buildTime = new Date().getTime()
+
 allprojects {
+    apply plugin: 'autosemver-git'
+
     repositories {
         jcenter()
         maven {
             url "http://projectlombok.org/mavenrepo"
+        }
+    }
+
+    autosemver {
+        branchConfigs {
+            integration {
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                versionIncrement = "patch"
+                preRelease = 'test'
+                metaData = Long.toString(buildTime)
+            }
+            alpha { // <-- for new features
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                versionIncrement = "minor"
+                preRelease = 'alpha'
+            }
+            beta { // <-- for bug fixes
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                preRelease = 'beta'
+            }
+            master {    // <-- stable version
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+            }
+        }
+    }
+}
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'jacoco'
+
+    repositories {
+        jcenter()
+    }
+
+    group = rootProject.group
+
+    jacoco {
+        toolVersion = "0.7.6.+"
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    bintray {
+        user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : ''
+        key = project.hasProperty('bintrayApiKey') ? project.getProperty('bintrayApiKey') : ''
+
+        publications = ['bintray']
+        pkg {
+            repo = 'maven'
+            name = project.name
+            licenses = ['Apache-2.0']
+            vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
+            publicDownloadNumbers = true
+            version {
+                name = project.version
+                desc = project.name.equals('forsuredbapi') ? 'Classes necessary for integration with forsuredb' : 'Guts of the ForSureDB project, containing code to generate source and assets'
+                released  = new Date(buildTime)
+                vcsTag = "v${project.version}"
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId = rootProject.group
+                artifactId = project.name
+                version = project.version
+                from components.java
+            }
+            bintray(MavenPublication) {
+                groupId = rootProject.group
+                artifactId = project.name
+                version = project.version
+                from components.java
+            }
+            mavenS3(MavenPublication) {
+                groupId = rootProject.group
+                artifactId = project.name
+                version = project.version
+                from components.java
+                pom.withXml {
+                    asNode().appendNode('build')
+                            .appendNode('extensions')
+                            .appendNode('extension')
+                            .appendNode('groupId', 'org.kuali.maven.wagons').parent()
+                            .appendNode('artifactId', 'maven-s3-wagon').parent()
+                            .appendNode('version', '1.2.1')
+                }
+            }
+        }
+        repositories {
+            def awsAccessKeyId = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : ""
+            def awsSecretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : ""
+            maven {
+                name 'release'
+                url "s3://repo.fsryan.com/release"
+                credentials(AwsCredentials) {
+                    accessKey = awsAccessKeyId
+                    secretKey = awsSecretKey
+                }
+            }
+            maven {
+                name 'snapshot'
+                url "s3://repo.fsryan.com/snapshot"
+                credentials(AwsCredentials) {
+                    accessKey = awsAccessKeyId
+                    secretKey = awsSecretKey
+                }
+            }
+        }
+    }
+
+    model {
+        tasks.generatePomFileForBintrayPublication {
+            doFirst {
+                file("$buildDir/poms").mkdirs()
+            }
+            destination = file("$buildDir/poms/pom-default.xml")
+        }
+    }
+
+    afterEvaluate { project ->
+        tasks.findByName('bintrayUpload').dependsOn('generatePomFileForBintrayPublication')
+
+        task release(dependsOn: ['bintrayUpload', 'publishMavenS3PublicationToReleaseRepository']) {
+            description = "Release ${project.name}-${project.version} to bintray and S3 release repos"
+            group = 'Release'
+            doLast {
+                println "Huzzah! ${project.name}-${project.version} Successfully uploaded to bintray and S3 release repos"
+            }
+        }
+        task releaseSnapshot(dependsOn: 'publishMavenS3PublicationToSnapshotRepository') {
+            description = "Release ${project.name}-${project.version} to S3 snapshot repo"
+            group = 'Release'
+            doLast {
+                println "Huzzah! ${project.name}-${project.version} Successfully uploaded to S3 snapshot repo"
+            }
         }
     }
 }
