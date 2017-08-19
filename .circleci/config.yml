@@ -46,7 +46,7 @@ jobs:
           destination: forsuredbcompiler/reports
 
       - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
-      
+
       - deploy:
           name: deploy to bintray
           command: |
