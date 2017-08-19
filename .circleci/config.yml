@@ -45,9 +45,8 @@ jobs:
           path: forsuredbcompiler/build/reports
           destination: forsuredbcompiler/reports
 
-      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN -cF $CIRCLE_TEST_REPORTS/forsuredbapi/reports/jacoco/jacocoReport/jacocoReport.xml
-      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN -cF $CIRCLE_TEST_REPORTS/forsuredbcompiler/reports/jacoco/jacocoReport/jacocoReport.xml
-
+      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
+      
       - deploy:
           name: deploy to bintray
           command: |
