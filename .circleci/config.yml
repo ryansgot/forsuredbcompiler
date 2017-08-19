@@ -51,7 +51,7 @@ jobs:
           name: deploy to bintray
           command: |
             if [ "$CIRCLE_BRANCH" == "alpha" ] || [ "$CIRCLE_BRANCH" == "beta" ] || [ "$CIRCLE_BRANCH" == "master" ]; then
-              ./gradlew release -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_API_KEY
+              ./gradlew release -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_API_KEY -PawsMavenAccessKey=$AWS_ACCESS_KEY_ID -PawsMavenSecretKey=$AWS_SECRET_KEY
             elif [ "$CIRCLE_BRANCH" == "integration" ]; then
-              ./gradlew releaseSnapshot -PawsMavenAccessKey=$AWS_MAVEN_ACCESS_KEY -PawsMavenSecretKey=$AWS_MAVEN_SECRET_KEY
+              ./gradlew releaseSnapshot -PawsMavenAccessKey=$AWS_ACCESS_KEY_ID -PawsMavenSecretKey=$AWS_SECRET_KEY
             fi
