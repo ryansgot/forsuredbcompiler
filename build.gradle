@@ -171,17 +171,17 @@ subprojects {
         tasks.findByName('bintrayUpload').dependsOn('generatePomFileForBintrayPublication')
 
         task release(dependsOn: ['bintrayUpload', 'publishMavenS3PublicationToReleaseRepository']) {
-            description = "Release ${project.name} to bintray and S3 release repos"
+            description = "Release ${project.name}-${project.version} to bintray and S3 release repos"
             group = 'Release'
             doLast {
-                println "Huzzah! ${project.name} Successfully uploaded to bintray and S3 release repos"
+                println "Huzzah! ${project.name}-${project.version} Successfully uploaded to bintray and S3 release repos"
             }
         }
         task releaseSnapshot(dependsOn: 'publishMavenS3PublicationToSnapshotRepository') {
-            description = "Release ${project.name} to S3 snapshot repo"
+            description = "Release ${project.name}-${project.version} to S3 snapshot repo"
             group = 'Release'
             doLast {
-                println "Huzzah! ${project.name} Successfully uploaded to S3 snapshot repo"
+                println "Huzzah! ${project.name}-${project.version} Successfully uploaded to S3 snapshot repo"
             }
         }
     }
