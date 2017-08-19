@@ -1,0 +1,58 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8
+      # environment variables for all commands executed in the primary container
+        environment:
+          GIT_AUTHOR_NAME: circleci
+          GIT_AUTHOR_EMAIL: noreply@circleci.com
+          GIT_COMMITTER_NAME: circleci
+          GIT_COMMITTER_EMAIL: noreply@circleci.com
+          EMAIL: noreply@circleci.com
+
+    working_directory: ~/code
+
+    environment:
+      JVM_OPTS: -Xmx2048m
+      TERM: dumb
+
+    steps:
+      - add-ssh-keys:
+         fingerprints:
+           - "01:e8:b8:2f:e3:6f:f2:49:d4:69:91:53:3d:d3:f4:0a"
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: ./gradlew dependencies
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      - run: ./gradlew clean test bumpVersion
+
+      - store_artifacts:
+          path: forsuredbapi/build/reports
+          destination: forsuredbapi/reports
+      - store_artifacts:
+          path: forsuredbcompiler/build/reports
+          destination: forsuredbcompiler/reports
+
+      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN -cF $CIRCLE_TEST_REPORTS/forsuredbapi/reports/jacoco/jacocoReport/jacocoReport.xml
+      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN -cF $CIRCLE_TEST_REPORTS/forsuredbcompiler/reports/jacoco/jacocoReport/jacocoReport.xml
+
+      - deploy:
+          name: deploy to bintray
+          command: |
+            if [ "$CIRCLE_BRANCH" == "alpha" ] || [ "$CIRCLE_BRANCH" == "beta" ] || [ "$CIRCLE_BRANCH" == "master" ]; then
+              ./gradlew release -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_API_KEY
+            elif [ "$CIRCLE_BRANCH" == "integration" ]; then
+              ./gradlew releaseSnapshot -PawsMavenAccessKey=$AWS_MAVEN_ACCESS_KEY -PawsMavenSecretKey=$AWS_MAVEN_SECRET_KEY
+            fi
