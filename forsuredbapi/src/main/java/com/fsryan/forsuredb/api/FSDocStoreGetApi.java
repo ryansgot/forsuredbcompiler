@@ -99,7 +99,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return the fully-qualified java class name of the
-     * @see #getClass()
+     * @see #getJavaClass(Retriever)
      */
     @FSColumn("class_name") String className(Retriever retriever);
 
@@ -114,5 +114,5 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * since the object was initially stored.
      * @see #className(Retriever)
      */
-    <C extends T> Class<C> getClass(Retriever retriever);
+    <C extends T> Class<C> getJavaClass(Retriever retriever);
 }

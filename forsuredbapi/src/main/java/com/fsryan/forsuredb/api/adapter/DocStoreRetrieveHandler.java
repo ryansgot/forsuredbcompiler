@@ -30,7 +30,7 @@ import java.util.Map;
                 return getStringDoc((Retriever) args[0]);
             case "className":
                 return callRetrieverMethod((Retriever) args[0], Sql.generator().unambiguousRetrievalColumn(tableName, "class_name"), String.class);
-            case "getClass":
+            case "getJavaClass":
                 return getClassOfObject((Retriever) args[0]);
             // TODO: this logic makes the assumption that the same serailizer in use when storing is the one used when retrieving
             case "get":
