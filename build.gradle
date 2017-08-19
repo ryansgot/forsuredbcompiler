@@ -5,14 +5,50 @@ buildscript {
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.3.1'
+        classpath 'com.fsryan.gradle.autosemver:autosemver-git:0.1.0-alpha'
     }
 }
 
+long buildTime = new Date().getTime()
+
 allprojects {
+    apply plugin: 'autosemver-git'
+
     repositories {
         jcenter()
         maven {
             url "http://projectlombok.org/mavenrepo"
+        }
+    }
+
+    autosemver {
+        branchConfigs {
+            integration {
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                versionIncrement = "patch"
+                preRelease = 'test'
+                metaData = Long.toString(buildTime)
+            }
+            alpha { // <-- for new features
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                versionIncrement = "minor"
+                preRelease = 'alpha'
+            }
+            beta { // <-- for bug fixes
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+                preRelease = 'beta'
+            }
+            master {    // <-- stable version
+                skipCiCommitMessageSuffix = '[skip ci]'
+                pullRemote = 'origin'
+                pushRemote = 'origin'
+            }
         }
     }
 }
