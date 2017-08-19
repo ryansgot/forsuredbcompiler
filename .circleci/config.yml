@@ -36,7 +36,7 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew clean test bumpVersion
+      - run: ./gradlew clean jacocoReport bumpVersion
 
       - store_artifacts:
           path: forsuredbapi/build/reports
