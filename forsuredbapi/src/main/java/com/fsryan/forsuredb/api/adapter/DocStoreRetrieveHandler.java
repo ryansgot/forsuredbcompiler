@@ -11,16 +11,14 @@ import java.util.Map;
 
 /*package*/ class DocStoreRetrieveHandler<T> extends RetrieveHandler {
 
-    private static FSSerializer serializer;
+    // TODO: check that this is valid.
+    private static FSSerializer serializer = new FSSerializerFactoryPluginHelper().getNew().create();
 
     private final Class<T> baseClass;
 
     public DocStoreRetrieveHandler(Class<T> baseClass, Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
         super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
-        if (serializer == null) {
-            serializer = new FSSerializerFactoryPluginHelper().getNew().create();
-        }
     }
 
     @Override

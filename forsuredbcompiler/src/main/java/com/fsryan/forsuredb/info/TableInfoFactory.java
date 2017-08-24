@@ -36,7 +36,7 @@ public class TableInfoFactory {
         String docStoreParameterization = getDocStoreParametrizationFrom(intf);
         if (docStoreParameterization != null) {
             APLog.i(TableInfoFactory.class.getSimpleName(), "Doc store parameterization found (" + docStoreParameterization + ") for table: " + createTableName(intf));
-            columnMap.putAll(TableInfo.DOC_STORE_COLUMNS);
+            columnMap.putAll(TableInfo.docStoreColumns());
         }
         for (ExecutableElement me : ElementFilter.methodsIn(intf.getEnclosedElements())) {
             final ColumnInfo column = ColumnInfoFactory.create(me, docStoreParameterization != null);

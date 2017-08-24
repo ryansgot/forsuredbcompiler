@@ -98,10 +98,10 @@ public final class TypedRecordContainer implements RecordContainer {
         Object value = columnToValueMap.get(column);
         Type type = columnToTypeMap.get(column);
         if (type.equals(int.class)) {
-            return (T) new Integer(value.toString());
+            return (T) Integer.valueOf(value.toString());
         }
         if (type.equals(double.class)) {
-            return (T) new Double(value.toString());
+            return (T) Double.valueOf(value.toString());
         }
         return (T) get(column);
     }

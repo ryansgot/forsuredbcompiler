@@ -48,57 +48,54 @@ public class StaticDataRetrieverFactory {
      * {@link RecordContainer RecordContainer} objects given the {@link InputStream InputStream}
      */
     public StaticDataRetriever fromStream(final InputStream xmlStream) {
-        if (xmlStream == null) {
-            return new StaticDataRetriever() {
-                @Override
-                public List<RecordContainer> getRecords(String recordName) {
-                    return Collections.emptyList();
-                }
+        return xmlStream == null ? StaticDataRetriever.NOOP : new RetrieverFromStream(log, xmlStream);
+    }
 
-                @Override
-                public List<Map<String, String>> getRawRecords(String recordName) {
-                    return Collections.emptyList();
-                }
-            };
+    private static class RetrieverFromStream implements StaticDataRetriever {
+
+        private final FSLogger log;
+        private final InputStream xmlStream;
+
+        private List<RecordContainer> records;
+        private List<Map<String, String>> rawRecords;
+
+        public RetrieverFromStream(FSLogger log, InputStream xmlStream) {
+            this.log = log;
+            this.xmlStream = xmlStream;
         }
 
-        return new StaticDataRetriever() {
-            List<RecordContainer> records;
-            List<Map<String, String>> rawRecords;
-
-            @Override
-            public List<RecordContainer> getRecords(final String recordName) {
-                if (records != null) {
-                    return records;
-                }
-
-                records = new LinkedList<>();
-                Parser.parse(xmlStream, new RecordContainerParseHandler(recordName, log, new Parser.RecordListener<RecordContainer>() {
-                    @Override
-                    public void onRecord(RecordContainer record) {
-                        records.add(record);
-                    }
-                }));
-
+        @Override
+        public List<RecordContainer> getRecords(final String recordName) {
+            if (records != null) {
                 return records;
             }
 
-            @Override
-            public List<Map<String, String>> getRawRecords(String recordName) {
-                if (rawRecords != null) {
-                    return rawRecords;
+            records = new LinkedList<>();
+            Parser.parse(xmlStream, new RecordContainerParseHandler(recordName, log, new Parser.RecordListener<RecordContainer>() {
+                @Override
+                public void onRecord(RecordContainer record) {
+                    records.add(record);
                 }
+            }));
 
-                rawRecords = new LinkedList<>();
-                Parser.parse(xmlStream, new RawRecordParseHandler(recordName, log, new Parser.RecordListener<Map<String, String>>() {
-                    @Override
-                    public void onRecord(Map<String, String> record) {
-                        rawRecords.add(record);
-                    }
-                }));
+            return records;
+        }
 
+        @Override
+        public List<Map<String, String>> getRawRecords(String recordName) {
+            if (rawRecords != null) {
                 return rawRecords;
             }
-        };
-    }
+
+            rawRecords = new LinkedList<>();
+            Parser.parse(xmlStream, new RawRecordParseHandler(recordName, log, new Parser.RecordListener<Map<String, String>>() {
+                @Override
+                public void onRecord(Map<String, String> record) {
+                    rawRecords.add(record);
+                }
+            }));
+
+            return rawRecords;
+        }
+    };
 }

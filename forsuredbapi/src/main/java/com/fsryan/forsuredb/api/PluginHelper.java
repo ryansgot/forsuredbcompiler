@@ -41,6 +41,7 @@ public abstract class PluginHelper<I> {
         }
 
         String ret = null;
+        // TODO: specify UTF-8 when you have updated the forsuredbplugin to output UTF-8
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             ret = reader.readLine();
