@@ -11,16 +11,14 @@ import java.util.Map;
 
 /*package*/ class DocStoreRetrieveHandler<T> extends RetrieveHandler {
 
-    private static FSSerializer serializer;
+    // TODO: check that this is valid.
+    private static FSSerializer serializer = new FSSerializerFactoryPluginHelper().getNew().create();
 
     private final Class<T> baseClass;
 
     public DocStoreRetrieveHandler(Class<T> baseClass, Class<? extends FSGetApi> tableApi, String tableName, Map<String, String> methodNameToColumnNameMap) {
         super(tableApi, tableName, methodNameToColumnNameMap);
         this.baseClass = baseClass;
-        if (serializer == null) {
-            serializer = new FSSerializerFactoryPluginHelper().getNew().create();
-        }
     }
 
     @Override
@@ -30,7 +28,7 @@ import java.util.Map;
                 return getStringDoc((Retriever) args[0]);
             case "className":
                 return callRetrieverMethod((Retriever) args[0], Sql.generator().unambiguousRetrievalColumn(tableName, "class_name"), String.class);
-            case "getClass":
+            case "getJavaClass":
                 return getClassOfObject((Retriever) args[0]);
             // TODO: this logic makes the assumption that the same serailizer in use when storing is the one used when retrieving
             case "get":

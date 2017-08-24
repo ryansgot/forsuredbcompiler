@@ -6,6 +6,13 @@ import com.fsryan.forsuredb.api.PluginHelper;
 
     private static final String FACTORY_CLASS = getImplementationClassName(FSSerializerFactory.class);
 
+    private static final FSSerializerFactory defaultFactory = new FSSerializerFactory() {
+        @Override
+        public FSSerializer create() {
+            return new FSGsonSerializer();
+        }
+    };
+
     public FSSerializerFactoryPluginHelper() {
         this(FACTORY_CLASS);
     }
@@ -17,11 +24,6 @@ import com.fsryan.forsuredb.api.PluginHelper;
 
     @Override
     protected FSSerializerFactory defaultImplementation() {
-        return new FSSerializerFactory() {
-            @Override
-            public FSSerializer create() {
-                return new FSGsonSerializer();
-            }
-        };
+        return defaultFactory;
     }
 }

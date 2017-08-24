@@ -41,7 +41,7 @@ public class AnnotationTranslatorFactory {
         this.processingEnv = processingEnv;
     }
 
-    public static AnnotationTranslatorFactory init(ProcessingEnvironment processingEnv) {
+    public static synchronized AnnotationTranslatorFactory init(ProcessingEnvironment processingEnv) {
         if (instance == null) {
             instance = new AnnotationTranslatorFactory(processingEnv);
         }

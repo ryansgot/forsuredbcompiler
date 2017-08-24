@@ -54,13 +54,14 @@ allprojects {
     }
 }
 
-subprojects {
+subprojects { subproject ->
 
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
     apply plugin: 'jacoco'
+    apply plugin: 'findbugs'
 
     repositories {
         jcenter()
@@ -72,6 +73,30 @@ subprojects {
         toolVersion = "0.7.6.+"
     }
 
+    task findbugs(type: FindBugs, dependsOn: assemble) {
+        group 'verification'
+        description 'Run findbugs'
+        ignoreFailures false
+        effort 'max'
+        reportLevel 'low'
+        excludeFilter = project.file("${subproject.projectDir}${File.separator}findbugs${File.separator}exclude-filter.xml")
+
+        source = subproject.sourceSets.main.allJava.sourceDirectories.asFileTree
+        classes = subproject.fileTree(subproject.sourceSets.main.output.classesDir)
+        classpath = subproject.sourceSets.main.compileClasspath
+
+        reports {
+            xml {
+                enabled = false
+            }
+            html {
+                enabled = true
+                stylesheet = rootProject.resources.text.fromFile(rootProject.file("${rootProject.projectDir}${File.separator}findbugs${File.separator}stylesheet.xsl"))
+            }
+        }
+    }
+
+    javadoc.failOnError false
     task javadocJar(type: Jar, dependsOn: javadoc) {
         classifier = 'javadoc'
         from javadoc.destinationDir
@@ -94,13 +119,13 @@ subprojects {
         publications = ['bintray']
         pkg {
             repo = 'maven'
-            name = project.name
+            name = subproject.name
             licenses = ['Apache-2.0']
             vcsUrl = 'https://github.com/ryansgot/forsuredbcompiler.git'
             publicDownloadNumbers = true
             version {
-                name = project.version
-                desc = project.name.equals('forsuredbapi') ? 'Classes necessary for integration with forsuredb' : 'Guts of the ForSureDB project, containing code to generate source and assets'
+                name = subproject.version
+                desc = subproject.name.equals('forsuredbapi') ? 'Classes necessary for integration with forsuredb' : 'Guts of the ForSureDB project, containing code to generate source and assets'
                 released  = new Date(buildTime)
                 vcsTag = "v${project.version}"
             }
@@ -111,20 +136,20 @@ subprojects {
         publications {
             maven(MavenPublication) {
                 groupId = rootProject.group
-                artifactId = project.name
-                version = project.version
+                artifactId = subproject.name
+                version = subproject.version
                 from components.java
             }
             bintray(MavenPublication) {
                 groupId = rootProject.group
-                artifactId = project.name
-                version = project.version
+                artifactId = subproject.name
+                version = subproject.version
                 from components.java
             }
             mavenS3(MavenPublication) {
                 groupId = rootProject.group
-                artifactId = project.name
-                version = project.version
+                artifactId = subproject.name
+                version = subproject.version
                 from components.java
                 pom.withXml {
                     asNode().appendNode('build')

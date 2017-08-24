@@ -11,16 +11,15 @@ import java.util.Map;
 
 /*package*/ class DocStoreSaveHandler<U, R extends RecordContainer> extends SaveHandler<U, R> {
 
-    private static FSSerializer serializer;
+    // TODO: share one copy of the FSSerializer
+    private static FSSerializer serializer  = new FSSerializerFactoryPluginHelper().getNew().create();
+
     private static final ColumnDescriptor DOC_COLUMN_DESCRIPTOR = new ColumnDescriptor("doc", String.class);
     private static final ColumnDescriptor DOC_BLOB_COLUMN_DESCRIPTOR = new ColumnDescriptor("blob_doc", byte[].class);
     private static final ColumnDescriptor CLASS_NAME_COLUMN_DESCRIPTOR = new ColumnDescriptor("class_name", String.class);
 
     protected DocStoreSaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
         super(queryable, selection, recordContainer, columnTypeMap);
-        if (serializer == null) {
-            serializer = new FSSerializerFactoryPluginHelper().getNew().create();
-        }
     }
 
     @Override

@@ -249,14 +249,14 @@ public abstract class RetrieveHandlerTest<U> {
             @Test
             public void shouldGetCorrectClassWhenGetClassMethodInvokedAndClassExists() throws Throwable {
                 when(mockRetriever.getString(tableName + "_class_name")).thenReturn(DocStoreTestBase.class.getName());
-                Object out = rhut.invoke(rhut, apiClass.getMethod("getClass", Retriever.class), new Object[]{mockRetriever});
+                Object out = rhut.invoke(rhut, apiClass.getMethod("getJavaClass", Retriever.class), new Object[]{mockRetriever});
                 assertEquals(DocStoreTestBase.class, out);
             }
 
             @Test
             public void shouldGetNullWhenGetClassMethodInvokedAndClassDoesNotExist() throws Throwable {
                 when(mockRetriever.getString(tableName + "_class_name")).thenReturn("some.nonexistent.class.Name");
-                Object out = rhut.invoke(rhut, apiClass.getMethod("getClass", Retriever.class), new Object[]{mockRetriever});
+                Object out = rhut.invoke(rhut, apiClass.getMethod("getJavaClass", Retriever.class), new Object[]{mockRetriever});
                 assertNull(out);
             }
 
