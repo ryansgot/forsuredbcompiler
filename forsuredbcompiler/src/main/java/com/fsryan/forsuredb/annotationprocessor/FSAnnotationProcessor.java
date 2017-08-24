@@ -63,7 +63,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<TypeElement> tableTypes = ElementFilter.typesIn(roundEnv.getElementsAnnotatedWith(FSTable.class));
-        if (tableTypes == null || tableTypes.size() == 0) {
+        if (tableTypes.size() == 0) {
             return true;
         }
 

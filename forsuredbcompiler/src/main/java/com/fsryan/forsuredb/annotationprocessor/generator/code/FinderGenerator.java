@@ -25,7 +25,6 @@ public class FinderGenerator extends JavaSourceGenerator {
     private final ClassName generatedClassName;
     private final TableInfo table;
     private final ParameterizedTypeName paramaterizedFinderType;
-    private final ParameterizedTypeName parameterizedResolverType;
 
     public FinderGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
         super(processingEnv, table.getQualifiedClassName() + "Finder");
@@ -33,7 +32,6 @@ public class FinderGenerator extends JavaSourceGenerator {
         resolverClass = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
         generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
         paramaterizedFinderType = ParameterizedTypeName.get(generatedClassName, TypeVariableName.get("R"));
-        parameterizedResolverType = ParameterizedTypeName.get(resolverClass, TypeVariableName.get("R"));
         this.table = table;
     }
 
