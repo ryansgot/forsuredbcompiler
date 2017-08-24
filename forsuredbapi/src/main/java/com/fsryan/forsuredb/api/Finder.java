@@ -84,6 +84,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     private boolean queryDistinct = false;
 
     private boolean incorporatedExternalFinder = false;
+    private int offset = 0;
+    private int top = 0;
+    private int bottom = 0;
 
     /**
      * <p>
@@ -167,10 +170,85 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
+     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the limit on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #fromBottom(int)} or
+     * {@link #fromBottom(int, int)} with a positive number
+     * @see #fromTop(int, int)
+     * @see #fromBottom(int)
+     * @see #fromBottom(int, int)
+     */
+    public F fromTop(int numRecords) {
+        return fromTop(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the top.
+     * @param numRecords the limit on the number of records to return
+     * @param offset the limit on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #fromBottom(int)} or
+     * {@link #fromBottom(int, int)} with a positive number
+     * @see #fromTop(int)
+     * @see #fromBottom(int)
+     * @see #fromBottom(int, int)
+     */
+    public F fromTop(int numRecords, int offset) {
+        if (numRecords > 0) {
+            top = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
+     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the limit on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #fromTop(int)} or
+     * {@link #fromTop(int, int)} with a positive number
+     * @see #fromBottom(int, int)
+     * @see #fromTop(int)
+     * @see #fromTop(int, int)
+     */
+    public F fromBottom(int numRecords) {
+        return fromBottom(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the bottom you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the bottom.
+     * @param numRecords the limit on the number of records to return
+     * @param offset the limit on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #fromTop(int)} or
+     * {@link #fromTop(int, int)} with a positive number
+     * @see #fromBottom(int)
+     * @see #fromTop(int)
+     * @see #fromTop(int, int)
+     */
+    public F fromBottom(int numRecords, int offset) {
+        if (numRecords > 0) {
+            bottom = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
      * @return true if this {@link Finder} is filtering any results--false otherwise
      */
     public boolean isFilteringResultSet() {
-        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0);
+        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0)
+                || top > 0
+                || bottom > 0
+                || offset > 0;
     }
 
     /**
@@ -220,6 +298,27 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             @Override
             public String[] replacements() {
                 return replacements;
+            }
+
+            @Override
+            public RetrieverLimits retrieverLimits() {
+                return new RetrieverLimits() {
+                    @Override
+                    public int limit() {
+                        // we're guaranteed to have a positive number
+                        return Math.max(top, bottom);
+                    }
+
+                    @Override
+                    public int offset() {
+                        return offset;
+                    }
+
+                    @Override
+                    public boolean fromBottom() {
+                        return bottom > 0;
+                    }
+                };
             }
         };
     }
@@ -625,6 +724,12 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             return;
         }
 
+        // handle the incorporation of the RetrieverLimits parts
+        offset = throwWhenUnequalAndBothPositiveOrReturnMax("to offset", offset, finder.offset);
+        top = throwWhenUnequalAndBothPositiveOrReturnMax("the top", top, finder.top);
+        bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the bottom", bottom, finder.bottom);
+        throwIfPagingFromTopAndBottom();
+
         if (whereBuf.length() == 0) {
             whereBuf.append(finder.whereBuf);
             replacementsList.addAll(finder.replacementsList);
@@ -684,5 +789,18 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         // It is possible that none of the columns could be valid for this table. In that case, we want to revert to
         // the default projection
         queryDistinct = distinct && !columns.isEmpty();
+    }
+
+    private void throwIfPagingFromTopAndBottom() {
+        if (top > 0 && bottom > 0) {
+            throw new IllegalStateException("Cannot page from both top and bottom at same time");
+        }
+    }
+
+    private static int throwWhenUnequalAndBothPositiveOrReturnMax(String toDo, int num1, int num2) {
+        if (num1 > 0 && num2 > 0 && num1 != num2) {
+            throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
+        }
+        return Math.max(num1, num2);
     }
 }

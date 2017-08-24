@@ -129,7 +129,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
 
     public Retriever preserveQueryStateAndGet() {
         final String orderByString = orderBy == null ? null : orderBy.getOrderByString();
-        final FSSelection selection = finder == null ? new FSSelection.SelectAll() : finder.selection();
+        final FSSelection selection = finder == null ? FSSelection.ALL : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         if (!addedThisProjection) {
             projections.add(finder == null ? projection() : finder.projection());

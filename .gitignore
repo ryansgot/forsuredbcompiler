@@ -9,3 +9,4 @@ classes/*
 **/*.class
 classes/*
 forsuredbcompiler/out/*
+forsuredbapi/out/*
