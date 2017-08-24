@@ -70,7 +70,10 @@ public class FinderGenerator extends JavaSourceGenerator {
 
         addConstructor(codeBuilder);
         addQueryBuilderMethods(codeBuilder);
-        return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(BaseGenerator.JAVA_INDENT).build().toString();
+        return JavaFile.builder(getOutputPackageName(), codeBuilder.build())
+                .indent(BaseGenerator.JAVA_INDENT)
+                .build()
+                .toString();
     }
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {

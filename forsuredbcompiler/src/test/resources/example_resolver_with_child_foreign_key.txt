@@ -135,7 +135,8 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
     public static class JoinTestTable2<T extends TestTable3Resolver> extends TestTable2Resolver<JoinTestTable2<T>> {
         private final T parent;
 
-        JoinTestTable2(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, T parent) {
+        JoinTestTable2(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory,
+                T parent) {
             super(infoFactory);
             this.parent = parent;
         }

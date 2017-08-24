@@ -2,10 +2,10 @@
 **/build/*
 .gradle/*
 **/*.iml
-out/*
 local.properties
 
 # Java
 classes/*
 **/*.class
 classes/*
+forsuredbcompiler/out/*
