@@ -1,3 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
+    <!-- TODO: remove these in 0.13.0 -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
+        <Method name="createStringDoc" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
+        <Method name="fromStorage" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
+        <Method name="createBlobDoc" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
+        <Method name="fromStorage" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
 </FindBugsFilter>
