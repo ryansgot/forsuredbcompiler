@@ -170,12 +170,24 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
+     * Select the top record only.
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
+     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
+     * @see #top(int, int)
+     * @see #bottom(int)
+     */
+    public F top() {
+        return top(1);
+    }
+
+    /**
      * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
      * negative number or zero.
      * @param numRecords the limit on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #bottom(int)} or
-     * {@link #bottom(int, int)} with a positive number
+     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
      * @see #top(int, int)
      * @see #bottom(int)
      * @see #bottom(int, int)
@@ -191,7 +203,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @param offset the limit on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #bottom(int)} or
-     * {@link #bottom(int, int)} with a positive number
+     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
      * @see #top(int)
      * @see #bottom(int)
      * @see #bottom(int, int)
@@ -203,6 +215,16 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
         throwIfPagingFromTopAndBottom();
         return (F) this;
+    }
+
+    /**
+     * Select the bottom record (the last record returned)
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #top(int)} or
+     * {@link #top(int, int)} with a positive number or {@link #top()}
+     */
+    public F bottom() {
+        return bottom(1);
     }
 
     /**
@@ -227,7 +249,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @param offset the limit on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #top(int)} or
-     * {@link #top(int, int)} with a positive number
+     * {@link #top(int, int)} with a positive number or {@link #top()}
      * @see #bottom(int)
      * @see #top(int)
      * @see #top(int, int)
