@@ -34,8 +34,8 @@ public abstract class FinderPaginationTest extends FinderTest {
     @Before
     public void setUpFinder() {
         finderUnderTest = new Finder(mockResolver) {}
-                .fromTop(fromTop, offsetFromTop)
-                .fromBottom(fromBottom, offsetFromBottom);
+                .top(fromTop, offsetFromTop)
+                .bottom(fromBottom, offsetFromBottom);
     }
 
     @Test
@@ -63,15 +63,15 @@ public abstract class FinderPaginationTest extends FinderTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    {-1, 0, 0, 0, 0, 0, false},     // 00: negative number for fromTop results in zero limit
-                    {0, 0, -1, 0, 0, 0, false},     // 01: negative number for fromBottom results in zero limit
-                    {-1, 0, -1, 0, 0, 0, false},    // 02: negative number for both fromTop and fromBottom results in zero limit
-                    {1, 0, 0, 0, 1, 0, false},      // 03: positive number for fromTop results in that number offset--fromBottom false
-                    {0, 0, 1, 0, 1, 0, true},       // 04: positive number for fromBottom results in that number offset--formBottom true
-                    {0, 1, 0, 0, 0, 0, false},      // 05: positive offset without fromTop results in zero offset
-                    {0, 0, 0, 1, 0, 0, false},      // 06: positive offset without fromBottom results in zero offset
-                    {20, 10, 0, 0, 20, 10, false},  // 07: non-one numbers should be accurate fromTop and offset
-                    {0, 0, 20, 10, 20, 10, true},   // 08: non-one numbers should be accurate fromBottom and offset
+                    {-1, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero limit
+                    {0, 0, -1, 0, 0, 0, false},     // 01: negative number for bottom results in zero limit
+                    {-1, 0, -1, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero limit
+                    {1, 0, 0, 0, 1, 0, false},      // 03: positive number for top results in that number offset--bottom false
+                    {0, 0, 1, 0, 1, 0, true},       // 04: positive number for bottom results in that number offset--formBottom true
+                    {0, 1, 0, 0, 0, 0, false},      // 05: positive offset without top results in zero offset
+                    {0, 0, 0, 1, 0, 0, false},      // 06: positive offset without bottom results in zero offset
+                    {20, 10, 0, 0, 20, 10, false},  // 07: non-one numbers should be accurate top and offset
+                    {0, 0, 20, 10, 20, 10, true},   // 08: non-one numbers should be accurate bottom and offset
             });
         }
     }
@@ -100,30 +100,30 @@ public abstract class FinderPaginationTest extends FinderTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     // The test cases where the finder to incorporate has all zeroes
-                    {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, false},     // 00: negative number for fromTop results in zero limit
-                    {0, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},     // 01: negative number for fromBottom results in zero limit
-                    {-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},    // 02: negative number for both fromTop and fromBottom results in zero limit
-                    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, false},      // 03: positive number for fromTop results in that number offset--fromBottom false
-                    {0, 0, 1, 0, 0, 0, 0, 0, 1, 0, true},       // 04: positive number for fromBottom results in that number offset--formBottom true
-                    {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, false},      // 05: positive offset without fromTop results in zero offset
-                    {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, false},      // 06: positive offset without fromBottom results in zero offset
-                    {20, 10, 0, 0, 0, 0, 0, 0, 20, 10, false},  // 07: non-one numbers should be accurate fromTop and offset
-                    {0, 0, 20, 10, 0, 0, 0, 0, 20, 10, true},   // 08: non-one numbers should be accurate fromBottom and offset
+                    {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero limit
+                    {0, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},     // 01: negative number for bottom results in zero limit
+                    {-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero limit
+                    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, false},      // 03: positive number for top results in that number offset--bottom false
+                    {0, 0, 1, 0, 0, 0, 0, 0, 1, 0, true},       // 04: positive number for bottom results in that number offset--formBottom true
+                    {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, false},      // 05: positive offset without top results in zero offset
+                    {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, false},      // 06: positive offset without bottom results in zero offset
+                    {20, 10, 0, 0, 0, 0, 0, 0, 20, 10, false},  // 07: non-one numbers should be accurate top and offset
+                    {0, 0, 20, 10, 0, 0, 0, 0, 20, 10, true},   // 08: non-one numbers should be accurate bottom and offset
 
                     // The reverse cases--where the parent finder has all zeroes
-                    {0, 0, 0, 0, -1, 0, 0, 0, 0, 0, false},     // 09: negative number for fromTop results in zero limit
-                    {0, 0, 0, 0, 0, 0, -1, 0, 0, 0, false},     // 10: negative number for fromBottom results in zero limit
-                    {0, 0, 0, 0, -1, 0, -1, 0, 0, 0, false},    // 11: negative number for both fromTop and fromBottom results in zero limit
-                    {0, 0, 0, 0, 1, 0, 0, 0, 1, 0, false},      // 12: positive number for fromTop results in that number offset--fromBottom false
-                    {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, true},       // 13: positive number for fromBottom results in that number offset--formBottom true
-                    {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, false},      // 14: positive offset without fromTop results in zero offset
-                    {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, false},      // 15: positive offset without fromBottom results in zero offset
-                    {0, 0, 0, 0, 20, 10, 0, 0, 20, 10, false},  // 16: non-one numbers should be accurate fromTop and offset
-                    {0, 0, 0, 0, 0, 0, 20, 10, 20, 10, true},   // 17: non-one numbers should be accurate fromBottom and offset
+                    {0, 0, 0, 0, -1, 0, 0, 0, 0, 0, false},     // 09: negative number for top results in zero limit
+                    {0, 0, 0, 0, 0, 0, -1, 0, 0, 0, false},     // 10: negative number for bottom results in zero limit
+                    {0, 0, 0, 0, -1, 0, -1, 0, 0, 0, false},    // 11: negative number for both top and bottom results in zero limit
+                    {0, 0, 0, 0, 1, 0, 0, 0, 1, 0, false},      // 12: positive number for top results in that number offset--bottom false
+                    {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, true},       // 13: positive number for bottom results in that number offset--formBottom true
+                    {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, false},      // 14: positive offset without top results in zero offset
+                    {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, false},      // 15: positive offset without bottom results in zero offset
+                    {0, 0, 0, 0, 20, 10, 0, 0, 20, 10, false},  // 16: non-one numbers should be accurate top and offset
+                    {0, 0, 0, 0, 0, 0, 20, 10, 20, 10, true},   // 17: non-one numbers should be accurate bottom and offset
 
                     // The reverse cases--where the parent finder has all zeroes
-                    {3, 9, 0, 0, 3, 9, 0, 0, 3, 9, false},      // 18: same offset and fromTop should not throw
-                    {0, 0, 4, 5, 0, 0, 4, 5, 4, 5, true},       // 19: same offset and fromBottom should not throw
+                    {3, 9, 0, 0, 3, 9, 0, 0, 3, 9, false},      // 18: same offset and top should not throw
+                    {0, 0, 4, 5, 0, 0, 4, 5, 4, 5, true},       // 19: same offset and bottom should not throw
 
             });
         }
@@ -131,8 +131,8 @@ public abstract class FinderPaginationTest extends FinderTest {
         @Before
         public void setUpFinderToIncorporateAndIncorporate() {
             toIncorporate = new Finder(mockResolver) {}
-                    .fromTop(fromTopToIncorporate, offsetFromTopToIncorporate)
-                    .fromBottom(fromBottomToIncorporate, offsetFromBottomToIncorporate);
+                    .top(fromTopToIncorporate, offsetFromTopToIncorporate)
+                    .bottom(fromBottomToIncorporate, offsetFromBottomToIncorporate);
             finderUnderTest.incorporate(toIncorporate);
         }
     }
@@ -141,46 +141,46 @@ public abstract class FinderPaginationTest extends FinderTest {
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenCallingFromTopThenFromBottomWithPositiveIntegers() {
-            new Finder(mockResolver) {}.fromTop(1).fromBottom(1);
+            new Finder(mockResolver) {}.top(1).bottom(1);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenCallingBottomThenTopPositiveIntegers() {
-            new Finder(mockResolver) {}.fromBottom(1).fromTop(1);
+            new Finder(mockResolver) {}.bottom(1).top(1);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenIncorporatedFinderSpecifiesFromBottomAndTParentFinderFromTop() {
-            Finder parent = new Finder(mockResolver) {}.fromBottom(1);
-            Finder toIncorporate = new Finder(mockResolver) {}.fromTop(1);
+            Finder parent = new Finder(mockResolver) {}.bottom(1);
+            Finder toIncorporate = new Finder(mockResolver) {}.top(1);
             parent.incorporate(toIncorporate);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenIncorporatedFinderSpecifiesFromTopAndTParentFinderFromBottom() {
-            Finder parent = new Finder(mockResolver) {}.fromTop(1);
-            Finder toIncorporate = new Finder(mockResolver) {}.fromBottom(1);
+            Finder parent = new Finder(mockResolver) {}.top(1);
+            Finder toIncorporate = new Finder(mockResolver) {}.bottom(1);
             parent.incorporate(toIncorporate);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenIncorporatedFinderSpecifiesDifferentPositiveFromTop() {
-            Finder parent = new Finder(mockResolver) {}.fromTop(1);
-            Finder toIncorporate = new Finder(mockResolver) {}.fromTop(2);
+            Finder parent = new Finder(mockResolver) {}.top(1);
+            Finder toIncorporate = new Finder(mockResolver) {}.top(2);
             parent.incorporate(toIncorporate);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenIncorporatedFinderSpecifiesDifferentPositiveFromBottom() {
-            Finder parent = new Finder(mockResolver) {}.fromBottom(1);
-            Finder toIncorporate = new Finder(mockResolver) {}.fromBottom(2);
+            Finder parent = new Finder(mockResolver) {}.bottom(1);
+            Finder toIncorporate = new Finder(mockResolver) {}.bottom(2);
             parent.incorporate(toIncorporate);
         }
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenIncorporatedFinderSpecifiesDifferentPositiveOffset() {
-            Finder parent = new Finder(mockResolver) {}.fromBottom(1, 5);
-            Finder toIncorporate = new Finder(mockResolver) {}.fromBottom(1, 4);
+            Finder parent = new Finder(mockResolver) {}.bottom(1, 5);
+            Finder toIncorporate = new Finder(mockResolver) {}.bottom(1, 4);
             parent.incorporate(toIncorporate);
         }
     }

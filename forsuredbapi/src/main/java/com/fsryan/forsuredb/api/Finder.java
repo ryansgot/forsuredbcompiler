@@ -174,14 +174,14 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * negative number or zero.
      * @param numRecords the limit on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #fromBottom(int)} or
-     * {@link #fromBottom(int, int)} with a positive number
-     * @see #fromTop(int, int)
-     * @see #fromBottom(int)
-     * @see #fromBottom(int, int)
+     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
+     * {@link #bottom(int, int)} with a positive number
+     * @see #top(int, int)
+     * @see #bottom(int)
+     * @see #bottom(int, int)
      */
-    public F fromTop(int numRecords) {
-        return fromTop(numRecords, 0);
+    public F top(int numRecords) {
+        return top(numRecords, 0);
     }
 
     /**
@@ -190,13 +190,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @param numRecords the limit on the number of records to return
      * @param offset the limit on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #fromBottom(int)} or
-     * {@link #fromBottom(int, int)} with a positive number
-     * @see #fromTop(int)
-     * @see #fromBottom(int)
-     * @see #fromBottom(int, int)
+     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
+     * {@link #bottom(int, int)} with a positive number
+     * @see #top(int)
+     * @see #bottom(int)
+     * @see #bottom(int, int)
      */
-    public F fromTop(int numRecords, int offset) {
+    public F top(int numRecords, int offset) {
         if (numRecords > 0) {
             top = numRecords;
             this.offset = Math.max(0, offset);
@@ -210,14 +210,14 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * negative number or zero.
      * @param numRecords the limit on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #fromTop(int)} or
-     * {@link #fromTop(int, int)} with a positive number
-     * @see #fromBottom(int, int)
-     * @see #fromTop(int)
-     * @see #fromTop(int, int)
+     * @throws IllegalStateException if you have already called {@link #top(int)} or
+     * {@link #top(int, int)} with a positive number
+     * @see #bottom(int, int)
+     * @see #top(int)
+     * @see #top(int, int)
      */
-    public F fromBottom(int numRecords) {
-        return fromBottom(numRecords, 0);
+    public F bottom(int numRecords) {
+        return bottom(numRecords, 0);
     }
 
     /**
@@ -226,13 +226,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @param numRecords the limit on the number of records to return
      * @param offset the limit on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #fromTop(int)} or
-     * {@link #fromTop(int, int)} with a positive number
-     * @see #fromBottom(int)
-     * @see #fromTop(int)
-     * @see #fromTop(int, int)
+     * @throws IllegalStateException if you have already called {@link #top(int)} or
+     * {@link #top(int, int)} with a positive number
+     * @see #bottom(int)
+     * @see #top(int)
+     * @see #top(int, int)
      */
-    public F fromBottom(int numRecords, int offset) {
+    public F bottom(int numRecords, int offset) {
         if (numRecords > 0) {
             bottom = numRecords;
             this.offset = Math.max(0, offset);
