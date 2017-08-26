@@ -8,26 +8,44 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /*package*/ abstract class SaveHandler<U, R extends RecordContainer> implements InvocationHandler {
 
     private final FSQueryable<U, R> queryable;
     private final FSSelection selection;
+    private final List<FSOrdering> orderings;
     protected final R recordContainer;
     protected final Map<Method, ColumnDescriptor> columnTypeMap;
 
-    protected SaveHandler(FSQueryable<U, R> queryable, FSSelection selection, R recordContainer, Map<Method, ColumnDescriptor> columnTypeMap) {
+    protected SaveHandler(
+            FSQueryable<U, R> queryable,
+            FSSelection selection,
+            List<FSOrdering> orderings,
+            R recordContainer,
+            Map<Method, ColumnDescriptor> columnTypeMap
+    ) {
         this.queryable = queryable;
         this.selection = selection;
+        this.orderings = orderings == null ? Collections.<FSOrdering>emptyList() : orderings;
         this.recordContainer = recordContainer;
         this.columnTypeMap = columnTypeMap;
     }
 
-    public static <U, R extends RecordContainer, S extends FSSaveApi<U>> SaveHandler<U, R> getFor(Class<S> saveApiClass, FSQueryable<U, R> queryable, FSSelection selection, R emptyRecord, Map<Method, ColumnDescriptor> columnTypeMap) {
-        return FSDocStoreSaveApi.class.isAssignableFrom(saveApiClass) ? new DocStoreSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap)
-                : new RelationalSaveHandler<>(queryable, selection, emptyRecord, columnTypeMap);
+    public static <U, R extends RecordContainer, S extends FSSaveApi<U>> SaveHandler<U, R> getFor(
+            Class<S> saveApiClass,
+            FSQueryable<U, R> queryable,
+            FSSelection selection,
+            List<FSOrdering> orderings,
+            R emptyRecord, Map<Method,
+            ColumnDescriptor> columnTypeMap
+    ) {
+        return FSDocStoreSaveApi.class.isAssignableFrom(saveApiClass)
+                ? new DocStoreSaveHandler<>(queryable, selection, orderings, emptyRecord, columnTypeMap)
+                : new RelationalSaveHandler<>(queryable, selection, orderings, emptyRecord, columnTypeMap);
     }
 
     @Override
@@ -46,7 +64,7 @@ import java.util.Map;
                 return performUpdate();
             case "hardDelete":
                 recordContainer.clear();
-                return queryable.delete(selection);
+                return queryable.delete(selection, orderings);
         }
 
         performSet(columnTypeMap.get(method), args[0]);
@@ -125,7 +143,7 @@ import java.util.Map;
     }
 
     private SaveResult<U> performUpdate() {
-        int rowsAffected = queryable.update(recordContainer, selection);
+        int rowsAffected = queryable.update(recordContainer, selection, orderings);
         return SaveResultFactory.create(null, rowsAffected, null);
     }
 }

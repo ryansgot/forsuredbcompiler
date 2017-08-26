@@ -21,6 +21,7 @@ import com.fsryan.forsuredb.api.adapter.FSGetAdapter;
 import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +98,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     public static void joinResolvers(Resolver parent, Resolver child) {
         if (child.orderBy != null) {
             parent.orderBy = parent.orderBy == null ? parent.newOrderByInstance() : parent.orderBy;
-            parent.orderBy.appendOrderByList(child.orderBy.getOrderByList());
+            parent.orderBy.appendOrderings(child.orderBy.getOrderings());
         }
         parent.finder = parent.finder == null ? parent.newFinderInstance() : parent.finder;
         parent.finder.incorporate(child.finder);
@@ -128,15 +129,15 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     }
 
     public Retriever preserveQueryStateAndGet() {
-        final String orderByString = orderBy == null ? null : orderBy.getOrderByString();
+        final List<FSOrdering> orderings = orderBy == null ? Collections.<FSOrdering>emptyList() : orderBy.getOrderings();
         final FSSelection selection = finder == null ? FSSelection.ALL : finder.selection();
         final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         if (!addedThisProjection) {
             projections.add(finder == null ? projection() : finder.projection());
             addedThisProjection = true;
         }
-        return joins.size() == 0 ? queryable.query(projections.get(0), selection, orderByString)
-                : queryable.query(joins, projections, selection, orderByString);
+        return joins.size() == 0 ? queryable.query(projections.get(0), selection, orderings)
+                : queryable.query(joins, projections, selection, orderings);
     }
 
     public final O order() {
@@ -147,11 +148,14 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     }
 
     public final S set() {
-        FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
-        R recordContainer = infoFactory.createRecordContainer();
-        FSSelection selection = finder == null ? null : finder.selection();
-        finder = null;  // <-- When a finder's selection method is called, it must be nullified
-        return FSSaveAdapter.create(queryable, selection, recordContainer, this);
+        final FSSelection selection = finder == null ? null : finder.selection();
+        finder = null;  // <-- When used, a finder must be nullified unless specifically preserving query state
+
+        final List<FSOrdering> orderings = orderBy == null ? Collections.<FSOrdering>emptyList() : orderBy.getOrderings();
+        orderBy = null; // <-- When used, an orderBy must be nullified unless specifically preserving query state
+
+        final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
+        return FSSaveAdapter.create(queryable, selection, orderings, infoFactory.createRecordContainer(), this);
     }
 
     public final F find() {
