@@ -22,6 +22,7 @@ import com.fsryan.forsuredb.api.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,6 +52,8 @@ public class FSSaveAdapter {
      * </ol>
      * @param queryable An {@link FSQueryable} that can be used to insert/update/delete records in the database
      * @param selection an {@link FSSelection} that can be used to narrow down the records you're talking about
+     * @param orderings a list of {@link FSOrdering} describing any ordering that is to take place on the records prior
+     *                  to performing a save operation
      * @param emptyRecord an {@link RecordContainer} extension that represents the record prior to being
      *                    inserted/updated or a delete operation is run. It does not matter whether this record
      *                    is empty or not because it will be emptied for you.
@@ -65,12 +68,13 @@ public class FSSaveAdapter {
      */
     public static <S extends FSSaveApi<U>, U, R extends RecordContainer> S create(FSQueryable<U, R> queryable,
                                                                                   FSSelection selection,
+                                                                                  List<FSOrdering> orderings,
                                                                                   R emptyRecord,
                                                                                   Resolver<?, U, R, ?, S, ?, ?> resolver) {
         Class<S> setApiClass = resolver.setApiClass();
         S proxyInstance = (S) Proxy.newProxyInstance(setApiClass.getClassLoader(),
                                           InterfaceHelper.getInterfaces(setApiClass),
-                                          SaveHandler.getFor(setApiClass, queryable, selection, emptyRecord, getColumnTypeMapFor(resolver)));
+                                          SaveHandler.getFor(setApiClass, queryable, selection, orderings, emptyRecord, getColumnTypeMapFor(resolver)));
         return proxyInstance;
     }
 

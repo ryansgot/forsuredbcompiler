@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
+import com.fsryan.forsuredb.api.FSOrdering;
 import com.fsryan.forsuredb.api.migration.MigrationSet;
 
 import java.util.Date;
@@ -71,38 +72,12 @@ public interface DBMSIntegrator {
     String unambiguousRetrievalColumn(String tableName, String columnName);
 
     /**
-     * <p>
-     *     Creates an ascending ORDER BY expression. This should use the unambiguous column name because it
-     *     could be used in a join wherein there are columns with the same name.
-     * </p>
-     * @param tableName the name of the table
-     * @param columnName the name of the column of the table
-     * @return the unambiguous ORDER BY expression
-     * @see #orderByDesc(String, String)
-     */
-    String orderByAsc(String tableName, String columnName);
-
-    /**
-     * <p>
-     *     Creates a descending ORDER BY expression. This should use the unambiguous column name because it
-     *     could be used in a join wherein there are columns with the same name.
-     * </p>
-     * @param tableName the name of the table
-     * @param columnName the name of the column of the table
-     * @return the unambiguous ORDER BY expression
-     * @see #orderByAsc(String, String)
-     */
-    String orderByDesc(String tableName, String columnName);
-
-    /**
-     * <p>
-     *     Formats zero or more ORDER BY expressions into one correctly formatted string for the ORDER BY
-     *     clause of a query
-     * </p>
-     * @param orderByList a possibly-empty list of ORDER BY expressions
+     * Formats zero or more {@link FSOrdering} into one correctly formatted string for the ORDER BY
+     * clause of a query
+     * @param orderings a possibly-empty list of {@link FSOrdering}
      * @return A string that correctly combines the ORDER BY expressions
      */
-    String combineOrderByExpressions(List<String> orderByList);
+    String expressOrdering(List<FSOrdering> orderings);
 
     /**
      * <p>

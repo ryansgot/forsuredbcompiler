@@ -184,7 +184,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     /**
      * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
      * negative number or zero.
-     * @param numRecords the limit on the number of records to return
+     * @param numRecords the count on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #bottom(int)} or
      * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
@@ -199,8 +199,8 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     /**
      * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
      * negative number or zero. This also allows you to set an offset from the top.
-     * @param numRecords the limit on the number of records to return
-     * @param offset the limit on the number of records to return
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #bottom(int)} or
      * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
@@ -230,7 +230,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     /**
      * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
      * negative number or zero.
-     * @param numRecords the limit on the number of records to return
+     * @param numRecords the count on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #top(int)} or
      * {@link #top(int, int)} with a positive number
@@ -245,8 +245,8 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     /**
      * Select the number of records from the bottom you want to have returned. Will have no effect if you pass in a
      * negative number or zero. This also allows you to set an offset from the bottom.
-     * @param numRecords the limit on the number of records to return
-     * @param offset the limit on the number of records to return
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
      * @return this {@link Finder}
      * @throws IllegalStateException if you have already called {@link #top(int)} or
      * {@link #top(int, int)} with a positive number or {@link #top()}
@@ -323,10 +323,10 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             }
 
             @Override
-            public RetrieverLimits retrieverLimits() {
-                return new RetrieverLimits() {
+            public Limits limits() {
+                return new Limits() {
                     @Override
-                    public int limit() {
+                    public int count() {
                         // we're guaranteed to have a positive number
                         return Math.max(top, bottom);
                     }
@@ -337,7 +337,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
                     }
 
                     @Override
-                    public boolean fromBottom() {
+                    public boolean isBottom() {
                         return bottom > 0;
                     }
                 };
@@ -746,7 +746,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             return;
         }
 
-        // handle the incorporation of the RetrieverLimits parts
+        // handle the incorporation of the Limits parts
         offset = throwWhenUnequalAndBothPositiveOrReturnMax("to offset", offset, finder.offset);
         top = throwWhenUnequalAndBothPositiveOrReturnMax("the top", top, finder.top);
         bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the bottom", bottom, finder.bottom);

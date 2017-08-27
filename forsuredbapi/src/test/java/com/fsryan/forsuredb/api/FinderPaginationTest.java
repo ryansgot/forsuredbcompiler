@@ -40,32 +40,32 @@ public abstract class FinderPaginationTest extends FinderTest {
 
     @Test
     public void shouldHaveExpectedLimit() {
-        assertEquals(expectedLimit, finderUnderTest.selection().retrieverLimits().limit());
+        assertEquals(expectedLimit, finderUnderTest.selection().limits().count());
     }
 
     @Test
     public void shouldHaveExpectedOffset() {
-        assertEquals(expectedOffset, finderUnderTest.selection().retrieverLimits().offset());
+        assertEquals(expectedOffset, finderUnderTest.selection().limits().offset());
     }
 
     @Test
     public void shouldHaveExpectedFromBottom() {
-        assertEquals(expectedFromBottom, finderUnderTest.selection().retrieverLimits().fromBottom());
+        assertEquals(expectedFromBottom, finderUnderTest.selection().limits().isBottom());
     }
 
     @RunWith(Parameterized.class)
-    public static class RetrieverLimitsTest extends FinderPaginationTest {
+    public static class LimitsTest extends FinderPaginationTest {
 
-        public RetrieverLimitsTest(int fromTop, int offsetFromTop, int fromBottom, int offsetFromBottom, int expectedLimit, int expectedOffset, boolean expectedFromBottom) {
+        public LimitsTest(int fromTop, int offsetFromTop, int fromBottom, int offsetFromBottom, int expectedLimit, int expectedOffset, boolean expectedFromBottom) {
             super(fromTop, offsetFromTop, fromBottom, offsetFromBottom, expectedLimit, expectedOffset, expectedFromBottom);
         }
 
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    {-1, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero limit
-                    {0, 0, -1, 0, 0, 0, false},     // 01: negative number for bottom results in zero limit
-                    {-1, 0, -1, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero limit
+                    {-1, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero count
+                    {0, 0, -1, 0, 0, 0, false},     // 01: negative number for bottom results in zero count
+                    {-1, 0, -1, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero count
                     {1, 0, 0, 0, 1, 0, false},      // 03: positive number for top results in that number offset--bottom false
                     {0, 0, 1, 0, 1, 0, true},       // 04: positive number for bottom results in that number offset--formBottom true
                     {0, 1, 0, 0, 0, 0, false},      // 05: positive offset without top results in zero offset
@@ -100,9 +100,9 @@ public abstract class FinderPaginationTest extends FinderTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     // The test cases where the finder to incorporate has all zeroes
-                    {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero limit
-                    {0, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},     // 01: negative number for bottom results in zero limit
-                    {-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero limit
+                    {-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, false},     // 00: negative number for top results in zero count
+                    {0, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},     // 01: negative number for bottom results in zero count
+                    {-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, false},    // 02: negative number for both top and bottom results in zero count
                     {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, false},      // 03: positive number for top results in that number offset--bottom false
                     {0, 0, 1, 0, 0, 0, 0, 0, 1, 0, true},       // 04: positive number for bottom results in that number offset--formBottom true
                     {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, false},      // 05: positive offset without top results in zero offset
@@ -111,9 +111,9 @@ public abstract class FinderPaginationTest extends FinderTest {
                     {0, 0, 20, 10, 0, 0, 0, 0, 20, 10, true},   // 08: non-one numbers should be accurate bottom and offset
 
                     // The reverse cases--where the parent finder has all zeroes
-                    {0, 0, 0, 0, -1, 0, 0, 0, 0, 0, false},     // 09: negative number for top results in zero limit
-                    {0, 0, 0, 0, 0, 0, -1, 0, 0, 0, false},     // 10: negative number for bottom results in zero limit
-                    {0, 0, 0, 0, -1, 0, -1, 0, 0, 0, false},    // 11: negative number for both top and bottom results in zero limit
+                    {0, 0, 0, 0, -1, 0, 0, 0, 0, 0, false},     // 09: negative number for top results in zero count
+                    {0, 0, 0, 0, 0, 0, -1, 0, 0, 0, false},     // 10: negative number for bottom results in zero count
+                    {0, 0, 0, 0, -1, 0, -1, 0, 0, 0, false},    // 11: negative number for both top and bottom results in zero count
                     {0, 0, 0, 0, 1, 0, 0, 0, 1, 0, false},      // 12: positive number for top results in that number offset--bottom false
                     {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, true},       // 13: positive number for bottom results in that number offset--formBottom true
                     {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, false},      // 14: positive offset without top results in zero offset
@@ -121,7 +121,7 @@ public abstract class FinderPaginationTest extends FinderTest {
                     {0, 0, 0, 0, 20, 10, 0, 0, 20, 10, false},  // 16: non-one numbers should be accurate top and offset
                     {0, 0, 0, 0, 0, 0, 20, 10, 20, 10, true},   // 17: non-one numbers should be accurate bottom and offset
 
-                    // The reverse cases--where the parent finder has all zeroes
+                    // same offset and count
                     {3, 9, 0, 0, 3, 9, 0, 0, 3, 9, false},      // 18: same offset and top should not throw
                     {0, 0, 4, 5, 0, 0, 4, 5, 4, 5, true},       // 19: same offset and bottom should not throw
 

@@ -40,17 +40,7 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String orderByAsc(String tableName, String columnName) {
-        return "";
-    }
-
-    @Override
-    public String orderByDesc(String tableName, String columnName) {
-        return "";
-    }
-
-    @Override
-    public String combineOrderByExpressions(List<String> orderByList) {
+    public String expressOrdering(List<FSOrdering> ordering) {
         return "";
     }
 

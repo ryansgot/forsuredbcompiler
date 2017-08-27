@@ -39,8 +39,8 @@ public interface FSSelection {
         }
 
         @Override
-        public RetrieverLimits retrieverLimits() {
-            return RetrieverLimits.NONE;
+        public Limits limits() {
+            return Limits.NONE;
         }
     };
 
@@ -59,7 +59,7 @@ public interface FSSelection {
     /**
      * Allows you to position the start/end position and number of records from which a retreiver
      * can retrieve values
-     * @return a {@link RetrieverLimits} describing any limits to put on the returned records
+     * @return a {@link Limits} describing any limits to put on the returned records
      */
-    RetrieverLimits retrieverLimits();
+    Limits limits();
 }
