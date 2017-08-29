@@ -170,45 +170,45 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
-     * Select the top record only.
+     * Select the first record only.
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
-     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
-     * @see #top(int, int)
-     * @see #bottom(int)
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
      */
-    public F top() {
-        return top(1);
+    public F first() {
+        return first(1);
     }
 
     /**
-     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
      * negative number or zero.
      * @param numRecords the count on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
-     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
-     * @see #top(int, int)
-     * @see #bottom(int)
-     * @see #bottom(int, int)
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
+     * @see #last(int, int)
      */
-    public F top(int numRecords) {
-        return top(numRecords, 0);
+    public F first(int numRecords) {
+        return first(numRecords, 0);
     }
 
     /**
-     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
-     * negative number or zero. This also allows you to set an offset from the top.
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the first.
      * @param numRecords the count on the number of records to return
      * @param offset the count on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #bottom(int)} or
-     * {@link #bottom(int, int)} with a positive number or {@link #bottom()}
-     * @see #top(int)
-     * @see #bottom(int)
-     * @see #bottom(int, int)
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int)
+     * @see #last(int)
+     * @see #last(int, int)
      */
-    public F top(int numRecords, int offset) {
+    public F first(int numRecords, int offset) {
         if (numRecords > 0) {
             top = numRecords;
             this.offset = Math.max(0, offset);
@@ -218,43 +218,43 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
-     * Select the bottom record (the last record returned)
+     * Select the last record (the last record returned)
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #top(int)} or
-     * {@link #top(int, int)} with a positive number or {@link #top()}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
      */
-    public F bottom() {
-        return bottom(1);
+    public F last() {
+        return last(1);
     }
 
     /**
-     * Select the number of records from the top you want to have returned. Will have no effect if you pass in a
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
      * negative number or zero.
      * @param numRecords the count on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #top(int)} or
-     * {@link #top(int, int)} with a positive number
-     * @see #bottom(int, int)
-     * @see #top(int)
-     * @see #top(int, int)
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number
+     * @see #last(int, int)
+     * @see #first(int)
+     * @see #first(int, int)
      */
-    public F bottom(int numRecords) {
-        return bottom(numRecords, 0);
+    public F last(int numRecords) {
+        return last(numRecords, 0);
     }
 
     /**
-     * Select the number of records from the bottom you want to have returned. Will have no effect if you pass in a
-     * negative number or zero. This also allows you to set an offset from the bottom.
+     * Select the number of records from the last you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the last.
      * @param numRecords the count on the number of records to return
      * @param offset the count on the number of records to return
      * @return this {@link Finder}
-     * @throws IllegalStateException if you have already called {@link #top(int)} or
-     * {@link #top(int, int)} with a positive number or {@link #top()}
-     * @see #bottom(int)
-     * @see #top(int)
-     * @see #top(int, int)
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
+     * @see #last(int)
+     * @see #first(int)
+     * @see #first(int, int)
      */
-    public F bottom(int numRecords, int offset) {
+    public F last(int numRecords, int offset) {
         if (numRecords > 0) {
             bottom = numRecords;
             this.offset = Math.max(0, offset);
@@ -748,8 +748,8 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
         // handle the incorporation of the Limits parts
         offset = throwWhenUnequalAndBothPositiveOrReturnMax("to offset", offset, finder.offset);
-        top = throwWhenUnequalAndBothPositiveOrReturnMax("the top", top, finder.top);
-        bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the bottom", bottom, finder.bottom);
+        top = throwWhenUnequalAndBothPositiveOrReturnMax("the first", top, finder.top);
+        bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the last", bottom, finder.bottom);
         throwIfPagingFromTopAndBottom();
 
         if (whereBuf.length() == 0) {
@@ -815,7 +815,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
     private void throwIfPagingFromTopAndBottom() {
         if (top > 0 && bottom > 0) {
-            throw new IllegalStateException("Cannot page from both top and bottom at same time");
+            throw new IllegalStateException("Cannot page from both first and last at same time");
         }
     }
 

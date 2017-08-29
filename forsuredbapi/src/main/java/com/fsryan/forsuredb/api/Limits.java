@@ -29,11 +29,11 @@ public interface Limits {
     int offset();
 
     /**
-     * If false, the records will get matched starting at the top of the result set and the
-     * offset is from the top
-     * If true, then the records will be matched starting at the bottom of the result set
-     * and the offset is from the bottom
-     * @return true if bottom of result set should be matched
+     * If false, the records will get matched starting at the first of the result set and the
+     * offset is from the first
+     * If true, then the records will be matched starting at the last of the result set
+     * and the offset is from the last
+     * @return true if last of result set should be matched
      */
     boolean isBottom();
 }

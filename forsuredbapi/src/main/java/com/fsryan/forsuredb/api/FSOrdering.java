@@ -11,6 +11,11 @@ import lombok.ToString;
 public class FSOrdering {
 
     /**
+     * For column-disambiguation purposes, this is the table name of the column
+     */
+    public final String table;
+
+    /**
      * The column to order by
      */
     public final String column;

@@ -37,9 +37,9 @@ public interface FSQueryable<U, R extends RecordContainer> {
 
     /**
      * In the normal case, sortOrder will be null/empty. In the case that the user has
-     * requested that the matching set be limited in some way (by calling {@link Finder#top()},
-     * {@link Finder#top(int)}, {@link Finder#top(int, int)}, {@link Finder#bottom()},
-     * {@link Finder#bottom(int)}, or {@link Finder#bottom(int, int)}), possibly not every
+     * requested that the matching set be limited in some way (by calling {@link Finder#first()},
+     * {@link Finder#first(int)}, {@link Finder#first(int, int)}, {@link Finder#last()},
+     * {@link Finder#last(int)}, or {@link Finder#last(int, int)}), possibly not every
      * matching record should get updated. In that case, a list of {@link FSOrdering} is used
      * to determine the subset of matching records that should get updated.
      *
@@ -52,9 +52,9 @@ public interface FSQueryable<U, R extends RecordContainer> {
 
     /**
      * In the normal case, the sort order will be null/empty. In the case that the user has
-     * requested that the matching set be limited in some way (by calling {@link Finder#top()},
-     * {@link Finder#top(int)}, {@link Finder#top(int, int)}, {@link Finder#bottom()},
-     * {@link Finder#bottom(int)}, or {@link Finder#bottom(int, int)}), possibly not every
+     * requested that the matching set be limited in some way (by calling {@link Finder#first()},
+     * {@link Finder#first(int)}, {@link Finder#first(int, int)}, {@link Finder#last()},
+     * {@link Finder#last(int)}, or {@link Finder#last(int, int)}), possibly not every
      * matching record should get updated. In that case, a list of {@link FSOrdering} is used
      * to determine the subset of matching records that should get deleted.
      *
