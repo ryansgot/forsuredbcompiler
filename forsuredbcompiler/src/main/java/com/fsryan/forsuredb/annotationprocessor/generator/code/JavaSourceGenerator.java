@@ -16,7 +16,7 @@ public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> 
     private String packageName;
     private String simpleClassName;
     private String resultParameter;
-    private Class<? extends RecordContainer> recordContainer;
+    private String recordContainer;
 
     public JavaSourceGenerator(ProcessingEnvironment processingEnv, String fqClassName) {
         super(processingEnv);
@@ -54,14 +54,12 @@ public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> 
         return resultParameter;
     }
 
-    protected Class<? extends RecordContainer> getRecordContainerClass() {
+    protected String getRecordContainer() {
         if (recordContainer == null) {
-            try {
-                recordContainer = Class.forName(System.getProperty("recordContainer")).asSubclass(RecordContainer.class);
-            } catch (Exception e) {
-                APLog.e(logTag(), "Could not get record container:" + e.getMessage());
-                recordContainer = TypedRecordContainer.class;
-            }
+            recordContainer = System.getProperty("recordContainer");
+            recordContainer = recordContainer == null || recordContainer.isEmpty()
+                    ? TypedRecordContainer.class.getName()
+                    : recordContainer;
         }
         return recordContainer;
     }

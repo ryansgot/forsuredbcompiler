@@ -31,7 +31,7 @@ public class ForSureGenerator extends JavaSourceGenerator {
     protected String getCode() {
         final ParameterizedTypeName infoFactoryTypeName = ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class),
                 ClassName.bestGuess(getResultParameter()),
-                ClassName.get(getRecordContainerClass()));
+                ClassName.bestGuess(getRecordContainer()));
         JavadocInfo jd = classJavadoc();
         TypeSpec.Builder codeBuilder = TypeSpec.classBuilder(getOutputClassName(false))
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
