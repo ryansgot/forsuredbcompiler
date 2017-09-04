@@ -2,6 +2,13 @@
 forsuredbcompiler is Annotation processor for the forsuredb project that handles code and resource generation.
 As the central part of the forsuredb project, it is one of libraries necessary for forsuredb to work.
 
+## Version Compatibility
+
+| Gradle Version | forsuredb compiler version |
+| -------------- | -------------------------- |
+| <= 3.x         | 0.11.0                     |
+| >= 4.0         | 0.11.1                     | 
+
 ## Quickstart
 
 ### The four library dependencies for your application
@@ -45,7 +52,7 @@ dependencies {
 
     compile 'com.fsryan.forsuredb:forsuredbapi:0.11.0'          // common API for your code and the supporting libraries
     compile 'com.fsryan.forsuredb:sqlitelib:0.5.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.11.0@aar'  // the Android integration and useful tools
+    compile 'com.fsryan.forsuredb:forsuredbandroid:0.11.1@aar'  // the Android integration and useful tools
 
     provided 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'    // these classes are not needed at runtime--they do code generation
     annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'         // runs the forsuredb annotation processor at compile time
