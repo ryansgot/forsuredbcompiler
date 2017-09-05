@@ -1,11 +1,9 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.api.info.TableInfo;
 import com.google.common.base.Strings;
@@ -116,7 +114,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .superclass(ParameterizedTypeName.get(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"), ParameterizedTypeName.get(ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true)), TypeVariableName.get("T"))))
                 .addField(TypeVariableName.get("T"), "parent", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethod(MethodSpec.constructorBuilder()
-                        .addParameter(ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class), ClassName.bestGuess(getResultParameter()), ClassName.get(getRecordContainerClass())), "infoFactory")
+                        .addParameter(ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class), ClassName.bestGuess(getResultParameter()), ClassName.bestGuess(getRecordContainer())), "infoFactory")
                         .addParameter(TypeVariableName.get("T"), "parent")
                         .addCode(CodeBlock.builder()
                                 .addStatement("super($N)", "infoFactory")
@@ -377,7 +375,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
             ret.add(ClassName.bestGuess(table.getDocStoreParameterization()));
         }
         ret.add(ClassName.bestGuess(getResultParameter()));
-        ret.add(ClassName.get(getRecordContainerClass()));
+        ret.add(ClassName.bestGuess(getRecordContainer()));
         ret.add(getClassName);
         ret.add(setClassName);
         ret.add(ParameterizedTypeName.get((ClassName) finderClassName, TypeVariableName.get("T")));

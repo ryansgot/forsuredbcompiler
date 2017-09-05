@@ -41,6 +41,7 @@ public class DiffGenerator {
 
     private static final String LOG_TAG = DiffGenerator.class.getSimpleName();
     private static final Gson gson = new Gson();
+    private static final Map<String, ColumnInfo> TABLE_DEFAULT_COLUMNS = TableInfo.defaultColumns();
 
     private final TableContext sourceContext;
     private final int sourceDbVersion;
@@ -188,7 +189,7 @@ public class DiffGenerator {
     private Set<ColumnInfo> nonDefaultColumnsIn(TableInfo targetTable, boolean filterForeignKeys) {
         Set<ColumnInfo> retSet = new HashSet<>();
         for (ColumnInfo targetColumn : filterForeignKeys ? targetTable.getNonForeignKeyColumns() : targetTable.getColumns()) {
-            if (TableInfo.DEFAULT_COLUMNS.containsKey(targetColumn.getColumnName())) {
+            if (TABLE_DEFAULT_COLUMNS.containsKey(targetColumn.getColumnName())) {
                 continue;
             }
             retSet.add(targetColumn);

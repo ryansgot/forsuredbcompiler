@@ -49,7 +49,7 @@ public class TableInfo {
      *     <li>deleted: an integer (either 0 or 1) describing whether the record is deleted</li>
      * </ul>
      */
-    public static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new HashMap<>();
+    /*package*/ static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new HashMap<>();
     static {
         DEFAULT_COLUMNS.put("_id", ColumnInfo.builder().columnName("_id")
                 .methodName("id")
@@ -73,7 +73,7 @@ public class TableInfo {
                 .build());
     }
 
-    public static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new HashMap<>();
+    /*package*/ static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new HashMap<>();
     static {
         DOC_STORE_COLUMNS.put("class_name", ColumnInfo.builder()
                 .methodName("className")
@@ -164,6 +164,14 @@ public class TableInfo {
                         .build());
             }
         }
+    }
+
+    public static Map<String, ColumnInfo> defaultColumns() {
+        return new HashMap<>(DEFAULT_COLUMNS);
+    }
+
+    public static Map<String, ColumnInfo> docStoreColumns() {
+        return new HashMap<>(DOC_STORE_COLUMNS);
     }
 
     public boolean isValid() {

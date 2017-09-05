@@ -56,8 +56,7 @@ public class FSGetAdapter {
             methodMap.put(String.class, Retriever.class.getDeclaredMethod("getString", String.class));
             methodMap.put(Date.class, Retriever.class.getDeclaredMethod("getString", String.class));
         } catch (NoSuchMethodException nsme) {
-            nsme.printStackTrace();
-            System.exit(-1);
+            throw new RuntimeException(nsme);
         }
     }
 

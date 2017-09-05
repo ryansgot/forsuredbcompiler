@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.api.staticdata;
 
 import com.fsryan.forsuredb.api.RecordContainer;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,18 @@ import java.util.Map;
  * @author Ryan Scott
  */
 public interface StaticDataRetriever {
+    StaticDataRetriever NOOP = new StaticDataRetriever() {
+        @Override
+        public List<RecordContainer> getRecords(String recordName) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Map<String, String>> getRawRecords(String recordName) {
+            return Collections.emptyList();
+        }
+    };
+
     List<RecordContainer> getRecords(String recordName);
     List<Map<String, String>> getRawRecords(String recordName);
 }

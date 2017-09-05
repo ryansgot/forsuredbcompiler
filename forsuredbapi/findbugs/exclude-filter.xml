@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- TODO: remove these in 0.13.0 -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
+        <Method name="createStringDoc" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
+        <Method name="fromStorage" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
+        <Method name="createBlobDoc" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
+        <Method name="fromStorage" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.PluginHelper" />
+        <Method name="getImplementationClassName" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+
+    <!-- TODO: Remove these when you are able to write a robust set of tests -->
+    <Match>
+        <Or>
+            <Class name="com.fsryan.forsuredb.api.FSTableCreator" />
+            <Class name="com.fsryan.forsuredb.api.migration.QueryGenerator" />
+        </Or>
+        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+    </Match>
+
+    <!-- TODO: Remove these when you're no longer using lombok -->
+    <Match>
+        <Or>
+            <Class name="com.fsryan.forsuredb.api.info.TableInfo" />
+            <Class name="com.fsryan.forsuredb.api.info.ColumnInfo" />
+        </Or>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
+    </Match>
+
+    <!-- These are okay. There is no need to remove this at present. But keep them on your radar. -->
+    <!-- Partly may be solved by delegating the serialization/deserialization to the consumer. -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory\$1" />
+        <Method name="createMigrationSet" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory$RetrieverFromStream" />
+        <Bug pattern="DM_DEFAULT_ENCODING" /> <!-- Using JSON parsing -->
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.DocStoreRetrieveHandler" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+</FindBugsFilter>

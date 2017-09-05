@@ -84,6 +84,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     private boolean queryDistinct = false;
 
     private boolean incorporatedExternalFinder = false;
+    private int offset = 0;
+    private int top = 0;
+    private int bottom = 0;
 
     /**
      * <p>
@@ -167,10 +170,107 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
+     * Select the first record only.
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
+     */
+    public F first() {
+        return first(1);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
+     * @see #last(int, int)
+     */
+    public F first(int numRecords) {
+        return first(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the first.
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int)
+     * @see #last(int)
+     * @see #last(int, int)
+     */
+    public F first(int numRecords, int offset) {
+        if (numRecords > 0) {
+            top = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
+     * Select the last record (the last record returned)
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
+     */
+    public F last() {
+        return last(1);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number
+     * @see #last(int, int)
+     * @see #first(int)
+     * @see #first(int, int)
+     */
+    public F last(int numRecords) {
+        return last(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the last you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the last.
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
+     * @see #last(int)
+     * @see #first(int)
+     * @see #first(int, int)
+     */
+    public F last(int numRecords, int offset) {
+        if (numRecords > 0) {
+            bottom = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
      * @return true if this {@link Finder} is filtering any results--false otherwise
      */
     public boolean isFilteringResultSet() {
-        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0);
+        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0)
+                || top > 0
+                || bottom > 0
+                || offset > 0;
     }
 
     /**
@@ -220,6 +320,27 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             @Override
             public String[] replacements() {
                 return replacements;
+            }
+
+            @Override
+            public Limits limits() {
+                return new Limits() {
+                    @Override
+                    public int count() {
+                        // we're guaranteed to have a positive number
+                        return Math.max(top, bottom);
+                    }
+
+                    @Override
+                    public int offset() {
+                        return offset;
+                    }
+
+                    @Override
+                    public boolean isBottom() {
+                        return bottom > 0;
+                    }
+                };
             }
         };
     }
@@ -625,6 +746,12 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             return;
         }
 
+        // handle the incorporation of the Limits parts
+        offset = throwWhenUnequalAndBothPositiveOrReturnMax("to offset", offset, finder.offset);
+        top = throwWhenUnequalAndBothPositiveOrReturnMax("the first", top, finder.top);
+        bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the last", bottom, finder.bottom);
+        throwIfPagingFromTopAndBottom();
+
         if (whereBuf.length() == 0) {
             whereBuf.append(finder.whereBuf);
             replacementsList.addAll(finder.replacementsList);
@@ -684,5 +811,18 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         // It is possible that none of the columns could be valid for this table. In that case, we want to revert to
         // the default projection
         queryDistinct = distinct && !columns.isEmpty();
+    }
+
+    private void throwIfPagingFromTopAndBottom() {
+        if (top > 0 && bottom > 0) {
+            throw new IllegalStateException("Cannot page from both first and last at same time");
+        }
+    }
+
+    private static int throwWhenUnequalAndBothPositiveOrReturnMax(String toDo, int num1, int num2) {
+        if (num1 > 0 && num2 > 0 && num1 != num2) {
+            throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
+        }
+        return Math.max(num1, num2);
     }
 }

@@ -19,15 +19,12 @@ package com.fsryan.forsuredb.api.migration;
 
 import com.fsryan.forsuredb.api.FSLogger;
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -36,7 +33,8 @@ import java.util.PriorityQueue;
 
 public class MigrationRetrieverFactory {
 
-    private static final Gson gson = new Gson();
+    /*package*/ static final Type migrationSetType = new TypeToken<MigrationSet>() {}.getType();
+    /*package*/ static final Gson gson = new Gson();
 
     private final FSLogger log;
 
@@ -49,44 +47,7 @@ public class MigrationRetrieverFactory {
     }
 
     public MigrationRetriever fromStream(final InputStream inputStream) {
-        return new MigrationRetriever() {
-
-            private MigrationSet migrationSet;
-
-            @Override
-            public List<MigrationSet> getMigrationSets() {
-                List<MigrationSet> ret = new ArrayList<>(1);
-                if (migrationSet == null) {
-                    migrationSet = createMigrationSet();
-                }
-                ret.add(migrationSet);
-                return ret;
-            }
-
-            @Override
-            public int latestDbVersion() {
-                if (migrationSet == null) {
-                    migrationSet = createMigrationSet();
-                }
-                return migrationSet.getDbVersion();
-            }
-
-            private MigrationSet createMigrationSet() {
-                JsonReader reader = new JsonReader(new InputStreamReader(inputStream));
-                try {
-                    return gson.fromJson(reader, new TypeToken<MigrationSet>() {}.getType());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {}
-                }
-
-                // return a dummy MigrationSet if the error was found
-                return MigrationSet.builder().dbVersion(-1).build();
-            }
-        };
+        return new RetrieverFromStream(inputStream);
     }
 
     private int latestDbVersionFrom(List<MigrationSet> migrationSets) {
@@ -102,6 +63,56 @@ public class MigrationRetrieverFactory {
 
     public MigrationRetriever fromDirectory(final String directoryName) {
         return new DirectoryMigrationsRetriever(directoryName);
+    }
+
+    private static class RetrieverFromStream implements MigrationRetriever {
+
+        private InputStream inputStream;
+
+        public RetrieverFromStream(final InputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+
+        private MigrationSet migrationSet;
+
+        @Override
+        public List<MigrationSet> getMigrationSets() {
+            List<MigrationSet> ret = new ArrayList<>(1);
+            if (migrationSet == null) {
+                migrationSet = createMigrationSet();
+            }
+            ret.add(migrationSet);
+            return ret;
+        }
+
+        @Override
+        public int latestDbVersion() {
+            if (migrationSet == null) {
+                migrationSet = createMigrationSet();
+            }
+            return migrationSet.getDbVersion();
+        }
+
+        private MigrationSet createMigrationSet() {
+            JsonReader reader = null;
+            try {
+                reader = new JsonReader(new InputStreamReader(inputStream));
+                return gson.fromJson(reader, migrationSetType);
+            } catch (JsonIOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // return a dummy MigrationSet if the error was found
+            return MigrationSet.builder().dbVersion(-1).build();
+        }
     }
 
     private class DirectoryMigrationsRetriever implements MigrationRetriever {
@@ -132,7 +143,7 @@ public class MigrationRetrieverFactory {
         private List<MigrationSet> createMigrationSets() {
             if (!validDirectory()) {
                 log.w("directory " + directory + " either doesn't exist or isn't a directory");
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             log.i("Looking for migrations in " + directory.getPath());
@@ -159,7 +170,7 @@ public class MigrationRetrieverFactory {
 
         private List<File> filterMigrationFiles(File[] files) {
             if (files == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             List<File> retList = new LinkedList<>();

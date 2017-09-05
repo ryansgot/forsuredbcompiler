@@ -26,7 +26,7 @@ public class APLog {
     private static final String LOG_TAG = APLog.class.getSimpleName();
     private static ProcessingEnvLogger log;
 
-    public static void init(ProcessingEnvironment processingEnv) {
+    public static synchronized void init(ProcessingEnvironment processingEnv) {
         if (log == null) {
             log = new ProcessingEnvLogger(processingEnv);
             i(LOG_TAG, "initialized APLog");

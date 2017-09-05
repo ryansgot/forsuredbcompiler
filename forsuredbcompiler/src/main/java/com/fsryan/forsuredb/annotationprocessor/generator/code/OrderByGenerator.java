@@ -56,7 +56,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
     private void addOrderByMethods(TypeSpec.Builder codeBuilder) {
         for (ColumnInfo column : columnsSortedByName) {
             // Parent class OrderBy already contains the methods for the default columns
-            if (!column.isOrderable() || TableInfo.DEFAULT_COLUMNS.containsKey(column.getColumnName())) {
+            if (!column.isOrderable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {
                 continue;
             }
             codeBuilder.addMethod(methodSpecFor(column));

@@ -11,7 +11,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static com.fsryan.forsuredb.api.adapter.SharedData.DATE;
 import static com.fsryan.forsuredb.api.adapter.SharedData.DATE_STRING;
@@ -53,7 +55,14 @@ public abstract class SaveHandlerTest<U> {
 
         @Test
         public void shouldSelectCorrectSubclass() {
-            SaveHandler<String, RecordContainer> shut = SaveHandler.getFor(fsSaveApiClass, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(fsSaveApiClass));
+            SaveHandler<String, RecordContainer> shut = SaveHandler.getFor(
+                    fsSaveApiClass,
+                    mockFSQueryable,
+                    mockFSSelection,
+                    Collections.<FSOrdering>emptyList(),
+                    mockRecordContainer,
+                    columnTypeMap(fsSaveApiClass)
+            );
             assertEquals(expectedSaveHandlerClass, shut.getClass());
         }
     }
@@ -70,140 +79,105 @@ public abstract class SaveHandlerTest<U> {
         @Override
         public void setUp() {
             super.setUp();
-            shut = SaveHandler.getFor(apiClass, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(apiClass));
+            shut = SaveHandler.getFor(
+                    apiClass,
+                    mockFSQueryable,
+                    mockFSSelection,
+                    Collections.<FSOrdering>emptyList(),
+                    mockRecordContainer,
+                    columnTypeMap(apiClass)
+            );
         }
 
         @Test
         public void shouldCallPutStringRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("stringColumn", String.class), new Object[]{"string_value"});
-            verify(mockRecordContainer, times(1)).put("string_column", "string_value");
-            verifyNoOtherPutsCalled("string_column");
+            verify(mockRecordContainer).put("string_column", "string_value");
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutIntRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("intColumn", int.class), new Object[]{1});
-            verify(mockRecordContainer, times(1)).put("int_column", 1);
-            verifyNoOtherPutsCalled("int_column");
+            verify(mockRecordContainer).put("int_column", 1);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutIntegerWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("integerWrapperColumn", Integer.class), new Object[]{Integer.valueOf(1)});
-            verify(mockRecordContainer, times(1)).put("integer_wrapper_column", 1);
-            verifyNoOtherPutsCalled("integer_wrapper_column");
+            verify(mockRecordContainer).put("integer_wrapper_column", 1);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutLongRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("longColumn", long.class), new Object[]{Long.MAX_VALUE});
-            verify(mockRecordContainer, times(1)).put("long_column", Long.MAX_VALUE);
-            verifyNoOtherPutsCalled("long_column");
+            verify(mockRecordContainer).put("long_column", Long.MAX_VALUE);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutLongWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("longWrapperColumn", Long.class), new Object[]{Long.valueOf(1)});
-            verify(mockRecordContainer, times(1)).put("long_wrapper_column", Long.valueOf(1));
-            verifyNoOtherPutsCalled("long_wrapper_column");
+            verify(mockRecordContainer).put("long_wrapper_column", Long.valueOf(1));
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutDoubleRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("doubleColumn", double.class), new Object[]{Double.MAX_VALUE});
-            verify(mockRecordContainer, times(1)).put("double_column", Double.MAX_VALUE);
-            verifyNoOtherPutsCalled("double_column");
+            verify(mockRecordContainer).put("double_column", Double.MAX_VALUE);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutDoubleWrapperRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("doubleWrapperColumn", Double.class), new Object[]{Double.valueOf(1)});
-            verify(mockRecordContainer, times(1)).put("double_wrapper_column", Double.valueOf(1));
-            verifyNoOtherPutsCalled("double_wrapper_column");
+            verify(mockRecordContainer).put("double_wrapper_column", Double.valueOf(1));
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutBooleanRecordContainerMethodTrue() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanColumn", boolean.class), new Object[]{true});
-            verify(mockRecordContainer, times(1)).put("boolean_column", 1);
-            verifyNoOtherPutsCalled("boolean_column");
+            verify(mockRecordContainer).put("boolean_column", 1);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutBooleanRecordContainerMethodFalse() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanColumn", boolean.class), new Object[]{false});
-            verify(mockRecordContainer, times(1)).put("boolean_column", 0);
-            verifyNoOtherPutsCalled("boolean_column");
+            verify(mockRecordContainer).put("boolean_column", 0);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutBooleanWrapperRecordContainerMethodTrue() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanWrapperColumn", Boolean.class), new Object[]{Boolean.valueOf(true)});
-            verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 1);
-            verifyNoOtherPutsCalled("boolean_wrapper_column");
+            verify(mockRecordContainer).put("boolean_wrapper_column", 1);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutBooleanWrapperRecordContainerMethodFalse() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("booleanWrapperColumn", Boolean.class), new Object[]{Boolean.valueOf(false)});
-            verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 0);
-            verifyNoOtherPutsCalled("boolean_wrapper_column");
+            verify(mockRecordContainer).put("boolean_wrapper_column", 0);
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutStringRecordContainerMethodOnBigDecimal() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("bigDecimalColumn", BigDecimal.class), new Object[]{BigDecimal.TEN});
-            verify(mockRecordContainer, times(1)).put("big_decimal_column", BigDecimal.TEN.toString());
-            verifyNoOtherPutsCalled("big_decimal_column");
+            verify(mockRecordContainer).put("big_decimal_column", BigDecimal.TEN.toString());
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         @Test
         public void shouldCallPutStringRecordContainerMethodOnDate() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("dateColumn", Date.class), new Object[]{new Date()});
-            verify(mockRecordContainer, times(1)).put(eq("date_column"), any(String.class));    // <-- not validating format
-            verifyNoOtherPutsCalled("date_column");
-        }
-
-        protected void verifyNoOtherPutsCalled(String columnName) {
-            if (!"big_decimal_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("big_decimal_column"), any(String.class));
-            }
-            if (!"boolean_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("boolean_column"), any(int.class));
-            }
-            if (!"boolean_wrapper_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("boolean_wrapper_column"), any(int.class));
-            }
-            if (!"byte_array_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("byte_array_column"), any(byte[].class));
-            }
-            if (!"date_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("date_column"), any(String.class));
-            }
-            if (!"double_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("double_column"), any(double.class));
-            }
-            if (!"double_wrapper_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("double_wrapper_column"), any(Double.class));
-            }
-            if (!"int_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("int_column"), any(int.class));
-            }
-            if (!"integer_wrapper_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("integer_wrapper_column"), any(Integer.class));
-            }
-            if (!"long_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("long_column"), any(long.class));
-            }
-            if (!"long_wrapper_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("long_wrapper_column"), any(Long.class));
-            }
-            if (!"string_column".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("string_column"), any(String.class));
-            }
-            if (!"doc".equals(columnName)) {
-                verify(mockRecordContainer, times(0)).put(eq("doc"), any(String.class));
-            }
+            verify(mockRecordContainer).put(eq("date_column"), any(String.class));    // <-- not validating format
+            verifyNoMoreInteractions(mockRecordContainer);
         }
 
         public static class Relational extends Set {
@@ -216,7 +190,7 @@ public abstract class SaveHandlerTest<U> {
                 byte[] arr = new byte[] {1, 2, 3};
                 shut.invoke(shut, apiClass.getMethod("byteArrayColumn", byte[].class), new Object[]{arr});
                 verify(mockRecordContainer, times(1)).put("byte_array_column", arr);
-                verifyNoOtherPutsCalled("byte_array_column");
+                verifyNoMoreInteractions(mockRecordContainer);
             }
         }
 
@@ -256,20 +230,20 @@ public abstract class SaveHandlerTest<U> {
             public void shouldUpdateAllIndicesSaveDocAndSaveClassName() throws Throwable {
                 shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{dstObject});
                 // verifies that, for each index, the correct value gets put into the record container
-                verify(mockRecordContainer, times(1)).put("big_decimal_column", BigDecimal.ONE.toString());
-                verify(mockRecordContainer, times(1)).put("boolean_column", 1);
-                verify(mockRecordContainer, times(1)).put("boolean_wrapper_column", 0);
-                verify(mockRecordContainer, times(1)).put("date_column", DATE_STRING);
-                verify(mockRecordContainer, times(1)).put("double_column", Double.MAX_VALUE);
-                verify(mockRecordContainer, times(1)).put("double_wrapper_column", Double.valueOf(Double.MIN_VALUE));
-                verify(mockRecordContainer, times(1)).put("int_column", Integer.MAX_VALUE);
-                verify(mockRecordContainer, times(1)).put("integer_wrapper_column", Integer.valueOf(Integer.MIN_VALUE));
-                verify(mockRecordContainer, times(1)).put("long_column", Long.MAX_VALUE);
-                verify(mockRecordContainer, times(1)).put("long_wrapper_column", Long.valueOf(Long.MIN_VALUE));
-                verify(mockRecordContainer, times(1)).put("string_column", "a string");
+                verify(mockRecordContainer).put("big_decimal_column", BigDecimal.ONE.toString());
+                verify(mockRecordContainer).put("boolean_column", 1);
+                verify(mockRecordContainer).put("boolean_wrapper_column", 0);
+                verify(mockRecordContainer).put("date_column", DATE_STRING);
+                verify(mockRecordContainer).put("double_column", Double.MAX_VALUE);
+                verify(mockRecordContainer).put("double_wrapper_column", Double.valueOf(Double.MIN_VALUE));
+                verify(mockRecordContainer).put("int_column", Integer.MAX_VALUE);
+                verify(mockRecordContainer).put("integer_wrapper_column", Integer.valueOf(Integer.MIN_VALUE));
+                verify(mockRecordContainer).put("long_column", Long.MAX_VALUE);
+                verify(mockRecordContainer).put("long_wrapper_column", Long.valueOf(Long.MIN_VALUE));
+                verify(mockRecordContainer).put("string_column", "a string");
                 // verifies that the doc and class name got put into the record container
-                verify(mockRecordContainer, times(1)).put("class_name", dstObject.getClass().getName());
-                verify(mockRecordContainer, times(1)).put("doc", new Gson().toJson(dstObject));
+                verify(mockRecordContainer).put("class_name", dstObject.getClass().getName());
+                verify(mockRecordContainer).put("doc", new Gson().toJson(dstObject));
             }
         }
     }
@@ -281,24 +255,38 @@ public abstract class SaveHandlerTest<U> {
         @Before
         public void setUp() {
             super.setUp();
-            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+            shut = SaveHandler.getFor(
+                    FSGetApiExtensionTestTableSetter.class,
+                    mockFSQueryable,
+                    mockFSSelection,
+                    Collections.<FSOrdering>emptyList(),
+                    mockRecordContainer,
+                    columnTypeMap(FSGetApiExtensionTestTableSetter.class)
+            );
         }
 
         @Test
         public void shouldCallInsertWhenNoSearchCriteriaUsed() throws Throwable {
             // overwrite so that the FSSelection object is null
-            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, null, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+            shut = SaveHandler.getFor(
+                    FSGetApiExtensionTestTableSetter.class,
+                    mockFSQueryable,
+                    null,
+                    Collections.<FSOrdering>emptyList(),
+                    mockRecordContainer,
+                    columnTypeMap(FSGetApiExtensionTestTableSetter.class)
+            );
             shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
-            verify(mockFSQueryable, times(1)).insert(mockRecordContainer);
-            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
+            verify(mockFSQueryable).insert(mockRecordContainer);
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class), any(List.class));
         }
 
         @Test
         public void shouldCallInsertWhenNoRecordsMatchingFSSelectionExist() throws Throwable {
-            when(mockFSQueryable.query(eq((FSProjection) null), any(FSSelection.class), eq((String) null))).thenReturn(null);
+            when(mockFSQueryable.query(eq((FSProjection) null), any(FSSelection.class), any(List.class))).thenReturn(null);
             shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
             verify(mockFSQueryable, times(1)).insert(mockRecordContainer);
-            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class), any(List.class));
         }
 
         @Test
@@ -308,7 +296,7 @@ public abstract class SaveHandlerTest<U> {
             when(mockFSQueryable.query(null, mockFSSelection, null)).thenReturn(mockRetriever);
             shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
             verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
-            verify(mockFSQueryable, times(1)).update(mockRecordContainer, mockFSSelection);
+            verify(mockFSQueryable).update(eq(mockRecordContainer), eq(mockFSSelection), any(List.class));
         }
     }
 
@@ -319,27 +307,34 @@ public abstract class SaveHandlerTest<U> {
         @Before
         public void setUp() {
             super.setUp();
-            shut = SaveHandler.getFor(FSGetApiExtensionTestTableSetter.class, mockFSQueryable, mockFSSelection, mockRecordContainer, columnTypeMap(FSGetApiExtensionTestTableSetter.class));
+            shut = SaveHandler.getFor(
+                    FSGetApiExtensionTestTableSetter.class,
+                    mockFSQueryable,
+                    mockFSSelection,
+                    Collections.<FSOrdering>emptyList(),
+                    mockRecordContainer,
+                    columnTypeMap(FSGetApiExtensionTestTableSetter.class)
+            );
         }
 
         @Test
         public void shouldUpdateOnlyDeletedFieldWhenSoftDeleteCalled() throws Throwable {
             // overwrite so that the FSSelection object is null
             shut.invoke(shut, FSSaveApi.class.getMethod("softDelete"), new Class<?>[0]);
-            verify(mockRecordContainer, times(1)).clear();
-            verify(mockRecordContainer, times(1)).put("deleted", 1);
+            verify(mockRecordContainer).clear();
+            verify(mockRecordContainer).put("deleted", 1);
             verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
-            verify(mockFSQueryable, times(1)).update(mockRecordContainer, mockFSSelection);
+            verify(mockFSQueryable).update(eq(mockRecordContainer), eq(mockFSSelection), any(List.class));
         }
 
         @Test
         public void shouldCallDeleteOnSelectionWhenDeleteCalled() throws Throwable {
             // overwrite so that the FSSelection object is null
             shut.invoke(shut, FSSaveApi.class.getMethod("hardDelete"), new Class<?>[0]);
-            verify(mockRecordContainer, times(1)).clear();
+            verify(mockRecordContainer).clear();
             verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
-            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class));
-            verify(mockFSQueryable, times(1)).delete(mockFSSelection);
+            verify(mockFSQueryable, times(0)).update(any(RecordContainer.class), any(FSSelection.class), any(List.class));
+            verify(mockFSQueryable).delete(eq(mockFSSelection), any(List.class));
         }
     }
 }
