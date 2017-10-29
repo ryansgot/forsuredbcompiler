@@ -47,6 +47,8 @@ public class FSGetAdapter {
             methodMap.put(boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
             methodMap.put(Boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
             methodMap.put(byte[].class, Retriever.class.getDeclaredMethod("getBlob", String.class));
+            methodMap.put(float.class, Retriever.class.getDeclaredMethod("getFloat", String.class));
+            methodMap.put(Float.class, Retriever.class.getDeclaredMethod("getFloat", String.class));
             methodMap.put(double.class, Retriever.class.getDeclaredMethod("getDouble", String.class));
             methodMap.put(Double.class, Retriever.class.getDeclaredMethod("getDouble", String.class));
             methodMap.put(int.class, Retriever.class.getDeclaredMethod("getInt", String.class));

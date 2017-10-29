@@ -51,6 +51,15 @@ public class TypedRecordContainerTest {
     }
 
     @Test
+    public void shouldGetCorrectFloat() {
+        trc.put("col", Float.MAX_VALUE);
+        assertEquals(float.class, trc.getType("col"));
+
+        float retrieved = trc.typedGet("col");
+        assertEquals(Float.MAX_VALUE, retrieved);
+    }
+
+    @Test
     public void shouldGetCorrectInt() {
         trc.put("col", Integer.MAX_VALUE);
         assertEquals(int.class, trc.getType("col"));

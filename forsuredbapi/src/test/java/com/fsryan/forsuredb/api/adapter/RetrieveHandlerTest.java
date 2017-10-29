@@ -80,67 +80,79 @@ public abstract class RetrieveHandlerTest<U> {
         @Test
         public void shouldCallRetrieverGetStringMethodWhenInvokingMethodReturningString() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("stringColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getString(tableName + "_string_column");
+            verify(mockRetriever).getString(tableName + "_string_column");
         }
 
         @Test
         public void shouldCallRetrieverGetIntMethodWhenInvokingMethodReturningInt() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("intColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getInt(tableName + "_int_column");
+            verify(mockRetriever).getInt(tableName + "_int_column");
         }
 
         @Test
         public void shouldCallRetrieverGetIntMethodWhenInvokingMethodReturningIntegerWrapper() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("integerWrapperColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getInt(tableName + "_integer_wrapper_column");
+            verify(mockRetriever).getInt(tableName + "_integer_wrapper_column");
         }
 
         @Test
         public void shouldCallRetrieverGetLongMethodWhenInvokingMethodReturningLong() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("longColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getLong(tableName + "_long_column");
+            verify(mockRetriever).getLong(tableName + "_long_column");
         }
 
         @Test
         public void shouldCallRetrieverGetLongMethodWhenInvokingMethodReturningLongWrapper() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("longWrapperColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getLong(tableName + "_long_wrapper_column");
+            verify(mockRetriever).getLong(tableName + "_long_wrapper_column");
         }
 
         @Test
         public void shouldCallRetrieverGetDoubleMethodWhenInvokingMethodReturningDouble() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("doubleColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getDouble(tableName + "_double_column");
+            verify(mockRetriever).getDouble(tableName + "_double_column");
         }
 
         @Test
         public void shouldCallRetrieverGetDoubleMethodWhenInvokingMethodReturningDoubleWrapper() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("doubleWrapperColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getDouble(tableName + "_double_wrapper_column");
+            verify(mockRetriever).getDouble(tableName + "_double_wrapper_column");
+        }
+
+        @Test
+        public void shouldCallRetrieverGetFloatMethodWhenInvokingMethodReturningFloat() throws Throwable {
+            rhut.invoke(rhut, apiClass.getMethod("floatColumn", Retriever.class), new Object[]{mockRetriever});
+            verify(mockRetriever).getFloat(tableName + "_float_column");
+        }
+
+        @Test
+        public void shouldCallRetrieverGetFloatMethodWhenInvokingMethodReturningFloatWrapper() throws Throwable {
+            rhut.invoke(rhut, apiClass.getMethod("floatWrapperColumn", Retriever.class), new Object[]{mockRetriever});
+            verify(mockRetriever).getFloat(tableName + "_float_wrapper_column");
         }
 
         @Test
         public void shouldCallRetrieverGetIntMethodWhenInvokingMethodReturningBoolean() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("booleanColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getInt(tableName + "_boolean_column");
+            verify(mockRetriever).getInt(tableName + "_boolean_column");
         }
 
         @Test
         public void shouldCallRetrieverGetBooleanMethodWhenInvokingMethodReturningBooleanWrapper() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("booleanWrapperColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getInt(tableName + "_boolean_wrapper_column");
+            verify(mockRetriever).getInt(tableName + "_boolean_wrapper_column");
         }
 
         @Test
         public void shouldCallRetrieverGetStringMethodWhenInvokingMethodReturningBigDecimal() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("bigDecimalColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getString(tableName + "_big_decimal_column");
+            verify(mockRetriever).getString(tableName + "_big_decimal_column");
         }
 
         @Test
         public void shouldCallRetrieverGetStringMethodWhenInvokingMethodReturningDate() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("dateColumn", Retriever.class), new Object[]{mockRetriever});
-            verify(mockRetriever, times(1)).getString(tableName + "_date_column");
+            verify(mockRetriever).getString(tableName + "_date_column");
         }
 
         public static class Relational extends Get {
@@ -157,19 +169,19 @@ public abstract class RetrieveHandlerTest<U> {
             @Test
             public void shouldCallRetrieverGetStringMethodWhenInvokingMethodToReturnDoc() throws Throwable {
                 rhut.invoke(rhut, apiClass.getMethod("doc", Retriever.class), new Object[]{mockRetriever});
-                verify(mockRetriever, times(1)).getString(tableName + "_doc");
+                verify(mockRetriever).getString(tableName + "_doc");
             }
 
             @Test
             public void shouldCallRetrieverGetStringMethodWhenInvokingMethodToReturnClassName() throws Throwable {
                 rhut.invoke(rhut, apiClass.getMethod("className", Retriever.class), new Object[]{mockRetriever});
-                verify(mockRetriever, times(1)).getString(tableName + "_class_name");
+                verify(mockRetriever).getString(tableName + "_class_name");
             }
 
             @Test
             public void shouldCallRetrieverGetStringMethodWhenInvokingGetMethod() throws Throwable {
                 rhut.invoke(rhut, apiClass.getMethod("get", Retriever.class), new Object[]{mockRetriever});
-                verify(mockRetriever, times(1)).getString(tableName + "_doc");
+                verify(mockRetriever).getString(tableName + "_doc");
             }
 
             @Test
@@ -177,14 +189,16 @@ public abstract class RetrieveHandlerTest<U> {
                 DocStoreTestBase obj = DocStoreTestBase.builder()
                         .bigDecimalColumn(BigDecimal.ONE)
                         .booleanColumn(true)
-                        .booleanWrapperColumn(Boolean.valueOf(false))
+                        .booleanWrapperColumn(false)
                         .dateColumn(new Date())
+                        .floatColumn(Float.MAX_VALUE)
+                        .floatWrapperColumn(Float.MIN_VALUE)
                         .doubleColumn(Double.MAX_VALUE)
-                        .doubleWrapperColumn(Double.valueOf(Double.MIN_VALUE))
+                        .doubleWrapperColumn(Double.MIN_VALUE)
                         .intColumn(Integer.MAX_VALUE)
-                        .integerWrapperColumn(Integer.valueOf(Integer.MIN_VALUE))
+                        .integerWrapperColumn(Integer.MIN_VALUE)
                         .longColumn(Long.MAX_VALUE)
-                        .longWrapperColumn(Long.valueOf(Long.MIN_VALUE))
+                        .longWrapperColumn(Long.MIN_VALUE)
                         .stringColumn("a string")
                         .build();
 
