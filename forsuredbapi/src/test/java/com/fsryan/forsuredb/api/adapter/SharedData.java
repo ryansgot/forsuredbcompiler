@@ -28,7 +28,9 @@ import static com.fsryan.forsuredb.api.CollectionUtil.mapOf;
             "integerWrapperColumn", "integer_wrapper_column",
             "longColumn", "long_column",
             "longWrapperColumn", "long_wrapper_column",
-            "stringColumn", "string_column");
+            "stringColumn", "string_column",
+            "floatColumn", "float_column",
+            "floatWrapperColumn", "float_wrapper_column");
 
     public static final Map<Method, ColumnDescriptor> columnTypeMap(Class<? extends FSSaveApi<?>> saveApiClass) {
         Map<Method, ColumnDescriptor> ret = new HashMap<>();

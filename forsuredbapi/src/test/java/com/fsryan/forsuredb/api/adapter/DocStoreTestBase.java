@@ -13,6 +13,8 @@ import java.util.Date;
     private boolean booleanColumn;
     private Boolean booleanWrapperColumn;
     private byte[] byteArrayColumn;
+    private float floatColumn;
+    private Float floatWrapperColumn;
     private double doubleColumn;
     private Double doubleWrapperColumn;
     private Date dateColumn;
@@ -33,6 +35,8 @@ import java.util.Date;
                     base.isBooleanColumn(),
                     base.getBooleanWrapperColumn(),
                     base.getByteArrayColumn(),
+                    base.getFloatColumn(),
+                    base.getFloatWrapperColumn(),
                     base.getDoubleColumn(),
                     base.getDoubleWrapperColumn(),
                     base.getDateColumn(),
@@ -44,8 +48,8 @@ import java.util.Date;
                     extraStringColumn);
         }
 
-        public Extension(BigDecimal bigDecimalColumn, boolean booleanColumn, Boolean booleanWrapperColumn, byte[] byteArrayColumn, double doubleColumn, Double doubleWrapperColumn, Date dateColumn, int intColumn, Integer integerWrapperColumn, long longColumn, Long longWrapperColumn, String stringColumn, String extraStringColumn) {
-            super(bigDecimalColumn, booleanColumn, booleanWrapperColumn, byteArrayColumn, doubleColumn, doubleWrapperColumn, dateColumn, intColumn, integerWrapperColumn, longColumn, longWrapperColumn, stringColumn);
+        public Extension(BigDecimal bigDecimalColumn, boolean booleanColumn, Boolean booleanWrapperColumn, byte[] byteArrayColumn, float floatColumn, Float floatWrapperColumn, double doubleColumn, Double doubleWrapperColumn, Date dateColumn, int intColumn, Integer integerWrapperColumn, long longColumn, Long longWrapperColumn, String stringColumn, String extraStringColumn) {
+            super(bigDecimalColumn, booleanColumn, booleanWrapperColumn, byteArrayColumn, floatColumn, floatWrapperColumn, doubleColumn, doubleWrapperColumn, dateColumn, intColumn, integerWrapperColumn, longColumn, longWrapperColumn, stringColumn);
             this.extraStringColumn = extraStringColumn;
         }
     }

@@ -28,6 +28,7 @@ public interface Retriever {
     int getInt(String column);
     long getLong(String column);
     double getDouble(String column);
+    float getFloat(String column);
     byte[] getBlob(String column);
     int getCount();
 

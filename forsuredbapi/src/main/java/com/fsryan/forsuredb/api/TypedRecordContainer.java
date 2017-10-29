@@ -67,6 +67,12 @@ public final class TypedRecordContainer implements RecordContainer {
     }
 
     @Override
+    public void put(String column, float value) {
+        columnToValueMap.put(column, Float.toString(value));
+        columnToTypeMap.put(column, float.class);
+    }
+
+    @Override
     public void put(String column, byte[] value) {
         columnToValueMap.put(column, value);
         columnToTypeMap.put(column, byte[].class);
@@ -99,6 +105,9 @@ public final class TypedRecordContainer implements RecordContainer {
         Type type = columnToTypeMap.get(column);
         if (type.equals(int.class)) {
             return (T) Integer.valueOf(value.toString());
+        }
+        if (type.equals(float.class)) {
+            return (T) Float.valueOf(value.toString());
         }
         if (type.equals(double.class)) {
             return (T) Double.valueOf(value.toString());

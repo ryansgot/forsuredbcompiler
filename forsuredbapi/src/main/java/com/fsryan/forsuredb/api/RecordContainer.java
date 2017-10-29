@@ -38,6 +38,7 @@ public interface RecordContainer {
     void put(String column, long value);
     void put(String column, int value);
     void put(String column, double value);
+    void put(String column, float value);
     void put(String column, byte[] value);
 
     /**

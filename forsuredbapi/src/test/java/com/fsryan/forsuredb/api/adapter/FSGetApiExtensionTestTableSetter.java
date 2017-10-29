@@ -68,6 +68,22 @@ import java.util.Date;
 
     /**
      * <p>
+     *   Set the value of the float_column column to be updated
+     * </p>
+     */
+    @FSColumn("float_column")
+    FSGetApiExtensionTestTableSetter floatColumn(float floatColumn);
+
+    /**
+     * <p>
+     *   Set the value of the float_wrapper_column column to be updated
+     * </p>
+     */
+    @FSColumn("float_wrapper_column")
+    FSGetApiExtensionTestTableSetter floatWrapperColumn(Float floatWrapperColumn);
+
+    /**
+     * <p>
      *   Set the value of the double_column column to be updated
      * </p>
      */

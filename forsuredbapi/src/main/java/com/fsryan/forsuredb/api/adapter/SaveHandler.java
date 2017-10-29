@@ -86,6 +86,8 @@ import java.util.Map;
             recordContainer.put(columnName, (Boolean) arg ? 1 : 0);
         } else if (type.equals(BigDecimal.class) || type.equals(BigInteger.class)) {
             recordContainer.put(columnName, arg.toString());
+        } else if (type.equals(float.class) || type.equals(Float.class)) {
+            recordContainer.put(columnName, (float) arg);
         } else if (type.equals(Date.class)) {
             recordContainer.put(columnName, Sql.generator().formatDate((Date) arg));
         } else if (type.equals(byte[].class)) {

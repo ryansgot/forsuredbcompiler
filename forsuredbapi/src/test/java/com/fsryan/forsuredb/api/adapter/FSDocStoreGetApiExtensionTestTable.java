@@ -15,6 +15,8 @@ import java.util.Date;
     @FSColumn("boolean_column") boolean booleanColumn(Retriever retriever);
     @FSColumn("boolean_wrapper_column") Boolean booleanWrapperColumn(Retriever retriever);
     @FSColumn("date_column") Date dateColumn(Retriever retriever);
+    @FSColumn("float_column") float floatColumn(Retriever retriever);
+    @FSColumn("float_wrapper_column") Float floatWrapperColumn(Retriever retriever);
     @FSColumn("double_column") double doubleColumn(Retriever retriever);
     @FSColumn("double_wrapper_column") Double doubleWrapperColumn(Retriever retriever);
     @FSColumn("int_column") int intColumn(Retriever retriever);

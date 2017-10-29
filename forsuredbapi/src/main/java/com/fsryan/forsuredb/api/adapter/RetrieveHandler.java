@@ -60,14 +60,15 @@ import java.util.Map;
     }
 
     protected Object callRetrieverMethod(Retriever retriever, String column, Type type) throws InvocationTargetException, IllegalAccessException {
-        // TODO: find out a better solution for translation methods
         final Method cursorMethod = FSGetAdapter.methodMap.get(type);
         if (type.equals(BigDecimal.class)) {
             return getBigDecimalFrom(cursorMethod, retriever, column);
-        } else if (type.equals(boolean.class)) {
+        }
+        if (type.equals(boolean.class)) {
             final Object o = cursorMethod.invoke(retriever, column);
             return o != null && (Integer) o == 1;
-        } else if (type.equals(Date.class)) {
+        }
+        if (type.equals(Date.class)) {
             return getDateFrom(cursorMethod, retriever, column);
         }
         return cursorMethod.invoke(retriever, column);
