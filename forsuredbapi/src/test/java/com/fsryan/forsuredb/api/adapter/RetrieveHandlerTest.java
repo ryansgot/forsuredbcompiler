@@ -150,6 +150,12 @@ public abstract class RetrieveHandlerTest<U> {
         }
 
         @Test
+        public void shouldCallRetrieverGetStringMethodWhenInvokingMethodReturningBigInteger() throws Throwable {
+            rhut.invoke(rhut, apiClass.getMethod("bigIntegerColumn", Retriever.class), new Object[]{mockRetriever});
+            verify(mockRetriever).getString(tableName + "_big_integer_column");
+        }
+
+        @Test
         public void shouldCallRetrieverGetStringMethodWhenInvokingMethodReturningDate() throws Throwable {
             rhut.invoke(rhut, apiClass.getMethod("dateColumn", Retriever.class), new Object[]{mockRetriever});
             verify(mockRetriever).getString(tableName + "_date_column");

@@ -15,7 +15,9 @@ import static com.fsryan.forsuredb.api.CollectionUtil.mapOf;
     public static final Date DATE = new Date();
     public static final String DATE_STRING = Sql.generator().formatDate(DATE);
 
-    public static final Map<String, String> METHOD_NAME_TO_COLUMN_NAME_MAP = mapOf("id", "_id",
+    public static final Map<String, String> METHOD_NAME_TO_COLUMN_NAME_MAP = mapOf(
+            "id", "_id",
+            "bigIntegerColumn", "big_integer_column",
             "bigDecimalColumn", "big_decimal_column",
             "booleanColumn", "boolean_column",
             "booleanWrapperColumn", "boolean_wrapper_column",
@@ -30,7 +32,8 @@ import static com.fsryan.forsuredb.api.CollectionUtil.mapOf;
             "longWrapperColumn", "long_wrapper_column",
             "stringColumn", "string_column",
             "floatColumn", "float_column",
-            "floatWrapperColumn", "float_wrapper_column");
+            "floatWrapperColumn", "float_wrapper_column"
+    );
 
     public static final Map<Method, ColumnDescriptor> columnTypeMap(Class<? extends FSSaveApi<?>> saveApiClass) {
         Map<Method, ColumnDescriptor> ret = new HashMap<>();
