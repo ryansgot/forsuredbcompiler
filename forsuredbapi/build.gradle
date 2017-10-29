@@ -5,7 +5,6 @@ plugins {
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     compile project(':dbinfo')
 

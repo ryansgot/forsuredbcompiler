@@ -113,14 +113,14 @@ public abstract class TableInfoTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     // Table with only default columns
-                    {
-                            new ColumnInfo[] {},
-                            new String[] {"_id"}
-                    },
-                    {
-                            new ColumnInfo[] {longCol().build()},
-                            new String[] {"_id"}
-                    },
+//                    {
+//                            new ColumnInfo[] {},
+//                            new String[] {"_id"}
+//                    },
+//                    {
+//                            new ColumnInfo[] {longCol().build()},
+//                            new String[] {"_id"}
+//                    },
                     {
                             new ColumnInfo[] {longCol().primaryKey(true).build()},
                             new String[] {longCol().build().getColumnName()}
