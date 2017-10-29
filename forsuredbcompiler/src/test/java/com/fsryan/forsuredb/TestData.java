@@ -18,12 +18,12 @@
 package com.fsryan.forsuredb;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.migration.Migration;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.migration.Migration;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.BufferedReader;
@@ -96,7 +96,7 @@ public class TestData {
     public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
         Map<String, TableInfo> retMap = new HashMap<>();
         for (TableInfo table : tables) {
-            retMap.put(table.getTableName(), table);
+            retMap.put(table.tableName(), table);
         }
         return retMap;
     }
@@ -198,15 +198,15 @@ public class TestData {
     }
 
     public static TableForeignKeyInfo.Builder dbmsDefaultTFKI(String foreignTableName) {
-        return new TableForeignKeyInfo.Builder()
+        return TableForeignKeyInfo.builder()
                 .foreignTableName(foreignTableName)
                 .updateChangeAction("")
                 .deleteChangeAction("");
     }
 
     public static ForeignKeyInfo.Builder cascadeFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.CASCADE)
-                .deleteAction(ForeignKey.ChangeAction.CASCADE)
+        return foreignKeyInfo().updateAction(ForeignKey.ChangeAction.CASCADE.name())
+                .deleteAction(ForeignKey.ChangeAction.CASCADE.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
@@ -216,8 +216,8 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder noActionFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION)
-                .deleteAction(ForeignKey.ChangeAction.NO_ACTION)
+        return foreignKeyInfo().updateAction(ForeignKey.ChangeAction.NO_ACTION.name())
+                .deleteAction(ForeignKey.ChangeAction.NO_ACTION.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
@@ -227,8 +227,8 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder setNullFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_NULL)
-                .deleteAction(ForeignKey.ChangeAction.SET_NULL)
+        return foreignKeyInfo().updateAction(ForeignKey.ChangeAction.SET_NULL.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_NULL.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
@@ -238,8 +238,8 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder setDefaultFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT)
-                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT)
+        return foreignKeyInfo().updateAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
@@ -249,8 +249,8 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder restrictFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.RESTRICT)
-                .deleteAction(ForeignKey.ChangeAction.RESTRICT)
+        return foreignKeyInfo().updateAction(ForeignKey.ChangeAction.RESTRICT.name())
+                .deleteAction(ForeignKey.ChangeAction.RESTRICT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
@@ -268,6 +268,10 @@ public class TestData {
     }
 
     // Helpers for covenience methods
+
+    private static ForeignKeyInfo.Builder foreignKeyInfo() {
+        return ForeignKeyInfo.builder().apiClassName("api.class.Name");
+    }
 
     private static ColumnInfo.Builder columnFrom(String qualifiedType) {
         return ColumnInfo.builder()
@@ -348,7 +352,7 @@ public class TestData {
         private final Map<String, TableInfo> tableMap = new HashMap<>();
 
         public TableContextBuilder addTable(TableInfo table) {
-            tableMap.put(table.getTableName(), table);
+            tableMap.put(table.tableName(), table);
             return this;
         }
 
@@ -382,7 +386,7 @@ public class TestData {
         private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
         private Set<String> primaryKey = new HashSet<>();
         private Map<String, ColumnInfo> columnMap = new HashMap<>();
-        private final TableInfo.Builder realBuilder = TableInfo.builder();
+        private final TableInfo.BuilderCompat realBuilder = TableInfo.builder();
 
         public ProgressiveTableInfoBuilder tableName(String tableName) {
             realBuilder.tableName(tableName);

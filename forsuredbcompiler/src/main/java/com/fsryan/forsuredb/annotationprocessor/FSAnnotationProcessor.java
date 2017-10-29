@@ -25,7 +25,7 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 

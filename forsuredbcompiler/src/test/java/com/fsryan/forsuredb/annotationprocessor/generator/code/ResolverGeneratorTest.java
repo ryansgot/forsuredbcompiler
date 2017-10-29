@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

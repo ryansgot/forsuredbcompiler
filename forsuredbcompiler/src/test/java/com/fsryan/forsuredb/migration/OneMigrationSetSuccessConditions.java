@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.migration;
 
-import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.migration.Migration;
+import com.fsryan.forsuredb.info.TableInfo;
+import com.google.common.collect.ImmutableMap;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -61,9 +61,10 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                         .addToColumns(stringCol().columnName("table2_project").build())
                                         .addToColumns(longCol().columnName("table2_build").build())
                                         .addTableForeignKey(cascadeTFKI("table2")
-                                                .mapLocalToForeignColumn("table2_project", "project")
-                                                .mapLocalToForeignColumn("table2_build", "build")
-                                                .build())
+                                                .localToForeignColumnMap(ImmutableMap.of(
+                                                        "table2_project", "project",
+                                                        "table2_build", "build")
+                                                ).build())
                                         .build())
                                 .addTable(table("table2")
                                         .addToColumns(stringCol().columnName("project").build())

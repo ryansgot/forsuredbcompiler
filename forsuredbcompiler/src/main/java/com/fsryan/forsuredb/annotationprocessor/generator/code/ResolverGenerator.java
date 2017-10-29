@@ -3,9 +3,9 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.api.*;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.base.Strings;
 import com.squareup.javapoet.*;
 
@@ -29,16 +29,16 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private final TypeName orderByClassName;
 
     public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
-        super(processingEnv, table.getQualifiedClassName() + "Resolver");
+        super(processingEnv, table.qualifiedClassName() + "Resolver");
         this.table = table;
         this.targetContext = targetContext;
         parentJoins = createParentJoins(table, targetContext);
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
-        generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
-        getClassName = ClassName.bestGuess(table.getQualifiedClassName());
-        setClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Setter");
-        finderClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Finder");
-        orderByClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
+        generatedClassName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver");
+        getClassName = ClassName.bestGuess(table.qualifiedClassName());
+        setClassName = ClassName.bestGuess(table.qualifiedClassName() + "Setter");
+        finderClassName = ClassName.bestGuess(table.qualifiedClassName() + "Finder");
+        orderByClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
         parameterNames = createParameterNames(table).toArray(new TypeName[0]);
     }
 
@@ -72,11 +72,11 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private static List<Pair<TableInfo, TableForeignKeyInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
         List<Pair<TableInfo, TableForeignKeyInfo>> ret = new ArrayList<>();
         for (TableInfo otherTable : targetContext.allTables()) {
-            if (!otherTable.referencesOtherTable() || table.getTableName().equals(otherTable.getTableName())) {
+            if (!otherTable.referencesOtherTable() || table.tableName().equals(otherTable.tableName())) {
                 continue;
             }
-            for (TableForeignKeyInfo foreignKey : otherTable.getForeignKeys()) {
-                if (!foreignKey.getForeignTableName().equals(table.getTableName())) {
+            for (TableForeignKeyInfo foreignKey : otherTable.foreignKeys()) {
+                if (!foreignKey.foreignTableName().equals(table.tableName())) {
                     continue;
                 }
                 ret.add(new Pair<>(otherTable, foreignKey));
@@ -89,8 +89,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
         if (!hasJoins()) {
             return;
         }
-        for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
-            final TableInfo referencedTable = targetContext.getTable(foreignKey.getForeignTableName());
+        for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
+            final TableInfo referencedTable = targetContext.getTable(foreignKey.foreignTableName());
             codeBuilder.addType(createJoinResolverClass(referencedTable, foreignKey));
         }
         for (Pair<TableInfo, TableForeignKeyInfo> parentJoin : parentJoins) {
@@ -99,11 +99,11 @@ public class ResolverGenerator extends JavaSourceGenerator {
     }
 
     private TypeSpec createJoinResolverClass(TableInfo referencedTable, TableForeignKeyInfo foreignKey) {
-        String innerClassName = CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true);
+        String innerClassName = CodeUtil.snakeToCamel("Join_" + referencedTable.tableName(), true);
         JavadocInfo jd = JavadocInfo.builder()
                 .startParagraph()
-                .addLine("Changes contexts from the $L table's Resolver context to the $L table's Resolver context", table.getTableName(), referencedTable.getTableName())
-                .addLine("You can exit the $L table's Resolver context by calling the then() method.", referencedTable.getTableName())
+                .addLine("Changes contexts from the $L table's Resolver context to the $L table's Resolver context", table.tableName(), referencedTable.tableName())
+                .addLine("You can exit the $L table's Resolver context by calling the then() method.", referencedTable.tableName())
                 .endParagraph()
                 .addLine()
                 .build();
@@ -111,7 +111,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addTypeVariable(TypeVariableName.get("T", generatedClassName))
-                .superclass(ParameterizedTypeName.get(ClassName.bestGuess(referencedTable.getQualifiedClassName() + "Resolver"), ParameterizedTypeName.get(ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + referencedTable.getTableName(), true)), TypeVariableName.get("T"))))
+                .superclass(ParameterizedTypeName.get(ClassName.bestGuess(referencedTable.qualifiedClassName() + "Resolver"), ParameterizedTypeName.get(ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + referencedTable.tableName(), true)), TypeVariableName.get("T"))))
                 .addField(TypeVariableName.get("T"), "parent", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethod(MethodSpec.constructorBuilder()
                         .addParameter(ParameterizedTypeName.get(ClassName.get(ForSureInfoFactory.class), ClassName.bestGuess(getResultParameter()), ClassName.bestGuess(getRecordContainer())), "infoFactory")
@@ -167,11 +167,11 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 .addLine("This is an auto-generated class. DO NOT modify it!")
                 .endParagraph()
                 .startParagraph()
-                .addLine("Entry point for querying the $L table. You can access", table.getTableName())
+                .addLine("Entry point for querying the $L table. You can access", table.tableName())
                 .addLine("this $L via the generated static", JavadocInfo.inlineClassLink(Resolver.class))
                 .addLine("method in the ForSure class:")
                 .startCode()
-                .addLine("ForSure.$L().find()", CodeUtil.snakeToCamel(table.getTableName()))
+                .addLine("ForSure.$L().find()", CodeUtil.snakeToCamel(table.tableName()))
                 .addLine(".byIdLessThan($L)", CodeUtil.javaExampleOf("long"))
                 .addLine(".then()")
                 .addLine(".get();")
@@ -186,7 +186,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private void addFields(TypeSpec.Builder codeBuilder) {
         codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME")
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .initializer("$S", table.getTableName())
+                        .initializer("$S", table.tableName())
                         .build());
         String[] columnNames = orderedColumnNames();
         codeBuilder.addField(FieldSpec.builder(String[].class, "columns")
@@ -242,7 +242,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
         CodeBlock.Builder mapBlockBuilder = CodeBlock.builder();
         for (ColumnInfo column : columnsSortedByName) {
-            mapBlockBuilder.addStatement("$N.put($S, $S)", methodNameToColumnNameMapName, column.getMethodName(), column.getColumnName());
+            mapBlockBuilder.addStatement("$N.put($S, $S)", methodNameToColumnNameMapName, column.methodName(), column.getColumnName());
         }
         codeBuilder.addStaticBlock(mapBlockBuilder.build());
     }
@@ -257,20 +257,20 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private void addJoinMethods(TypeSpec.Builder codeBuilder) {
         // Add join methods where this table is the child in the join relationship
-        for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
-            JavadocInfo jd = javadocFor(foreignKey, table.getTableName());
-            TableInfo targetTable = targetContext.getTable(foreignKey.getForeignTableName());
-            codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createJoinSpec(foreignKey, table.getTableName()), jd));
+        for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
+            JavadocInfo jd = javadocFor(foreignKey, table.tableName());
+            TableInfo targetTable = targetContext.getTable(foreignKey.foreignTableName());
+            codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createJoinSpec(foreignKey, table.tableName()), jd));
         }
 
         // add join methods where this table is the parent in the join relationship
         for (TableInfo targetTable : TableDataUtil.tablesSortedByName(targetContext, table)) {
-            for (TableForeignKeyInfo foreignKey : targetTable.getForeignKeys()) {
-                if (!table.getTableName().equals(foreignKey.getForeignTableName())) {
+            for (TableForeignKeyInfo foreignKey : targetTable.foreignKeys()) {
+                if (!table.tableName().equals(foreignKey.foreignTableName())) {
                     continue;
                 }
-                final CodeBlock joinSpec = createJoinSpec(foreignKey, targetTable.getTableName());
-                JavadocInfo jd = javadocFor(foreignKey, targetTable.getTableName());
+                final CodeBlock joinSpec = createJoinSpec(foreignKey, targetTable.tableName());
+                JavadocInfo jd = javadocFor(foreignKey, targetTable.tableName());
                 codeBuilder.addMethod(createMethodSpecForJoin(targetTable, joinSpec, jd));
             }
         }
@@ -278,16 +278,16 @@ public class ResolverGenerator extends JavaSourceGenerator {
 
     private JavadocInfo javadocFor(TableForeignKeyInfo foreignKey, String childTable) {
         StringBuilder onPart = new StringBuilder();
-        for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+        for (Map.Entry<String, String> entry : foreignKey.localToForeignColumnMap().entrySet()) {
             onPart.append(childTable).append(".").append(entry.getKey())
                     .append(" = ")
-                    .append(foreignKey.getForeignTableName()).append(".").append(entry.getValue())
+                    .append(foreignKey.foreignTableName()).append(".").append(entry.getValue())
                     .append(" AND ");
         }
         return JavadocInfo.builder()
                 .startParagraph()
                 .addLine("Add a join to $L on $L",
-                        table.getTableName().equals(foreignKey.getForeignTableName()) ? childTable : foreignKey.getForeignTableName(),
+                        table.tableName().equals(foreignKey.foreignTableName()) ? childTable : foreignKey.foreignTableName(),
                         onPart.delete(onPart.length() - 5, onPart.length()).toString()
                 )
                 .addLine("to the query")
@@ -302,23 +302,23 @@ public class ResolverGenerator extends JavaSourceGenerator {
         builder.addStatement("final $T localToForeignColumnMap = new $T($L)",
                 ParameterizedTypeName.get(Map.class, String.class, String.class),
                 ParameterizedTypeName.get(HashMap.class, String.class, String.class),
-                foreignKey.getLocalToForeignColumnMap().size()
+                foreignKey.localToForeignColumnMap().size()
         );
-        for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+        for (Map.Entry<String, String> entry : foreignKey.localToForeignColumnMap().entrySet()) {
             builder.addStatement("$N.put($S, $S)", "localToForeignColumnMap", entry.getKey(), entry.getValue());
         }
         return builder.addStatement("addJoin(new $T($N, $S, $S, $N))",
                         FSJoin.class,
                         "type",
-                        foreignKey.getForeignTableName(),
+                        foreignKey.foreignTableName(),
                         childTableName,
                         "localToForeignColumnMap")
                 .build();
     }
 
     private MethodSpec createMethodSpecForJoin(TableInfo joinedTable, CodeBlock joinCodeBlock, JavadocInfo jd) {
-        final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTable.getQualifiedClassName());
-        final ClassName returnClass = ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + joinedTable.getTableName(), true));
+        final String apiClassSimpleName = CodeUtil.simpleClassNameFrom(joinedTable.qualifiedClassName());
+        final ClassName returnClass = ClassName.bestGuess(CodeUtil.snakeToCamel("Join_" + joinedTable.tableName(), true));
         return MethodSpec.methodBuilder("join" + apiClassSimpleName)
                 .addJavadoc(jd.stringToFormat(), jd.replacements())
                 .addModifiers(Modifier.PUBLIC)
@@ -334,13 +334,13 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(ParameterizedTypeName.get(ClassName.get(Class.class), getClassName))
-                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName()))
+                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName()))
                         .build())
                 .addMethod(MethodSpec.methodBuilder("setApiClass")
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(ParameterizedTypeName.get(ClassName.get(Class.class), setClassName))
-                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.getQualifiedClassName() + "Setter"))
+                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName() + "Setter"))
                         .build())
                 .addMethod(MethodSpec.methodBuilder("projection")
                         .addAnnotation(Override.class)
@@ -372,7 +372,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         List<TypeName> ret = new LinkedList<>();
         ret.add(TypeVariableName.get("T"));
         if (table.isDocStore()) {
-            ret.add(ClassName.bestGuess(table.getDocStoreParameterization()));
+            ret.add(ClassName.bestGuess(table.docStoreParameterization()));
         }
         ret.add(ClassName.bestGuess(getResultParameter()));
         ret.add(ClassName.bestGuess(getRecordContainer()));

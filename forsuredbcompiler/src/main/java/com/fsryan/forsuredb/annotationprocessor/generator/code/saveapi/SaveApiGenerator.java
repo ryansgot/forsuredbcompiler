@@ -5,8 +5,8 @@ import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerat
 import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.annotations.FSColumn;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.*;
@@ -25,7 +25,7 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
     private final List<ColumnInfo> columnsSortedByName;
 
     protected SaveApiGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
-        super(processingEnv, table.getQualifiedClassName() + "Setter");
+        super(processingEnv, table.qualifiedClassName() + "Setter");
         this.table = table;
         this.columnsSortedByName = TableDataUtil.columnsSortedByName(table);
     }
@@ -80,7 +80,7 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
     protected void addFields(TypeSpec.Builder codeBuilder) {
         codeBuilder.addField(FieldSpec.builder(String.class, "TABLE_NAME", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer(CodeBlock.builder()
-                        .add("$S", table.getTableName())
+                        .add("$S", table.tableName())
                         .build())
                 .build());
     }
@@ -93,18 +93,18 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
                 .startParagraph()
                 .addLine("$L is an automatically generated interface describing the", getOutputClassName(false))
                 .addLine("contract for a fluent API for building queries to update or delete one")
-                .addLine("or more records from the $L table.", table.getTableName())
+                .addLine("or more records from the $L table.", table.tableName())
                 .addLine("You DO NOT need to implement this interface in order to use it.")
                 .endParagraph()
                 .startParagraph()
                 .addLine("Below is an example usage:")
                 .startCode()
-                .addLine("$L().set()", CodeUtil.snakeToCamel(table.getTableName()));
+                .addLine("$L().set()", CodeUtil.snakeToCamel(table.tableName()));
         for (ColumnInfo column : columnsSortedByName) {
             if ("modified".equals(column.getColumnName()) || "created".equals(column.getColumnName())) {
                 continue;
             }
-            jib.addLine(".$L($L)", column.getMethodName(), CodeUtil.javaExampleOf(column.getQualifiedType()));
+            jib.addLine(".$L($L)", column.methodName(), CodeUtil.javaExampleOf(column.getQualifiedType()));
         }
         return jib.addLine(".save()")
                 .endCode()
@@ -122,14 +122,14 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
                 .endParagraph()
                 .addLine()
                 .build();
-        return MethodSpec.methodBuilder(column.getMethodName())
+        return MethodSpec.methodBuilder(column.methodName())
                 .addJavadoc(javadoc.stringToFormat(), javadoc.replacements())
                 .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .addAnnotation(AnnotationSpec.builder(FSColumn.class)
                         .addMember("value", "$S", column.getColumnName())
                         .build())
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
-                .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.getMethodName())
+                .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.methodName())
                 .build();
     }
 }

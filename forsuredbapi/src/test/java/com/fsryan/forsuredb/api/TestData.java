@@ -18,9 +18,9 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +55,7 @@ public class TestData {
     }
 
     // Convenience methods for making data to go into the tests
-    public static TableInfo.Builder table() {
+    public static TableInfo.BuilderCompat table() {
         return TableInfo.builder().tableName(TABLE_NAME)
                 .qualifiedClassName(TABLE_CLASS_NAME);
     }
@@ -71,7 +71,7 @@ public class TestData {
     public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
         Map<String, TableInfo> retMap = new HashMap<>();
         for (TableInfo table : tables) {
-            retMap.put(table.getTableName(), table);
+            retMap.put(table.tableName(), table);
         }
         return retMap;
     }
@@ -137,36 +137,36 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder cascadeFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.CASCADE)
-                .deleteAction(ForeignKey.ChangeAction.CASCADE)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.CASCADE.name())
+                .deleteAction(ForeignKey.ChangeAction.CASCADE.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder noActionFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION)
-                .deleteAction(ForeignKey.ChangeAction.NO_ACTION)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION.name())
+                .deleteAction(ForeignKey.ChangeAction.NO_ACTION.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder setNullFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_NULL)
-                .deleteAction(ForeignKey.ChangeAction.SET_NULL)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_NULL.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_NULL.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder setDefaultFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT)
-                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder restrictFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.RESTRICT)
-                .deleteAction(ForeignKey.ChangeAction.RESTRICT)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.RESTRICT.name())
+                .deleteAction(ForeignKey.ChangeAction.RESTRICT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }

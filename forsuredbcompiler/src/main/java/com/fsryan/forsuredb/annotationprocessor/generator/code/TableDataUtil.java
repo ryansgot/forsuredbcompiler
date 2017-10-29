@@ -1,8 +1,8 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ public class TableDataUtil {
         return sortedByName(unsortedTables, new Comparator<TableInfo>() {
             @Override
             public int compare(TableInfo t1, TableInfo t2) {
-                return t1.getTableName().compareToIgnoreCase(t2.getTableName());
+                return t1.tableName().compareToIgnoreCase(t2.tableName());
             }
         }, excludedTables);
     }

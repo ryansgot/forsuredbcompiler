@@ -15,10 +15,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.fsryan.forsuredb.api.info;
+package com.fsryan.forsuredb.info;
 
-
-import com.fsryan.forsuredb.api.TestData;
 import junit.framework.TestCase;
 import org.junit.Test;
 

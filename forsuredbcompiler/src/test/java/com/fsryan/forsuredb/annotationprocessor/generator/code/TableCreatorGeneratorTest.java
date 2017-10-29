@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.TestData;
 import com.google.common.collect.Lists;
 import org.junit.Before;

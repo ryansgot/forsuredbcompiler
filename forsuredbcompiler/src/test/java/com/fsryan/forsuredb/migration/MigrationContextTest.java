@@ -1,10 +1,8 @@
 package com.fsryan.forsuredb.migration;
 
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.migration.Migration;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
-import com.fsryan.forsuredb.api.migration.MigrationSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,33 +45,33 @@ public abstract class MigrationContextTest {
                 .forEach(expectedTableName -> assertTrue("missing table: " + expectedTableName, migrationContext.hasTable(expectedTableName)));
         // no unexpected tables exist
         migrationContext.allTables()
-                .forEach(actualTable -> assertTrue("unexpected table: " + actualTable, expectedSchema.containsKey(actualTable.getTableName())));
+                .forEach(actualTable -> assertTrue("unexpected table: " + actualTable, expectedSchema.containsKey(actualTable.tableName())));
     }
 
     @Test
     public void allTablesShouldHaveCorrectPrimaryKey() {
         expectedSchema.values().forEach(expectedTable -> {
-            TableInfo actualTable = migrationContext.getTable(expectedTable.getTableName());
+            TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
 
             assertNotNull(actualTable);
             assertEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
-            assertEquals(expectedTable.getPrimaryKeyOnConflict(), actualTable.getPrimaryKeyOnConflict());
+            assertEquals(expectedTable.primaryKeyOnConflict(), actualTable.primaryKeyOnConflict());
         });
     }
 
     @Test
     public void allTablesShouldHaveCorrectForeignKeys() {
         expectedSchema.values().forEach(expectedTable -> {
-            TableInfo actualTable = migrationContext.getTable(expectedTable.getTableName());
+            TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
             assertNotNull(actualTable);
-            assertEquals(expectedTable.getForeignKeys(), actualTable.getForeignKeys());
+            assertEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
         });
     }
 
     @Test
     public void allTablesShouldHaveCorrectColumns() {
         expectedSchema.values().forEach(expectedTable -> expectedTable.getColumns().forEach(c -> {
-                final TableInfo actualTable = migrationContext.getTable(expectedTable.getTableName());
+                final TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
                 assertNotNull(actualTable);
 
                 final Map<String, ColumnInfo> expectedColumns = expectedTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));

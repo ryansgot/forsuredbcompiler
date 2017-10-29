@@ -1,43 +1,33 @@
 /*
-   forsuredbcompiler, an annotation processor and code generator for the forsuredb project
+    forsuredb-dbinfo, value classes for the forsuredb project
 
-   Copyright 2015 Ryan Scott
+    Copyright 2017 Ryan Scott
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
  */
-package com.fsryan.forsuredb.api.migration;
+package com.fsryan.forsuredb.migration;
 
-import com.google.gson.annotations.SerializedName;
+import com.google.auto.value.AutoValue;
 
-import lombok.Getter;
-
+import javax.annotation.Nullable;
 import java.util.Map;
-
 
 // TODO: rethink this. I think these can be simplified and more of the work can be imposed upon the DBMS integration library
 // You should not need so many different values.
 // Additionally, order need not be imposed on migrations at this level
-/**
- * <p>
- *     The Migration class holds all of the information necessary for a {@link QueryGenerator} to generate the
- *     necessary query to apply the migration
- * </p>
- */
-@lombok.EqualsAndHashCode
-@lombok.ToString
-@lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
-@lombok.Builder(builderClassName = "Builder")
-public class Migration implements Comparable<Migration> {
+
+@AutoValue
+public abstract class Migration implements Comparable<Migration> {
 
     // TODO: these should just be strings.
     public enum Type {
@@ -85,37 +75,54 @@ public class Migration implements Comparable<Migration> {
         }
     }
 
-    @Getter @SerializedName("table_name") private final String tableName;
-    @Getter @SerializedName("column_name") private final String columnName;
-    @Getter @SerializedName("migration_type") private final Type type;
-    @Getter @SerializedName("extras") private final Map<String, String> extras;
-
-    public Migration(String tableName, String columnName, Type type) {
-        this(tableName, columnName, type, null);
+    @AutoValue.Builder
+    public static abstract class Builder {
+        public abstract Builder tableName(String tableName); // table_name
+        public abstract Builder columnName(String columnName);    // column_name
+        public abstract Builder type(Type type);    // migration_type
+        public abstract Builder extras(@Nullable Map<String, String> extras);   // extras
+        public abstract Migration build();
     }
 
+    public static Builder builder() {
+        return new AutoValue_Migration.Builder();
+    }
+
+    public static Migration create(String tableName, String columnName, Type type) {
+        return builder()
+                .tableName(tableName)
+                .columnName(columnName)
+                .type(type)
+                .build();
+    }
+
+    public abstract String tableName(); // table_name
+    @Nullable public abstract String columnName();    // column_name
+    public abstract Type type();    // migration_type
+    @Nullable public abstract Map<String, String> extras();   // extras
+
     public boolean hasExtras() {
-        return extras != null;
+        return extras() != null && !extras().isEmpty();
     }
 
     @Override
     public int compareTo(Migration o) {
-        if (o == null || this.getType() == null) {
+        if (o == null || this.type() == null) {
             return -1;
         }
-        if (type == null) {
+        if (type() == null) {
             return 1;
         }
 
-        final int priorityDiff = type.getPriority() - o.getType().getPriority();
+        final int priorityDiff = type().getPriority() - o.type().getPriority();
         // Unambiguously determine order based upon comparing table or column name in the case of equal priority
         return priorityDiff != 0 ? priorityDiff
-                : isTableMigration() ? (tableName == null ? "" : tableName).compareTo(o.getTableName())
-                : (columnName == null ? "" : columnName).compareTo(o.getColumnName());
+                : isTableMigration() ? (tableName() == null ? "" : tableName()).compareTo(o.tableName())
+                : (columnName() == null ? "" : columnName()).compareTo(o.columnName());
     }
 
     public boolean isTableMigration() {
-        switch (type) {
+        switch (type()) {
             case CREATE_TABLE:
             case DROP_TABLE:
             case CREATE_TEMP_TABLE_FROM_EXISTING:

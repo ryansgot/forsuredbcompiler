@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api.migration;
 
+import com.fsryan.forsuredb.migration.Migration;
+
 import java.util.List;
 
 public abstract class QueryGenerator implements Comparable<QueryGenerator> {

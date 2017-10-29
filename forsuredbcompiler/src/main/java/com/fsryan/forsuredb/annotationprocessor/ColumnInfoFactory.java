@@ -1,9 +1,9 @@
-package com.fsryan.forsuredb.info;
+package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 import com.fsryan.forsuredb.annotations.*;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ForeignKeyInfo;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -41,8 +41,8 @@ public class ColumnInfoFactory {
         } else if (annotationClass.equals(ForeignKey.class.getName())) {
             builder.foreignKeyInfo(ForeignKeyInfo.builder().columnName(at.property("columnName").asString())
                     .apiClassName(at.property("apiClass").asString())
-                    .deleteAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()))
-                    .updateAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()))
+                    .deleteAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()).name())  // TODO: check this
+                    .updateAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()).name())  // TODO: check this
                     .build());
         } else if (annotationClass.equals(FSPrimaryKey.class.getName())) {
             builder.primaryKey(true);

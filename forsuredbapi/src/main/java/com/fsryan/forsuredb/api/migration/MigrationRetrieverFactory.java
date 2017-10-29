@@ -18,6 +18,7 @@
 package com.fsryan.forsuredb.api.migration;
 
 import com.fsryan.forsuredb.api.FSLogger;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.reflect.TypeToken;
@@ -56,7 +57,7 @@ public class MigrationRetrieverFactory {
         }
         int latest = 0;
         for (MigrationSet migrationSet : migrationSets) {
-            latest = migrationSet.getDbVersion() > latest ? migrationSet.getDbVersion() : latest;
+            latest = migrationSet.dbVersion() > latest ? migrationSet.dbVersion() : latest;
         }
         return latest;
     }
@@ -90,7 +91,7 @@ public class MigrationRetrieverFactory {
             if (migrationSet == null) {
                 migrationSet = createMigrationSet();
             }
-            return migrationSet.getDbVersion();
+            return migrationSet.dbVersion();
         }
 
         private MigrationSet createMigrationSet() {

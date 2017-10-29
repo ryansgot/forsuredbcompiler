@@ -39,8 +39,8 @@
     <!-- TODO: Remove these when you're no longer using lombok -->
     <Match>
         <Or>
-            <Class name="com.fsryan.forsuredb.api.info.TableInfo" />
-            <Class name="com.fsryan.forsuredb.api.info.ColumnInfo" />
+            <Class name="com.fsryan.forsuredb.info.TableInfo" />
+            <Class name="com.fsryan.forsuredb.info.ColumnInfo" />
         </Or>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
     </Match>

@@ -1,12 +1,12 @@
-package com.fsryan.forsuredb.info;
+package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.collect.Sets;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -102,26 +102,32 @@ public class TableInfoFactory {
                 AnnotationTranslatorFactory.AnnotationTranslator at = AnnotationTranslatorFactory.inst().create(am);
                 String localColumn = columnNameFrom(columnElement);
                 if (ForeignKey.class.getName().equals(am.getAnnotationType().toString())) {
-                    ret.add(new TableForeignKeyInfo.Builder()
+                    Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+                    localToForeignColumnMap.put(localColumn, at.property("columnName").asString());
+                    ret.add(TableForeignKeyInfo.builder()
                             .deleteChangeAction(at.property("deleteAction").asString())
                             .updateChangeAction(at.property("updateAction").asString())
                             .foreignTableApiClassName(at.property("apiClass").asString())
-                            .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                            .localToForeignColumnMap(localToForeignColumnMap)
                             .build());
                 } else if (FSForeignKey.class.getName().equals(am.getAnnotationType().toString())) {
                     final String compositeId = at.property("compositeId").asString();
                     TableForeignKeyInfo existing = compositeMap.get(compositeId);
                     if (existing == null) {
-                        compositeMap.put(compositeId, new TableForeignKeyInfo.Builder()
+                        Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+                        localToForeignColumnMap.put(localColumn, at.property("columnName").asString());
+                        compositeMap.put(compositeId, TableForeignKeyInfo.builder()
                                 .foreignTableApiClassName(at.property("apiClass").asString())
                                 .deleteChangeAction(at.property("deleteAction").asString())
                                 .updateChangeAction(at.property("updateAction").asString())
-                                .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                                .localToForeignColumnMap(localToForeignColumnMap)
                                 .build());
                     } else {
                         validateForeignKeyUpdate(existing, at);
-                        compositeMap.put(compositeId, existing.newBuilder()
-                                .mapLocalToForeignColumn(localColumn, at.property("columnName").asString())
+                        Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+                        localToForeignColumnMap.put(localColumn, at.property("columnName").asString());
+                        compositeMap.put(compositeId, existing.toBuilder()
+                                .localToForeignColumnMap(localToForeignColumnMap)
                                 .build());
                     }
                 }
@@ -139,11 +145,11 @@ public class TableInfoFactory {
         if (!existing.getForeignTableApiClassName().equals(decalredApiClass)) {
             throw new IllegalArgumentException("apiClass mismatch: expected " + existing.getForeignTableApiClassName() + " but was " + decalredApiClass);
         }
-        if (!existing.getUpdateChangeAction().equals(updateAction)) {
-            throw new IllegalArgumentException("updateAction mismatch: expected " + existing.getUpdateChangeAction() + " but was " + updateAction);
+        if (!existing.updateChangeAction().equals(updateAction)) {
+            throw new IllegalArgumentException("updateAction mismatch: expected " + existing.updateChangeAction() + " but was " + updateAction);
         }
-        if (!existing.getDeleteChangeAction().equals(deleteAction)) {
-            throw new IllegalArgumentException("deleteAction mismatch: expected " + existing.getDeleteChangeAction() + " but was " + deleteAction);
+        if (!existing.deleteChangeAction().equals(deleteAction)) {
+            throw new IllegalArgumentException("deleteAction mismatch: expected " + existing.deleteChangeAction() + " but was " + deleteAction);
         }
     }
 
