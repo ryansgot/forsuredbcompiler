@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -125,6 +126,20 @@ public abstract class SaveHandlerTest<U> {
         }
 
         @Test
+        public void shouldCallPutFloatRecordContainerMethod() throws Throwable {
+            shut.invoke(shut, apiClass.getMethod("floatColumn", float.class), new Object[]{Float.MAX_VALUE});
+            verify(mockRecordContainer).put("float_column", Float.MAX_VALUE);
+            verifyNoMoreInteractions(mockRecordContainer);
+        }
+
+        @Test
+        public void shouldCallPutFloatWrapperRecordContainerMethod() throws Throwable {
+            shut.invoke(shut, apiClass.getMethod("floatWrapperColumn", Float.class), new Object[]{Float.valueOf(1)});
+            verify(mockRecordContainer).put("float_wrapper_column", Float.valueOf(1));
+            verifyNoMoreInteractions(mockRecordContainer);
+        }
+
+        @Test
         public void shouldCallPutDoubleRecordContainerMethod() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("doubleColumn", double.class), new Object[]{Double.MAX_VALUE});
             verify(mockRecordContainer).put("double_column", Double.MAX_VALUE);
@@ -174,6 +189,13 @@ public abstract class SaveHandlerTest<U> {
         }
 
         @Test
+        public void shouldCallPutStringRecordContainerMethodOnBigInteger() throws Throwable {
+            shut.invoke(shut, apiClass.getMethod("bigIntegerColumn", BigInteger.class), new Object[]{BigInteger.TEN});
+            verify(mockRecordContainer).put("big_integer_column", BigInteger.TEN.toString());
+            verifyNoMoreInteractions(mockRecordContainer);
+        }
+
+        @Test
         public void shouldCallPutStringRecordContainerMethodOnDate() throws Throwable {
             shut.invoke(shut, apiClass.getMethod("dateColumn", Date.class), new Object[]{new Date()});
             verify(mockRecordContainer).put(eq("date_column"), any(String.class));    // <-- not validating format
@@ -198,16 +220,19 @@ public abstract class SaveHandlerTest<U> {
         public static class DocStore extends Set {
 
             private static final DocStoreTestBase dstb = DocStoreTestBase.builder()
+                    .bigIntegerColumn(BigInteger.ONE)
                     .bigDecimalColumn(BigDecimal.ONE)
                     .booleanColumn(true)
-                    .booleanWrapperColumn(Boolean.valueOf(false))
+                    .booleanWrapperColumn(false)
                     .dateColumn(DATE)
+                    .floatColumn(Float.MAX_VALUE)
+                    .floatWrapperColumn(Float.MIN_VALUE)
                     .doubleColumn(Double.MAX_VALUE)
-                    .doubleWrapperColumn(Double.valueOf(Double.MIN_VALUE))
+                    .doubleWrapperColumn(Double.MIN_VALUE)
                     .intColumn(Integer.MAX_VALUE)
-                    .integerWrapperColumn(Integer.valueOf(Integer.MIN_VALUE))
+                    .integerWrapperColumn(Integer.MIN_VALUE)
                     .longColumn(Long.MAX_VALUE)
-                    .longWrapperColumn(Long.valueOf(Long.MIN_VALUE))
+                    .longWrapperColumn(Long.MIN_VALUE)
                     .stringColumn("a string")
                     .build();
 
@@ -230,10 +255,13 @@ public abstract class SaveHandlerTest<U> {
             public void shouldUpdateAllIndicesSaveDocAndSaveClassName() throws Throwable {
                 shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{dstObject});
                 // verifies that, for each index, the correct value gets put into the record container
+                verify(mockRecordContainer).put("big_integer_column", BigInteger.ONE.toString());
                 verify(mockRecordContainer).put("big_decimal_column", BigDecimal.ONE.toString());
                 verify(mockRecordContainer).put("boolean_column", 1);
                 verify(mockRecordContainer).put("boolean_wrapper_column", 0);
                 verify(mockRecordContainer).put("date_column", DATE_STRING);
+                verify(mockRecordContainer).put("float_column", Float.MAX_VALUE);
+                verify(mockRecordContainer).put("float_wrapper_column", Float.valueOf(Float.MIN_VALUE));
                 verify(mockRecordContainer).put("double_column", Double.MAX_VALUE);
                 verify(mockRecordContainer).put("double_wrapper_column", Double.valueOf(Double.MIN_VALUE));
                 verify(mockRecordContainer).put("int_column", Integer.MAX_VALUE);

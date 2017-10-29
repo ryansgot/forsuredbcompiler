@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.FSSaveApi;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 /*package*/ interface FSGetApiExtensionTestTableSetter extends FSSaveApi<String> {
@@ -17,6 +18,14 @@ import java.util.Date;
      */
     @FSColumn("_id")
     FSGetApiExtensionTestTableSetter id(long id);
+
+    /**
+     * <p>
+     *   Set the value of the big_integer_column column to be updated
+     * </p>
+     */
+    @FSColumn("big_integer_column")
+    FSGetApiExtensionTestTableSetter bigIntegerColumn(BigInteger bigIntegerColumn);
 
     /**
      * <p>

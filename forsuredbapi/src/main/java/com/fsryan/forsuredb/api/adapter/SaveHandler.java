@@ -83,7 +83,7 @@ import java.util.Map;
         } else if (type.equals(double.class) || type.equals(Double.class)) {
             recordContainer.put(columnName, (double) arg);
         } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-            recordContainer.put(columnName, (Boolean) arg ? 1 : 0);
+            recordContainer.put(columnName, (boolean) arg ? 1 : 0);
         } else if (type.equals(BigDecimal.class) || type.equals(BigInteger.class)) {
             recordContainer.put(columnName, arg.toString());
         } else if (type.equals(float.class) || type.equals(Float.class)) {

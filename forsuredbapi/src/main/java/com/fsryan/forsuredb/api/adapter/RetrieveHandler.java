@@ -7,6 +7,7 @@ import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,15 +62,18 @@ import java.util.Map;
 
     protected Object callRetrieverMethod(Retriever retriever, String column, Type type) throws InvocationTargetException, IllegalAccessException {
         final Method cursorMethod = FSGetAdapter.methodMap.get(type);
-        if (type.equals(BigDecimal.class)) {
-            return getBigDecimalFrom(cursorMethod, retriever, column);
-        }
         if (type.equals(boolean.class)) {
             final Object o = cursorMethod.invoke(retriever, column);
             return o != null && (Integer) o == 1;
         }
         if (type.equals(Date.class)) {
             return getDateFrom(cursorMethod, retriever, column);
+        }
+        if (type.equals(BigInteger.class)) {
+            return getBigIntegerFrom(cursorMethod, retriever, column);
+        }
+        if (type.equals(BigDecimal.class)) {
+            return getBigDecimalFrom(cursorMethod, retriever, column);
         }
         return cursorMethod.invoke(retriever, column);
     }
@@ -85,6 +89,17 @@ import java.util.Map;
         try {
             final Object returned = retrieverMethod.invoke(retriever, column);
             return returned == null ? null : new BigDecimal((String) returned);
+        } catch (NumberFormatException nfe) {
+            nfe.printStackTrace();
+        }
+        return null;
+    }
+
+    private BigInteger getBigIntegerFrom(Method retrieverMethod, Retriever retriever, String column)
+            throws InvocationTargetException, IllegalAccessException {
+        try {
+            final Object returned = retrieverMethod.invoke(retriever, column);
+            return returned == null ? null : new BigInteger((String) returned);
         } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
         }

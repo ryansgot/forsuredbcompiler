@@ -6,11 +6,13 @@ import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.Retriever;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 @FSTable("forsuredb_doc_store_test")
 /*package*/ interface FSDocStoreGetApiExtensionTestTable extends FSDocStoreGetApi<DocStoreTestBase> {
     Class BASE_CLASS = DocStoreTestBase.class;
+    @FSColumn("big_integer_column") BigInteger bigIntegerColumn(Retriever retriever);
     @FSColumn("big_decimal_column") BigDecimal bigDecimalColumn(Retriever retriever);
     @FSColumn("boolean_column") boolean booleanColumn(Retriever retriever);
     @FSColumn("boolean_wrapper_column") Boolean booleanWrapperColumn(Retriever retriever);

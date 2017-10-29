@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class FSGetAdapter {
     /*package*/ static final Map<Type, Method> methodMap = new HashMap<>();
     static {
         try {
+            methodMap.put(BigInteger.class, Retriever.class.getDeclaredMethod("getString", String.class));
             methodMap.put(BigDecimal.class, Retriever.class.getDeclaredMethod("getString", String.class));
             methodMap.put(boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
             methodMap.put(Boolean.class, Retriever.class.getDeclaredMethod("getInt", String.class));
