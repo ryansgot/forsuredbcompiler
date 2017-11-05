@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.api.adapter;
 
 import lombok.AccessLevel;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
@@ -9,7 +10,7 @@ import java.util.Date;
 @lombok.Data
 @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
 @lombok.Builder(builderClassName = "Builder")
-/*package*/ class DocStoreTestBase {
+/*package*/ class DocStoreTestBase implements Serializable {
     private BigInteger bigIntegerColumn;
     private BigDecimal bigDecimalColumn;
     private boolean booleanColumn;

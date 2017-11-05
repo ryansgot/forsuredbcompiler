@@ -253,7 +253,9 @@ public abstract class SaveHandlerTest<U> {
 
             @Test
             public void shouldUpdateAllIndicesSaveDocAndSaveClassName() throws Throwable {
+                byte[] expectedBlobDoc = new FSDefaultSerializer().createBlobDoc(dstObject.getClass(), dstObject);
                 shut.invoke(shut, apiClass.getInterfaces()[0].getDeclaredMethod("object", Object.class), new Object[]{dstObject});
+
                 // verifies that, for each index, the correct value gets put into the record container
                 verify(mockRecordContainer).put("big_integer_column", BigInteger.ONE.toString());
                 verify(mockRecordContainer).put("big_decimal_column", BigDecimal.ONE.toString());
@@ -271,7 +273,7 @@ public abstract class SaveHandlerTest<U> {
                 verify(mockRecordContainer).put("string_column", "a string");
                 // verifies that the doc and class name got put into the record container
                 verify(mockRecordContainer).put("class_name", dstObject.getClass().getName());
-                verify(mockRecordContainer).put("doc", new Gson().toJson(dstObject));
+                verify(mockRecordContainer).put("blob_doc", expectedBlobDoc);
             }
         }
     }

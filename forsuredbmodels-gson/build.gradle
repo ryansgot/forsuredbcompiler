@@ -1,21 +1,17 @@
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
-
-configurations {
-    apt
+plugins {
+    id 'org.inferred.processors' version '1.2.1'
 }
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
 
+    compile project(':dbinfo')
+    compile 'com.google.code.gson:gson:2.8.2'
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
-    compileOnly "com.google.auto.value:auto-value:1.5"
-    apt "com.google.auto.value:auto-value:1.5"
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.10.19'
-}
-
-compileJava {
-    options.annotationProcessorPath = configurations.apt
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

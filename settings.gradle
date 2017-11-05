@@ -1,2 +1,2 @@
-include 'forsuredbcompiler', 'forsuredbapi', 'dbinfo'
+include 'forsuredbcompiler', 'forsuredbapi', 'dbinfo', 'forsuredbmodels-gson'
 

@@ -17,15 +17,13 @@
  */
 package com.fsryan.forsuredb.api.migration;
 
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.migration.MigrationSet;
-import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -34,21 +32,20 @@ import java.util.PriorityQueue;
 
 public class MigrationRetrieverFactory {
 
-    /*package*/ static final Type migrationSetType = new TypeToken<MigrationSet>() {}.getType();
-    /*package*/ static final Gson gson = new Gson();
+    final FSDbInfoSerializer migrationSerializer;
+    final FSLogger log;
 
-    private final FSLogger log;
-
-    public MigrationRetrieverFactory() {
-        this(null);
+    public MigrationRetrieverFactory(@Nonnull FSDbInfoSerializer migrationSerializer) {
+        this(migrationSerializer, null);
     }
 
-    public MigrationRetrieverFactory(FSLogger log) {
+    public MigrationRetrieverFactory(@Nonnull FSDbInfoSerializer migrationSerializer, @Nullable FSLogger log) {
+        this.migrationSerializer = migrationSerializer;
         this.log = log == null ? new FSLogger.SilentLog() : log;
     }
 
-    public MigrationRetriever fromStream(final InputStream inputStream) {
-        return new RetrieverFromStream(inputStream);
+    public MigrationRetriever fromStream(@Nonnull final InputStream inputStream) {
+        return new RetrieverFromStream(migrationSerializer, inputStream);
     }
 
     private int latestDbVersionFrom(List<MigrationSet> migrationSets) {
@@ -68,9 +65,11 @@ public class MigrationRetrieverFactory {
 
     private static class RetrieverFromStream implements MigrationRetriever {
 
+        private FSDbInfoSerializer migrationSerializer;
         private InputStream inputStream;
 
-        public RetrieverFromStream(final InputStream inputStream) {
+        public RetrieverFromStream(FSDbInfoSerializer migrationSerializer, final InputStream inputStream) {
+            this.migrationSerializer = migrationSerializer;
             this.inputStream = inputStream;
         }
 
@@ -78,9 +77,9 @@ public class MigrationRetrieverFactory {
 
         @Override
         public List<MigrationSet> getMigrationSets() {
-            List<MigrationSet> ret = new ArrayList<>(1);
+            final List<MigrationSet> ret = new ArrayList<>(1);
             if (migrationSet == null) {
-                migrationSet = createMigrationSet();
+                migrationSet = migrationSerializer.deserialize(inputStream);
             }
             ret.add(migrationSet);
             return ret;
@@ -89,30 +88,9 @@ public class MigrationRetrieverFactory {
         @Override
         public int latestDbVersion() {
             if (migrationSet == null) {
-                migrationSet = createMigrationSet();
+                migrationSet = migrationSerializer.deserialize(inputStream);
             }
             return migrationSet.dbVersion();
-        }
-
-        private MigrationSet createMigrationSet() {
-            JsonReader reader = null;
-            try {
-                reader = new JsonReader(new InputStreamReader(inputStream));
-                return gson.fromJson(reader, migrationSetType);
-            } catch (JsonIOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // return a dummy MigrationSet if the error was found
-            return MigrationSet.builder().dbVersion(-1).build();
         }
     }
 

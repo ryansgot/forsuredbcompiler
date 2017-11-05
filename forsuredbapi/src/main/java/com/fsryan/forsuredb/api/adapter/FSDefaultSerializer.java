@@ -7,7 +7,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Type;
 
-public class FSSerializableSerializer extends FSByteSerializer {
+public class FSDefaultSerializer implements FSSerializer {
+
+    @Override
+    public boolean storeAsBlob() {
+        return true;
+    }
+
+    @Override
+    public final String createStringDoc(Type type, Object val) {
+        return new String(createBlobDoc(type, val));
+    }
 
     @Override
     public byte[] createBlobDoc(Type type, Object val) {
@@ -48,5 +58,9 @@ public class FSSerializableSerializer extends FSByteSerializer {
         }
 
         return null;
+    }
+    @Override
+    public final <T> T fromStorage(Type typeOfT, String stringRepresentation) {
+        return fromStorage(typeOfT, stringRepresentation.getBytes());
     }
 }

@@ -9,7 +9,7 @@ import com.fsryan.forsuredb.api.PluginHelper;
     private static final FSSerializerFactory defaultFactory = new FSSerializerFactory() {
         @Override
         public FSSerializer create() {
-            return new FSGsonSerializer();
+            return new FSDefaultSerializer();
         }
     };
 
