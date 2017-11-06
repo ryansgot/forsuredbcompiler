@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
 import com.fsryan.forsuredb.api.Conjunction;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.api.Finder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;

@@ -17,13 +17,12 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.JoinInfo;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.JoinInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
-import com.fsryan.forsuredb.info.TableInfoFactory;
 
 import java.util.*;
 
@@ -82,7 +81,7 @@ public class ProcessingContext implements TableContext {
 
     private static TableInfo matchingTable(String qualifiedClassName, List<TableInfo> allTables) {
         for (TableInfo table : allTables) {
-            if (!qualifiedClassName.equals(table.getQualifiedClassName())) {
+            if (!qualifiedClassName.equals(table.qualifiedClassName())) {
                 continue;
             }
             return table;
@@ -99,25 +98,25 @@ public class ProcessingContext implements TableContext {
         tableMap = new HashMap<>();
         List<TableInfo> allTables = gatherInitialInfo();
         for (TableInfo table : allTables) {
-            for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
+            for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
                 final TableInfo foreignTable = matchingTable(foreignKey.getForeignTableApiClassName(), allTables);
-                foreignKey.setForeignTableName(foreignTable.getTableName());
+                foreignKey.setForeignTableApiClassName(foreignTable.tableName());
             }
 
             // TODO: remove this loop when foreign key information no longer stored on columns
             for (ColumnInfo column : table.getColumns()) {
                 column.enrichWithForeignTableInfoFrom(allTables);
             }
-            tableMap.put(table.getTableName(), table);
+            tableMap.put(table.tableName(), table);
             APLog.i(LOG_TAG, "created table: " + table.toString());
         }
 
         for (TableInfo table : tableMap.values()) {
-            for (TableForeignKeyInfo foreignKey : table.getForeignKeys()) {
-                TableInfo parent = tableMap.get(foreignKey.getForeignTableName());
+            for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
+                TableInfo parent = tableMap.get(foreignKey.foreignTableName());
                 List<ColumnInfo> childColumns = new ArrayList<>();
                 List<ColumnInfo> parentColumns = new ArrayList<>();
-                for (Map.Entry<String, String> entry : foreignKey.getLocalToForeignColumnMap().entrySet()) {
+                for (Map.Entry<String, String> entry : foreignKey.localToForeignColumnMap().entrySet()) {
                     childColumns.add(table.getColumn(entry.getKey()));
                     parentColumns.add(parent.getColumn(entry.getValue()));
                 }

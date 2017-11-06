@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.migration;
 
-import com.fsryan.forsuredb.api.info.TableInfo;
-import com.fsryan.forsuredb.api.migration.Migration;
+import com.fsryan.forsuredb.info.TableInfo;
+import com.google.common.collect.ImmutableMap;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -71,7 +71,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
                                         .addTableForeignKey(dbmsDefaultTFKI("table2")
-                                                .mapLocalToForeignColumn(longCol().build().getColumnName(), "_id")
+                                                .localToForeignColumnMap(ImmutableMap.of(longCol().build().getColumnName(), "_id"))
                                                 .build())
                                         .addToColumns(longCol()
                                                 .foreignKeyInfo(cascadeFKI("table2")
@@ -99,7 +99,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
                                         .addTableForeignKey(dbmsDefaultTFKI("table2")
-                                                .mapLocalToForeignColumn(longCol().build().getColumnName(), "_id")
+                                                .localToForeignColumnMap(ImmutableMap.of(longCol().build().getColumnName(), "_id"))
                                                 .build())
                                         .addToColumns(longCol()
                                                 .foreignKeyInfo(cascadeFKI("table2")
@@ -133,9 +133,10 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                         .addToColumns(stringCol().columnName("table2_project").build())
                                         .addToColumns(longCol().columnName("table2_build").build())
                                         .addTableForeignKey(cascadeTFKI("table2")
-                                                .mapLocalToForeignColumn("table2_project", "project")
-                                                .mapLocalToForeignColumn("table2_build", "build")
-                                                .build())
+                                                .localToForeignColumnMap(ImmutableMap.of(
+                                                        "table2_project", "project",
+                                                        "table2_build", "build")
+                                                ).build())
                                         .build())
                                 .addTable(table("table2")
                                         .addToColumns(stringCol().columnName("project").build())
@@ -156,9 +157,10 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                         .addToColumns(longCol().columnName("table2_build").build())
                                         .addToColumns(longCol().build())
                                         .addTableForeignKey(cascadeTFKI("table2")
-                                                .mapLocalToForeignColumn("table2_project", "project")
-                                                .mapLocalToForeignColumn("table2_build", "build")
-                                                .build())
+                                                .localToForeignColumnMap(ImmutableMap.of(
+                                                        "table2_project", "project",
+                                                        "table2_build", "build")
+                                                ).build())
                                         .build())
                                 .addTable(table("table2")
                                         .addToColumns(stringCol().columnName("project").build())

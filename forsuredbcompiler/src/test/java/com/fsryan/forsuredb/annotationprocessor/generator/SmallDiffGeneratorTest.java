@@ -19,9 +19,9 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.migration.Migration;
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.migration.Migration;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -54,7 +54,9 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(5)
-                                .orderedMigrations(new ArrayList<Migration>())
+                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                        .build()))
+                                .orderedMigrations(new ArrayList<>())
                                 .build()
                 },
                 {   // 01 The processing context has a table that the migration context does not have--table has no extra columns
@@ -113,7 +115,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         2,
                         newTableContext().addTable(table().build()).build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
+                                .addTable(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user").apiClassName("")
                                                         .build())
                                                 .build()))
                                         .build())
@@ -365,11 +367,11 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext()
                                 .addTable(table().columnMap(columnMapOf(longCol().build()))
                                         .foreignKeys(Sets.newHashSet(
-                                                new TableForeignKeyInfo.Builder()
+                                                TableForeignKeyInfo.builder()
                                                         .foreignTableName("user")
                                                         .updateChangeAction("CASCADE")
                                                         .deleteChangeAction("CASCADE")
-                                                        .mapLocalToForeignColumn("long_column", "_id")
+                                                        .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
                                                         .build()
                                         ))
                                         .build())
@@ -394,11 +396,11 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext()
                                 .addTable(table().columnMap(columnMapOf(longCol().build()))
                                         .foreignKeys(Sets.newHashSet(
-                                                new TableForeignKeyInfo.Builder()
+                                                TableForeignKeyInfo.builder()
                                                         .foreignTableName("user")
                                                         .updateChangeAction("CASCADE")
                                                         .deleteChangeAction("CASCADE")
-                                                        .mapLocalToForeignColumn("long_column", "_id")
+                                                        .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
                                                         .build()
                                         ))
                                         .build())
@@ -471,6 +473,6 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
 
     @Test
     public void shouldHaveCorrectDbVersion() {
-        assertEquals(expectedMigrationSet.getDbVersion(), actualMigrationSet.getDbVersion());
+        assertEquals(expectedMigrationSet.dbVersion(), actualMigrationSet.dbVersion());
     }
 }

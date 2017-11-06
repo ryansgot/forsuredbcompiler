@@ -2,8 +2,8 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi;
 
 
 import com.fsryan.forsuredb.api.FSDocStoreSaveApi;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.collect.Sets;
 import com.squareup.javapoet.*;
 
@@ -24,14 +24,14 @@ import java.util.Set;
         super.addFields(codeBuilder);
         codeBuilder.addField(FieldSpec.builder(Class.class, "BASE_CLASS", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer(CodeBlock.builder()
-                        .add("$L.class", table.getDocStoreParameterization())
+                        .add("$L.class", table.docStoreParameterization())
                         .build())
                 .build());
     }
 
     @Override
     protected ParameterizedTypeName createSuperinterfaceParameterizedTypeName(TableInfo table) {
-        return ParameterizedTypeName.get(ClassName.get(FSDocStoreSaveApi.class), ClassName.bestGuess(getResultParameter()), ClassName.bestGuess(table.getDocStoreParameterization()));
+        return ParameterizedTypeName.get(ClassName.get(FSDocStoreSaveApi.class), ClassName.bestGuess(getResultParameter()), ClassName.bestGuess(table.docStoreParameterization()));
     }
 
     @Override

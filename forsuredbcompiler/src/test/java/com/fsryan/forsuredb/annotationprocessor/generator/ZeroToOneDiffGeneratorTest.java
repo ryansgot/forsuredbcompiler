@@ -1,8 +1,8 @@
 package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.api.migration.Migration;
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.Migration;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.common.collect.Lists;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

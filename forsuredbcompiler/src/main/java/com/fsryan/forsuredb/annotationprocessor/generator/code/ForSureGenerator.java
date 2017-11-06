@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotations.FSTable;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.squareup.javapoet.ClassName;
@@ -76,7 +76,7 @@ public class ForSureGenerator extends JavaSourceGenerator {
                 .addLine("defined by extending the $L interface.", JavadocInfo.inlineClassLink(FSGetApi.class))
                 .addLine("Common usage for getting data will include the following:")
                 .startCode()
-                .addLine("Retriever retriever = ForSure.$L().find()", CodeUtil.snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine("Retriever retriever = ForSure.$L().find()", CodeUtil.snakeToCamel(exampleTable.tableName()) + "Table")
                 .addLine(".byId(1)")
                 .addLine(".then()")
                 .addLine(".get();")
@@ -99,7 +99,7 @@ public class ForSureGenerator extends JavaSourceGenerator {
                 .startParagraph()
                 .addLine("Common usage for updating an existing record into the table:")
                 .startCode()
-                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.tableName()) + "Table")
                 .addLine(".byId(1)")
                 .addLine(".then()")
                 .addLine(".set()")
@@ -111,14 +111,14 @@ public class ForSureGenerator extends JavaSourceGenerator {
                 .addLine("Common usage for inserting a new record into the table")
                 .addLine("(with only default data):")
                 .startCode()
-                .addLine("SaveResult<$L> result = ForSure.$L().set()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine("SaveResult<$L> result = ForSure.$L().set()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.tableName()) + "Table")
                 .addLine(".save();")
                 .endCode()
                 .endParagraph()
                 .startParagraph()
                 .addLine("Common usage for flipping the deleted bit on a record:")
                 .startCode()
-                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.tableName()) + "Table")
                 .addLine(".byId(1)")
                 .addLine(".then()")
                 .addLine(".set()")
@@ -128,7 +128,7 @@ public class ForSureGenerator extends JavaSourceGenerator {
                 .startParagraph()
                 .addLine("Common usage for permanently the deleting a record:")
                 .startCode()
-                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.getTableName()) + "Table")
+                .addLine("SaveResult<$L> result = ForSure.$L().find()", getResultParameter(), CodeUtil.snakeToCamel(exampleTable.tableName()) + "Table")
                 .addLine(".byId(1)")
                 .addLine(".then()")
                 .addLine(".set()")
@@ -167,9 +167,9 @@ public class ForSureGenerator extends JavaSourceGenerator {
 
     private void addResolverMethods(TypeSpec.Builder codeBuilder) {
         for (TableInfo table : tablesSortedByName) {
-            ClassName resolverTypeName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver.Base");
+            ClassName resolverTypeName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver.Base");
             JavadocInfo jd = javadocInfoFor(table);
-            codeBuilder.addMethod(MethodSpec.methodBuilder(CodeUtil.snakeToCamel(table.getTableName()) + "Table")
+            codeBuilder.addMethod(MethodSpec.methodBuilder(CodeUtil.snakeToCamel(table.tableName()) + "Table")
                     .addJavadoc(jd.stringToFormat(), jd.replacements())
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(resolverTypeName)
@@ -182,12 +182,12 @@ public class ForSureGenerator extends JavaSourceGenerator {
     private JavadocInfo javadocInfoFor(TableInfo table) {
         return JavadocInfo.builder()
                 .startParagraph()
-                .addLine("Access the querying mechanisms for the $L table.", table.getTableName())
+                .addLine("Access the querying mechanisms for the $L table.", table.tableName())
                 .endParagraph()
-                .addLine("@see $L", table.getQualifiedClassName())
-                .addLine("@see $L", table.getQualifiedClassName() + "Setter")
-                .addLine("@see $L", table.getQualifiedClassName() + "Finder")
-                .addLine("@see $L", table.getQualifiedClassName() + "Resolver")
+                .addLine("@see $L", table.qualifiedClassName())
+                .addLine("@see $L", table.qualifiedClassName() + "Setter")
+                .addLine("@see $L", table.qualifiedClassName() + "Finder")
+                .addLine("@see $L", table.qualifiedClassName() + "Resolver")
                 .addLine()
                 .build();
     }

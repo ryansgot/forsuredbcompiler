@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.FSDocStoreSaveApi;
 import com.fsryan.forsuredb.api.FSSaveApi;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

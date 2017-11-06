@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi;
 
 import com.fsryan.forsuredb.api.FSSaveApi;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 

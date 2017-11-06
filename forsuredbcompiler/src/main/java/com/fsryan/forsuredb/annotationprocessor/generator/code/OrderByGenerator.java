@@ -2,8 +2,8 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.OrderBy;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -24,10 +24,10 @@ public class OrderByGenerator extends JavaSourceGenerator {
     private final ParameterizedTypeName orderByParameterizedTypeName;
 
     public OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
-        super(processingEnv, table.getQualifiedClassName() + "OrderBy");
+        super(processingEnv, table.qualifiedClassName() + "OrderBy");
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
-        resolverClassName = ClassName.bestGuess(table.getQualifiedClassName() + "Resolver");
-        generatedClassName = ClassName.bestGuess(table.getQualifiedClassName() + "OrderBy");
+        resolverClassName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver");
+        generatedClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
         resolverTypeVariableName = TypeVariableName.get("R", resolverClassName);
         orderByParameterizedTypeName = ParameterizedTypeName.get(generatedClassName, TypeVariableName.get("R"));
     }
@@ -56,7 +56,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
     private void addOrderByMethods(TypeSpec.Builder codeBuilder) {
         for (ColumnInfo column : columnsSortedByName) {
             // Parent class OrderBy already contains the methods for the default columns
-            if (!column.isOrderable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {
+            if (!column.orderable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {
                 continue;
             }
             codeBuilder.addMethod(methodSpecFor(column));

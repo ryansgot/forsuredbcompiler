@@ -167,7 +167,9 @@ public abstract class RetrieveHandlerTest<U> {
             }
         }
 
+        // TODO: test both for string and blob serialization
         public static class DocStore extends Get {
+
             public DocStore() {
                 super(FSDocStoreGetApiExtensionTestTable.class, "forsuredb_doc_store_test");
             }
@@ -185,9 +187,9 @@ public abstract class RetrieveHandlerTest<U> {
             }
 
             @Test
-            public void shouldCallRetrieverGetStringMethodWhenInvokingGetMethod() throws Throwable {
+            public void shouldCallRetrieverGetBlobMethodWhenInvokingGetMethod() throws Throwable {
                 rhut.invoke(rhut, apiClass.getMethod("get", Retriever.class), new Object[]{mockRetriever});
-                verify(mockRetriever).getString(tableName + "_doc");
+                verify(mockRetriever).getBlob(tableName + "_blob_doc");
             }
 
             @Test
@@ -208,7 +210,8 @@ public abstract class RetrieveHandlerTest<U> {
                         .stringColumn("a string")
                         .build();
 
-                when(mockRetriever.getString(tableName + "_doc")).thenReturn(new Gson().toJson(obj));
+                byte[] serializedObj = new FSDefaultSerializer().createBlobDoc(obj.getClass(), obj);
+                when(mockRetriever.getBlob(tableName + "_blob_doc")).thenReturn(serializedObj);
                 when(mockRetriever.getString(tableName + "_class_name")).thenReturn(DocStoreTestBase.class.getName());
 
                 Object out = rhut.invoke(rhut, apiClass.getMethod("get", Retriever.class), new Object[]{mockRetriever});
@@ -233,7 +236,8 @@ public abstract class RetrieveHandlerTest<U> {
                         .stringColumn("a string")
                         .build(), "extra string column");
 
-                when(mockRetriever.getString(tableName + "_doc")).thenReturn(new Gson().toJson(extensionObj));
+                byte[] serializedExtensionObj = new FSDefaultSerializer().createBlobDoc(extensionObj.getClass(), extensionObj);
+                when(mockRetriever.getBlob(tableName + "_blob_doc")).thenReturn(serializedExtensionObj);
 
                 Object out = rhut.invoke(rhut, apiClass.getMethod("getAs", Class.class, Retriever.class), new Object[]{DocStoreTestBase.Extension.class, mockRetriever});
 
@@ -258,11 +262,11 @@ public abstract class RetrieveHandlerTest<U> {
                         .stringColumn("a string")
                         .build(), "extra string column");
 
-                when(mockRetriever.getString(tableName + "_doc")).thenReturn(new Gson().toJson(extensionObj));
+                byte[] serializedExtensionObj = new FSDefaultSerializer().createBlobDoc(extensionObj.getClass(), extensionObj);
+                when(mockRetriever.getBlob(tableName + "_blob_doc")).thenReturn(serializedExtensionObj);
 
                 Object out = rhut.invoke(rhut, apiClass.getMethod("getAsBaseType", Retriever.class), new Object[]{mockRetriever});
 
-                assertEquals(DocStoreTestBase.class, out.getClass());
                 performFieldValueMatchAssertions(DocStoreTestBase.class, extensionObj, out);
             }
 

@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api.migration;
 
+import com.fsryan.forsuredb.migration.MigrationSet;
+
 import java.util.List;
 
 public interface MigrationRetriever {

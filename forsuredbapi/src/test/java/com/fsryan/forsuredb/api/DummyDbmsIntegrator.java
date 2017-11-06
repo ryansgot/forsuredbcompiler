@@ -1,6 +1,6 @@
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 
 import java.text.ParseException;

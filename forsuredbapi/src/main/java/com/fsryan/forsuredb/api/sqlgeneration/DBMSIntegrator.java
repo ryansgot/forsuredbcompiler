@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
 import com.fsryan.forsuredb.api.FSOrdering;
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.MigrationSet;
 
 import java.util.Date;
 import java.util.List;

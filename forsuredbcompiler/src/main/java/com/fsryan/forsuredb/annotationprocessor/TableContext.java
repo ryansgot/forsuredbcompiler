@@ -17,7 +17,7 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import java.util.Collection;
 import java.util.Map;
