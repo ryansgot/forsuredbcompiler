@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.api.sqlgeneration;
 
 import com.fsryan.forsuredb.api.FSOrdering;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.util.Date;
 import java.util.List;
@@ -16,14 +17,16 @@ import java.util.Map;
 public interface DBMSIntegrator {
 
     /**
-     * <p>
-     *     Given a {@link MigrationSet}, this method should return a list of raw SQL queries that migrate
-     *     the database accordingly.
-     * </p>
+     * <p>Given a {@link MigrationSet}, this method should return a list of raw SQL queries that migrate
+     * the database accordingly.
+     * <p>Note that this method signature may remove the need for an {@link FSDbInfoSerializer} to simplify the API.
+     * It's purpose is to deserialize the nested data within any migration's extra information.
      * @param migrationSet the {@link MigrationSet} for which SQL should be generated.
+     * @param dbInfoSerializer the {@link FSDbInfoSerializer} capable of deserializing extra information within
+     *                         migrations
      * @return An ordered List of raw SQL to run to migrate the database
      */
-    List<String> generateMigrationSql(MigrationSet migrationSet);
+    List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer dbInfoSerializer);
 
     /**
      * <p>

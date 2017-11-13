@@ -29,12 +29,9 @@ public abstract class ForeignKeyInfo {
         return new AutoValue_ForeignKeyInfo.Builder();
     }
 
-    // this is a hack to make this single property "mutable"
-    private String mutableTableName;
-
     public abstract String updateAction();  // update_action
     public abstract String deleteAction();  // delete_action
-    @Nullable abstract String tableName();     // foreign_table_name <-- may not be known on creation
+    @Nullable public abstract String tableName();     // foreign_table_name <-- may not be known on creation
     public abstract String columnName();    // foreign_column_name
     public abstract String apiClassName();  // foreign_api_class_name
 
@@ -47,15 +44,6 @@ public abstract class ForeignKeyInfo {
                 && !deleteAction().isEmpty()
                 && (apiClassName() != null && !apiClassName().isEmpty())
                 || (tableName() != null && !tableName().isEmpty());
-    }
-
-    @Nullable
-    public String getTableName() {
-        return mutableTableName != null ? mutableTableName : tableName();
-    }
-
-    public void setTableName(String tableName) {
-        mutableTableName = tableName;
     }
 
     @Deprecated

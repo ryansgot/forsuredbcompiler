@@ -131,29 +131,4 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
 
         return actualColumn.compareToIgnoreCase(other.getColumnName());
     }
-
-    /**
-     * <p>
-     *     Allows the tables to know the name of the foreign key class without resorting to the trickery you see
-     *     here: http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor
-     * </p>
-     * @param allTables
-     */
-    public void enrichWithForeignTableInfoFrom(List<TableInfo> allTables) {
-        if (!isForeignKey()) {
-            return;
-        }
-        setForeignKeyTableName(allTables);
-    }
-
-    private String setForeignKeyTableName(List<TableInfo> allTables) {
-        for (TableInfo table : allTables) {
-            if (table.qualifiedClassName().equals(foreignKeyInfo().apiClassName())) {
-                foreignKeyInfo().setTableName(table.tableName());
-                break;
-            }
-        }
-
-        return null;
-    }
 }

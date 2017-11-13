@@ -33,32 +33,22 @@ import java.util.Map;
 public abstract class TableForeignKeyInfo {
 
     public static Builder builder() {
-        return new AutoValue_TableForeignKeyInfo.Builder();
+        return new AutoValue_TableForeignKeyInfo.Builder()
+                .foreignTableName("");
     }
 
-    // a hack to allow setting this value
-    private String mutableForeignTableApiClassName;
-
     // not known until later on . . . so hack to set this value on an otherwise immutable class
-    @Nullable abstract String foreignTableApiClassName();    // foreign_table_api_class_name
+    public abstract String foreignTableApiClassName();    // foreign_table_api_class_name
     public abstract String foreignTableName();  // foreign_table_name
     public abstract Map<String, String> localToForeignColumnMap();    // local_to_foreign_column_map
     public abstract String updateChangeAction();    // update_action
     public abstract String deleteChangeAction();    // delete_action
     public abstract Builder toBuilder();
 
-    public String getForeignTableApiClassName() {
-        return mutableForeignTableApiClassName == null ? foreignTableApiClassName() : mutableForeignTableApiClassName;
-    }
-
-    public void setForeignTableApiClassName(String foreignTableApiClassName) {
-        mutableForeignTableApiClassName = foreignTableApiClassName;
-    }
-
     @AutoValue.Builder
     public static abstract class Builder {
         public abstract Builder foreignTableApiClassName(String foreignTableApiClassName);    // foreign_table_api_class_name
-        public abstract Builder foreignTableName(String foreignTableName);  // foreign_table_name
+        public abstract Builder foreignTableName(@Nullable String foreignTableName);  // foreign_table_name
         public abstract Builder localToForeignColumnMap(Map<String, String> localToForeignColumnMap);    // local_to_foreign_column_map
         public abstract Builder updateChangeAction(String updateAction);    // update_action
         public abstract Builder deleteChangeAction(String deleteAction);    // delete_action

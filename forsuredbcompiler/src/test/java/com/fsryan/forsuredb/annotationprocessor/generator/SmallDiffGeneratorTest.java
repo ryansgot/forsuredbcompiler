@@ -367,7 +367,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext()
                                 .addTable(table().columnMap(columnMapOf(longCol().build()))
                                         .foreignKeys(Sets.newHashSet(
-                                                TableForeignKeyInfo.builder()
+                                                tableForeignKeyInfoBuilder()
                                                         .foreignTableName("user")
                                                         .updateChangeAction("CASCADE")
                                                         .deleteChangeAction("CASCADE")
@@ -396,7 +396,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext()
                                 .addTable(table().columnMap(columnMapOf(longCol().build()))
                                         .foreignKeys(Sets.newHashSet(
-                                                TableForeignKeyInfo.builder()
+                                                tableForeignKeyInfoBuilder()
                                                         .foreignTableName("user")
                                                         .updateChangeAction("CASCADE")
                                                         .deleteChangeAction("CASCADE")
@@ -469,6 +469,11 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build()
                 }
         });
+    }
+
+    private static TableForeignKeyInfo.Builder tableForeignKeyInfoBuilder() {
+        return TableForeignKeyInfo.builder()
+                .foreignTableApiClassName(SmallDiffGeneratorTest.class.getSimpleName());
     }
 
     @Test
