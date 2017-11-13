@@ -77,6 +77,10 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     }
 
     private void processFSTableAnnotations(Set<TypeElement> tableTypes) {
+        if (!shouldProcessAnything()) {
+            APLog.i(LOG_TAG, "Already processed all resources");
+            return;
+        }
         ProcessingContext pc = new ProcessingContext(tableTypes);
 
         if (!setterApisCreated) {
@@ -100,6 +104,16 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         if (!forSureClassCreated) {
             createForSureClass(pc);
         }
+    }
+
+    private static boolean shouldProcessAnything() {
+        return !setterApisCreated
+                || !migrationsCreated
+                || !tableCreatorClassCreated
+                || !orderByClassesCreated
+                || !finderClassesCreated
+                || !resolverClassesCreated
+                || !forSureClassCreated;
     }
 
     private void createSetterApis(ProcessingContext pc) {

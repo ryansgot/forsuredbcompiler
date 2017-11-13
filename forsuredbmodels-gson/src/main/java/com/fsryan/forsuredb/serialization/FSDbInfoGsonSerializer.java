@@ -17,13 +17,17 @@
  */
 package com.fsryan.forsuredb.serialization;
 
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 /**
  * <p>
@@ -35,9 +39,21 @@ public final class FSDbInfoGsonSerializer implements FSDbInfoSerializer {
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapterFactory(new DbInfoAdapterFactory())
             .create();
+    private static final Type foreignKeysType = new TypeToken<Set<TableForeignKeyInfo>>() {}.getType();
 
-    public MigrationSet deserialize(InputStream stream) {
+    @Override
+    public MigrationSet deserializeMigrationSet(InputStream stream) {
         return gson.fromJson(new JsonReader(new InputStreamReader(stream)), MigrationSet.class);
+    }
+
+    @Override
+    public MigrationSet deserializeMigrationSet(String json) {
+        return gson.fromJson(json, MigrationSet.class);
+    }
+
+    @Override
+    public Set<TableForeignKeyInfo> deserializeForeignKeys(String json) {
+        return gson.fromJson(json, foreignKeysType);
     }
 
     public String serialize(MigrationSet migrationSet) {

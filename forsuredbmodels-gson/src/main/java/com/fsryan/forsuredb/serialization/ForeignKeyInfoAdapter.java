@@ -48,7 +48,7 @@ class ForeignKeyInfoAdapter extends TypeAdapter<ForeignKeyInfo> {
         jsonWriter.name("delete_action");
         stringAdapter.write(jsonWriter, object.deleteAction());
         jsonWriter.name("foreign_table_name");
-        stringAdapter.write(jsonWriter, object.getTableName());
+        stringAdapter.write(jsonWriter, object.tableName());
         jsonWriter.name("foreign_column_name");
         stringAdapter.write(jsonWriter, object.columnName());
         jsonWriter.name("foreign_api_class_name");

@@ -49,7 +49,7 @@ class TableForeignKeyInfoAdapter extends TypeAdapter<TableForeignKeyInfo> {
 
         jsonWriter.beginObject();
         jsonWriter.name("foreign_table_api_class_name");
-        stringAdapter.write(jsonWriter, object.getForeignTableApiClassName());
+        stringAdapter.write(jsonWriter, object.foreignTableApiClassName());
         jsonWriter.name("foreign_table_name");
         stringAdapter.write(jsonWriter, object.foreignTableName());
         jsonWriter.name("local_to_foreign_column_map");

@@ -131,7 +131,7 @@ public class TableCreatorGenerator extends JavaSourceGenerator {
         }
 
         for (TableForeignKeyInfo foreignKey : tableInfo.foreignKeys()) {
-            buf.append(", ").append(foreignKey.getForeignTableApiClassName()).append(".class");
+            buf.append(", ").append(foreignKey.foreignTableApiClassName()).append(".class");
         }
 
         return buf.append("))").toString();

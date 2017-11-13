@@ -82,7 +82,7 @@ subprojects { subproject ->
         excludeFilter = project.file("${subproject.projectDir}${File.separator}findbugs${File.separator}exclude-filter.xml")
 
         source = subproject.sourceSets.main.allJava.sourceDirectories.asFileTree
-        classes = subproject.fileTree(subproject.sourceSets.main.output.classesDir)
+        classes = subproject.fileTree(subproject.sourceSets.main.output.classesDir) // TODO: remove prior to upgrading to gradle 5.0
         classpath = subproject.sourceSets.main.compileClasspath
 
         reports {
