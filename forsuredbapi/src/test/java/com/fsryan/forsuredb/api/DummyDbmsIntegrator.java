@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,7 +21,7 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Override
-    public List<String> generateMigrationSql(MigrationSet migrationSet) {
+    public List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer dbInfoSerializer) {
         return new ArrayList<>();
     }
 

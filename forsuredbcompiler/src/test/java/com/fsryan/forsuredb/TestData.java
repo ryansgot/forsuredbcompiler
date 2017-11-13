@@ -200,6 +200,7 @@ public class TestData {
     public static TableForeignKeyInfo.Builder dbmsDefaultTFKI(String foreignTableName) {
         return TableForeignKeyInfo.builder()
                 .foreignTableName(foreignTableName)
+                .foreignTableApiClassName(TestData.class.getName())
                 .updateChangeAction("")
                 .deleteChangeAction("");
     }

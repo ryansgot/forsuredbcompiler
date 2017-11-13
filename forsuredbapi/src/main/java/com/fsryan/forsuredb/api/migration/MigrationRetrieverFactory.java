@@ -79,7 +79,7 @@ public class MigrationRetrieverFactory {
         public List<MigrationSet> getMigrationSets() {
             final List<MigrationSet> ret = new ArrayList<>(1);
             if (migrationSet == null) {
-                migrationSet = migrationSerializer.deserialize(inputStream);
+                migrationSet = migrationSerializer.deserializeMigrationSet(inputStream);
             }
             ret.add(migrationSet);
             return ret;
@@ -88,7 +88,7 @@ public class MigrationRetrieverFactory {
         @Override
         public int latestDbVersion() {
             if (migrationSet == null) {
-                migrationSet = migrationSerializer.deserialize(inputStream);
+                migrationSet = migrationSerializer.deserializeMigrationSet(inputStream);
             }
             return migrationSet.dbVersion();
         }

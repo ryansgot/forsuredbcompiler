@@ -51,11 +51,11 @@ public class SerialiaztionTest {
     @Test
     public void shouldReadAndWriteInversely() throws Exception {
         FSDbInfoSerializer serializerUnderTest = new FSDbInfoGsonSerializer();
-        MigrationSet read = serializerUnderTest.deserialize(fileInputStream);
+        MigrationSet read = serializerUnderTest.deserializeMigrationSet(fileInputStream);
 
         String wrote = serializerUnderTest.serialize(read);
         stringInputStream = new ByteArrayInputStream(wrote.getBytes());
-        MigrationSet readAfterWrote = serializerUnderTest.deserialize(stringInputStream);
+        MigrationSet readAfterWrote = serializerUnderTest.deserializeMigrationSet(stringInputStream);
 
         assertEquals(read, readAfterWrote);
     }

@@ -17,18 +17,24 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.JoinInfo;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
+import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory.AnnotationTranslator;
+import com.fsryan.forsuredb.annotationprocessor.util.Pair;
+import com.fsryan.forsuredb.annotations.*;
+import com.fsryan.forsuredb.api.FSDocStoreGetApi;
+import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
+import com.google.common.collect.Sets;
 
 import java.util.*;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import static com.fsryan.forsuredb.info.TableInfo.docStoreColumns;
+import static javax.lang.model.util.ElementFilter.methodsIn;
 
 /**
  * <p>
@@ -79,40 +85,23 @@ public class ProcessingContext implements TableContext {
         return joins;
     }
 
-    private static TableInfo matchingTable(String qualifiedClassName, List<TableInfo> allTables) {
-        for (TableInfo table : allTables) {
-            if (!qualifiedClassName.equals(table.qualifiedClassName())) {
-                continue;
-            }
-            return table;
-        }
-        throw new IllegalStateException("could not find table for class name: " + qualifiedClassName);
+    private void createTableMapIfNecessary() {
+        TableContext.Builder builder = new TableContext.Builder();
+        tableTypes.forEach(tableType -> addToBuilder(builder, tableType));
+        // TODO: There is no need for ProcessingContext class once the allJoins method is on the TableContext interface
+        tableMap = builder.build().tableMap();
+        initJoins();
     }
 
-    private void createTableMapIfNecessary() {
-        if (tableMap != null) {
-            return;
-        }
-        joins = new LinkedList<>();
-
-        tableMap = new HashMap<>();
-        List<TableInfo> allTables = gatherInitialInfo();
-        for (TableInfo table : allTables) {
-            for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
-                final TableInfo foreignTable = matchingTable(foreignKey.getForeignTableApiClassName(), allTables);
-                foreignKey.setForeignTableApiClassName(foreignTable.tableName());
-            }
-
-            // TODO: remove this loop when foreign key information no longer stored on columns
-            for (ColumnInfo column : table.getColumns()) {
-                column.enrichWithForeignTableInfoFrom(allTables);
-            }
-            tableMap.put(table.tableName(), table);
-            APLog.i(LOG_TAG, "created table: " + table.toString());
-        }
-
+    private void initJoins() {
+        joins = new ArrayList<>();
         for (TableInfo table : tableMap.values()) {
-            for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
+            Set<TableForeignKeyInfo> foreignKeys = table.foreignKeys();
+            if (foreignKeys == null) {
+                continue;
+            }
+
+            for (TableForeignKeyInfo foreignKey : foreignKeys) {
                 TableInfo parent = tableMap.get(foreignKey.foreignTableName());
                 List<ColumnInfo> childColumns = new ArrayList<>();
                 List<ColumnInfo> parentColumns = new ArrayList<>();
@@ -131,20 +120,161 @@ public class ProcessingContext implements TableContext {
         }
     }
 
-    private List<TableInfo> gatherInitialInfo() {
-        List<TableInfo> ret = new ArrayList<>();
-        for (TypeElement te : tableTypes) {
-            if (!isNonPrivateInterface(te)) {
-                continue;   // <-- only process interfaces that are non-private
-            }
-
-            ret.add(TableInfoFactory.create(te));
+    private static void addToBuilder(TableContext.Builder builder, TypeElement intf) {
+        if (intf == null) {
+            throw new IllegalArgumentException("Cannot create TableInfo create null TypeElement");
+        }
+        if (intf.getKind() != ElementKind.INTERFACE) {
+            throw new IllegalArgumentException("Can only create TableInfo create " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
         }
 
-        return ret;
+        final String tableName = createTableName(intf);
+        // docStoreParametrization will be non-null only for doc store tables, so add the doc store columns in this case
+        String docStoreParameterization = getDocStoreParametrizationFrom(intf);
+        if (docStoreParameterization != null) {
+            docStoreColumns().values()
+                    .forEach(c -> builder.addColumn(tableName, c.columnName(), c.toBuilder()));
+        }
+        builder.addTable(tableName, intf.getQualifiedName().toString(), TableInfo.builder()
+                .tableName(tableName)
+                .qualifiedClassName(intf.getQualifiedName().toString())
+                .docStoreParameterization(docStoreParameterization)
+                .primaryKey(primaryKeyFrom(intf))
+                .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
+                .staticDataAsset(createStaticDataAsset(intf))
+                .staticDataRecordName(createStaticDataRecordName(intf)));
+
+        methodsIn(intf.getEnclosedElements()).forEach(ee -> {
+            builder.addColumn(tableName, columnNameOf(ee), columnBuilderOf(ee));
+            if (containsForeignKey(ee)) {
+                Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
+                builder.addForeignKeyInfo(tableName, p.first, p.second);
+            }
+        });
     }
 
-    private boolean isNonPrivateInterface(TypeElement te) {
-        return te.getKind() == ElementKind.INTERFACE && !te.getModifiers().contains(Modifier.PRIVATE);
+    // compositeId -> Builder
+    private static Pair<String, TableForeignKeyInfo.Builder> foreignKeyInfoBuilder(ExecutableElement ee) {
+        return ee.getAnnotationMirrors().stream().filter(am -> {
+            final String type = am.getAnnotationType().toString();
+            return type.equals(FSForeignKey.class.getName()) || type.equals(ForeignKey.class.getName());
+        }).map(am -> new Pair<>(am.getAnnotationType().toString(), AnnotationTranslatorFactory.inst().create(am)))
+        .map(p -> {
+            String type = p.first;
+            AnnotationTranslator at = p.second;
+            if (type.equals(ForeignKey.class.getName())) {
+                return new Pair<>("", tableForeignKeyInfoBuilderFromLegacy(columnNameOf(ee), at));
+            }
+            final String compositeId = at.property("compositeId").asString();
+            return new Pair<>(compositeId, tableForeignKeyInfoBuilderSet(columnNameOf(ee), at));
+        })
+        .findFirst()
+        .get();
+    }
+
+    private static TableForeignKeyInfo.Builder tableForeignKeyInfoBuilderSet(String columnName, AnnotationTranslator at) {
+        Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+        localToForeignColumnMap.put(columnName, at.property("columnName").asString());
+        return TableForeignKeyInfo.builder()
+                .foreignTableApiClassName(at.property("apiClass").asString())
+                .deleteChangeAction(at.property("deleteAction").asString())
+                .updateChangeAction(at.property("updateAction").asString())
+                .localToForeignColumnMap(localToForeignColumnMap);
+    }
+
+    private static TableForeignKeyInfo.Builder tableForeignKeyInfoBuilderFromLegacy(String columnName, AnnotationTranslator at) {
+        Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+        localToForeignColumnMap.put(columnName, at.property("columnName").asString());
+        return TableForeignKeyInfo.builder()
+                .deleteChangeAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()).name())
+                .updateChangeAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()).name())
+                .localToForeignColumnMap(localToForeignColumnMap)
+                .foreignTableApiClassName(at.property("apiClass").asString());
+    }
+
+    private static boolean containsForeignKey(ExecutableElement ee) {
+        FSForeignKey fsfk = ee.getAnnotation(FSForeignKey.class);
+        ForeignKey legacyForeignKey = ee.getAnnotation(ForeignKey.class);
+        return fsfk != null || legacyForeignKey != null;
+    }
+
+    private static String getDocStoreParametrizationFrom(TypeElement intf) {
+        for (TypeMirror typeMirror : intf.getInterfaces()) {
+            DeclaredType declaredType = (DeclaredType) typeMirror;
+            if (typeMirror.toString().startsWith(FSDocStoreGetApi.class.getName())) {
+                return declaredType.getTypeArguments().get(0).toString();  // <-- there should be one type argument only
+            }
+        }
+        return null;
+    }
+
+    private static String createTableName(TypeElement intf) {
+        FSTable table = intf.getAnnotation(FSTable.class);
+        return table == null ? intf.getSimpleName().toString() : table.value();
+    }
+
+    private static String columnNameOf(ExecutableElement ee) {
+        for (AnnotationMirror annotationMirror : ee.getAnnotationMirrors()) {
+            if (annotationMirror.getAnnotationType().toString().equals(FSColumn.class.getName())) {
+                return AnnotationTranslatorFactory.inst().create(annotationMirror).property("value").asString();
+            }
+        }
+        return ee.getSimpleName().toString();
+    }
+
+    private static ColumnInfo.Builder columnBuilderOf(ExecutableElement ee) {
+        ColumnInfo.Builder builder = ColumnInfo.builder();
+        ee.getAnnotationMirrors().forEach(am -> appendAnnotationInfo(builder, am));
+        return builder.methodName(ee.getSimpleName().toString())
+                .qualifiedType(ee.getReturnType().toString());
+    }
+
+    private static void appendAnnotationInfo(ColumnInfo.Builder builder, AnnotationMirror am) {
+        AnnotationTranslator at = AnnotationTranslatorFactory.inst().create(am);
+        String annotationClass = am.getAnnotationType().toString();
+
+        if (annotationClass.equals(FSColumn.class.getName())) {
+            builder.columnName(at.property("value").as(String.class))
+                    .searchable(at.property("searchable").castSafe(true))
+                    .orderable(at.property("orderable").castSafe(true));
+        } else if (annotationClass.equals(ForeignKey.class.getName())) {
+            APLog.w(ProcessingContext.class.getSimpleName(), "Ignoring legacy " + ForeignKey.class.getSimpleName() + "; this info will be picked up at the table level.");
+        } else if (annotationClass.equals(FSPrimaryKey.class.getName())) {
+            builder.primaryKey(true);
+        } else if (annotationClass.equals(Unique.class.getName())) {
+            builder.unique(true);
+            if (at.property("index").as(boolean.class)) {
+                builder.index(true);
+            }
+        } else if (annotationClass.equals(Index.class.getName())) {
+            builder.index(true);
+            if (at.property("unique").as(boolean.class)) {
+                builder.unique(true);
+            }
+        } else if (annotationClass.equals(FSDefault.class.getName())) {
+            builder.defaultValue(at.property("value").asString());
+        }
+    }
+
+    private static Set<String> primaryKeyFrom(TypeElement intf) {
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
+        return primaryKey == null || primaryKey.value().length == 0   // <-- do not allow user to specify no primary key
+                ? Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)
+                : Sets.newHashSet(primaryKey.value());
+    }
+
+    private static String createStaticDataAsset(TypeElement intf) {
+        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
+        return staticData == null ? null : staticData.asset();
+    }
+
+    private static String createStaticDataRecordName(TypeElement intf) {
+        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
+        return staticData == null ? null : staticData.recordName();
+    }
+
+    private static String primaryKeyOnConflictFrom(TypeElement intf) {
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
+        return primaryKey == null ? "" : primaryKey.onConflict();
     }
 }
