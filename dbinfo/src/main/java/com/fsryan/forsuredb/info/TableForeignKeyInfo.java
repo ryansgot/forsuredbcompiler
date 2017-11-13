@@ -48,7 +48,7 @@ public abstract class TableForeignKeyInfo {
     @AutoValue.Builder
     public static abstract class Builder {
         public abstract Builder foreignTableApiClassName(String foreignTableApiClassName);    // foreign_table_api_class_name
-        public abstract Builder foreignTableName(@Nullable String foreignTableName);  // foreign_table_name
+        public abstract Builder foreignTableName(String foreignTableName);  // foreign_table_name
         public abstract Builder localToForeignColumnMap(Map<String, String> localToForeignColumnMap);    // local_to_foreign_column_map
         public abstract Builder updateChangeAction(String updateAction);    // update_action
         public abstract Builder deleteChangeAction(String deleteAction);    // delete_action
