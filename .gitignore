@@ -11,3 +11,5 @@ classes/*
 forsuredbcompiler/out/*
 forsuredbapi/out/*
 dbinfo/out/*
+forsuredbmodels-gson/out/*
+forsuredbmodels-jackson/out/*

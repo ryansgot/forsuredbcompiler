@@ -1,0 +1,21 @@
+[
+  {
+    "foreign_table_api_class_name": "com.forsuredb.testapp.model.ProfileInfoTable",
+    "foreign_table_name": "profile_info",
+    "local_to_foreign_column_map": {
+      "email": "email_address",
+      "profile_info_uuid": "uuid"
+    },
+    "update_action": "CASCADE",
+    "delete_action": "CASCADE"
+  },
+  {
+    "foreign_table_api_class_name": "com.forsuredb.testapp.model.AdditionalInfoTable",
+    "foreign_table_name": "additional_info",
+    "local_to_foreign_column_map": {
+      "profile_info_id": "_id"
+    },
+    "update_action": "CASCADE",
+    "delete_action": "CASCADE"
+  }
+]
