@@ -17,7 +17,6 @@
  */
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.adapter.FSGetAdapter;
 import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
 
 import java.util.ArrayList;
@@ -86,7 +85,6 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     private boolean addedThisProjection = false;
 
     private U lookupResource;
-    private G getApi;
     private F finder;
     private O orderBy;
 
@@ -108,12 +106,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         parent.projections.addAll(child.projections);
     }
 
-    public final G getApi() {
-        if (getApi == null) {
-            getApi = FSGetAdapter.create(this);
-        }
-        return getApi;
-    }
+    public abstract G getApi();
 
     public Retriever get() {
         try {

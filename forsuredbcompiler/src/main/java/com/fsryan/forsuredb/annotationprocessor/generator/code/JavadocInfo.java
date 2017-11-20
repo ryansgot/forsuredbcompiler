@@ -2,9 +2,14 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.squareup.javapoet.ClassName;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class JavadocInfo {
 
@@ -84,10 +89,10 @@ public class JavadocInfo {
         }
 
         public Builder param(String paramName, String paramExplanation) {
-            if (Strings.isNullOrEmpty(paramName)) {
+            if (isNullOrEmpty(paramName)) {
                 return this;
             }
-            if (Strings.isNullOrEmpty(paramExplanation)) {
+            if (isNullOrEmpty(paramExplanation)) {
                 return addLine("@param $L", paramName);
             }
             return addLine("@param $L $L", paramName, paramExplanation);
@@ -98,10 +103,21 @@ public class JavadocInfo {
         }
 
         public Builder returns(String explanation, Object... replacements) {
-            if (Strings.isNullOrEmpty(explanation)) {
+            if (isNullOrEmpty(explanation)) {
                 return addLine("@return");
             }
             return addLine("@return " + explanation, replacements);
+        }
+
+        public <T extends Throwable> Builder throwsWarning(Class<T> tClass) {
+            return throwsWarning(tClass, null);
+        }
+
+        public <T extends Throwable> Builder throwsWarning(Class<T> tClass, String explanationFormat, Object... replacements) {
+            final String formatString = "@throws $T" + (isNullOrEmpty(explanationFormat) ? "" : " " + explanationFormat);
+            final Object[] concatenatedReplacements = Stream.concat(Arrays.stream(new Object[] {tClass}), Arrays.stream(replacements))
+                    .toArray();
+            return addLine(formatString, concatenatedReplacements);
         }
 
         public Builder addLine(String stringToFormat, Object... replacements) {

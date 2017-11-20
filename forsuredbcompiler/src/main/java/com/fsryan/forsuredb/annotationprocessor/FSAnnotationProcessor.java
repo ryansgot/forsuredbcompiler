@@ -17,13 +17,9 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.OrderByGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.*;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.FinderGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.ForSureGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.ResolverGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.TableCreatorGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
@@ -52,6 +48,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private static final String LOG_TAG = FSAnnotationProcessor.class.getSimpleName();
 
+    private static boolean getterApisCreated = false;
     private static boolean setterApisCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
     private static boolean migrationsCreated = false;          // <-- maintain state so migrations don't have to be created more than once
     private static boolean tableCreatorClassCreated = false;   // <-- maintain state so TableCreator class does not have to be created more than once
@@ -83,6 +80,10 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         }
         ProcessingContext pc = new ProcessingContext(tableTypes);
 
+        if (!getterApisCreated) {
+            createGetterApis(pc);
+        }
+
         if (!setterApisCreated) {
             createSetterApis(pc);
         }
@@ -104,6 +105,14 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         if (!forSureClassCreated) {
             createForSureClass(pc);
         }
+    }
+
+    private void createGetterApis(ProcessingContext pc) {
+        APLog.i(LOG_TAG, "creating getter apis");
+        for (TableInfo table : pc.allTables()) {
+            GetterGenerator.getFor(processingEnv, table).generate();
+        }
+        getterApisCreated = true;
     }
 
     private static boolean shouldProcessAnything() {
