@@ -73,6 +73,11 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
     }
 
     @Override
+    public final TestTable3 getApi() {
+        return TestTable3Getter.inst();
+    }
+
+    @Override
     public Map<String, String> methodNameToColumnNameMap() {
         return methodNameToColumnNameMap;
     }

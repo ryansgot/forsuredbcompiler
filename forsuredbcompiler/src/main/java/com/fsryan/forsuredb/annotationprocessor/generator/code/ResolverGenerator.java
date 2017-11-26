@@ -27,6 +27,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private final TypeName setClassName;
     private final TypeName finderClassName;
     private final TypeName orderByClassName;
+    private final TypeName getterClassName;
 
     public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.qualifiedClassName() + "Resolver");
@@ -39,6 +40,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         setClassName = ClassName.bestGuess(table.qualifiedClassName() + "Setter");
         finderClassName = ClassName.bestGuess(table.qualifiedClassName() + "Finder");
         orderByClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
+        getterClassName = ClassName.bestGuess(table.qualifiedClassName() + "Getter");
         parameterNames = createParameterNames(table).toArray(new TypeName[0]);
     }
 
@@ -60,13 +62,23 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addStatement("super(infoFactory)")
                         .build())
                 .build());
+        codeBuilder.addMethod(getApiMethod());
         addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
-        adMethodNameToColumnNameMapMethod(codeBuilder);
+        addMethodNameToColumnNameMapMethod(codeBuilder);
         addJoinMethods(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private MethodSpec getApiMethod() {
+        return MethodSpec.methodBuilder("getApi")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addAnnotation(Override.class)
+                .returns(ClassName.bestGuess(table.qualifiedClassName()))
+                .addStatement("return $T.$N()", getterClassName, "inst")
+                .build();
     }
 
     private static List<Pair<TableInfo, TableForeignKeyInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
@@ -152,7 +164,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return table.referencesOtherTable() || !parentJoins.isEmpty();
     }
 
-    private void adMethodNameToColumnNameMapMethod(TypeSpec.Builder codeBuilder) {
+    private void addMethodNameToColumnNameMapMethod(TypeSpec.Builder codeBuilder) {
         codeBuilder.addMethod(MethodSpec.methodBuilder("methodNameToColumnNameMap")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)

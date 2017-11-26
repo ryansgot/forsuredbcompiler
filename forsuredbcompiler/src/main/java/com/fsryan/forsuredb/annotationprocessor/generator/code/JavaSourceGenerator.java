@@ -1,15 +1,26 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
+import com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 
+import javax.annotation.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
 public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> {
+
+    protected static final AnnotationSpec GENERATED_ANNOTATION = AnnotationSpec.builder(Generated.class)
+            .addMember("value", CodeBlock.builder()
+                    .add("$S", ClassName.get(FSAnnotationProcessor.class))
+                    .build())
+            .build();
 
     private final String fqClassName;
 

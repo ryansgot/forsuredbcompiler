@@ -15,4 +15,8 @@
         <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil" />
         <Bug pattern="DM_CONVERT_CASE" />   <!-- used for converting case of java identifiers -->
     </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.GetterGenerator" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
 </FindBugsFilter>
