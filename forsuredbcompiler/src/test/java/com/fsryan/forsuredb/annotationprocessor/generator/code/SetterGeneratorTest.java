@@ -1,9 +1,9 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi;
+package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
-import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.TestData;
+import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
+import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -12,12 +12,12 @@ import javax.tools.JavaFileObject;
 import java.util.Arrays;
 
 @RunWith(Parameterized.class)
-public class SaveApiGeneratorTest extends GeneratorTest<JavaFileObject> {
+public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
 
-    private SaveApiGenerator gut;
+    private SetterGenerator generatorUnderTest;
     private TableInfo table;
 
-    public SaveApiGeneratorTest(String expectedCode, TableInfo table, Class<?> resultParameter) {
+    public SetterGeneratorTest(String expectedCode, TableInfo table, Class<?> resultParameter) {
         super(expectedCode);
         this.table = table;
         System.setProperty("resultParameter", resultParameter.getName());
@@ -27,21 +27,21 @@ public class SaveApiGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        TestData.resourceText("example_relational_save_api.txt"),
+                        TestData.resourceText("example_relational_table_setter.txt"),
                         TestData.targetTableWithChildForeignKey(),
-                        SaveApiGeneratorTest.class
+                        SetterGeneratorTest.class
                 },
-                // TODO: test DocStoreSaveApiGenerator
+                // TODO: test SetterGenerator.DocStore
         });
     }
 
     @Before
     public void setUp() {
-        gut = SaveApiGenerator.getFor(mockProcessingEnv, table);
+        generatorUnderTest = SetterGenerator.getFor(mockProcessingEnv, table);
     }
 
     @Override
     protected BaseGenerator<JavaFileObject> generatorUnderTest() {
-        return gut;
+        return generatorUnderTest;
     }
 }

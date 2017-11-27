@@ -1,8 +1,11 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
+import com.fsryan.forsuredb.info.ColumnInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeName;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -23,6 +26,49 @@ import static com.google.common.base.Strings.isNullOrEmpty;
             .build();
 
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
+
+    public static TypeName typeNameOf(ColumnInfo column) {
+        return isPrimitive(column) ? primitiveTypeOf(column) : ClassName.bestGuess(column.qualifiedType());
+    }
+
+    public static TypeName primitiveTypeOf(ColumnInfo column) {
+        return primitiveTypeOf(column.qualifiedType());
+    }
+
+    public static TypeName primitiveTypeOf(String qualifiedType) {
+        switch (qualifiedType) {
+            case "byte": return TypeName.BYTE;
+            case "boolean": return TypeName.BOOLEAN;
+            case "short": return TypeName.SHORT;
+            case "int": return TypeName.INT;
+            case "long": return TypeName.LONG;
+            case "double": return TypeName.DOUBLE;
+            case "float": return TypeName.FLOAT;
+            case "char": return TypeName.CHAR;
+            default:
+                throw new IllegalArgumentException(qualifiedType + " is not a primitive type");
+        }
+    }
+
+    public static boolean isPrimitive(ColumnInfo columnInfo) {
+        return isPrimitive(columnInfo.qualifiedType());
+    }
+
+    public static boolean isPrimitive(String qualifiedType) {
+        switch (qualifiedType) {
+            case "byte":    // intentionally fall through
+            case "boolean":    // intentionally fall through
+            case "short":    // intentionally fall through
+            case "int":    // intentionally fall through
+            case "long":    // intentionally fall through
+            case "double":    // intentionally fall through
+            case "float":    // intentionally fall through
+            case "char":
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public static String simpleClassNameFrom(String fqClassName) {
         if (fqClassName == null || fqClassName.isEmpty()) {

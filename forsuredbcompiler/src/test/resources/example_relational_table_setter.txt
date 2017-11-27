@@ -1,0 +1,65 @@
+package com.fsryan.annotationprocessor.generator.code;
+
+import com.fsryan.forsuredb.annotationprocessor.generator.code.SetterGeneratorTest;
+import com.fsryan.forsuredb.api.BaseSetter;
+import com.fsryan.forsuredb.api.FSOrdering;
+import com.fsryan.forsuredb.api.FSQueryable;
+import com.fsryan.forsuredb.api.FSSelection;
+import com.fsryan.forsuredb.api.RecordContainer;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
+import java.math.BigDecimal;
+import java.util.List;
+import javax.annotation.Generated;
+
+/**
+ * <p>
+ *   A setter api for the test_table_3 table
+ * </p>
+ */
+@Generated("com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor")
+public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest> implements TestTable3SaveApi {
+    public TestTable3Setter(FSQueryable<SetterGeneratorTest, TypedRecordContainer> queryble,
+            FSSelection selection, List<FSOrdering> orderings, RecordContainer recordContainer) {
+        super(queryable, selection, orderings, recordContainer);
+    }
+
+    /**
+     * <p>
+     *   Set the value of column app_rating on the record to store
+     * </p>
+     */
+    public final TestTable3Setter appRating(double appRating) {
+        recordContainer.put("app_rating", appRating);
+        return this;
+    }
+
+    /**
+     * <p>
+     *   Set the value of column competitor_app_rating on the record to store
+     * </p>
+     */
+    public final TestTable3Setter competitorAppRating(BigDecimal competitorAppRating) {
+        recordContainer.put("competitor_app_rating", competitorAppRating.toString());
+        return this;
+    }
+
+    /**
+     * <p>
+     *   Set the value of column global_id on the record to store
+     * </p>
+     */
+    public final TestTable3Setter globalId(long globalId) {
+        recordContainer.put("global_id", globalId);
+        return this;
+    }
+
+    /**
+     * <p>
+     *   Set the value of column login_count on the record to store
+     * </p>
+     */
+    public final TestTable3Setter loginCount(int loginCount) {
+        recordContainer.put("login_count", loginCount);
+        return this;
+    }
+}

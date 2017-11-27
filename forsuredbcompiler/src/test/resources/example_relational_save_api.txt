@@ -1,6 +1,6 @@
 package com.fsryan.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGeneratorTest;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.SaveApiGeneratorTest;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.api.FSSaveApi;
 import java.lang.String;

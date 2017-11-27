@@ -37,7 +37,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         generatedClassName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver");
         getClassName = ClassName.bestGuess(table.qualifiedClassName());
-        setClassName = ClassName.bestGuess(table.qualifiedClassName() + "Setter");
+        setClassName = ClassName.bestGuess(table.qualifiedClassName() + "SaveApi");
         finderClassName = ClassName.bestGuess(table.qualifiedClassName() + "Finder");
         orderByClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
         getterClassName = ClassName.bestGuess(table.qualifiedClassName() + "Getter");
@@ -352,7 +352,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(ParameterizedTypeName.get(ClassName.get(Class.class), setClassName))
-                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName() + "Setter"))
+                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName() + "SaveApi"))
                         .build())
                 .addMethod(MethodSpec.methodBuilder("projection")
                         .addAnnotation(Override.class)
