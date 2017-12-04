@@ -14,16 +14,13 @@ public class TableForeignKeyInfoSerializer extends StdSerializer<TableForeignKey
     private final ObjectMapper mapper;
 
     public TableForeignKeyInfoSerializer(ObjectMapper mapper) {
-        this(mapper, null);
-    }
-
-    public TableForeignKeyInfoSerializer(ObjectMapper mapper, Class<TableForeignKeyInfo> t) {
-        super(t);
+        super(TableForeignKeyInfo.class);
         this.mapper = mapper;
     }
 
     @Override
-    public void serialize(TableForeignKeyInfo object, JsonGenerator jGen, SerializerProvider provider) throws IOException, JsonProcessingException {
+    public void serialize(TableForeignKeyInfo object, JsonGenerator jGen, SerializerProvider provider)
+            throws IOException, JsonProcessingException {
         if (object == null) {
             jGen.writeNull();
             return;
