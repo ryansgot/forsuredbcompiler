@@ -27,7 +27,7 @@ import com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.migration.MigrationContext;
 
-import com.fsryan.forsuredb.serialization.FSDbInfoGsonSerializer;
+import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 import com.google.gson.Gson;
 
 import java.io.IOException;

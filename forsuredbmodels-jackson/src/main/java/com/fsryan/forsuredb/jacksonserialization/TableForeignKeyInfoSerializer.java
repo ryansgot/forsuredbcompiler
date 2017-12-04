@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.jacksonserialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;

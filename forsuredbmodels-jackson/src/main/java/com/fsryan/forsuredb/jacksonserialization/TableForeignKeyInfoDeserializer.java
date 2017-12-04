@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.jacksonserialization;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,7 +28,7 @@ public class TableForeignKeyInfoDeserializer extends StdDeserializer<TableForeig
     }
 
     @Override
-    public TableForeignKeyInfo deserialize(JsonParser jp, DeserializationContext ctxt)  throws IOException, JsonProcessingException {
+    public TableForeignKeyInfo deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         final JsonNode node = jp.getCodec().readTree(jp);
         final String foreignApiClassName = node.get("foreign_table_api_class_name").asText();
         final String foreignTableName = node.get("foreign_table_name").asText();

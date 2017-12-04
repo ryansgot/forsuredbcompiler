@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.jacksonserialization;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;

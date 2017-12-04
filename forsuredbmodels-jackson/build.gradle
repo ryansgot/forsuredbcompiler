@@ -36,3 +36,14 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
         html.enabled = true
     }
 }
+
+//task copyTestResources(type: Copy) {
+//    from new File(rootProject.projectDir, 'shared' + File.separator + 'serialization_test_resources')
+//    into 'src/test/resources'
+//}
+//
+//afterEvaluate {
+//    tasks.withType(Test).each { t ->
+//        t.dependsOn copyTestResources
+//    }
+//}

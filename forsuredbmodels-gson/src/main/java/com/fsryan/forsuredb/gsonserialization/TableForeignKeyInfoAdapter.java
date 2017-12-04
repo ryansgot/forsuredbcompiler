@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.gsonserialization;
 
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.google.gson.Gson;

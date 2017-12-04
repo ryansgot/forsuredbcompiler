@@ -15,10 +15,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.gsonserialization;
 
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;

@@ -167,7 +167,7 @@ public abstract class RetrieveHandlerTest<U> {
             }
         }
 
-        // TODO: test both for string and blob serialization
+        // TODO: test both for string and blob jacksonserialization
         public static class DocStore extends Get {
 
             public DocStore() {

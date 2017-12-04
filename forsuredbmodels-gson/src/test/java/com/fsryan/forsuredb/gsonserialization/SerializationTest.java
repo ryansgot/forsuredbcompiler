@@ -1,8 +1,9 @@
-package com.fsryan.forsuredb.serialization;
+package com.fsryan.forsuredb.gsonserialization;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
+import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +29,7 @@ public abstract class SerializationTest {
 
     @Before
     public void setUpInputStream() {
-        serializerUnderTest = new FSDbInfoJacksonSerializer();
+        serializerUnderTest = new FSDbInfoGsonSerializer();
         source = SerializationTest.class.getClassLoader().getResource(jsonResource);
     }
 
@@ -206,17 +207,17 @@ public abstract class SerializationTest {
 
         @Override
         protected String writeObject(Set<TableForeignKeyInfo> object) {
-            try {
-                return acquireMapper(serializerUnderTest).writeValueAsString(object);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return acquireSubjectGson().toJson(object);
         }
     }
 
-    static ObjectMapper acquireMapper(Object holder) throws Exception {
-        Field mapperField = FSDbInfoJacksonSerializer.class.getDeclaredField("mapper");
-        mapperField.setAccessible(true);
-        return (ObjectMapper) mapperField.get(holder);
+    static Gson acquireSubjectGson() {
+        try {
+            Field gsonField = FSDbInfoGsonSerializer.class.getDeclaredField("gson");
+            gsonField.setAccessible(true);
+            return (Gson) gsonField.get(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
