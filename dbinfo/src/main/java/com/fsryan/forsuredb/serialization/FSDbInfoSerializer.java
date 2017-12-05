@@ -11,4 +11,5 @@ public interface FSDbInfoSerializer {
     MigrationSet deserializeMigrationSet(String json);
     Set<TableForeignKeyInfo> deserializeForeignKeys(String json);
     String serialize(MigrationSet migrationSet);
+    Set<String> deserializeColumnNames(String stringSetJson);
 }

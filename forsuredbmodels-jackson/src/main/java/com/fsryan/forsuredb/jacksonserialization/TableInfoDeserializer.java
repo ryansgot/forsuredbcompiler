@@ -15,12 +15,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import static com.fsryan.forsuredb.jacksonserialization.FSDbInfoJacksonSerializer.PRIMARY_KEY_TYPE;
 import static com.fsryan.forsuredb.jacksonserialization.FSDbInfoJacksonSerializer.TABLE_FOREIGN_KEY_INFO_TYPE;
 
 public class TableInfoDeserializer extends StdDeserializer<TableInfo> {
 
     private static final TypeReference<Map<String, ColumnInfo>> columnInfoMapType = new TypeReference<Map<String, ColumnInfo>>() {};
-    private static final TypeReference<Set<String>> primaryKeyType = new TypeReference<Set<String>>() {};
 
     private final ObjectMapper mapper;
 
@@ -46,7 +46,7 @@ public class TableInfoDeserializer extends StdDeserializer<TableInfo> {
                 ? node.get("doc_store_parameterization").asText()
                 : null;
         final Set<String> primaryKey = node.has("primary_key")
-                ? (Set<String>) mapper.readValue(node.get("primary_key").toString(), primaryKeyType)
+                ? (Set<String>) mapper.readValue(node.get("primary_key").toString(), PRIMARY_KEY_TYPE)
                 : null;
         final String primaryKeyOnConflict = node.has("primary_key_on_conflict")
                 ? node.get("primary_key_on_conflict").asText()

@@ -17,10 +17,15 @@
  */
 package com.fsryan.forsuredb.migration;
 
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 // TODO: rethink this. I think these can be simplified and more of the work can be imposed upon the DBMS integration library
 // You should not need so many different values.
@@ -86,6 +91,46 @@ public abstract class Migration implements Comparable<Migration> {
 
     public static Builder builder() {
         return new AutoValue_Migration.Builder();
+    }
+
+    /**
+     * <p>A utility function to aid DBMS Integrator libraries with respect to getting the extra
+     * {@link TableForeignKeyInfo} information off of a {@link Migration}
+     * @param migration the {@link Migration}
+     * @param serializer the {@link FSDbInfoSerializer} capable of deserializing the information
+     * @return a set of all current {@link TableForeignKeyInfo} describing the current foreign
+     * keys; an empty set if there are no extras or no current_foreign_keys extra
+     */
+    @Nonnull
+    public static Set<TableForeignKeyInfo> foreignKeysOf(@Nonnull Migration migration, @Nonnull FSDbInfoSerializer serializer) {
+        if (migration.extras() == null) {
+            return Collections.emptySet();
+        }
+
+        final String json = migration.extras().get("current_foreign_keys");
+        return json == null
+                ? Collections.<TableForeignKeyInfo>emptySet()
+                : serializer.deserializeForeignKeys(json);
+    }
+
+    /**
+     * <p>A utility function to aid DBMS Integrator libraries with respect to getting the extra
+     * existing column name info off of a {@link Migration}
+     * @param migration the {@link Migration}
+     * @param serializer
+     * @return a set of all current column namess; an empty set if there are no extras or no
+     * existing_column_names extra
+     */
+    @Nonnull
+    public static Set<String> existingColumnNamesOf(@Nonnull Migration migration, @Nonnull FSDbInfoSerializer serializer) {
+        if (migration.extras() == null) {
+            return Collections.emptySet();
+        }
+
+        final String json = migration.extras().get("existing_column_names");
+        return json == null
+                ? Collections.<String>emptySet()
+                : serializer.deserializeColumnNames(json);
     }
 
     public static Migration create(String tableName, String columnName, Type type) {
