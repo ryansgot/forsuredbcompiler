@@ -41,6 +41,7 @@ public final class FSDbInfoGsonSerializer implements FSDbInfoSerializer {
             .registerTypeAdapterFactory(new DbInfoAdapterFactory())
             .create();
     private static final Type foreignKeysType = new TypeToken<Set<TableForeignKeyInfo>>() {}.getType();
+    private static final Type primaryKeyType = new TypeToken<Set<String>>() {}.getType();
 
     @Override
     public MigrationSet deserializeMigrationSet(InputStream stream) {
@@ -59,5 +60,10 @@ public final class FSDbInfoGsonSerializer implements FSDbInfoSerializer {
 
     public String serialize(MigrationSet migrationSet) {
         return gson.toJson(migrationSet);
+    }
+
+    @Override
+    public Set<String> deserializeColumnNames(String stringSetJson) {
+        return gson.fromJson(stringSetJson, primaryKeyType);
     }
 }

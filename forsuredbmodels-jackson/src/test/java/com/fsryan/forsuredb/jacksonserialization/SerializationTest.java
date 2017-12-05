@@ -215,6 +215,35 @@ public abstract class SerializationTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class ColumnNames extends SymmetricReadWriteString<Set<String>> {
+
+        public ColumnNames(String jsonResource) {
+            super(jsonResource);
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {"string_set.json"},
+            });
+        }
+
+        @Override
+        protected Set<String> readObject(String json) {
+            return serializerUnderTest.deserializeColumnNames(json);
+        }
+
+        @Override
+        protected String writeObject(Set<String> object) {
+            try {
+                return acquireMapper(serializerUnderTest).writeValueAsString(object);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     static ObjectMapper acquireMapper(Object holder) throws Exception {
         Field mapperField = FSDbInfoJacksonSerializer.class.getDeclaredField("mapper");
         mapperField.setAccessible(true);

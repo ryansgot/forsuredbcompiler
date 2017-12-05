@@ -24,10 +24,7 @@ import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 import static com.fsryan.forsuredb.migration.Migration.Type.*;
@@ -48,8 +45,6 @@ public class QueryGeneratorFactory {
             return new ArrayList<>();
         }
     };
-    private static final Type tableForeignKeysInfoSetType = new TypeToken<Set<TableForeignKeyInfo>>() {}.getType();
-    private static final Gson gson = new Gson();
 
     // tableName -> list of column names that are NEW foreign key columns--not existing
     private final Map<String, List<String>> newForeignKeyColumnMap;
@@ -93,12 +88,15 @@ public class QueryGeneratorFactory {
                 return new DropTableGenerator(migration.tableName());
             case CHANGE_DEFAULT_VALUE:
                 return new ChangeDefaultValueGenerator(migration.tableName(), targetSchema);
-            case UPDATE_PRIMARY_KEY:
-                return new UpdatePrimaryKeyGenerator(migration.tableName(), existingColumnNamesFrom(migration), targetSchema);
-            case UPDATE_FOREIGN_KEYS:
-                final String currentForeignKeysJson = migration.extras().get(migration.extras().get("current_foreign_keys"));
-                final Set<TableForeignKeyInfo> currentForeignKeys = gson.fromJson(currentForeignKeysJson, tableForeignKeysInfoSetType);
-                return new UpdateForeignKeysGenerator(table.tableName(), currentForeignKeys, existingColumnNamesFrom(migration), targetSchema);
+            case UPDATE_PRIMARY_KEY: {
+                final Set<String> existingColumnNames = existingColumnNamesFrom(migration, serializer);
+                return new UpdatePrimaryKeyGenerator(migration.tableName(), existingColumnNames, targetSchema);
+            }
+            case UPDATE_FOREIGN_KEYS: {
+                final Set<TableForeignKeyInfo> currentForeignKeys = Migration.foreignKeysOf(migration, serializer);
+                final Set<String> existingColumnNames = existingColumnNamesFrom(migration, serializer);
+                return new UpdateForeignKeysGenerator(table.tableName(), currentForeignKeys, existingColumnNames, targetSchema);
+            }
         }
 
         return emptyGenerator;
@@ -146,15 +144,16 @@ public class QueryGeneratorFactory {
         return retList;
     }
 
-    private static Set<String> existingColumnNamesFrom(Migration migration) {
-        final String currentColumnsJson = migration.extras().get("existing_column_names");
-        if (currentColumnsJson == null) {
-            Set<String> ret = new HashSet<>();
-            for (ColumnInfo column : DEFAULT_COLUMN_MAP.values()) {
-                ret.add(column.columnName());
-            }
-            return ret;
+    private static Set<String> existingColumnNamesFrom(Migration migration, FSDbInfoSerializer serializer) {
+        final Set<String> columnNamesFromMigration = Migration.existingColumnNamesOf(migration, serializer);
+        if (!columnNamesFromMigration.isEmpty()) {
+            return columnNamesFromMigration;
         }
-        return gson.fromJson(currentColumnsJson, new TypeToken<Set<String>>() {}.getType());
+
+        Set<String> ret = new HashSet<>();
+        for (ColumnInfo column : DEFAULT_COLUMN_MAP.values()) {
+            ret.add(column.columnName());
+        }
+        return ret;
     }
 }

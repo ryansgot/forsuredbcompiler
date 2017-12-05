@@ -20,6 +20,7 @@ import java.util.Set;
 public class FSDbInfoJacksonSerializer implements FSDbInfoSerializer {
 
     static final TypeReference<Set<TableForeignKeyInfo>> TABLE_FOREIGN_KEY_INFO_TYPE = new TypeReference<Set<TableForeignKeyInfo>>() {};
+    static final TypeReference<Set<String>> PRIMARY_KEY_TYPE = new TypeReference<Set<String>>() {};
     private static final TypeReference<MigrationSet> migrationSetType = new TypeReference<MigrationSet>() {};
 
     private final ObjectMapper mapper;
@@ -75,6 +76,15 @@ public class FSDbInfoJacksonSerializer implements FSDbInfoSerializer {
             return mapper.writerFor(migrationSetType).writeValueAsString(migrationSet);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Set<String> deserializeColumnNames(String stringSetJson) {
+        try {
+            return mapper.readerFor(PRIMARY_KEY_TYPE).readValue(stringSetJson);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
         }
     }
 }
