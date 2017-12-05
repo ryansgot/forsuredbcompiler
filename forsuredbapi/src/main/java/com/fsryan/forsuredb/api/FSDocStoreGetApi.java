@@ -25,7 +25,8 @@ import com.fsryan.forsuredb.annotations.FSColumn;
  *           you will lose basic type-safety guarantees, but it's not the end of the world, as the
  *           somewhat flimsy {@link #className(Retriever)} method will be able to track the java
  *           class of the object. The downfall of this approach is that it is brittle across class
- *           name refactoring.
+ *           name refactoring. Additionally, you should not minify these classes, the class objects
+ *           are reflectively instantiated with {@link Class#forName(String)}
  */
 public interface FSDocStoreGetApi<T> extends FSGetApi {
     /**
@@ -87,7 +88,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return A byte array representation of the object
      */
-    @FSColumn("blob_doc") String blobDoc(Retriever retriever);
+    @FSColumn("blob_doc") byte[] blobDoc(Retriever retriever);
 
     // TODO: create a migration that is designed to update records whenever a class name changes
     /**

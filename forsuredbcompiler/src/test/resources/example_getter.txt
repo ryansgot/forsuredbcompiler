@@ -1,0 +1,76 @@
+package com.fsryan.annotationprocessor.generator.code;
+
+import com.fsryan.forsuredb.api.BaseGetter;
+import com.fsryan.forsuredb.api.Retriever;
+import java.lang.String;
+import java.math.BigDecimal;
+import javax.annotation.Generated;
+
+/**
+ * <p>
+ *   A getter API for the TestTable3Getter table
+ * </p>
+ */
+@Generated("com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor")
+public class TestTable3Getter extends BaseGetter implements TestTable3 {
+    private static final TestTable3Getter instance = new TestTable3Getter("test_table_3");
+
+    private TestTable3Getter(String tableName) {
+        super(tableName);
+    }
+
+    public static TestTable3Getter inst() {
+        return instance;
+    }
+
+    /**
+     * <p>
+     *   retrieve the app_rating value from the {@link Retriever} passed in
+     * </p>
+     * @param retriever The {@link Retriever} that can pull column values from the current record
+     * @return the value of column app_rating for the current record
+     * @throws java.lang.IllegalArgumentException when input retriever is null
+     */
+    public double appRating(Retriever retriever) {
+        throwIfNullRetriever(retriever);
+        return retriever.getDouble(disambiguateColumn("app_rating"));
+    }
+
+    /**
+     * <p>
+     *   retrieve the competitor_app_rating value from the {@link Retriever} passed in
+     * </p>
+     * @param retriever The {@link Retriever} that can pull column values from the current record
+     * @return the value of column competitor_app_rating for the current record
+     * @throws java.lang.IllegalArgumentException when input retriever is null
+     */
+    public BigDecimal competitorAppRating(Retriever retriever) {
+        return parseBigDecimalColumn(retriever, "competitor_app_rating");
+    }
+
+    /**
+     * <p>
+     *   retrieve the global_id value from the {@link Retriever} passed in
+     * </p>
+     * @param retriever The {@link Retriever} that can pull column values from the current record
+     * @return the value of column global_id for the current record
+     * @throws java.lang.IllegalArgumentException when input retriever is null
+     */
+    public long globalId(Retriever retriever) {
+        throwIfNullRetriever(retriever);
+        return retriever.getLong(disambiguateColumn("global_id"));
+    }
+
+    /**
+     * <p>
+     *   retrieve the login_count value from the {@link Retriever} passed in
+     * </p>
+     * @param retriever The {@link Retriever} that can pull column values from the current record
+     * @return the value of column login_count for the current record
+     * @throws java.lang.IllegalArgumentException when input retriever is null
+     */
+    public int loginCount(Retriever retriever) {
+        throwIfNullRetriever(retriever);
+        return retriever.getInt(disambiguateColumn("login_count"));
+    }
+}

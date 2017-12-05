@@ -46,8 +46,4 @@
         <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory$RetrieverFromStream" />
         <Bug pattern="DM_DEFAULT_ENCODING" /> <!-- Using JSON parsing -->
     </Match>
-    <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.DocStoreRetrieveHandler" />
-        <Bug pattern="REC_CATCH_EXCEPTION" />
-    </Match>
 </FindBugsFilter>
