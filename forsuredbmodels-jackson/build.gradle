@@ -5,7 +5,8 @@ sourceSets.test.resources.srcDirs += new File(rootProject.projectDir, 'shared' +
 dependencies {
 
     compile project(':dbinfo')
-    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.9.2'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
     testCompile 'junit:junit:4.12'
@@ -35,3 +36,14 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
         html.enabled = true
     }
 }
+
+//task copyTestResources(type: Copy) {
+//    from new File(rootProject.projectDir, 'shared' + File.separator + 'serialization_test_resources')
+//    into 'src/test/resources'
+//}
+//
+//afterEvaluate {
+//    tasks.withType(Test).each { t ->
+//        t.dependsOn copyTestResources
+//    }
+//}

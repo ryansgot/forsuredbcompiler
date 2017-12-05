@@ -17,9 +17,9 @@
  */
 package com.fsryan.forsuredb.api.migration;
 
-import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
