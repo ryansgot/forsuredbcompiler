@@ -30,7 +30,7 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
         try {
             columnQualifiedTypeToRetrieverMethodNameMap.put(
                     byte[].class.getName(),
-                    Retriever.class.getDeclaredMethod("getBlob", String.class).getName()
+                    Retriever.class.getDeclaredMethod("getBytes", String.class).getName()
             );
             columnQualifiedTypeToRetrieverMethodNameMap.put(
                     float.class.getName(),

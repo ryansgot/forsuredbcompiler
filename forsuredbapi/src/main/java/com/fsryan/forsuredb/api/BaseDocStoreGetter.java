@@ -49,7 +49,7 @@ public abstract class BaseDocStoreGetter<T> extends BaseGetter implements FSDocS
     @Override
     public byte[] blobDoc(Retriever retriever) {
         throwIfNullRetriever(retriever);
-        return retriever.getBlob(disambiguateColumn("blob_doc"));
+        return retriever.getBytes(disambiguateColumn("blob_doc"));
     }
 
     @Override

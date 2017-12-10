@@ -29,7 +29,7 @@ public interface Retriever {
     long getLong(String column);
     double getDouble(String column);
     float getFloat(String column);
-    byte[] getBlob(String column);
+    byte[] getBytes(String column);
     int getCount();
 
     boolean isClosed();
