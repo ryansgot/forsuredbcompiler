@@ -27,10 +27,10 @@ public interface FSLogger {
 
     SilentLog SILENT_LOG = new SilentLog();
 
-    void e(String message);
-    void i(String message);
-    void w(String message);
-    void o(String message);
+    void e(String message, Object... replacements);
+    void i(String message, Object... replacements);
+    void w(String message, Object... replacements);
+    void o(String message, Object... replacements);
 
     /**
      * <p>
@@ -38,10 +38,10 @@ public interface FSLogger {
      * </p>
      */
     class SilentLog implements FSLogger {
-        public void e(String message) {}
-        public void i(String message) {}
-        public void w(String message) {}
-        public void o(String message) {}
+        public void e(String message, Object... replacements) {}
+        public void i(String message, Object... replacements) {}
+        public void w(String message, Object... replacements) {}
+        public void o(String message, Object... replacements) {}
     }
 
     /**
@@ -51,27 +51,31 @@ public interface FSLogger {
      */
     class DefaultFSLogger implements FSLogger {
 
-        private static final String TAG = "[MIGRATION_PARSER_ERROR]: ";
+        private static final String TAG = "FS_DEFAULT_LOGGER";
 
         @Override
-        public void e(String message) {
-            System.out.println(TAG + message);
+        public void e(String message, Object... replacements) {
+            message = String.format(message, replacements);
+            System.out.println(String.format("%s/[%s]: %s", "E", TAG, message));
         }
 
         @Override
-        public void i(String message) {
-            System.out.println(TAG + message);
+        public void i(String message, Object... replacements) {
+            message = String.format(message, replacements);
+            System.out.println(String.format("%s/[%s]: %s", "I", TAG, message));
         }
 
         @Override
-        public void w(String message) {
-            System.out.println(TAG + message);
+        public void w(String message, Object... replacements) {
+            message = String.format(message, replacements);
+            System.out.println(String.format("%s/[%s]: %s", "W", TAG, message));
 
         }
 
         @Override
-        public void o(String message) {
-            System.out.println(TAG + message);
+        public void o(String message, Object... replacements) {
+            message = String.format(message, replacements);
+            System.out.println(String.format("%s/[%s]: %s", "O", TAG, message));
         }
     }
 }
