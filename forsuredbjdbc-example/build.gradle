@@ -1,0 +1,86 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.fsryan:forsuredbplugin:0.4.0'
+    }
+}
+
+apply plugin: 'com.fsryan.forsuredb'
+apply plugin: 'application'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
+
+configurations {
+    apt
+}
+
+compileJava {
+    options.annotationProcessorPath = configurations.apt
+}
+
+dependencies {
+    compile project(':forsuredbapi')
+    compile project(':forsuredbjdbc')
+    compile project(':sqlitelib')
+    compile project(':forsuredbmodels-gson')
+
+    compile 'org.beryx:text-io:3.0.0'   // <-- a library I found for making interactive command line apps
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    apt project(':forsuredbcompiler')
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.13.0'
+}
+
+task jacocoReport(type: JacocoReport, dependsOn: 'test') {
+
+    group = 'Reporting'
+    description = 'Generate Jacoco coverage reports after running tests.'
+
+    executionData = files('build/jacoco/test.exec')
+    sourceDirectories = files('src/main/java')
+    classDirectories = fileTree(
+            dir: 'build/classes',
+            excludes: [
+                    '**/*Test.class',
+                    '**/TestData.class',
+                    '**/*Test$*.class',
+                    '**/*_*.class'
+            ]
+    )
+
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.enabled = true
+    }
+}
+
+forsuredb {
+    // should be the same as the applicationId from the android extension
+    applicationPackageName = 'com.fsryan.forsuredb.jdbcexample'
+    // the fully-qualified class name of the parameterization of the SaveResult.
+    resultParameter = "com.fsryan.forsuredb.queryable.DirectLocator"
+    // The fully-qualified class name of the parameterization of the generated
+    // ForSure class. It is the class that stores a record before it is
+    // deleted/inserted/updated etc.
+    recordContainer = "com.fsryan.forsuredb.api.TypedRecordContainer"
+    // the assets directory of your app starting at your project's base directory
+    migrationDirectory = 'forsuredbjdbc-example/src/main/resources'
+    // Your application module's base directory
+    appProjectDirectory = 'forsuredbjdbc-example'
+    // (optional) this is the directory in which your META-INF/services files will go for your custom plugins
+    resourcesDirectory = 'forsuredbjdbc-example/src/main/resources'
+    // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
+//    fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
+    // (required) This is the glue that ties in your chosen DBMS. forsuresqlitelib 0.4.0 contains a version for SQLite,
+    // however, for Android projects, this must be used in conjunction with forsuredbandroid 0.9.+ because there are
+    // additional Android platform considerations here to allow for smooth integration with android.database.sqlite
+    dbmsIntegratorClass = 'com.fsryan.forsuredb.sqlitelib.SqlGenerator'
+}
