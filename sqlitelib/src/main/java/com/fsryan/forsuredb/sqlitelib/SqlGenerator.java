@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.api.FSOrdering;
 import com.fsryan.forsuredb.api.Finder;
 import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
@@ -85,25 +86,34 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap) {
-        if (tableName == null || tableName.isEmpty() || columnValueMap == null || columnValueMap.isEmpty()) {
+    public String newSingleRowInsertionSql(String tableName, List<String> columns) {
+        if (tableName == null || tableName.isEmpty() || columns == null || columns.isEmpty()) {
             return EMPTY_SQL;
         }
 
         final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
         final StringBuilder valueBuf = new StringBuilder();
 
-        for (Map.Entry<String, String> colValEntry : columnValueMap.entrySet()) {
-            final String columnName = colValEntry.getKey();
-            if (columnName.isEmpty() || columnExclusionFilter.contains(columnName)) {
+        for (String column : columns) {
+            if (column.isEmpty() || columnExclusionFilter.contains(column)) {
                 continue;   // <-- never insert _id, created, or modified columns
             }
-            final String val = colValEntry.getValue();
-            if (val != null && !val.isEmpty()) {
-                queryBuf.append(columnName).append(", ");
-                valueBuf.append("'").append(val).append("', ");
-            }
+            final String val = "?";
+            queryBuf.append(column).append(", ");
+            valueBuf.append('?').append(", ");
         }
+
+//        for (Map.Entry<String, String> colValEntry : columnValueMap.entrySet()) {
+//            final String columnName = colValEntry.getKey();
+//            if (columnName.isEmpty() || columnExclusionFilter.contains(columnName)) {
+//                continue;   // <-- never insert _id, created, or modified columns
+//            }
+//            final String val = colValEntry.getValue();
+//            if (val != null && !val.isEmpty()) {
+//                queryBuf.append(columnName).append(", ");
+//                valueBuf.append("'").append(val).append("', ");
+//            }
+//        }
 
         queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
         valueBuf.delete(valueBuf.length() - 2, valueBuf.length());  // <-- remove final ", "

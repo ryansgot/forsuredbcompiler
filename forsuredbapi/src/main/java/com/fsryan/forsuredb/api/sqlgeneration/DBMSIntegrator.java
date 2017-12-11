@@ -40,10 +40,10 @@ public interface DBMSIntegrator {
      *     a command to do nothing.
      * </p>
      * @param tableName the name of the table to which the row should be inserted
-     * @param columnValueMap map of columns to the values to be inserted
+     * @param columns map of columns to the values to be inserted
      * @return the raw SQL query for insertion of a record in the table.
      */
-    String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap);
+    String newSingleRowInsertionSql(String tableName, List<String> columns);
 
     /**
      * <p>

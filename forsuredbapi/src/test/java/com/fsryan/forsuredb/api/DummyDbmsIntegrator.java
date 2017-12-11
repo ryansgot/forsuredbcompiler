@@ -26,7 +26,7 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap) {
+    public String newSingleRowInsertionSql(String tableName, List<String> columns) {
         return "";
     }
 
