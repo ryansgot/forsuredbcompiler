@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.util.Date;
+import java.util.Random;
 import java.util.function.BiConsumer;
 
 
@@ -32,44 +33,42 @@ public class ExampleApp {
             TextTerminal<?> terminal = textIO.getTextTerminal();
             printGsonMessage(terminal, initialData);
 
-            /*
-    @FSColumn("date_column") Date dateColumn(Retriever retriever);
-             */
+            Random r = new Random();
 
             int intColumn = textIO.newIntInputReader()
-                    .withDefaultValue(42)
+                    .withDefaultValue(r.nextInt())
                     .read("int_column");
             Integer integerWrapperColumn = textIO.newIntInputReader()
-                    .withDefaultValue(42)
+                    .withDefaultValue(r.nextInt())
                     .read("integer_wrapper_column");
             long longColumn = textIO.newLongInputReader()
-                    .withDefaultValue(42L)
+                    .withDefaultValue(r.nextLong())
                     .read("long_column");
             Long longWrapperColumn = textIO.newLongInputReader()
-                    .withDefaultValue(42L)
+                    .withDefaultValue(r.nextLong())
                     .read("long_wrapper_column");
             float floatColumn = textIO.newFloatInputReader()
-                    .withDefaultValue(4.2F)
+                    .withDefaultValue(r.nextFloat())
                     .read("float_column");
             Float floatWrapperColumn = textIO.newFloatInputReader()
-                    .withDefaultValue(4.2F)
+                    .withDefaultValue(r.nextFloat())
                     .read("float_wrapper_column");
             double doubleColumn = textIO.newDoubleInputReader()
-                    .withDefaultValue(42.42D)
+                    .withDefaultValue(r.nextDouble())
                     .read("double_column");
             Double doubleWrapperColumn = textIO.newDoubleInputReader()
-                    .withDefaultValue(42.42D)
+                    .withDefaultValue(r.nextDouble())
                     .read("double_wrapper_column");
             byte[] byteArrayColumn = hexStringToByteArray(textIO.newStringInputReader()
-                    .withDefaultValue("0123456789ABCDEF")
+                    .withDefaultValue(Long.toHexString(r.nextLong()))
                     .read("byte_array_column (hex string)"));
             String stringColumn = textIO.newStringInputReader()
-                    .withDefaultValue("Hello, World!")
+                    .withDefaultValue("Hello, World!")      // <-- TODO: randomize
                     .read("string_column");
             BigInteger bigIntegerColumn = null;
             try {
                 bigIntegerColumn = new BigInteger(textIO.newStringInputReader()
-                        .withDefaultValue("42")
+                        .withDefaultValue(Long.toString(r.nextLong()))
                         .read("big_integer_column").replaceAll("[^0-9]", ""));
             } catch (NumberFormatException nfe) {
                 nfe.printStackTrace();
@@ -77,7 +76,7 @@ public class ExampleApp {
             BigDecimal bigDecimalColumn = null;
             try {
                 bigDecimalColumn = new BigDecimal(textIO.newStringInputReader()
-                        .withDefaultValue("42.42")
+                        .withDefaultValue(Double.toString(r.nextDouble()))
                         .read("big_decimal_column").replaceAll("[^0-9.]", ""));
             } catch (NumberFormatException nfe) {
                 nfe.printStackTrace();
