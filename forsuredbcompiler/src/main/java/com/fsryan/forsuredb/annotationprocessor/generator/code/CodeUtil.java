@@ -94,27 +94,37 @@ import static com.google.common.base.Strings.isNullOrEmpty;
     public static Object javaExampleOf(String qualifiedType) {
         switch (qualifiedType) {
             case "char":
+            case "java.lang.Character":
                 return 'a';
             case "byte":
+            case "java.lang.Byte":
                 return "(byte) 35";
             case "byte[]":
                 return "new byte[] {(byte) 35, (byte) 36}";
             case "boolean":
+            case "java.lang.Boolean":
                 return true;
             case "short":
+            case "java.lang.Short":
                 return 3;
             case "int":
+            case "java.lang.Integer":
                 return 65536;
             case "long":
+            case "java.lang.Long":
                 return "23545494583L";
             case "float":
+            case "java.lang.Float":
                 return "74.5F";
             case "double":
+            case "java.lang.Double":
                 return "75.5D";
             case "java.util.Date":
                 return "new Date()";
             case "java.math.BigDecimal":
                 return "BigDecimal.ONE";
+            case "java.math.BigInteger":
+                return "BigInteger.ONE";
             case "java.lang.String":
                 return "A String";
         }
