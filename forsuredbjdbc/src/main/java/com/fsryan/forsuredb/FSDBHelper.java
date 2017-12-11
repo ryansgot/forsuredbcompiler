@@ -153,7 +153,7 @@ public class FSDBHelper extends AbstractDBOpener {
     }
 
     private void executeSqlList(Connection db, List<String> sqlScript, String logPrefix) {
-        // TODO: batch this up
+        // TODO: batch this up and make it work with a prepared statement
         try {
             if (debugMode) {
                 for (String insertionSqlString : sqlScript) {

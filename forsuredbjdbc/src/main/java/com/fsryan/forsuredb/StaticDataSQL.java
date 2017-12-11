@@ -3,6 +3,7 @@ package com.fsryan.forsuredb;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.FSTableCreator;
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.fsryan.forsuredb.api.staticdata.StaticDataRetrieverFactory;
 
@@ -12,6 +13,7 @@ import java.util.*;
 
 /*package*/ class StaticDataSQL {
 
+    private final DBMSIntegrator sqlGenerator;
     private final Class<? extends FSGetApi> apiClass;
     private final String tableName;
     private final String staticDataAsset;
@@ -27,6 +29,15 @@ import java.util.*;
     }
 
     public StaticDataSQL(Class<? extends FSGetApi> apiClass, String tableName, String staticDataAsset, String staticDataRecordName) {
+        this(Sql.generator(), apiClass, tableName, staticDataAsset, staticDataRecordName);
+    }
+
+    StaticDataSQL(DBMSIntegrator sqlGenerator,
+                  Class<? extends FSGetApi> apiClass,
+                  String tableName,
+                  String staticDataAsset,
+                  String staticDataRecordName) {
+        this.sqlGenerator = sqlGenerator;
         this.apiClass = apiClass;
         this.tableName = tableName;
         this.staticDataAsset = staticDataAsset;
@@ -40,12 +51,14 @@ import java.util.*;
             return Collections.emptyList();
         }
 
-        List<String> insertionQueries = new ArrayList<>();
-        for (Map<String, String> rawRecord : getRawRecords()) {
-            insertionQueries.add(Sql.generator().newSingleRowInsertionSql(tableName, rawRecord));
-        }
-
-        return insertionQueries;
+        return Collections.emptyList();
+        // TODO
+//        List<String> insertionQueries = new ArrayList<>();
+//        for (Map<String, String> rawRecord : getRawRecords()) {
+//            insertionQueries.add(sqlGenerator.newSingleRowInsertionSql(tableName, rawRecord));
+//        }
+//
+//        return insertionQueries;
     }
 
     private List<Map<String, String>> getRawRecords() {

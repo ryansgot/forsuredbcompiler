@@ -201,11 +201,11 @@ public class AbstractDBOpener {
     }
 
     private static void setVersion(Connection db, int version) throws SQLException {
-        db.prepareStatement(String.format("PRAGMA user_version = %d", version));
+        db.prepareStatement(String.format("PRAGMA user_version = %d;", version)).execute();
     }
 
     private static int getVersion(@Nonnull Connection db) throws SQLException {
         ResultSet r = db.prepareStatement("PRAGMA user_version;").executeQuery();
-        return r.getInt(0);
+        return r.getInt(1); // <-- user_version
     }
 }
