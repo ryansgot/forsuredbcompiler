@@ -4,14 +4,13 @@ import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
-import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
+import com.fsryan.forsuredb.resultset.FSResultSet;
 
 import javax.annotation.Nonnull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordContainer> {
 
@@ -19,8 +18,6 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         Connection writeableDb();
         Connection readableDb();
     }
-
-    private static String[] idColumnReturn = new String[] {TableInfo.DEFAULT_PRIMARY_KEY_COLUMN};
 
     private static final DBProvider realProvider = new DBProvider() {
         @Nonnull
@@ -64,7 +61,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         final List<String> columns = new ArrayList<>(recordContainer.keySet());
         final String sql = sqlGenerator.newSingleRowInsertionSql(locator.table, columns);
 
-        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (int pos = 0; pos < columns.size(); pos++) {
                 bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
             }
@@ -102,15 +99,19 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
     @Override
     public Retriever query(FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
-        // TODO
-        throw new UnsupportedOperationException();
-//        final String[] p = formatProjection(projection);
-//        final String orderBy = Sql.generator().expressOrdering(orderings);
-//        final QueryCorrector qc = new QueryCorrector(locator.table, null, selection, orderBy);
-//        final String limit = qc.getLimit() > 0 ? "LIMIT " + qc.getLimit() : null;
-//        final boolean distinct = projection != null && projection.isDistinct();
-//        return (FSCursor) dbProvider.readableDb()
-//                .query(distinct, locator.table, p, qc.getSelection(true), qc.getSelectionArgs(), null, null, orderBy, limit);
+        SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, projection, selection, orderings);
+
+        try {
+            PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.sql);
+            if (pssql.replacements != null) {
+                for (int pos = 0; pos < pssql.replacements.length; pos++) {
+                    statement.setString(pos + 1, pssql.replacements[pos]);
+                }
+            }
+            return new FSResultSet(statement.executeQuery());
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.recordset;
+package com.fsryan.forsuredb.resultset;
 
 import com.fsryan.forsuredb.api.Retriever;
 
@@ -10,11 +10,11 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-public class FSRecordSet implements ResultSet, Retriever {
+public class FSResultSet implements ResultSet, Retriever {
 
     private ResultSet resultSet;
 
-    public FSRecordSet(ResultSet resultSet) {
+    public FSResultSet(ResultSet resultSet) {
         this.resultSet = resultSet;
     }
 
@@ -1139,7 +1139,7 @@ public class FSRecordSet implements ResultSet, Retriever {
     @Override
     public boolean moveToFirst() {
         try {
-            return isBeforeFirst() ? moveToNext() : first();
+            return isBeforeFirst() ? next() : first();
         } catch (SQLException sqle) {
             return false;
         }
