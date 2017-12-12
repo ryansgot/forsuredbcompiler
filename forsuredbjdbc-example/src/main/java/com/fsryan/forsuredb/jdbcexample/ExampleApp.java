@@ -2,20 +2,18 @@ package com.fsryan.forsuredb.jdbcexample;
 
 import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.ForSureJdbcInfoFactory;
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 import com.fsryan.forsuredb.queryable.DirectLocator;
-import com.google.gson.Gson;
-import org.beryx.textio.TextIO;
-import org.beryx.textio.TextIoFactory;
-import org.beryx.textio.TextTerminal;
+import org.beryx.textio.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Month;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 import java.util.function.BiConsumer;
@@ -23,94 +21,138 @@ import java.util.function.BiConsumer;
 
 public class ExampleApp {
 
+    static final String dateFormatString = "yyyy-MM-dd HH:mm:ss.SSS";
+    static final DateFormat dateFormat = new SimpleDateFormat(dateFormatString);
+
     private static class AllTypesTableData implements BiConsumer<TextIO, String> {
 
-        private static final String dateFormatString = "yyyy-MM-dd HH:mm:ss.SSS";
-        private static final DateFormat dateFormat = new SimpleDateFormat(dateFormatString);
+        private static final int PRINT_RECORDS = 1;
+        private static final int INSERT_RECORD = PRINT_RECORDS + 1;
+        private static final int UPSERT_RECORD = INSERT_RECORD + 1;
+        private static final int QUIT = UPSERT_RECORD + 1;
 
         @Override
         public void accept(TextIO textIO, String initialData) {
             TextTerminal<?> terminal = textIO.getTextTerminal();
-            printGsonMessage(terminal, initialData);
 
-            Random r = new Random();
-
-            int intColumn = textIO.newIntInputReader()
-                    .withDefaultValue(r.nextInt())
-                    .read("int_column");
-            Integer integerWrapperColumn = textIO.newIntInputReader()
-                    .withDefaultValue(r.nextInt())
-                    .read("integer_wrapper_column");
-            long longColumn = textIO.newLongInputReader()
-                    .withDefaultValue(r.nextLong())
-                    .read("long_column");
-            Long longWrapperColumn = textIO.newLongInputReader()
-                    .withDefaultValue(r.nextLong())
-                    .read("long_wrapper_column");
-            float floatColumn = textIO.newFloatInputReader()
-                    .withDefaultValue(r.nextFloat())
-                    .read("float_column");
-            Float floatWrapperColumn = textIO.newFloatInputReader()
-                    .withDefaultValue(r.nextFloat())
-                    .read("float_wrapper_column");
-            double doubleColumn = textIO.newDoubleInputReader()
-                    .withDefaultValue(r.nextDouble())
-                    .read("double_column");
-            Double doubleWrapperColumn = textIO.newDoubleInputReader()
-                    .withDefaultValue(r.nextDouble())
-                    .read("double_wrapper_column");
-            byte[] byteArrayColumn = hexStringToByteArray(textIO.newStringInputReader()
-                    .withDefaultValue(Long.toHexString(r.nextLong()))
-                    .read("byte_array_column (hex string)"));
-            String stringColumn = textIO.newStringInputReader()
-                    .withDefaultValue("Hello, World!")      // <-- TODO: randomize
-                    .read("string_column");
-            BigInteger bigIntegerColumn = null;
-            try {
-                bigIntegerColumn = new BigInteger(textIO.newStringInputReader()
-                        .withDefaultValue(Long.toString(r.nextLong()))
-                        .read("big_integer_column").replaceAll("[^0-9]", ""));
-            } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
-            }
-            BigDecimal bigDecimalColumn = null;
-            try {
-                bigDecimalColumn = new BigDecimal(textIO.newStringInputReader()
-                        .withDefaultValue(Double.toString(r.nextDouble()))
-                        .read("big_decimal_column").replaceAll("[^0-9.]", ""));
-            } catch (NumberFormatException nfe) {
-                nfe.printStackTrace();
-            }
-            Date dateColumn = null;
-            try {
-                dateColumn = dateFormat.parse(textIO.newStringInputReader()
-                        .withDefaultValue(dateFormat.format(new Date()))
-                        .read("date_column (" + dateFormatString + ")"));
-            } catch (ParseException pe) {
-                pe.printStackTrace();
+            int selection = 0;
+            while (selection != 4) {
+                selection = prompt(textIO);
+                switch (selection) {
+                    case PRINT_RECORDS:
+                        printRecords(textIO);
+                        break;
+                    case INSERT_RECORD:
+                        upsert(textIO, true);
+                        break;
+                    case UPSERT_RECORD:
+                        upsert(textIO, false);
+                        break;
+                    case QUIT:
+                        terminal.println("Thanks.");
+                        break;
+                }
+                terminal.println();
             }
 
-            SaveResult<DirectLocator> result = ForSure.allTypesTable().set()
-                    .bigDecimalColumn(bigDecimalColumn)
-                    .bigIntegerColumn(bigIntegerColumn)
-                    .byteArrayColumn(byteArrayColumn)
-                    .dateColumn(dateColumn)
-                    .doubleColumn(doubleColumn)
-                    .doubleWrapperColumn(doubleWrapperColumn)
-                    .floatColumn(floatColumn)
-                    .floatWrapperColumn(floatWrapperColumn)
-                    .intColumn(intColumn)
-                    .integerWrapperColumn(integerWrapperColumn)
-                    .longColumn(longColumn)
-                    .longWrapperColumn(longWrapperColumn)
-                    .stringColumn(stringColumn)
+            textIO.newStringInputReader()
+                    .withMinLength(0)
+                    .read("Press enter to terminate ...");
+            textIO.dispose();
+        }
+
+        private int prompt(TextIO textIO) {
+            return textIO.newIntInputReader()
+                    .withNumberedPossibleValues(1, 2, 3, 4)
+                    .withDefaultValue(4)
+                    .read(
+                            "Choose from the following options",
+                            "1. print records",
+                            "2. insert record",
+                            "3. upsert record",
+                            "4. quit"
+                    );
+        }
+
+        private void upsert(TextIO textIO, boolean newRecord) {
+            RecordModel recordModel = new RecordInputterWithRandomizedDefaults(textIO).createRecord();
+
+            AllTypesTableSetter setter = newRecord
+                    ? ForSure.allTypesTable().set()
+                    : ForSure.allTypesTable().find()
+                            .byId(textIO.newLongInputReader()
+                                    .read("ID of the record you want to upsert"))
+                            .then()
+                            .set();
+
+            SaveResult<DirectLocator> result = setter.bigDecimalColumn(recordModel.bigDecimalColumn)
+                    .bigIntegerColumn(recordModel.bigIntegerColumn)
+                    .byteArrayColumn(recordModel.byteArrayColumn)
+                    .dateColumn(recordModel.dateColumn)
+                    .doubleColumn(recordModel.doubleColumn)
+                    .doubleWrapperColumn(recordModel.doubleWrapperColumn)
+                    .floatColumn(recordModel.floatColumn)
+                    .floatWrapperColumn(recordModel.floatWrapperColumn)
+                    .intColumn(recordModel.intColumn)
+                    .integerWrapperColumn(recordModel.integerWrapperColumn)
+                    .longColumn(recordModel.longColumn)
+                    .longWrapperColumn(recordModel.longWrapperColumn)
+                    .stringColumn(recordModel.stringColumn)
                     .save();
 
             String inserted = result.inserted() == null ? "" : "DirectLocator{table=" + result.inserted().table + ",id=" +result.inserted().id +"}";
             textIO.getTextTerminal().print("SaveResult{inserted=" + inserted + ",rowsAffected=" + result.rowsAffected() + ",exception=" +result.exception() + "}");
+        }
 
-            textIO.newStringInputReader().withMinLength(0).read("\nPress enter to terminate...");
-            textIO.dispose();
+        private void printRecords(TextIO textIO) {
+            int selection = textIO.newIntInputReader()
+                    .withDefaultValue(1)
+                    .withPossibleValues(1, 2, 3)
+                    .read(
+                            "How would you like to return records?",
+                            "1. Print all records",
+                            "2. Print Record with id",
+                            "3. Enter search criteria"
+                    );
+
+            switch (selection) {
+                case 1:
+                    printAllRecords(textIO.getTextTerminal());
+                    break;
+                case 2:
+                    printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"));
+                    break;
+                case 3:
+                    printAllRecordsMatchingCriteria(textIO.getTextTerminal(), new RecordInputterWithNoDefaults(textIO).createRecord());
+            }
+        }
+
+        private void printAllRecords(TextTerminal<?> textTerminal) {
+            textTerminal.println("Fetching all records from database...");
+            try (Retriever r = ForSure.allTypesTable().get()) {
+                printRecordsForRetriever(textTerminal, r);
+            }
+        }
+
+        private void printRecordWithId(TextTerminal<?> textTerminal, long id) {
+            textTerminal.println("Fetching record " + id + " from database...");
+            try (Retriever r = ForSure.allTypesTable().get()) {
+                printRecordsForRetriever(textTerminal, r);
+            }
+        }
+
+        private void printAllRecordsMatchingCriteria(TextTerminal<?> textTerminal, RecordModel record) {
+            // TODO
+        }
+
+        private void printRecordsForRetriever(TextTerminal<?> textTerminal, Retriever r) {
+            if (r.moveToFirst()) {
+                do {
+                    textTerminal.println(RecordModel.fromRetriever(r).toString());
+                } while (r.moveToNext());
+            } else {
+                textTerminal.println("No records found");
+            }
         }
     }
 
@@ -123,15 +165,6 @@ public class ExampleApp {
         new AllTypesTableData().accept(textIO, null);
     }
 
-    static void printGsonMessage(TextTerminal<?> terminal, String initData) {
-        if(initData != null && !initData.isEmpty()) {
-            String message = new Gson().fromJson(initData, String.class);
-            if(message != null && !message.isEmpty()) {
-                terminal.println(message);
-            }
-        }
-    }
-
     static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -140,5 +173,214 @@ public class ExampleApp {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    private static abstract class RecordInputter {
+
+        private final TextIO textIO;
+
+        RecordInputter(TextIO textIO) {
+            this.textIO = textIO;
+        }
+
+        final RecordModel createRecord() {
+            RecordModel ret = new RecordModel();
+            ret.intColumn = readIntColumn("int_column");
+            ret.integerWrapperColumn = readIntColumn("integer_wrapper_column");
+            ret.longColumn = readLongColumn("long_column");
+            ret.longWrapperColumn = readLongColumn("long_wrapper_column");
+            ret.floatColumn = readFloatColumn("float_column");
+            ret.floatWrapperColumn = readFloatColumn("float_wrapper_column");
+            ret.doubleColumn = readDoubleColumn("double_column");
+            ret.doubleWrapperColumn = readDoubleColumn("double_wrapper_column");
+            ret.byteArrayColumn = hexStringToByteArray(readStringColumn(true, "byte_array_column"));
+            ret.stringColumn = readStringColumn(false, "string_column");
+            ret.bigIntegerColumn = new BigInteger(Long.toString(readLongColumn("big_integer_column")));
+            ret.bigDecimalColumn = new BigDecimal(Double.toString(readDoubleColumn("big_decimal_column")));
+            ret.dateColumn = readDateColumn("date_column");
+            return ret;
+        }
+
+        abstract Integer intSuggestion(String columnName);
+        abstract Long longSuggestion(String columnName);
+        abstract Float floatSuggestion(String columnName);
+        abstract Double doubleSuggestion(String columnName);
+        abstract String stringSuggestion(boolean limitedToHex, String columnName);
+        abstract Date dateSuggestion(DateFormat dateFormat, String columnName);
+
+        private Integer readIntColumn(String columnName) {
+            return textIO.newIntInputReader()
+                    .withDefaultValue(intSuggestion(columnName))
+                    .read(columnName);
+        }
+
+        private Long readLongColumn(String columnName) {
+            return textIO.newLongInputReader()
+                    .withDefaultValue(longSuggestion(columnName))
+                    .read(columnName);
+        }
+
+        private Float readFloatColumn(String columnName) {
+            return textIO.newFloatInputReader()
+                    .withDefaultValue(floatSuggestion(columnName))
+                    .read(columnName);
+        }
+
+        private Double readDoubleColumn(String columnName) {
+            return textIO.newDoubleInputReader()
+                    .withDefaultValue(doubleSuggestion(columnName))
+                    .read(columnName);
+        }
+
+        private String readStringColumn(boolean forceHex, String columnName) {
+            return textIO.newStringInputReader()
+                    .withDefaultValue(stringSuggestion(forceHex, columnName))
+                    .read(columnName);
+        }
+
+        private Date readDateColumn(String columnName) {
+            try {
+                return dateFormat.parse(textIO.newStringInputReader()
+                        .withDefaultValue(dateFormat.format(new Date()))
+                        .read(columnName + " (" + dateFormatString + ")"));
+            } catch (ParseException pe) {
+                textIO.getTextTerminal().println("Invalid input format. Must use format:" + dateFormatString);
+            }
+            return readDateColumn(columnName);
+        }
+    }
+
+    private static class RecordInputterWithRandomizedDefaults extends RecordInputter {
+
+        private final Random r;
+
+        RecordInputterWithRandomizedDefaults(TextIO textIO) {
+            super(textIO);
+            r = new Random();
+        }
+
+        @Override
+        Integer intSuggestion(String columnName) {
+            return r.nextInt();
+        }
+
+        @Override
+        Long longSuggestion(String columnName) {
+            return r.nextLong();
+        }
+
+        @Override
+        Float floatSuggestion(String columnName) {
+            return r.nextFloat();
+        }
+
+        @Override
+        Double doubleSuggestion(String columnName) {
+            return r.nextDouble();
+        }
+
+        @Override
+        String stringSuggestion(boolean limitedToHex, String columnName) {
+            // TODO: randomize the non-hex string
+            return limitedToHex ? Long.toHexString(r.nextLong()) : "Hello, World!";
+        }
+
+        @Override
+        Date dateSuggestion(DateFormat dateFormat, String columnName) {
+            return new Date(r.nextLong());
+        }
+    }
+
+    private static class RecordInputterWithNoDefaults extends RecordInputter {
+
+        RecordInputterWithNoDefaults(TextIO textIO) {
+            super(textIO);
+        }
+
+        @Override
+        Integer intSuggestion(String columnName) {
+            return null;
+        }
+
+        @Override
+        Long longSuggestion(String columnName) {
+            return null;
+        }
+
+        @Override
+        Float floatSuggestion(String columnName) {
+            return null;
+        }
+
+        @Override
+        Double doubleSuggestion(String columnName) {
+            return null;
+        }
+
+        @Override
+        String stringSuggestion(boolean limitedToHex, String columnName) {
+            return null;
+        }
+
+        @Override
+        Date dateSuggestion(DateFormat dateFormat, String columnName) {
+            return null;
+        }
+    }
+
+    private static class RecordModel {
+
+        private static AllTypesTable api = ForSure.allTypesTable().getApi();
+
+        Integer intColumn;
+        Integer integerWrapperColumn;
+        Long longColumn;
+        Long longWrapperColumn;
+        Float floatColumn;
+        Float floatWrapperColumn;
+        Double doubleColumn;
+        Double doubleWrapperColumn;
+        byte[] byteArrayColumn;
+        String stringColumn;
+        BigInteger bigIntegerColumn;
+        BigDecimal bigDecimalColumn;
+        Date dateColumn;
+
+        static RecordModel fromRetriever(Retriever r) {
+            RecordModel ret = new RecordModel();
+            ret.intColumn = api.intColumn(r);
+            ret.integerWrapperColumn = api.integerWrapperColumn(r);
+            ret.longColumn = api.longColumn(r);
+            ret.longWrapperColumn = api.longWrapperColumn(r);
+            ret.floatColumn = api.floatColumn(r);
+            ret.floatWrapperColumn = api.floatWrapperColumn(r);
+            ret.doubleColumn = api.doubleColumn(r);
+            ret.doubleWrapperColumn = api.doubleWrapperColumn(r);
+            ret.byteArrayColumn = api.byteArrayColumn(r);
+            ret.stringColumn = api.stringColumn(r);
+            ret.bigIntegerColumn = api.bigIntegerColumn(r);
+            ret.bigDecimalColumn = api.bigDecimalColumn(r);
+            ret.dateColumn = api.dateColumn(r);
+            return ret;
+        }
+
+        @Override
+        public String toString() {
+            return "RecordModel{" +
+                    "intColumn=" + intColumn +
+                    ", integerWrapperColumn=" + integerWrapperColumn +
+                    ", longColumn=" + longColumn +
+                    ", longWrapperColumn=" + longWrapperColumn +
+                    ", floatColumn=" + floatColumn +
+                    ", floatWrapperColumn=" + floatWrapperColumn +
+                    ", doubleColumn=" + doubleColumn +
+                    ", doubleWrapperColumn=" + doubleWrapperColumn +
+                    ", byteArrayColumn=" + Arrays.toString(byteArrayColumn) +
+                    ", stringColumn='" + stringColumn + '\'' +
+                    ", bigIntegerColumn=" + bigIntegerColumn +
+                    ", bigDecimalColumn=" + bigDecimalColumn +
+                    ", dateColumn=" + dateColumn +
+                    '}';
+        }
     }
 }
