@@ -28,6 +28,8 @@ dependencies {
     compile project(':sqlitelib')
     compile project(':forsuredbmodels-gson')
 
+    compile 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+
     compile 'org.beryx:text-io:3.0.0'   // <-- a library I found for making interactive command line apps
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
