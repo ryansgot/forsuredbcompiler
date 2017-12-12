@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
@@ -78,5 +79,15 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     @Override
     public String orKeyword() {
         return "";
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return false;
     }
 }

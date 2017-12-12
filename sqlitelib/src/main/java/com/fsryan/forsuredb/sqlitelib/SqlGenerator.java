@@ -17,11 +17,9 @@
  */
 package com.fsryan.forsuredb.sqlitelib;
 
-import com.fsryan.forsuredb.api.FSOrdering;
-import com.fsryan.forsuredb.api.Finder;
-import com.fsryan.forsuredb.api.OrderBy;
-import com.fsryan.forsuredb.api.RecordContainer;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
@@ -30,6 +28,9 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.buildQuery;
+import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.singleRecordInsertion;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -56,10 +57,13 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     // visible for testing
-    /*package*/ static final String EMPTY_SQL = ";";
     private static final Set<String> columnExclusionFilter = new HashSet<>(Arrays.asList("_id", "created", "modified"));
 
-    public SqlGenerator() {}
+    private final ProjectionHelper projectionHelper;
+
+    public SqlGenerator() {
+        projectionHelper = new ProjectionHelper(this);
+    }
 
     @Override
     public List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer serializer) {
@@ -88,21 +92,12 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public String newSingleRowInsertionSql(String tableName, List<String> columns) {
         if (tableName == null || tableName.isEmpty() || columns == null || columns.isEmpty()) {
-            return EMPTY_SQL;
+            return QueryBuilder.EMPTY_SQL;
         }
-
-        final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
-        final StringBuilder valueBuf = new StringBuilder();
-
-        for (String column : columns) {
-            if (column.isEmpty() || columnExclusionFilter.contains(column)) {
-                continue;   // <-- never insert _id, created, or modified columns
-            }
-            final String val = "?";
-            queryBuf.append(column).append(", ");
-            valueBuf.append('?').append(", ");
-        }
-
+        return singleRecordInsertion(tableName, columns);
+//        final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
+//        final StringBuilder valueBuf = new StringBuilder();
+//
 //        for (Map.Entry<String, String> colValEntry : columnValueMap.entrySet()) {
 //            final String columnName = colValEntry.getKey();
 //            if (columnName.isEmpty() || columnExclusionFilter.contains(columnName)) {
@@ -114,20 +109,20 @@ public class SqlGenerator implements DBMSIntegrator {
 //                valueBuf.append("'").append(val).append("', ");
 //            }
 //        }
-
-        queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
-        valueBuf.delete(valueBuf.length() - 2, valueBuf.length());  // <-- remove final ", "
-        return queryBuf.append(") VALUES (").append(valueBuf.toString()).append(");").toString();
+//
+//        queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
+//        valueBuf.delete(valueBuf.length() - 2, valueBuf.length());  // <-- remove final ", "
+//        return queryBuf.append(") VALUES (").append(valueBuf.toString()).append(");").toString();
     }
 
     @Override
     public String unambiguousColumn(String tableName, String columnName) {
-        return tableName + "." + columnName;
+        return tableName + '.' + columnName;
     }
 
     @Override
     public String unambiguousRetrievalColumn(String tableName, String columnName) {
-        return unambiguousColumn(tableName, columnName);
+        return tableName + '_' + columnName;
     }
 
     @Override
@@ -189,6 +184,24 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public String orKeyword() {
         return "OR";
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
+        final String[] p = projectionHelper.formatProjection(projection);
+        final String orderBy = expressOrdering(orderings);
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
+        final String limit = qc.getLimit() > 0 ? "LIMIT " + qc.getLimit() : null;
+        final boolean distinct = projection != null && projection.isDistinct();
+        return new SqlForPreparedStatement(
+                buildQuery(distinct, table, p, qc.getSelection(true), null, null, orderBy, limit),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return true;
     }
 
     private static boolean isMigrationHandledOnCreate(Migration m, Map<String, TableInfo> targetSchema) {

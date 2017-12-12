@@ -1,12 +1,13 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
 import com.fsryan.forsuredb.api.FSOrdering;
+import com.fsryan.forsuredb.api.FSProjection;
+import com.fsryan.forsuredb.api.FSSelection;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -142,4 +143,8 @@ public interface DBMSIntegrator {
      * @return the OR symbol/keyword
      */
     String orKeyword();
+
+    SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings);
+
+    boolean alwaysUnambiguouslyAliasColumns();
 }
