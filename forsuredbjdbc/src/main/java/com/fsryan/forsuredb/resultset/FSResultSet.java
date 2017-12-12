@@ -1139,7 +1139,7 @@ public class FSRecordSet implements ResultSet, Retriever {
     @Override
     public boolean moveToFirst() {
         try {
-            return first();
+            return isBeforeFirst() ? moveToNext() : first();
         } catch (SQLException sqle) {
             return false;
         }
