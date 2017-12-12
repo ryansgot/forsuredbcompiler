@@ -63,14 +63,14 @@ public class ExampleApp {
 
         private int prompt(TextIO textIO) {
             return textIO.newIntInputReader()
-                    .withNumberedPossibleValues(1, 2, 3, 4)
+                    .withNumberedPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, QUIT)
                     .withDefaultValue(4)
                     .read(
                             "Choose from the following options",
-                            "1. print records",
-                            "2. insert record",
-                            "3. upsert record",
-                            "4. quit"
+                            PRINT_RECORDS + ". print records",
+                            INSERT_RECORD + ". insert record",
+                            UPSERT_RECORD + ". upsert record",
+                            QUIT + ". quit"
                     );
         }
 
@@ -136,7 +136,11 @@ public class ExampleApp {
 
         private void printRecordWithId(TextTerminal<?> textTerminal, long id) {
             textTerminal.println("Fetching record " + id + " from database...");
-            try (Retriever r = ForSure.allTypesTable().get()) {
+            try (Retriever r = ForSure.allTypesTable()
+                    .find()
+                        .byId(id)
+                    .then()
+                    .get()) {
                 printRecordsForRetriever(textTerminal, r);
             }
         }
@@ -146,11 +150,13 @@ public class ExampleApp {
         }
 
         private void printRecordsForRetriever(TextTerminal<?> textTerminal, Retriever r) {
-            if (r.moveToFirst()) {
-                do {
-                    textTerminal.println(RecordModel.fromRetriever(r).toString());
-                } while (r.moveToNext());
-            } else {
+            boolean recordFound = false;
+            while (r.moveToNext()) {
+                recordFound = true;
+                textTerminal.println("     -----     ");
+                textTerminal.println(RecordModel.fromRetriever(r).toString());
+            }
+            if (!recordFound) {
                 textTerminal.println("No records found");
             }
         }
@@ -158,7 +164,12 @@ public class ExampleApp {
 
 
     public static void main(String[] args) {
-        FSDBHelper.initDebug("jdbc:sqlite:example.db", null, TableGenerator.generate(), new FSDbInfoGsonSerializer());
+        FSDBHelper.initDebug(
+                "jdbc:sqlite:example.db",
+                null,
+                TableGenerator.generate(),
+                new FSDbInfoGsonSerializer()
+        );
         ForSure.init(ForSureJdbcInfoFactory.inst());
 
         TextIO textIO = TextIoFactory.getTextIO();
@@ -206,7 +217,7 @@ public class ExampleApp {
         abstract Float floatSuggestion(String columnName);
         abstract Double doubleSuggestion(String columnName);
         abstract String stringSuggestion(boolean limitedToHex, String columnName);
-        abstract Date dateSuggestion(DateFormat dateFormat, String columnName);
+        abstract Date dateSuggestion(String columnName);
 
         private Integer readIntColumn(String columnName) {
             return textIO.newIntInputReader()
@@ -241,7 +252,7 @@ public class ExampleApp {
         private Date readDateColumn(String columnName) {
             try {
                 return dateFormat.parse(textIO.newStringInputReader()
-                        .withDefaultValue(dateFormat.format(new Date()))
+                        .withDefaultValue(dateFormat.format(dateSuggestion(columnName)))
                         .read(columnName + " (" + dateFormatString + ")"));
             } catch (ParseException pe) {
                 textIO.getTextTerminal().println("Invalid input format. Must use format:" + dateFormatString);
@@ -286,7 +297,7 @@ public class ExampleApp {
         }
 
         @Override
-        Date dateSuggestion(DateFormat dateFormat, String columnName) {
+        Date dateSuggestion(String columnName) {
             return new Date(r.nextLong());
         }
     }
@@ -323,7 +334,7 @@ public class ExampleApp {
         }
 
         @Override
-        Date dateSuggestion(DateFormat dateFormat, String columnName) {
+        Date dateSuggestion(String columnName) {
             return null;
         }
     }
@@ -332,6 +343,10 @@ public class ExampleApp {
 
         private static AllTypesTable api = ForSure.allTypesTable().getApi();
 
+        Long id;
+        Boolean deleted;
+        Date created;
+        Date modified;
         Integer intColumn;
         Integer integerWrapperColumn;
         Long longColumn;
@@ -348,6 +363,10 @@ public class ExampleApp {
 
         static RecordModel fromRetriever(Retriever r) {
             RecordModel ret = new RecordModel();
+            ret.id = api.id(r);
+            ret.created = api.created(r);
+            ret.deleted = api.deleted(r);
+            ret.modified = api.modified(r);
             ret.intColumn = api.intColumn(r);
             ret.integerWrapperColumn = api.integerWrapperColumn(r);
             ret.longColumn = api.longColumn(r);
@@ -367,7 +386,11 @@ public class ExampleApp {
         @Override
         public String toString() {
             return "RecordModel{" +
-                    "intColumn=" + intColumn +
+                    "id=" + id +
+                    ", deleted=" + deleted +
+                    ", created=" + dateFormat.format(created) +
+                    ", modified=" + dateFormat.format(modified) +
+                    ", intColumn=" + intColumn +
                     ", integerWrapperColumn=" + integerWrapperColumn +
                     ", longColumn=" + longColumn +
                     ", longWrapperColumn=" + longWrapperColumn +
@@ -379,7 +402,7 @@ public class ExampleApp {
                     ", stringColumn='" + stringColumn + '\'' +
                     ", bigIntegerColumn=" + bigIntegerColumn +
                     ", bigDecimalColumn=" + bigDecimalColumn +
-                    ", dateColumn=" + dateColumn +
+                    ", dateColumn=" + dateFormat.format(dateColumn) +
                     '}';
         }
     }
