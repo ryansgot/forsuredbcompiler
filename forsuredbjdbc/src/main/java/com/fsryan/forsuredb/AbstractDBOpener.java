@@ -15,42 +15,30 @@ public class AbstractDBOpener {
 
     @Nonnull private final String jdbcUrl;
     @Nonnull private final Properties connectionProps;
+    @Nonnull private final DBVersionUpdater versionUpdater;
     private final int newVersion;
-    private final int minimumSupportedVersion;
-
-    public AbstractDBOpener(@Nonnull String jdbcUrl, @Nullable Properties connectionProps, int newVersion) {
-        this(jdbcUrl, connectionProps, newVersion, 0);
-    }
 
     /**
-     * <p>accepts an integer minimumSupportedVersion as a convenience for upgrading very old
-     * versions of this database that are no longer supported. If a database with older version that
-     * minimumSupportedVersion is found, it is simply deleted and a new database is created with the
-     * given name and version
-     *
-     * @param jdbcUrl the jdbc connection url used to open a connection
-     * @param newVersion the required version of the database
-     * @param minimumSupportedVersion the minimum version that is supported to be upgraded to
-     *            {@code newVersion} via {@link #onUpgrade}. If the current database version is lower
-     *            than this, database is simply deleted and recreated with the version passed in
-     *            {@code version}. {@link #onBeforeDelete} is called before deleting the database
-     *            when this happens. This is 0 by default.
-     * @see #onBeforeDelete(Connection)
-     * @see #AbstractDBOpener(String, Properties, int)
-     * @see #onUpgrade(Connection, int, int)
+     * <p>
+     * @param jdbcUrl
+     * @param connectionProps
+     * @param versionUpdater
+     * @param newVersion
      */
-    public AbstractDBOpener(@Nonnull String jdbcUrl, @Nullable Properties connectionProps, int newVersion, int minimumSupportedVersion) {
+    public AbstractDBOpener(@Nonnull String jdbcUrl,
+                            @Nullable Properties connectionProps,
+                            @Nonnull DBVersionUpdater versionUpdater,
+                            int newVersion) {
         if (newVersion < 1) {
             throw new IllegalArgumentException("Version must be >= 1, was " + newVersion);
         }
         this.jdbcUrl = jdbcUrl;
         this.connectionProps = connectionProps == null ? new Properties() : connectionProps;
+        this.versionUpdater = versionUpdater;
         this.newVersion = newVersion;
-        this.minimumSupportedVersion = Math.max(0, minimumSupportedVersion);
-//        mOpenParamsBuilder.addOpenFlags(SQLiteDatabase.CREATE_IF_NECESSARY);
     }
 
-    protected Connection getDatabaseLocked(boolean writable) {
+    Connection getDatabaseLocked(boolean writable) throws SQLException {
         if (db != null) {
             try {
                 if (db.isClosed()) {
@@ -96,48 +84,34 @@ public class AbstractDBOpener {
 
             onConfigure(tempDb);
 
-            final int version = getVersion(tempDb);
+            final int version = versionUpdater.discoverVersion(tempDb);
             if (version != newVersion) {
                 if (tempDb.isReadOnly()) {
                     String m = String.format("Can't use read-only connection to upgrade from version %d to %d; jdbcUrl: %s", version, newVersion, jdbcUrl);
                     throw new SQLException(m);
                 }
-                if (version > 0 && version < minimumSupportedVersion) {
-                    // TODO: here, I think you want to do some inspection of the jdbcUrl to determine whether the
-                    // TODO: database is in-memory or an actual file on the device.
-                    // TODO: if in memory, you should be able to, through introspection, drop all databases.
-                    // TODO: if a file on the device, then you should be able to find the filename and delete the file
-//                    File databaseFile = new File(db.getPath());
-//                    onBeforeDelete(db);
-//                    db.close();
-//                    if (SQLiteDatabase.deleteDatabase(databaseFile)) {
-//                        mIsInitializing = false;
-//                        return getDatabaseLocked(writable);
-//                    } else {
-//                        throw new IllegalStateException("Unable to delete obsolete database "
-//                                + mName + " with version " + version);
-//                    }
-                } else {
-                    boolean prevAutoCommit = tempDb.getAutoCommit();
-                    if (prevAutoCommit) {
-                        tempDb.setAutoCommit(false);
-                    }
-                    try {
-                        if (version == 0) {
-                            onCreate(tempDb);
+                boolean prevAutoCommit = tempDb.getAutoCommit();
+                if (prevAutoCommit) {
+                    tempDb.setAutoCommit(false);
+                }
+                try {
+                    if (version == 0) {
+                        onCreate(tempDb);
+                    } else {
+                        if (version > newVersion) {
+                            onDowngrade(tempDb, version, newVersion);
                         } else {
-                            if (version > newVersion) {
-                                onDowngrade(tempDb, version, newVersion);
-                            } else {
-                                onUpgrade(tempDb, version, newVersion);
-                            }
+                            onUpgrade(tempDb, version, newVersion);
                         }
-                        setVersion(tempDb, newVersion);
-                    } finally {
-                        tempDb.commit();
-                        if (prevAutoCommit) {
-                            tempDb.setAutoCommit(true);
-                        }
+                    }
+                    versionUpdater.setVersion(tempDb, newVersion);
+                    tempDb.commit();
+                } catch (SQLException sqle) {
+                    tempDb.rollback();
+                    throw sqle;
+                } finally {
+                    if (prevAutoCommit) {
+                        tempDb.setAutoCommit(true);
                     }
                 }
             }
@@ -148,46 +122,64 @@ public class AbstractDBOpener {
             }
             this.db = tempDb;
             return tempDb;
-        } catch (SQLException sqle) {
-            throw new RuntimeException(sqle);
         } finally {
             mIsInitializing = false;
             if (tempDb != null && tempDb != this.db) {
-                try {
-                    tempDb.close();
-                } catch (SQLException sqle) {
-                    // TODO: determine what to do here
-                }
+                tempDb.close();
             }
         }
     }
 
-    public void onBeforeDelete(Connection db) {
+    /**
+     * <p>Called before {@link #onCreate}, {@link #onUpgrade(Connection, int, int)},
+     * {@link #onDowngrade(Connection, int, int)}, and {@link #onOpen(Connection)}.
+     * Don't modify the database here--just configure the database connection
+     * @param db the {@link Connection} to the database
+     * @throws SQLException that could be thrown when using the {@link Connection}
+     */
+    public void onConfigure(Connection db) throws SQLException {
         // empty implementation--override if necessary
     }
 
     /**
-     * <p>Called before {@link #onCreate}, {@link #onUpgrade}, {@link #onDowngrade}, or {@link #onOpen}
-     * are called. Don't modify the database here--just configure the database connection
+     * <p>Called before {@link #onUpgrade(Connection, int, int)},
+     * {@link #onDowngrade(Connection, int, int)}, and {@link #onOpen(Connection)}
      * @param db the {@link Connection} to the database
+     * @throws SQLException that could be thrown when using the {@link Connection}
      */
-    public void onConfigure(Connection db) {
+    public void onCreate(Connection db) throws SQLException {
         // empty implementation--override if necessary
     }
 
-    public void onCreate(Connection db) {
+    /**
+     * <p>Called when the discovered version is <i>GREATER THAN</i> the {@link #newVersion}
+     * @param db the {@link Connection} to the database
+     * @param version the existing version
+     * @param newVersion the version to migrate to
+     * @throws SQLException that could be thrown when using the {@link Connection}
+     */
+    public void onDowngrade(Connection db, int version, int newVersion) throws SQLException {
         // empty implementation--override if necessary
     }
 
-    public void onDowngrade(Connection db, int version, int newVersion) {
+    /**
+     * <p>Called when the discovered version is <i>LESS THAN</i> the {@link #newVersion}
+     * @param db the {@link Connection} to the database
+     * @param version the existing version
+     * @param newVersion the version to migrate to
+     * @throws SQLException that could be thrown when using the {@link Connection}
+     */
+    public void onUpgrade(Connection db, int version, int newVersion) throws SQLException {
         // empty implementation--override if necessary
     }
 
-    public void onUpgrade(Connection db, int version, int newVersion) {
-        // empty implementation--override if necessary
-    }
-
-    public void onOpen(Connection db) {
+    /**
+     * <p>Called when the database connection has been opened. You should check whether the
+     * database {@link Connection#isReadOnly()} prior to performing any write operations
+     * @param db the {@link Connection} to the database
+     * @throws SQLException that could be thrown when using the {@link Connection}
+     */
+    public void onOpen(Connection db) throws SQLException {
         // empty implementation--override if necessary
     }
 
@@ -198,14 +190,5 @@ public class AbstractDBOpener {
         Properties wrapped = new Properties(connectionProps);
         wrapped.setProperty("open_mode", "1");
         return wrapped;
-    }
-
-    private static void setVersion(Connection db, int version) throws SQLException {
-        db.prepareStatement(String.format("PRAGMA user_version = %d;", version)).execute();
-    }
-
-    private static int getVersion(@Nonnull Connection db) throws SQLException {
-        ResultSet r = db.prepareStatement("PRAGMA user_version;").executeQuery();
-        return r.getInt(1); // <-- user_version
     }
 }

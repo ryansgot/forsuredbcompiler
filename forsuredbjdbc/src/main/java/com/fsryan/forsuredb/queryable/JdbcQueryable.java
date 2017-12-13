@@ -15,20 +15,20 @@ import java.util.List;
 public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordContainer> {
 
     /*package*/ interface DBProvider {
-        Connection writeableDb();
-        Connection readableDb();
+        Connection writeableDb() throws SQLException;
+        Connection readableDb() throws SQLException;
     }
 
     private static final DBProvider realProvider = new DBProvider() {
         @Nonnull
         @Override
-        public Connection writeableDb() {
+        public Connection writeableDb() throws SQLException {
             return FSDBHelper.inst().getWritableDatabase();
         }
 
         @Nonnull
         @Override
-        public Connection readableDb() {
+        public Connection readableDb() throws SQLException {
             return FSDBHelper.inst().getReadableDatabase();
         }
     };
