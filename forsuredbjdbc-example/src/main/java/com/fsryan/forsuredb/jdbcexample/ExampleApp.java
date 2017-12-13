@@ -53,11 +53,9 @@ public class ExampleApp {
                         break;
                 }
                 terminal.println();
+                terminal.println();
             }
 
-            textIO.newStringInputReader()
-                    .withMinLength(0)
-                    .read("Press enter to terminate ...");
             textIO.dispose();
         }
 
@@ -100,8 +98,11 @@ public class ExampleApp {
                     .stringColumn(recordModel.stringColumn)
                     .save();
 
+            TextTerminal<?> terminal = textIO.getTextTerminal();
+            printDivider(terminal);
+
             String inserted = result.inserted() == null ? "" : "DirectLocator{table=" + result.inserted().table + ",id=" +result.inserted().id +"}";
-            textIO.getTextTerminal().print("SaveResult{inserted=" + inserted + ",rowsAffected=" + result.rowsAffected() + ",exception=" +result.exception() + "}");
+            terminal.print("SaveResult{inserted=" + inserted + ",rowsAffected=" + result.rowsAffected() + ",exception=" +result.exception() + "}");
         }
 
         private void printRecords(TextIO textIO) {
@@ -153,7 +154,7 @@ public class ExampleApp {
             boolean recordFound = false;
             while (r.moveToNext()) {
                 recordFound = true;
-                textTerminal.println("     -----     ");
+                printDivider(textTerminal);
                 textTerminal.println(RecordModel.fromRetriever(r).toString());
             }
             if (!recordFound) {
@@ -164,7 +165,7 @@ public class ExampleApp {
 
 
     public static void main(String[] args) {
-        FSDBHelper.initDebug(
+        FSDBHelper.initDebugSQLite(
                 "jdbc:sqlite:example.db",
                 null,
                 TableGenerator.generate(),
@@ -184,6 +185,10 @@ public class ExampleApp {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    private static void printDivider(TextTerminal<?> terminal) {
+        terminal.println("     -----     ");
     }
 
     private static abstract class RecordInputter {
