@@ -29,14 +29,16 @@ public class ExampleApp {
         private static final int PRINT_RECORDS = 1;
         private static final int INSERT_RECORD = PRINT_RECORDS + 1;
         private static final int UPSERT_RECORD = INSERT_RECORD + 1;
-        private static final int QUIT = UPSERT_RECORD + 1;
+        private static final int UPDATE_RECORD = UPSERT_RECORD + 1;
+        private static final int DELETE_RECORD = UPDATE_RECORD + 1;
+        private static final int QUIT = DELETE_RECORD + 1;
 
         @Override
         public void accept(TextIO textIO, String initialData) {
             TextTerminal<?> terminal = textIO.getTextTerminal();
 
             int selection = 0;
-            while (selection != 4) {
+            while (selection != QUIT) {
                 selection = prompt(textIO);
                 switch (selection) {
                     case PRINT_RECORDS:
@@ -47,6 +49,12 @@ public class ExampleApp {
                         break;
                     case UPSERT_RECORD:
                         upsert(textIO, false);
+                        break;
+                    case UPDATE_RECORD:
+                        update(textIO);
+                        break;
+                    case DELETE_RECORD:
+                        delete(textIO);
                         break;
                     case QUIT:
                         terminal.println("Thanks.");
@@ -61,13 +69,15 @@ public class ExampleApp {
 
         private int prompt(TextIO textIO) {
             return textIO.newIntInputReader()
-                    .withNumberedPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, QUIT)
-                    .withDefaultValue(4)
+                    .withNumberedPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, UPDATE_RECORD, DELETE_RECORD, QUIT)
+                    .withDefaultValue(QUIT)
                     .read(
                             "Choose from the following options",
                             PRINT_RECORDS + ". print records",
                             INSERT_RECORD + ". insert record",
                             UPSERT_RECORD + ". upsert record",
+                            UPDATE_RECORD + ". update record",
+                            DELETE_RECORD + ". delete record",
                             QUIT + ". quit"
                     );
         }
@@ -97,12 +107,7 @@ public class ExampleApp {
                     .longWrapperColumn(recordModel.longWrapperColumn)
                     .stringColumn(recordModel.stringColumn)
                     .save();
-
-            TextTerminal<?> terminal = textIO.getTextTerminal();
-            printDivider(terminal);
-
-            String inserted = result.inserted() == null ? "" : "DirectLocator{table=" + result.inserted().table + ",id=" +result.inserted().id +"}";
-            terminal.print("SaveResult{inserted=" + inserted + ",rowsAffected=" + result.rowsAffected() + ",exception=" +result.exception() + "}");
+            summarizeSave(textIO, result);
         }
 
         private void printRecords(TextIO textIO) {
@@ -146,6 +151,54 @@ public class ExampleApp {
             }
         }
 
+        private void update(TextIO textIO) {
+            RecordModel recordModel = new RecordInputterWithRandomizedDefaults(textIO).createRecord();
+            SaveResult<DirectLocator> result = ForSure.allTypesTable()
+                    .find()
+                        .byId(textIO.newLongInputReader().read("record id"))
+                    .then()
+                    .set().bigDecimalColumn(recordModel.bigDecimalColumn)
+                    .bigIntegerColumn(recordModel.bigIntegerColumn)
+                    .byteArrayColumn(recordModel.byteArrayColumn)
+                    .dateColumn(recordModel.dateColumn)
+                    .doubleColumn(recordModel.doubleColumn)
+                    .doubleWrapperColumn(recordModel.doubleWrapperColumn)
+                    .floatColumn(recordModel.floatColumn)
+                    .floatWrapperColumn(recordModel.floatWrapperColumn)
+                    .intColumn(recordModel.intColumn)
+                    .integerWrapperColumn(recordModel.integerWrapperColumn)
+                    .longColumn(recordModel.longColumn)
+                    .longWrapperColumn(recordModel.longWrapperColumn)
+                    .stringColumn(recordModel.stringColumn)
+                    .save();
+            summarizeSave(textIO, result);
+        }
+
+        private void delete(TextIO textIO) {
+            TextTerminal<?> terminal = textIO.getTextTerminal();
+            printDivider(terminal);
+            terminal.println("Deleting a record");
+
+            boolean hard = textIO.newBooleanInputReader().read("hard delete?");
+            if (!hard) {
+                summarizeSave(textIO, ForSure.allTypesTable()
+                        .find()
+                            .byId(textIO.newLongInputReader().read("record id"))
+                        .then()
+                        .set()
+                        .softDelete());
+            } else {
+                int hardDeleted = ForSure.allTypesTable()
+                        .find()
+                            .byId(textIO.newLongInputReader().read("record id"))
+                        .then()
+                        .set()
+                        .hardDelete();
+                terminal.println(hardDeleted == 1 ? "Deleted" : "Failed");
+                printDivider(terminal);
+            }
+        }
+
         private void printAllRecordsMatchingCriteria(TextTerminal<?> textTerminal, RecordModel record) {
             // TODO
         }
@@ -160,6 +213,15 @@ public class ExampleApp {
             if (!recordFound) {
                 textTerminal.println("No records found");
             }
+        }
+
+        private void summarizeSave(TextIO textIO, SaveResult<DirectLocator> result) {
+            TextTerminal<?> terminal = textIO.getTextTerminal();
+            printDivider(terminal);
+
+            String inserted = result.inserted() == null ? "" : "DirectLocator{table=" + result.inserted().table + ",id=" +result.inserted().id +"}";
+            terminal.print("SaveResult{inserted=" + inserted + ",rowsAffected=" + result.rowsAffected() + ",exception=" +result.exception() + "}");
+
         }
     }
 

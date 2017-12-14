@@ -29,8 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.buildQuery;
-import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.singleRecordInsertion;
+import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -202,6 +201,24 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public boolean alwaysUnambiguouslyAliasColumns() {
         return true;
+    }
+
+    @Override
+    public SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
+        return new SqlForPreparedStatement(
+                buildUpdate(table, updateColumns, qc.getSelection(false)),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
+    public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
+        return new SqlForPreparedStatement(
+                buildDelete(table, qc.getSelection(false)),
+                qc.getSelectionArgs()
+        );
     }
 
     private static boolean isMigrationHandledOnCreate(Migration m, Map<String, TableInfo> targetSchema) {

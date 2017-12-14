@@ -90,4 +90,9 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     public boolean alwaysUnambiguouslyAliasColumns() {
         return false;
     }
+
+    @Override
+    public SqlForPreparedStatement createUpdateSql(String table, RecordContainer recordContainer, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
 }

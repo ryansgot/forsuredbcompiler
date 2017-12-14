@@ -33,6 +33,27 @@ class QueryBuilder {
         return queryBuf.append(')').toString();
     }
 
+    public static String buildUpdate(String table, List<String> updateColumns, String whereClause) {
+        StringBuilder queryBuf = new StringBuilder(120);
+        queryBuf.append("UPDATE ");
+//        sql.append(CONFLICT_VALUES[conflictAlgorithm]); TODO
+        queryBuf.append(table);
+        queryBuf.append(" SET ");
+        int i = 0;
+        for (String column : updateColumns) {
+            queryBuf.append((i > 0 ? "," : ""))
+                    .append(column)
+                    .append("=?");
+            i++;
+        }
+        appendClause(queryBuf, " WHERE ", whereClause);
+        return queryBuf.toString();
+    }
+
+    public static String buildDelete(String table, String whereClause) {
+        return "DELETE FROM " + table + (whereClause == null || whereClause.isEmpty() ? "" : " WHERE " + whereClause);
+    }
+
     public static String buildQuery(boolean distinct, String tables, String[] columns, String where, String groupBy, String having, String orderBy, String limit) {
         if ((groupBy == null || groupBy.isEmpty()) && !(having == null || having.isEmpty())) {
             throw new IllegalArgumentException("HAVING clauses are only permitted when using a groupBy clause");
@@ -41,24 +62,24 @@ class QueryBuilder {
             throw new IllegalArgumentException("invalid LIMIT clauses:" + limit);
         }
 
-        StringBuilder query = new StringBuilder(120);
-        query.append("SELECT ");
+        StringBuilder queryBuf = new StringBuilder(120);
+        queryBuf.append("SELECT ");
         if (distinct) {
-            query.append("DISTINCT ");
+            queryBuf.append("DISTINCT ");
         }
         if (columns != null && columns.length != 0) {
-            appendColumns(query, columns);
+            appendColumns(queryBuf, columns);
         } else {
-            query.append("* ");
+            queryBuf.append("* ");
         }
-        query.append("FROM ");
-        query.append(tables);
-        appendClause(query, " WHERE ", where);
-        appendClause(query, " GROUP BY ", groupBy);
-        appendClause(query, " HAVING ", having);
-        appendClause(query, " ORDER BY ", orderBy);
-        appendClause(query, " LIMIT ", limit);
-        return query.append(';').toString();
+        queryBuf.append("FROM ");
+        queryBuf.append(tables);
+        appendClause(queryBuf, " WHERE ", where);
+        appendClause(queryBuf, " GROUP BY ", groupBy);
+        appendClause(queryBuf, " HAVING ", having);
+        appendClause(queryBuf, " ORDER BY ", orderBy);
+        appendClause(queryBuf, " LIMIT ", limit);
+        return queryBuf.append(';').toString();
     }
 
     private static void appendColumns(StringBuilder buf, String[] columns) {

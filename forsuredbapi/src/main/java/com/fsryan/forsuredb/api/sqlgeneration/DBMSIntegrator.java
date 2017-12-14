@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.api.sqlgeneration;
 import com.fsryan.forsuredb.api.FSOrdering;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.FSSelection;
+import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
@@ -147,4 +148,8 @@ public interface DBMSIntegrator {
     SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings);
 
     boolean alwaysUnambiguouslyAliasColumns();
+
+    SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings);
+
+    SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings);
 }

@@ -80,21 +80,34 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
     @Override
     public int update(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> orderings) {
-        throw new UnsupportedOperationException();
-        // TODO
-//        String orderingString = sqlGenerator.expressOrdering(orderings);
-//        final QueryCorrector qc = new QueryCorrector(locator.table, null, selection, orderingString);
-//        return dbProvider.writeableDb()
-//                .update(locator.table, recordContainer.getContentValues(), qc.getSelection(false), qc.getSelectionArgs());
+        final List<String> columns = new ArrayList<>(recordContainer.keySet());
+        SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.sql)) {
+            int pos;
+            for (pos = 0; pos < columns.size(); pos++) {
+                bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
+            }
+            for (String replacement : pssql.replacements) {
+                pStatement.setString(pos + 1, replacement);
+                pos++;
+            }
+            return pStatement.executeUpdate();
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
     }
 
     @Override
     public int delete(FSSelection selection, List<FSOrdering> orderings) {
-        // TODO
-        throw new UnsupportedOperationException();
-//        final QueryCorrector qc = new QueryCorrector(locator.table, null, selection, Sql.generator().expressOrdering(orderings));
-//        return dbProvider.writeableDb()
-//                .delete(locator.table, qc.getSelection(false), qc.getSelectionArgs());
+        SqlForPreparedStatement pssql = sqlGenerator.createDeleteSql(locator.table, selection, orderings);
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.sql)) {
+            for (int pos = 0; pos < pssql.replacements.length; pos++) {
+                pStatement.setString(pos + 1, pssql.replacements[pos]);
+            }
+            return pStatement.executeUpdate();
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
     }
 
     @Override

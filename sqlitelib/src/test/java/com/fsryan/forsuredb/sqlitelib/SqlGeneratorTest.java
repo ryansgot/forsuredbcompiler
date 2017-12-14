@@ -15,6 +15,7 @@ import static com.fsryan.forsuredb.sqlitelib.TestData.TABLE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+//TODO: fix this test
 public class SqlGeneratorTest {
 
     @RunWith(Parameterized.class)
