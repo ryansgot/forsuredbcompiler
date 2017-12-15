@@ -30,7 +30,7 @@ class QueryBuilder {
             queryBuf.append("?, ");
         }
         queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
-        return queryBuf.append(')').toString();
+        return queryBuf.append(");").toString();
     }
 
     public static String buildUpdate(String table, List<String> updateColumns, String whereClause) {

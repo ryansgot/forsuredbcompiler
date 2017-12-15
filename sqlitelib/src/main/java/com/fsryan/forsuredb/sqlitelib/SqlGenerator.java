@@ -94,24 +94,6 @@ public class SqlGenerator implements DBMSIntegrator {
             return QueryBuilder.EMPTY_SQL;
         }
         return singleRecordInsertion(tableName, columns);
-//        final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
-//        final StringBuilder valueBuf = new StringBuilder();
-//
-//        for (Map.Entry<String, String> colValEntry : columnValueMap.entrySet()) {
-//            final String columnName = colValEntry.getKey();
-//            if (columnName.isEmpty() || columnExclusionFilter.contains(columnName)) {
-//                continue;   // <-- never insert _id, created, or modified columns
-//            }
-//            final String val = colValEntry.getValue();
-//            if (val != null && !val.isEmpty()) {
-//                queryBuf.append(columnName).append(", ");
-//                valueBuf.append("'").append(val).append("', ");
-//            }
-//        }
-//
-//        queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
-//        valueBuf.delete(valueBuf.length() - 2, valueBuf.length());  // <-- remove final ", "
-//        return queryBuf.append(") VALUES (").append(valueBuf.toString()).append(");").toString();
     }
 
     @Override
