@@ -54,6 +54,32 @@ class QueryBuilder {
         return "DELETE FROM " + table + (whereClause == null || whereClause.isEmpty() ? "" : " WHERE " + whereClause);
     }
 
+    public static String buildJoinQuery(String table,
+                                  String[] projection,
+                                  String joinClause,
+                                  String whereClause,
+                                  String orderBy,
+                                  int limit) {
+        final StringBuilder buf = new StringBuilder("SELECT ");
+
+        if (projection == null || projection.length == 0) {
+            buf.append("* ");
+        } else {
+            for (String column : projection) {
+                buf.append(column).append(", ");
+            }
+            buf.delete(buf.length() - 2, buf.length());
+        }
+
+        return buf.append(" FROM ").append(table)
+                .append(joinClause.isEmpty() ? "" : " " + joinClause)
+                .append(whereClause.isEmpty() ? "" : " WHERE " + whereClause)
+                .append(orderBy.isEmpty() ? "" : " ORDER BY " + orderBy)
+                .append(limit > 0 ? " LIMIT " + limit : "")
+                .append(';')
+                .toString();
+    }
+
     public static String buildQuery(boolean distinct, String tables, String[] columns, String where, String groupBy, String having, String orderBy, String limit) {
         if ((groupBy == null || groupBy.isEmpty()) && !(having == null || having.isEmpty())) {
             throw new IllegalArgumentException("HAVING clauses are only permitted when using a groupBy clause");

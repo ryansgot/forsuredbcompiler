@@ -87,12 +87,22 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
+    public SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
     public boolean alwaysUnambiguouslyAliasColumns() {
         return false;
     }
 
     @Override
-    public SqlForPreparedStatement createUpdateSql(String table, RecordContainer recordContainer, FSSelection selection, List<FSOrdering> orderings) {
-        return new SqlForPreparedStatement("", new String[0]);
+    public SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
+    }
+
+    @Override
+    public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
     }
 }

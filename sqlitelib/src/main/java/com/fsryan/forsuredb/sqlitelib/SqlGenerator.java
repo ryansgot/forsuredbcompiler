@@ -199,6 +199,20 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
+    public SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, joins, selection, expressOrdering(orderings));
+        final String[] p = projectionHelper.formatProjection(projections);
+        final String joinStr = qc.getJoinString();
+        final String where = qc.getSelection(true);
+        final String orderBy = qc.getOrderBy();
+        final int limit = qc.getLimit();
+        return new SqlForPreparedStatement(
+                buildJoinQuery(table, p, joinStr, where, orderBy, limit),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
     public boolean alwaysUnambiguouslyAliasColumns() {
         return true;
     }
