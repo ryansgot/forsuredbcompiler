@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.util;
+package com.fsryan.forsuredb.jdbcexample.util;
 
 import java.util.Date;
 import java.util.Random;

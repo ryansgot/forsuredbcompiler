@@ -1,11 +1,11 @@
-package com.fsryan.forsuredb.util;
+package com.fsryan.forsuredb.jdbcexample.util;
 
 import org.beryx.textio.TextIO;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static com.fsryan.forsuredb.util.StringUtil.hexStringToByteArray;
+import static com.fsryan.forsuredb.jdbcexample.util.StringUtil.hexStringToByteArray;
 
 public class RecordModelInputter extends RecordInputter<RecordModel> {
 

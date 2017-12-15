@@ -32,6 +32,15 @@ public class MyPojo {
         this.composedPojo = composedPojo;
     }
 
+    @Override
+    public String toString() {
+        return "MyPojo{" +
+                "awesomeInt=" + awesomeInt +
+                ", awesomeString='" + awesomeString + '\'' +
+                ", composedPojo=" + composedPojo +
+                '}';
+    }
+
     public static class ComposedPojo {
         @SerializedName("composed_int") private int composedInt;
         @SerializedName("composed_string") private String composedString;
@@ -50,6 +59,14 @@ public class MyPojo {
 
         public void setComposedString(String composedString) {
             this.composedString = composedString;
+        }
+
+        @Override
+        public String toString() {
+            return "ComposedPojo{" +
+                    "composedInt=" + composedInt +
+                    ", composedString='" + composedString + '\'' +
+                    '}';
         }
     }
 }

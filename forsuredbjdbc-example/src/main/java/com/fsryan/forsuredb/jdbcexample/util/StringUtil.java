@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.util;
+package com.fsryan.forsuredb.jdbcexample.util;
 
 public class StringUtil {
 

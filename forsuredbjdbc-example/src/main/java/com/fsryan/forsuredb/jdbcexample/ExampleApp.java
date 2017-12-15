@@ -2,13 +2,14 @@ package com.fsryan.forsuredb.jdbcexample;
 
 import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.ForSureJdbcInfoFactory;
+import com.fsryan.forsuredb.api.FSJoin;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 import com.fsryan.forsuredb.queryable.DirectLocator;
-import com.fsryan.forsuredb.util.MyPojoInputter;
-import com.fsryan.forsuredb.util.RecordModel;
-import com.fsryan.forsuredb.util.RecordModelInputter;
+import com.fsryan.forsuredb.jdbcexample.util.MyPojoInputter;
+import com.fsryan.forsuredb.jdbcexample.util.RecordModel;
+import com.fsryan.forsuredb.jdbcexample.util.RecordModelInputter;
 import org.beryx.textio.*;
 
 import java.text.DateFormat;
@@ -29,6 +30,13 @@ public class ExampleApp {
         private static final int UPDATE_RECORD = UPSERT_RECORD + 1;
         private static final int DELETE_RECORD = UPDATE_RECORD + 1;
         private static final int QUIT = DELETE_RECORD + 1;
+
+        private static final int PRINT_ALL_RECORDS_ALL_TYPES = 1;
+        private static final int PRINT_ALL_RECORDS_DOC_STORE = PRINT_ALL_RECORDS_ALL_TYPES + 1;
+        private static final int PRINT_ALL_RECORDS_JOINED = PRINT_ALL_RECORDS_DOC_STORE + 1;
+        private static final int PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID = PRINT_ALL_RECORDS_JOINED + 1;
+        private static final int PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID = PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + 1;
+        private static final int PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID = PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + 1;
 
         @Override
         public void accept(TextIO textIO, String initialData) {
@@ -109,22 +117,7 @@ public class ExampleApp {
                             .read("ID of the record you want to upsert"))
                     .then()
                     .set();
-
-            SaveResult<DirectLocator> result = setter.bigDecimalColumn(recordModel.getBigDecimalColumn())
-                    .bigIntegerColumn(recordModel.getBigIntegerColumn())
-                    .byteArrayColumn(recordModel.getByteArrayColumn())
-                    .dateColumn(recordModel.getDateColumn())
-                    .doubleColumn(recordModel.getDoubleColumn())
-                    .doubleWrapperColumn(recordModel.getDoubleWrapperColumn())
-                    .floatColumn(recordModel.getFloatColumn())
-                    .floatWrapperColumn(recordModel.getFloatWrapperColumn())
-                    .intColumn(recordModel.getIntColumn())
-                    .integerWrapperColumn(recordModel.getIntegerWrapperColumn())
-                    .longColumn(recordModel.getLongColumn())
-                    .longWrapperColumn(recordModel.getLongWrapperColumn())
-                    .stringColumn(recordModel.getStringColumn())
-                    .save();
-            summarizeSave(textIO, result);
+            summarizeSave(textIO, saveRecordModel(setter, recordModel));
         }
 
         private void upsertDocStore(TextIO textIO, boolean newRecord) {
@@ -142,71 +135,142 @@ public class ExampleApp {
 
             summarizeSave(textIO, setter.object(myPojo).save());
         }
+        /*
+                private static final int PRINT_ALL_RECORDS_ALL_TYPES = 1;
+        private static final int PRINT_ALL_RECORDS_DOC_STORE = PRINT_ALL_RECORDS_ALL_TYPES + 1;
+        private static final int PRINT_ALL_RECORDS_JOINED = PRINT_ALL_RECORDS_DOC_STORE + 1;
+        private static final int PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID = PRINT_ALL_RECORDS_JOINED + 1;
+        private static final int PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID = PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + 1;
+        private static final int PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID = PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + 1;
+         */
 
         private void printRecords(TextIO textIO) {
             int selection = textIO.newIntInputReader()
                     .withDefaultValue(1)
-                    .withPossibleValues(1, 2, 3)
-                    .read(
-                            "How would you like to return records?",
-                            "1. Print all records",
-                            "2. Print Record with id",
-                            "3. Enter search criteria"
+                    .withPossibleValues(
+                            PRINT_ALL_RECORDS_ALL_TYPES,
+                            PRINT_ALL_RECORDS_DOC_STORE,
+                            PRINT_ALL_RECORDS_JOINED,
+                            PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID,
+                            PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID,
+                            PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID
+                    ).read(
+                            "How would you like to print records?",
+                            PRINT_ALL_RECORDS_ALL_TYPES + ". Print all records of all_types table",
+                            PRINT_ALL_RECORDS_DOC_STORE + ". Print all records of doc store table",
+                            PRINT_ALL_RECORDS_JOINED + ". Print the joined records (the doc store table references the all_types table)",
+                            PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + ". Print specific record of all_types table",
+                            PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + ". Print specific record of doc store table",
+                            PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID + ". Print specific joined record (the doc store table references the all_types table)"
                     );
 
             switch (selection) {
-                case 1:
-                    printAllRecords(textIO.getTextTerminal());
+                case PRINT_ALL_RECORDS_ALL_TYPES:
+                    printAllRecords(textIO.getTextTerminal(), true, false);
                     break;
-                case 2:
-                    printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"));
+                case PRINT_ALL_RECORDS_DOC_STORE:
+                    printAllRecords(textIO.getTextTerminal(), false, false);
                     break;
-                case 3:
-                    RecordModel recordModel = RecordModelInputter.withoutSuggestions(textIO).createRecord();
-                    printAllRecordsMatchingCriteria(textIO.getTextTerminal(), recordModel);
+                case PRINT_ALL_RECORDS_JOINED:
+                    printAllRecords(textIO.getTextTerminal(), true, true);
+                    break;
+                case PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID:
+                    printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"), true, false);
+                    break;
+                case PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID:
+                    printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"), false, false);
+                    break;
+                case PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID:
+                    printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"), true, true);
+                    break;
             }
         }
 
-        private void printAllRecords(TextTerminal<?> textTerminal) {
+        private void printAllRecords(TextTerminal<?> textTerminal, boolean allTypes, boolean joined) {
             textTerminal.println("Fetching all records from database...");
-            try (Retriever r = ForSure.allTypesTable().get()) {
-                printRecordsForRetriever(textTerminal, r);
+            if (joined) {
+                try (Retriever r = ForSure.referencesAllTypesTable().joinAllTypesTable(FSJoin.Type.INNER).then().get()) {
+                    printRecordsForRetriever(textTerminal, r, true, true);
+                }
+                return;
+            }
+
+            if (allTypes) {
+                try (Retriever r = ForSure.allTypesTable().get()) {
+                    printRecordsForRetriever(textTerminal, r, true, false);
+                }
+                return;
+            }
+
+            try (Retriever r = ForSure.referencesAllTypesTable().get()) {
+                printRecordsForRetriever(textTerminal, r, false, false);
             }
         }
 
-        private void printRecordWithId(TextTerminal<?> textTerminal, long id) {
-            textTerminal.println("Fetching record " + id + " from database...");
-            try (Retriever r = ForSure.allTypesTable()
+        private void printRecordWithId(TextTerminal<?> textTerminal, long id, boolean allTypes, boolean joined) {
+            String message = joined
+                    ? "Fetching joined records from all_types table and doc store table by all_types._id = " + id
+                    : allTypes
+                    ? "Fetching records from all_types table with _id = " + id
+                    : "Fetching records from doc store table with _id = " + id;
+            textTerminal.println(message);
+
+            if (joined) {
+                try (Retriever r = ForSure.allTypesTable()
+                        .joinReferencesAllTypesTable(FSJoin.Type.INNER)
+                        .then()
+                        .find()
+                            .byId(id)
+                        .then()
+                        .get()) {
+                    printRecordsForRetriever(textTerminal, r, true, true);
+                }
+                return;
+            }
+            if (allTypes) {
+                try (Retriever r = ForSure.allTypesTable()
+                        .find()
+                            .byId(id)
+                        .then()
+                        .get()) {
+                    printRecordsForRetriever(textTerminal, r, true, false);
+                }
+                return;
+            }
+            try (Retriever r = ForSure.referencesAllTypesTable()
                     .find()
                         .byId(id)
                     .then()
                     .get()) {
-                printRecordsForRetriever(textTerminal, r);
+                printRecordsForRetriever(textTerminal, r, false, false);
             }
         }
 
         private void update(TextIO textIO) {
             RecordModel recordModel = RecordModelInputter.withRandomSuggestions(textIO).createRecord();
-            SaveResult<DirectLocator> result = ForSure.allTypesTable()
+            AllTypesTableSetter setter = ForSure.allTypesTable()
                     .find()
                         .byId(textIO.newLongInputReader().read("record id"))
                     .then()
-                    .set()
-                        .bigDecimalColumn(recordModel.getBigDecimalColumn())
-                        .bigIntegerColumn(recordModel.getBigIntegerColumn())
-                        .byteArrayColumn(recordModel.getByteArrayColumn())
-                        .dateColumn(recordModel.getDateColumn())
-                        .doubleColumn(recordModel.getDoubleColumn())
-                        .doubleWrapperColumn(recordModel.getDoubleWrapperColumn())
-                        .floatColumn(recordModel.getFloatColumn())
-                        .floatWrapperColumn(recordModel.getFloatWrapperColumn())
-                        .intColumn(recordModel.getIntColumn())
-                        .integerWrapperColumn(recordModel.getIntegerWrapperColumn())
-                        .longColumn(recordModel.getLongColumn())
-                        .longWrapperColumn(recordModel.getLongWrapperColumn())
-                        .stringColumn(recordModel.getStringColumn())
+                    .set();
+            summarizeSave(textIO, saveRecordModel(setter, recordModel));
+        }
+
+        private SaveResult<DirectLocator> saveRecordModel(AllTypesTableSetter setter, RecordModel recordModel) {
+            return setter.bigDecimalColumn(recordModel.getBigDecimalColumn())
+                    .bigIntegerColumn(recordModel.getBigIntegerColumn())
+                    .byteArrayColumn(recordModel.getByteArrayColumn())
+                    .dateColumn(recordModel.getDateColumn())
+                    .doubleColumn(recordModel.getDoubleColumn())
+                    .doubleWrapperColumn(recordModel.getDoubleWrapperColumn())
+                    .floatColumn(recordModel.getFloatColumn())
+                    .floatWrapperColumn(recordModel.getFloatWrapperColumn())
+                    .intColumn(recordModel.getIntColumn())
+                    .integerWrapperColumn(recordModel.getIntegerWrapperColumn())
+                    .longColumn(recordModel.getLongColumn())
+                    .longWrapperColumn(recordModel.getLongWrapperColumn())
+                    .stringColumn(recordModel.getStringColumn())
                     .save();
-            summarizeSave(textIO, result);
         }
 
         private void delete(TextIO textIO) {
@@ -234,16 +298,33 @@ public class ExampleApp {
             }
         }
 
-        private void printAllRecordsMatchingCriteria(TextTerminal<?> textTerminal, RecordModel record) {
-            // TODO
-        }
-
-        private void printRecordsForRetriever(TextTerminal<?> textTerminal, Retriever r) {
+        private void printRecordsForRetriever(TextTerminal<?> textTerminal, Retriever r, boolean allTypesTable, boolean joined) {
             boolean recordFound = false;
+
             while (r.moveToNext()) {
                 recordFound = true;
+
                 printDivider(textTerminal);
-                textTerminal.println(RecordModel.fromRetriever(r).toString());
+
+                StringBuilder out = new StringBuilder();
+                if (allTypesTable) {
+                    RecordModel model = RecordModel.fromRetriever(r);
+                    out.append(model.toString());
+                } else {
+                    MyPojo myPojo = ForSure.referencesAllTypesTable().getApi().get(r);
+                    out.append(myPojo.toString());
+                }
+                if (joined) {
+                    out.append("\n**** JOINED ****\n");
+                    if (allTypesTable) {
+                        MyPojo myPojo = ForSure.referencesAllTypesTable().getApi().get(r);
+                        out.append(myPojo.toString());
+                    } else {
+                        RecordModel model = RecordModel.fromRetriever(r);
+                        out.append(model.toString());
+                    }
+                }
+                textTerminal.println(out.toString());
             }
             if (!recordFound) {
                 textTerminal.println("No records found");

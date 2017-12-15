@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.util;
+package com.fsryan.forsuredb.jdbcexample.util;
 
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.jdbcexample.AllTypesTable;
