@@ -53,7 +53,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
     @Override
     public DirectLocator insert(TypedRecordContainer recordContainer) {
-        // TODO: check whether this is necessary
+        // this is kind of a hack to make the insertion logic easier
         if (recordContainer.keySet().isEmpty()) {
             recordContainer.put("deleted", 0);
         }
@@ -80,6 +80,10 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
     @Override
     public int update(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> orderings) {
+        if (recordContainer.keySet().isEmpty()) {
+            return 0;
+        }
+
         final List<String> columns = new ArrayList<>(recordContainer.keySet());
         SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.sql)) {
@@ -113,7 +117,16 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     @Override
     public Retriever query(FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, projection, selection, orderings);
+        return query(pssql, dbProvider);
+    }
 
+    @Override
+    public Retriever query(List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+        SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, joins, projections, selection, orderings);
+        return query(pssql, dbProvider);
+    }
+
+    private static Retriever query(SqlForPreparedStatement pssql, DBProvider dbProvider) {
         try {
             PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.sql);
             if (pssql.replacements != null) {
@@ -126,42 +139,6 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
             throw new RuntimeException(sqle);
         }
     }
-
-    @Override
-    public Retriever query(List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
-        // TODO
-        throw new UnsupportedOperationException();
-//        final QueryCorrector qc = new QueryCorrector(locator.table, joins, selection, Sql.generator().expressOrdering(orderings));
-//        final String sql = buildJoinQuery(projections, qc);
-//        return (FSCursor) dbProvider.readableDb().rawQuery(sql, qc.getSelectionArgs());
-    }
-
-//    private String buildJoinQuery(List<FSProjection> projections, QueryCorrector qc) {
-//        final StringBuilder buf = new StringBuilder("SELECT ");
-//
-//        // projection
-//        final String[] p = formatProjection(projections);
-//        if (p == null || p.length == 0) {
-//            buf.append("* ");
-//        } else {
-//            for (String column : p) {
-//                buf.append(column).append(", ");
-//            }
-//            buf.delete(buf.length() - 2, buf.length());
-//        }
-//
-//        // TODO: using string concatenation in the string buffer is a little smelly
-//        final String joinString = qc.getJoinString();
-//        final String where = qc.getSelection(true);
-//        final String orderBy = qc.getOrderBy();
-//        return buf.append(" FROM ").append(locator.table)
-//                .append(joinString.isEmpty() ? "" : " " + joinString)       // joins
-//                .append(where.isEmpty() ? "" : " WHERE " + where)           // selection
-//                .append(orderBy.isEmpty() ? "" : " ORDER BY " + orderBy)    // ordering
-//                .append(qc.getLimit() > 0 ? " LIMIT " + qc.getLimit() : "") // limit
-//                .append(';')
-//                .toString();
-//    }
 
     // TODO: perhaps this should be a helper
     private static void bindObject(int idx, PreparedStatement pStatement, Object obj) throws SQLException {
