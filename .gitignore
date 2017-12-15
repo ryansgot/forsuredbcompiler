@@ -11,6 +11,7 @@ classes/*
 forsuredbcompiler/out/*
 forsuredbapi/out/*
 dbinfo/out/*
+sqlitelib/out/*
 forsuredbmodels-gson/out/*
 forsuredbmodels-jackson/out/*
 forsuredbjdbc-example/*.db
