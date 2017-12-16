@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class AbstractDBOpener {
+public abstract class AbstractDBOpener {
 
     private Connection db;
     private boolean mIsInitializing;
