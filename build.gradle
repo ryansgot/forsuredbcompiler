@@ -57,6 +57,9 @@ allprojects {
 subprojects { subproject ->
 
     apply plugin: 'java'
+    if (subproject.name == 'forsuredbjdbc-example') {
+        return
+    }
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
