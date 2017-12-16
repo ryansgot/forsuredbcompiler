@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -84,7 +85,7 @@ public class FSDBHelper extends AbstractDBOpener {
      * @see #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
      */
     public static synchronized void init(@Nonnull String jdbcUrl,
-                                         @Nonnull Properties connectionProps,
+                                         @Nullable Properties connectionProps,
                                          @Nonnull DBConfigurer dbVersionUpdater,
                                          @Nonnull List<FSTableCreator> tables,
                                          @Nonnull FSDbInfoSerializer dbInfoSerializer) {
@@ -115,7 +116,7 @@ public class FSDBHelper extends AbstractDBOpener {
      * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer)
      */
     public static synchronized void initSQLite(@Nonnull String jdbcUrl,
-                                               @Nonnull Properties connectionProps,
+                                               @Nullable Properties connectionProps,
                                                @Nonnull List<FSTableCreator> tables,
                                                @Nonnull FSDbInfoSerializer dbInfoSerializer) {
         init(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
@@ -133,7 +134,7 @@ public class FSDBHelper extends AbstractDBOpener {
      * @see #init(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
      */
     public static synchronized void initDebug(@Nonnull String jdbcUrl,
-                                              @Nonnull Properties connectionProps,
+                                              @Nullable Properties connectionProps,
                                               @Nonnull DBConfigurer dbVersionUpdater,
                                               @Nonnull List<FSTableCreator> tables,
                                               @Nonnull FSDbInfoSerializer dbInfoSerializer) {
@@ -163,7 +164,7 @@ public class FSDBHelper extends AbstractDBOpener {
      * @see #initSQLite(String, Properties, List, FSDbInfoSerializer)
      */
     public static synchronized void initDebugSQLite(@Nonnull String jdbcUrl,
-                                                    @Nonnull Properties connectionProps,
+                                                    @Nullable Properties connectionProps,
                                                     @Nonnull List<FSTableCreator> tables,
                                                     @Nonnull FSDbInfoSerializer dbInfoSerializer) {
         initDebug(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
