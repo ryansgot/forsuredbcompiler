@@ -506,22 +506,22 @@ public class FSResultSet implements ResultSet, Retriever {
 
     @Override
     public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
-        resultSet.updateAsciiStream(columnIndex, x);
+        resultSet.updateAsciiStream(columnIndex, x, length);
     }
 
     @Override
     public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
-        resultSet.updateBinaryStream(columnIndex, x);
+        resultSet.updateBinaryStream(columnIndex, x, length);
     }
 
     @Override
     public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
-        resultSet.updateCharacterStream(columnIndex, x);
+        resultSet.updateCharacterStream(columnIndex, x, length);
     }
 
     @Override
     public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
-        resultSet.updateObject(columnIndex, x);
+        resultSet.updateObject(columnIndex, x, scaleOrLength);
     }
 
     @Override
@@ -601,12 +601,12 @@ public class FSResultSet implements ResultSet, Retriever {
 
     @Override
     public void updateAsciiStream(String column, InputStream x, int length) throws SQLException {
-        resultSet.updateAsciiStream(column, x);
+        resultSet.updateAsciiStream(column, x, length);
     }
 
     @Override
     public void updateBinaryStream(String column, InputStream x, int length) throws SQLException {
-        resultSet.updateBinaryStream(column, x);
+        resultSet.updateBinaryStream(column, x, length);
     }
 
     @Override
