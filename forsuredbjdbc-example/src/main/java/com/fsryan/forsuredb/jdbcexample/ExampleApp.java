@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 public class ExampleApp {
 
     public static final String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_STRING);
+    public static final ThreadLocal<DateFormat> DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat(DATE_FORMAT_STRING));
 
     private static class AllTypesTableData implements BiConsumer<TextIO, String> {
 
@@ -64,6 +64,8 @@ public class ExampleApp {
                     case QUIT:
                         terminal.println("Thanks.");
                         break;
+                    default:
+                        throw new RuntimeException("Did not expect selection: " + selection);
                 }
                 terminal.println();
                 terminal.println();
@@ -104,6 +106,8 @@ public class ExampleApp {
                 case 2:
                     upsertDocStore(textIO, newRecord);
                     break;
+                default:
+                    throw new RuntimeException("unexpected selection");
             }
         }
 

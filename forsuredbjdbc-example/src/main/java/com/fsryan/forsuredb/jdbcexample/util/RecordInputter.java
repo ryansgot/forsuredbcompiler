@@ -52,8 +52,8 @@ public abstract class RecordInputter<T> {
 
     protected Date readDateColumn(String columnName) {
         try {
-            return DATE_FORMAT.parse(textIO.newStringInputReader()
-                    .withDefaultValue(DATE_FORMAT.format(valueSuggester.dateSuggestion(columnName)))
+            return DATE_FORMAT.get().parse(textIO.newStringInputReader()
+                    .withDefaultValue(DATE_FORMAT.get().format(valueSuggester.dateSuggestion(columnName)))
                     .read(columnName + " (" + DATE_FORMAT_STRING + ")"));
         } catch (ParseException pe) {
             textIO.getTextTerminal().println("Invalid input format. Must use format:" + DATE_FORMAT_STRING);

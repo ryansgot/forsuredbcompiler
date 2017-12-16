@@ -9,35 +9,37 @@ import java.lang.reflect.Type;
 
 public class JsonAdapterFactory implements FSSerializerFactory {
 
-    private static final Gson gson = new GsonBuilder().setDateFormat(ExampleApp.DATE_FORMAT_STRING).create();
+    static final Gson gson = new GsonBuilder().setDateFormat(ExampleApp.DATE_FORMAT_STRING).create();
 
     @Override
     public FSSerializer create() {
-        return new FSSerializer() {
-            @Override
-            public boolean storeAsBlob() {
-                return false;
-            }
-
-            @Override
-            public String createStringDoc(Type type, Object val) {
-                return gson.toJson(val, type);
-            }
-
-            @Override
-            public byte[] createBlobDoc(Type type, Object val) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public <T> T fromStorage(Type typeOfT, byte[] objectBytes) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public <T> T fromStorage(Type typeOfT, String stringRepresentation) {
-                return gson.fromJson(stringRepresentation, typeOfT);
-            }
-        };
+        return new Serializer();
     }
+
+    private static class Serializer implements FSSerializer {
+        @Override
+        public boolean storeAsBlob() {
+            return false;
+        }
+
+        @Override
+        public String createStringDoc(Type type, Object val) {
+            return gson.toJson(val, type);
+        }
+
+        @Override
+        public byte[] createBlobDoc(Type type, Object val) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T fromStorage(Type typeOfT, byte[] objectBytes) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T fromStorage(Type typeOfT, String stringRepresentation) {
+            return gson.fromJson(stringRepresentation, typeOfT);
+        }
+    };
 }

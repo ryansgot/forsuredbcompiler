@@ -64,11 +64,11 @@ public class RecordModel {
     }
 
     public Date getCreated() {
-        return created;
+        return created == null ? null : (Date) created.clone();
     }
 
     public Date getModified() {
-        return modified;
+        return modified == null ? null : (Date) modified.clone();
     }
 
     public Integer getIntColumn() {
@@ -136,11 +136,11 @@ public class RecordModel {
     }
 
     public byte[] getByteArrayColumn() {
-        return byteArrayColumn;
+        return byteArrayColumn == null ? new byte[0] : Arrays.copyOf(byteArrayColumn, byteArrayColumn.length);
     }
 
     public void setByteArrayColumn(byte[] byteArrayColumn) {
-        this.byteArrayColumn = byteArrayColumn;
+        this.byteArrayColumn = Arrays.copyOf(byteArrayColumn, byteArrayColumn.length);
     }
 
     public String getStringColumn() {
@@ -168,11 +168,11 @@ public class RecordModel {
     }
 
     public Date getDateColumn() {
-        return dateColumn;
+        return dateColumn == null ? null : (Date) dateColumn.clone();
     }
 
     public void setDateColumn(Date dateColumn) {
-        this.dateColumn = dateColumn;
+        this.dateColumn = dateColumn == null ? null : new Date(dateColumn.getTime());
     }
 
     @Override
@@ -180,8 +180,8 @@ public class RecordModel {
         return "RecordModel{" +
                 "id=" + id +
                 ", deleted=" + deleted +
-                ", created=" + DATE_FORMAT.format(created) +
-                ", modified=" + DATE_FORMAT.format(modified) +
+                ", created=" + DATE_FORMAT.get().format(created) +
+                ", modified=" + DATE_FORMAT.get().format(modified) +
                 ", intColumn=" + intColumn +
                 ", integerWrapperColumn=" + integerWrapperColumn +
                 ", longColumn=" + longColumn +
@@ -194,7 +194,7 @@ public class RecordModel {
                 ", stringColumn='" + stringColumn + '\'' +
                 ", bigIntegerColumn=" + bigIntegerColumn +
                 ", bigDecimalColumn=" + bigDecimalColumn +
-                ", dateColumn=" + DATE_FORMAT.format(dateColumn) +
+                ", dateColumn=" + DATE_FORMAT.get().format(dateColumn) +
                 '}';
     }
 }
