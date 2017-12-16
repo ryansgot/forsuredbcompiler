@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -15,7 +14,8 @@ public class AbstractDBOpener {
 
     @Nonnull private final String jdbcUrl;
     @Nonnull private final Properties connectionProps;
-    @Nonnull private final DBVersionUpdater versionUpdater;
+    @Nonnull
+    protected final DBConfigurer dbConfigurer;
     private final int newVersion;
 
     /**
@@ -27,14 +27,14 @@ public class AbstractDBOpener {
      */
     public AbstractDBOpener(@Nonnull String jdbcUrl,
                             @Nullable Properties connectionProps,
-                            @Nonnull DBVersionUpdater versionUpdater,
+                            @Nonnull DBConfigurer versionUpdater,
                             int newVersion) {
         if (newVersion < 1) {
             throw new IllegalArgumentException("Version must be >= 1, was " + newVersion);
         }
         this.jdbcUrl = jdbcUrl;
         this.connectionProps = connectionProps == null ? new Properties() : connectionProps;
-        this.versionUpdater = versionUpdater;
+        this.dbConfigurer = versionUpdater;
         this.newVersion = newVersion;
     }
 
@@ -70,7 +70,7 @@ public class AbstractDBOpener {
                 try {
                     tempDb = DriverManager.getConnection(jdbcUrl, connectionProps);
                     // TODO: determine whether this is necessary
-                    // Keep pre-O-MR1 behavior by resetting file permissions to 660
+                    // reset file permissions to 660
 //                    setFilePermissionsForDb(db);
                 } catch (SQLException sqle) {
                     if (writable) {
@@ -84,7 +84,7 @@ public class AbstractDBOpener {
 
             onConfigure(tempDb);
 
-            final int version = versionUpdater.discoverVersion(tempDb);
+            final int version = dbConfigurer.discoverVersion(tempDb);
             if (version != newVersion) {
                 if (tempDb.isReadOnly()) {
                     String m = String.format("Can't use read-only connection to upgrade from version %d to %d; jdbcUrl: %s", version, newVersion, jdbcUrl);
@@ -104,7 +104,7 @@ public class AbstractDBOpener {
                             onUpgrade(tempDb, version, newVersion);
                         }
                     }
-                    versionUpdater.setVersion(tempDb, newVersion);
+                    dbConfigurer.setVersion(tempDb, newVersion);
                     tempDb.commit();
                 } catch (SQLException sqle) {
                     tempDb.rollback();
@@ -117,9 +117,9 @@ public class AbstractDBOpener {
             }
 
             onOpen(tempDb);
-            if (tempDb.isReadOnly()) {
-                // TODO: logging
-            }
+//            if (tempDb.isReadOnly()) {
+//                // TODO: logging
+//            }
             this.db = tempDb;
             return tempDb;
         } finally {

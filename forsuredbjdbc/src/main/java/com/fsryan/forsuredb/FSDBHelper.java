@@ -7,6 +7,7 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -19,16 +20,33 @@ public class FSDBHelper extends AbstractDBOpener {
 
     // a special DBVersionUpdater intended to be a reference implementation and a simple
     // way to use forsoredbjdbc with SQLite
-    private static final DBVersionUpdater sqliteDbVersionUpdater = new DBVersionUpdater() {
+    private static final DBConfigurer sqliteDBConfigurer = new DBConfigurer() {
         @Override
         public int discoverVersion(Connection db) throws SQLException {
-            ResultSet r = db.prepareStatement("PRAGMA user_version;").executeQuery();
-            return r.getInt(1); // <-- user_version
+            try (PreparedStatement ps = db.prepareStatement("PRAGMA user_version;")) {
+                try (ResultSet r = ps.executeQuery()) {
+                    return r.getInt(1); // <-- user_version
+                }
+            }
         }
 
         @Override
         public boolean setVersion(Connection db, int version) throws SQLException {
-            return db.prepareStatement(String.format("PRAGMA user_version = %d;", version)).execute();
+            try (PreparedStatement ps = db.prepareStatement("PRAGMA user_version = " + version +" ;")) {
+                return ps.execute();
+            }
+        }
+
+        @Override
+        public boolean mustEnableForeignKeys() {
+            return true;
+        }
+
+        @Override
+        public void enableForeignKeys(Connection db) throws SQLException {
+            try (PreparedStatement ps = db.prepareStatement("PRAGMA foreign_keys=ON;")) {
+                ps.execute();
+            }
         }
     };
 
@@ -39,12 +57,12 @@ public class FSDBHelper extends AbstractDBOpener {
 
     private FSDBHelper(String jdbcUrl,
                        Properties connectionProps,
-                       DBVersionUpdater dbVersionUpdater,
+                       DBConfigurer dbConfigurer,
                        List<FSTableCreator> tables,
                        List<MigrationSet> migrationSets,
                        FSDbInfoSerializer dbInfoSerializer,
                        boolean debugMode) {
-        super(jdbcUrl, connectionProps, dbVersionUpdater, identifyDbVersion(migrationSets));
+        super(jdbcUrl, connectionProps, dbConfigurer, identifyDbVersion(migrationSets));
         this.tables = tables;
         this.migrationSets = migrationSets;
         this.dbInfoSerializer = dbInfoSerializer;
@@ -54,7 +72,7 @@ public class FSDBHelper extends AbstractDBOpener {
     /**
      * <p>Use in thethe production version of your app. It has debug mode set to false. If you want
      * debugMode on, then call
-     * {@link #initDebug(String, Properties, DBVersionUpdater, List, FSDbInfoSerializer)}.
+     * {@link #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer)}.
      * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
      * @param connectionProps any additional properties required to connect to the database
      * @param dbVersionUpdater an object capable of discovering and updating a database version
@@ -63,11 +81,11 @@ public class FSDBHelper extends AbstractDBOpener {
      *                         db schema and migration info
      * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer) if you're using SQLite and
      * want to initialize in debug mode
-     * @see #initDebug(String, Properties, DBVersionUpdater, List, FSDbInfoSerializer)
+     * @see #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
      */
     public static synchronized void init(@Nonnull String jdbcUrl,
                                          @Nonnull Properties connectionProps,
-                                         @Nonnull DBVersionUpdater dbVersionUpdater,
+                                         @Nonnull DBConfigurer dbVersionUpdater,
                                          @Nonnull List<FSTableCreator> tables,
                                          @Nonnull FSDbInfoSerializer dbInfoSerializer) {
         if (instance != null) {
@@ -100,23 +118,23 @@ public class FSDBHelper extends AbstractDBOpener {
                                                @Nonnull Properties connectionProps,
                                                @Nonnull List<FSTableCreator> tables,
                                                @Nonnull FSDbInfoSerializer dbInfoSerializer) {
-        init(jdbcUrl, connectionProps, sqliteDbVersionUpdater, tables, dbInfoSerializer);
+        init(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
     }
 
     /**
      * <p>Use in thethe debug version of your app. It has debug mode set to true. If you want
-     * debugMode off, then call {@link #init(String, Properties, DBVersionUpdater, List, FSDbInfoSerializer)}.
+     * debugMode off, then call {@link #init(String, Properties, DBConfigurer, List, FSDbInfoSerializer)}.
      * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
      * @param connectionProps any additional properties required to connect to the database
      * @param dbVersionUpdater
      * @param tables The information for creating tables
      * @param dbInfoSerializer the {@link FSDbInfoSerializer} that your project will use to deserialize
      *                         db schema and migration info
-     * @see #init(String, Properties, DBVersionUpdater, List, FSDbInfoSerializer)
+     * @see #init(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
      */
     public static synchronized void initDebug(@Nonnull String jdbcUrl,
                                               @Nonnull Properties connectionProps,
-                                              @Nonnull DBVersionUpdater dbVersionUpdater,
+                                              @Nonnull DBConfigurer dbVersionUpdater,
                                               @Nonnull List<FSTableCreator> tables,
                                               @Nonnull FSDbInfoSerializer dbInfoSerializer) {
         if (instance != null) {
@@ -148,7 +166,7 @@ public class FSDBHelper extends AbstractDBOpener {
                                                     @Nonnull Properties connectionProps,
                                                     @Nonnull List<FSTableCreator> tables,
                                                     @Nonnull FSDbInfoSerializer dbInfoSerializer) {
-        initDebug(jdbcUrl, connectionProps, sqliteDbVersionUpdater, tables, dbInfoSerializer);
+        initDebug(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
     }
 
     public static synchronized FSDBHelper inst() {
@@ -176,8 +194,8 @@ public class FSDBHelper extends AbstractDBOpener {
     @Override
     public void onOpen(Connection db) throws SQLException {
         super.onOpen(db);
-        if (!db.isReadOnly()) {
-            db.prepareStatement("PRAGMA foreign_keys=ON;").execute();
+        if (!db.isReadOnly() && dbConfigurer.mustEnableForeignKeys()) {
+            dbConfigurer.enableForeignKeys(db);
         }
     }
 
@@ -226,19 +244,15 @@ public class FSDBHelper extends AbstractDBOpener {
 
     private void executeSqlList(Connection db, List<String> sqlScript, String logPrefix) {
         // TODO: batch this up and make it work with a prepared statement
-        try {
+        for (String insertionSqlString : sqlScript) {
             if (debugMode) {
-                for (String insertionSqlString : sqlScript) {
-                    System.out.println(String.format("[forsuredb] %s -- %s", logPrefix, insertionSqlString));
-                    db.prepareStatement(insertionSqlString).execute();
-                }
-            } else {
-                for (String insertionSqlString : sqlScript) {
-                    db.prepareStatement(insertionSqlString).execute();
-                }
+                System.out.println(String.format("[forsuredb] %s %s", logPrefix, insertionSqlString));
             }
-        } catch (SQLException sqle) {
-            sqle.printStackTrace(); // TODO: determine what to do
+            try (PreparedStatement ps = db.prepareStatement(insertionSqlString)) {
+                ps.execute();
+            } catch (SQLException sqle) {
+                throw new RuntimeException(sqle);
+            }
         }
     }
 }

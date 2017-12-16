@@ -37,6 +37,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     private final DBProvider dbProvider;
     private final DBMSIntegrator sqlGenerator;
 
+    @SuppressWarnings("unused")
     public JdbcQueryable(@Nonnull String tableToQuery) {
         this(new DirectLocator(tableToQuery));
     }
@@ -45,6 +46,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         this(locator, realProvider, Sql.generator());
     }
 
+    @SuppressWarnings("WeakerAccess")   // visible for testing
     JdbcQueryable(@Nonnull DirectLocator locator, @Nonnull DBProvider dbProvider, DBMSIntegrator sqlGenerator) {
         this.locator = locator;
         this.dbProvider = dbProvider;
@@ -63,6 +65,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (int pos = 0; pos < columns.size(); pos++) {
+                //noinspection ConstantConditions
                 bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
             }
             if (pStatement.executeUpdate() < 1) {
@@ -86,14 +89,17 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
         final List<String> columns = new ArrayList<>(recordContainer.keySet());
         SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
-        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.sql)) {
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
             int pos;
             for (pos = 0; pos < columns.size(); pos++) {
+                //noinspection ConstantConditions
                 bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
             }
-            for (String replacement : pssql.replacements) {
-                pStatement.setString(pos + 1, replacement);
-                pos++;
+            if (pssql.getReplacements() != null) {
+                for (String replacement : pssql.getReplacements()) {
+                    pStatement.setString(pos + 1, replacement);
+                    pos++;
+                }
             }
             return pStatement.executeUpdate();
         } catch (SQLException sqle) {
@@ -104,9 +110,11 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     @Override
     public int delete(FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createDeleteSql(locator.table, selection, orderings);
-        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.sql)) {
-            for (int pos = 0; pos < pssql.replacements.length; pos++) {
-                pStatement.setString(pos + 1, pssql.replacements[pos]);
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
+            if (pssql.getReplacements() != null) {
+                for (int pos = 0; pos < pssql.getReplacements().length; pos++) {
+                    pStatement.setString(pos + 1, pssql.getReplacements()[pos]);
+                }
             }
             return pStatement.executeUpdate();
         } catch (SQLException sqle) {
@@ -128,10 +136,10 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
     private static Retriever query(SqlForPreparedStatement pssql, DBProvider dbProvider) {
         try {
-            PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.sql);
-            if (pssql.replacements != null) {
-                for (int pos = 0; pos < pssql.replacements.length; pos++) {
-                    statement.setString(pos + 1, pssql.replacements[pos]);
+            PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.getSql());
+            if (pssql.getReplacements() != null) {
+                for (int pos = 0; pos < pssql.getReplacements().length; pos++) {
+                    statement.setString(pos + 1, pssql.getReplacements()[pos]);
                 }
             }
             return new FSResultSet(statement.executeQuery());

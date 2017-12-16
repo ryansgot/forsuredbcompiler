@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- when querying, the caller is responsible for closing resources -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.queryable.JdbcQueryable" />
+        <Method name="query" />
+        <Bug pattern="ODR_OPEN_DATABASE_RESOURCE" />
+    </Match>
+    <!-- Prepared statement being generated from a non-constant string is the point -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.queryable.JdbcQueryable" />
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING" />
+    </Match>
+
+    <!-- Prepared statement being generated from a non-constant string is the point -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.FSDBHelper" />
+        <Method name="executeSqlList" />
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING" />
+    </Match>
+
+    <!-- The string is not output anywhere; used to simplfy logic -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.resources.Resources" />
+        <Method name="iterateEntry" />
+        <Bug pattern="DM_CONVERT_CASE" />
+    </Match>
+
+    <!-- TODO: when you fix StaticDataSQL, fix this -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.StaticDataSQL" />
+    </Match>
+</FindBugsFilter>

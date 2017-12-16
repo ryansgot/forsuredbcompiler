@@ -5,11 +5,21 @@ import javax.annotation.Nullable;
 
 public class SqlForPreparedStatement {
 
-    public final String sql;
-    public final String[] replacements;
+    private final String sql;
+    private final String[] replacements;
 
     public SqlForPreparedStatement(@Nonnull String sql, @Nullable String[] replacements) {
         this.sql = sql;
         this.replacements = replacements;
+    }
+
+    @Nonnull
+    public String getSql() {
+        return sql;
+    }
+
+    @Nullable
+    public String[] getReplacements() {
+        return replacements;
     }
 }
