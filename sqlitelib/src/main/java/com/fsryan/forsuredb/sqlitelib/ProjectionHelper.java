@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /*package*/ class ProjectionHelper {
@@ -37,9 +38,7 @@ import java.util.List;
             ps.add(projection);
         }
         if (projections != null) {
-            for (FSProjection p : projections) {
-                ps.add(p);
-            }
+            ps.addAll(Arrays.asList(projections));
         }
 
         return formatProjection(ps);

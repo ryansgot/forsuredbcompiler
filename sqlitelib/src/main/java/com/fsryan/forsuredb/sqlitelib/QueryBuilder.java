@@ -129,13 +129,4 @@ class QueryBuilder {
         s.append(name);
         s.append(clause);
     }
-
-    private static StringBuilder repeat(int times, String str, int trimEnd) {
-        int capacity = str.length() * times;
-        StringBuilder buf = new StringBuilder(capacity);
-        while (buf.length() != capacity) {
-            buf.append(str);
-        }
-        return trimEnd > 0 ? buf.delete(buf.length() - trimEnd, buf.length()) : buf;
-    }
 }

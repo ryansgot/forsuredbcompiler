@@ -4,4 +4,8 @@
         <Class name="com.fsryan.forsuredb.sqlitelib.MigrationComparator" />
         <Bug pattern="SE_COMPARATOR_SHOULD_BE_SERIALIZABLE" />
     </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.sqlitelib.ProjectionHelper" />
+        <Bug pattern="PZLA_PREFER_ZERO_LENGTH_ARRAYS" />
+    </Match>
 </FindBugsFilter>
