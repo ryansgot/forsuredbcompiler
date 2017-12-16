@@ -15,6 +15,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class FSResultSetTest {
@@ -47,11 +48,6 @@ public class FSResultSetTest {
     public void setUpTest() {
         MockitoAnnotations.initMocks(this);
         fsResultSetUnderTest = new FSResultSet(mockResultSet);
-    }
-    
-    @After
-    public void verifyNoMoreInteractionsWithMockResultSet() {
-        verifyNoMoreInteractions(mockResultSet);
     }
 
     @Test
@@ -1281,11 +1277,6 @@ public class FSResultSetTest {
         fsResultSetUnderTest.updateObject(columnLabel, o, mockSQLType);
         verify(mockResultSet).updateObject(columnLabel, o, mockSQLType);
     }
-
-//    @Test
-//    public int getCount() {
-//        // TODO: fill in the various tests for this
-//    }
 
     @Test
     public void shouldPassThroughMoveToPreviousToPrevious() throws SQLException {

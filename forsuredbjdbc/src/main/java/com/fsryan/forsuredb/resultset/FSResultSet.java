@@ -1087,12 +1087,16 @@ public class FSResultSet implements ResultSet, Retriever {
     }
 
     /**
+     * <p>The actual behavior is going to be dependent upon the underlying library. It may
+     * throw an exception (in the case of SQLite, or it may produce the wrong result.
+     *
      * @return the count of the rows if it can be known without winding the cursor past the point
      * wherein information can be returned. This has the potential to be <i>VERY</i> inefficient,
      * as, in the worst case, all records must be iterated to find out the count of records.
      * @throws RuntimeException when an {@link SQLException} is thrown while getting the type
      * @throws IllegalStateException when the scrolling type is {@link #TYPE_FORWARD_ONLY}
      * of {@link ResultSet}
+     * @throws RuntimeException if the underlying JDBC library throws an {@link SQLException}
      */
     @Override
     public int getCount() {
@@ -1100,9 +1104,6 @@ public class FSResultSet implements ResultSet, Retriever {
             if (getType() == TYPE_FORWARD_ONLY) {
                 if (isLast()) {
                     return getPosition() + 1;
-                }
-                if (isAfterLast()) {
-                    return getPosition();
                 }
                 throw new IllegalStateException("Can only iterate forward and not in last or after last position--so don't know count");
             }
@@ -1113,7 +1114,7 @@ public class FSResultSet implements ResultSet, Retriever {
         try {
             int currentPosition = getPosition();
             moveToLast();
-            int count = getPosition();
+            int count = getPosition() + 1;
             absolute(currentPosition);
             return count;
         } catch (SQLException sqle) {
