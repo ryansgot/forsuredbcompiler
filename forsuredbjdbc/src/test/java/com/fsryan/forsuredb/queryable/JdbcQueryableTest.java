@@ -1,7 +1,8 @@
 package com.fsryan.forsuredb.queryable;
 
-import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
@@ -13,18 +14,23 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.fsryan.forsuredb.util.Randomizer.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public abstract class JdbcQueryableTest {
 
     static final byte[] byteArray = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
     static final String tableName = "table";
 
+    @Captor
+    protected ArgumentCaptor<List<String>> columnListCaptor;
+    @Mock
+    protected FSSelection mockSelection;
+    @Mock
+    protected List<FSOrdering> mockOrderings;
     @Mock
     protected Connection mockConnection;
     @Mock
@@ -54,6 +60,7 @@ public abstract class JdbcQueryableTest {
 
         when(mockDbProvider.readableDb()).thenReturn(mockConnection);
         when(mockDbProvider.writeableDb()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(eq(""))).thenReturn(mockPreparedStatement);
 
         queryableUnderTest = new JdbcQueryable(directLocator, mockDbProvider, mockSqlGenerator);
     }
@@ -70,8 +77,23 @@ public abstract class JdbcQueryableTest {
         }
 
         @Test
-        public void shouldBindObjectsInCorrectOrder() throws SQLException {
-            ArgumentCaptor<List<String>> columnListCaptor = ArgumentCaptor.forClass(List.class);
+        public void shouldReturnNullIfNothingInserted() throws SQLException {
+            when(mockPreparedStatement.executeUpdate()).thenReturn(0);
+            assertNull(queryableUnderTest.insert(new TypedRecordContainer()));
+        }
+
+        @Test
+        public void shouldHackEmptyRecordContainerToContainDeletedDefault() throws SQLException {
+            TypedRecordContainer trc = new TypedRecordContainer();
+
+            queryableUnderTest.insert(trc);
+
+            verify(mockSqlGenerator).newSingleRowInsertionSql(eq(tableName), eq(Arrays.asList("deleted")));
+            verify(mockPreparedStatement).setInt(eq(1), eq(trc.typedGet("deleted")));
+        }
+
+        @Test
+        public void shouldBindObjectsAndCallMethodsInCorrectOrder() throws SQLException {
             TypedRecordContainer trc = createRandomStringTRC();
 
             queryableUnderTest.insert(trc);
@@ -85,7 +107,10 @@ public abstract class JdbcQueryableTest {
             inOrder.verify(mockPreparedStatement).executeUpdate();
             inOrder.verify(mockPreparedStatement).getGeneratedKeys();
             inOrder.verify(mockResultSet).next();
+            inOrder.verify(mockPreparedStatement).close();
         }
+
+        // tests the binding helper method through insertion--do not need to test the binding helper again
 
         @Test
         public void shouldBindIntCorrectly() throws SQLException {
@@ -136,21 +161,155 @@ public abstract class JdbcQueryableTest {
             verify(mockSqlGenerator).newSingleRowInsertionSql(eq(tableName), eq(Arrays.asList("col1")));
             verify(mockPreparedStatement).setBytes(eq(1), eq(trc.typedGet("col1")));
         }
+    }
 
-        @Test
-        public void shouldHackEmptyRecordContainerToContainDeletedDefault() throws SQLException {
-            TypedRecordContainer trc = new TypedRecordContainer();
+    /*
 
-            queryableUnderTest.insert(trc);
+        if (recordContainer.keySet().isEmpty()) {
+            return 0;
+        }
 
-            verify(mockSqlGenerator).newSingleRowInsertionSql(eq(tableName), eq(Arrays.asList("deleted")));
-            verify(mockPreparedStatement).setInt(eq(1), eq(trc.typedGet("deleted")));
+        final List<String> columns = new ArrayList<>(recordContainer.keySet());
+        SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
+        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
+            int pos;
+            for (pos = 0; pos < columns.size(); pos++) {
+                //noinspection ConstantConditions
+                bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
+            }
+            if (pssql.getReplacements() != null) {
+                for (String replacement : pssql.getReplacements()) {
+                    pStatement.setString(pos + 1, replacement);
+                    pos++;
+                }
+            }
+            return pStatement.executeUpdate();
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
+     */
+
+    public static class Update extends JdbcQueryableTest {
+
+        private String[] replacements = new String[] {"r1", "r2", "r3"};
+
+        @Before
+        public void createMockSelectionAndOrderings() throws SQLException {
+            when(mockSqlGenerator.createUpdateSql(eq(tableName), anyList(), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", replacements));
         }
 
         @Test
-        public void shouldReturnNullIfNothingInserted() throws SQLException {
-            when(mockPreparedStatement.executeUpdate()).thenReturn(0);
-            assertNull(queryableUnderTest.insert(new TypedRecordContainer()));
+        public void shouldNotUpdateIfRecordContainerEmpty() {
+            assertEquals(0, queryableUnderTest.update(new TypedRecordContainer(), null, null));
+        }
+
+        @Test
+        public void shouldPassThroughCorrectArgumentsToSqlGenerator() {
+            TypedRecordContainer trc = createRandomIntTRC();
+
+            queryableUnderTest.update(trc, mockSelection, mockOrderings);
+
+            verify(mockSqlGenerator).createUpdateSql(eq(tableName), columnListCaptor.capture(), eq(mockSelection), eq(mockOrderings));
+            for (String capturedColumn : columnListCaptor.getValue()) {
+                assertTrue(trc.keySet().contains(capturedColumn));
+            }
+        }
+
+        @Test
+        public void shouldBindObjectsAndCallMethodsInCorrectOrder() throws SQLException {
+            TypedRecordContainer trc = createRandomIntTRC();
+
+            queryableUnderTest.update(trc, mockSelection, mockOrderings);
+
+            InOrder inOrder = inOrder(mockSqlGenerator, mockPreparedStatement, mockResultSet);
+            inOrder.verify(mockSqlGenerator).createUpdateSql(eq(tableName), columnListCaptor.capture(), any(FSSelection.class), anyList());
+            List<String> actualColumnList = columnListCaptor.getValue();
+            for (int pos = 0; pos < actualColumnList.size(); pos++ ) {
+                inOrder.verify(mockPreparedStatement).setInt(eq(pos + 1), eq(trc.typedGet(actualColumnList.get(pos))));
+            }
+            for (int pos = 0; pos < replacements.length; pos++ ) {
+                inOrder.verify(mockPreparedStatement).setString(eq(actualColumnList.size() + pos + 1), eq(replacements[pos]));
+            }
+            inOrder.verify(mockPreparedStatement).executeUpdate();
+            inOrder.verify(mockPreparedStatement).close();
+        }
+    }
+
+    public static class Delete extends JdbcQueryableTest {
+
+        private String[] replacements = new String[] {"r1", "r2", "r3"};
+
+        @Before
+        public void createMockSelectionAndOrderings() throws SQLException {
+            when(mockSqlGenerator.createDeleteSql(eq(tableName), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", replacements));
+        }
+
+        @Test
+        public void shouldPassThroughCorrectArgumentsToSqlGenerator() {
+            queryableUnderTest.delete(mockSelection, mockOrderings);
+
+            verify(mockSqlGenerator).createDeleteSql(eq(tableName), eq(mockSelection), eq(mockOrderings));
+        }
+
+        @Test
+        public void shouldBindObjectsAndCallMethodsInCorrectOrder() throws SQLException {
+            queryableUnderTest.delete(mockSelection, mockOrderings);
+
+            InOrder inOrder = inOrder(mockSqlGenerator, mockPreparedStatement, mockResultSet);
+            inOrder.verify(mockSqlGenerator).createDeleteSql(eq(tableName), any(FSSelection.class), anyList());
+            for (int pos = 0; pos < replacements.length; pos++ ) {
+                inOrder.verify(mockPreparedStatement).setString(eq( pos + 1), eq(replacements[pos]));
+            }
+            inOrder.verify(mockPreparedStatement).executeUpdate();
+            inOrder.verify(mockPreparedStatement).close();
+        }
+    }
+
+    public static class Query extends JdbcQueryableTest {
+
+        private String[] replacements = new String[] {"r1", "r2", "r3"};
+        private FSProjection mockProjection;
+
+        @Before
+        public void setUpMockProjection() throws SQLException {
+            mockProjection = mock(FSProjection.class);
+            when(mockDbProvider.readableDb()).thenReturn(mockConnection);
+            when(mockSqlGenerator.createQuerySql(eq(tableName), eq(mockProjection), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", replacements));
+        }
+
+        @Test
+        public void shouldPassThroughCorrectArgumentsToSqlGeneratorOnSingleTableQuery() {
+            queryableUnderTest.query(mockProjection, mockSelection, mockOrderings);
+
+            verify(mockSqlGenerator).createQuerySql(eq(tableName), eq(mockProjection), eq(mockSelection), eq(mockOrderings));
+        }
+
+        @Test
+        public void shouldPassThroughCorrectArgumentsToSqlGeneratorOnJoinQuery() {
+            List<FSProjection> mockProjections = mock(List.class);
+            List<FSJoin> mockJoins = mock(List.class);
+            when(mockSqlGenerator.createQuerySql(eq(tableName), eq(mockJoins), eq(mockProjections), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", replacements));
+            queryableUnderTest.query(mockJoins, mockProjections, mockSelection, mockOrderings);
+
+            verify(mockSqlGenerator).createQuerySql(eq(tableName), eq(mockJoins), eq(mockProjections), eq(mockSelection), eq(mockOrderings));
+        }
+
+        @Test
+        public void shouldBindObjectsAndCallMethodsInCorrectOrder() throws SQLException {
+            queryableUnderTest.query(mockProjection, mockSelection, mockOrderings);
+
+            InOrder inOrder = inOrder(mockSqlGenerator, mockPreparedStatement, mockResultSet);
+            inOrder.verify(mockSqlGenerator).createQuerySql(eq(tableName), any(FSProjection.class), any(FSSelection.class), anyList());
+            for (int pos = 0; pos < replacements.length; pos++ ) {
+                inOrder.verify(mockPreparedStatement).setString(eq( pos + 1), eq(replacements[pos]));
+            }
+            inOrder.verify(mockPreparedStatement).executeQuery();
+
+            verify(mockPreparedStatement, times(0)).close();
         }
     }
 

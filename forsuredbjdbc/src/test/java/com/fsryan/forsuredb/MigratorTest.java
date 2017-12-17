@@ -34,7 +34,7 @@ public class MigratorTest {
     }
 
     @Test
-    public void should() {
+    public void shouldCorrectlyIdentifyMigrationResources() {
         List<MigrationSet> actual = new Migrator(mockSerializer).getMigrationSets();
         verify(mockSerializer, times(2)).deserializeMigrationSet(any(InputStream.class));
         assertEquals(Arrays.asList(mockMigrationSet1, mockMigrationSet2), actual);

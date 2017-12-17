@@ -33,8 +33,11 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         }
     };
 
+    @Nonnull
     private final DirectLocator locator;
+    @Nonnull
     private final DBProvider dbProvider;
+    @Nonnull
     private final DBMSIntegrator sqlGenerator;
 
     @SuppressWarnings("unused")
@@ -73,7 +76,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
             }
 
             try (ResultSet resultSet = pStatement.getGeneratedKeys()) {
-                resultSet.next();
+                resultSet.next();   // TODO: not branching on this logic is a little sketchy
                 return new DirectLocator(locator.table, resultSet.getLong(1));
             }
         } catch (SQLException sqle) {
