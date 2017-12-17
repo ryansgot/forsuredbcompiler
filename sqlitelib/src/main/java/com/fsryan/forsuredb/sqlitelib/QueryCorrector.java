@@ -169,13 +169,19 @@ class QueryCorrector {
             final String tableToJoin = joinedTables.contains(join.getChildTable()) ? join.getParentTable() : join.getChildTable();
             joinedTables.add(tableToJoin);
 
-            buf.append(" JOIN ").append(tableToJoin).append(" ON ");
+            buf.append(' ').append(join.getType().toString()).append(" JOIN ").append(tableToJoin);
+            if (join.getType() == FSJoin.Type.NATURAL) {
+                continue;
+            }
+
+            buf.append(" ON ");
             for (Map.Entry<String, String> colEntry : join.getChildToParentColumnMap().entrySet()) {
                 buf.append(join.getChildTable()).append('.').append(colEntry.getKey())
                         .append('=')
                         .append(join.getParentTable()).append('.').append(colEntry.getValue())
                         .append(" AND ");
             }
+
             buf.delete(buf.length() - 5, buf.length());
         }
 

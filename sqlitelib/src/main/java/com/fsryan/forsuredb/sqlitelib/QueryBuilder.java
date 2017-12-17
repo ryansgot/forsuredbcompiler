@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.sqlitelib;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -54,47 +55,45 @@ class QueryBuilder {
         return "DELETE FROM " + table + (whereClause == null || whereClause.isEmpty() ? "" : " WHERE " + whereClause);
     }
 
-    public static String buildJoinQuery(String table,
-                                  String[] projection,
-                                  String joinClause,
-                                  String whereClause,
-                                  String orderBy,
-                                  int limit) {
-        final StringBuilder buf = new StringBuilder("SELECT ");
-
-        if (projection == null || projection.length == 0) {
-            buf.append("* ");
-        } else {
-            for (String column : projection) {
-                buf.append(column).append(", ");
-            }
-            buf.delete(buf.length() - 2, buf.length());
-        }
-
-        return buf.append(" FROM ").append(table)
-                .append(joinClause.isEmpty() ? "" : " " + joinClause)
-                .append(whereClause.isEmpty() ? "" : " WHERE " + whereClause)
-                .append(orderBy.isEmpty() ? "" : " ORDER BY " + orderBy)
-                .append(limit > 0 ? " LIMIT " + limit : "")
-                .append(';')
-                .toString();
+    public static String buildJoinQuery(boolean isCompound,
+                                        boolean isDistinct,
+                                        @Nonnull String table,
+                                        @Nullable String[] projection,
+                                        @Nullable String joinClause,
+                                        @Nullable String whereClause,
+                                        @Nullable String orderBy,
+                                        int limit,
+                                        int offset) {
+        return buildQuery(
+                isCompound,
+                isDistinct,
+                table + (joinClause == null || joinClause.isEmpty() ? "" : " " + joinClause),
+                projection,
+                whereClause,
+                null,
+                null,
+                orderBy,
+                limit == 0 ? null : Integer.toBinaryString(limit),
+                offset == 0 ? null : Integer.toString(offset)
+        );
     }
 
+    // TODO: change signature to accept ints for limit and offset?
     public static String buildQuery(boolean isCompound,
                                     boolean distinct,
-                                    String tables,
-                                    String[] columns,
-                                    String where,
-                                    String groupBy,
-                                    String having,
-                                    String orderBy,
-                                    String limit,
-                                    String offset) {
+                                    @Nonnull String tables,
+                                    @Nullable String[] projection,
+                                    @Nullable String where,
+                                    @Nullable String groupBy,
+                                    @Nullable  String having,
+                                    @Nullable String orderBy,
+                                    @Nullable String limit,
+                                    @Nullable String offset) {
         if ((groupBy == null || groupBy.isEmpty()) && !(having == null || having.isEmpty())) {
-            throw new IllegalArgumentException("HAVING clauses are only permitted when using a groupBy clause");
+            throw new IllegalArgumentException("Cannot have HAVING without GROUP BY");
         }
         if (!(limit == null || limit.isEmpty()) && !SQLITE_LIMIT_PATTERN.matcher(limit).matches()) {
-            throw new IllegalArgumentException("invalid LIMIT clauses:" + limit);
+            throw new IllegalArgumentException("invalid LIMIT clause:" + limit);
         }
 
         StringBuilder queryBuf = new StringBuilder(120);
@@ -102,8 +101,8 @@ class QueryBuilder {
         if (distinct) {
             queryBuf.append("DISTINCT ");
         }
-        if (columns != null && columns.length != 0) {
-            appendColumns(queryBuf, columns);
+        if (projection != null && projection.length != 0) {
+            appendColumns(queryBuf, projection);
         } else {
             queryBuf.append("* ");
         }

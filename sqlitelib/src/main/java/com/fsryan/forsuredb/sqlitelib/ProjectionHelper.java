@@ -17,7 +17,10 @@ import java.util.List;
         this.sqlGenerator = sqlGenerator;
     }
 
-    public boolean isDistinct(@Nonnull Iterable<FSProjection> projections) {
+    public boolean isDistinct(@Nullable Iterable<FSProjection> projections) {
+        if (projections == null) {
+            return false;
+        }
         for (FSProjection projection : projections) {
             if (projection.isDistinct()) {
                 return true;

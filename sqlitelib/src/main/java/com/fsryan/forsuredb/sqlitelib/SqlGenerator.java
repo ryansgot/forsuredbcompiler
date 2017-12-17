@@ -191,7 +191,7 @@ public class SqlGenerator implements DBMSIntegrator {
         final String orderBy = qc.getOrderBy();
         final int limit = qc.getLimit();
         return new SqlForPreparedStatement(
-                buildJoinQuery(table, p, joinStr, where, orderBy, limit),
+                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, limit, qc.getOffset()),
                 qc.getSelectionArgs()
         );
     }

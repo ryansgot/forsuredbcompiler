@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.sqlitelib;
 
 import com.fsryan.forsuredb.api.*;
+import com.fsryan.forsuredb.api.FSJoin.Type;
 import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,19 +27,21 @@ public abstract class SqlGeneratorTest {
 
     static abstract class GenerateSqlForPreparedStatementTest extends SqlGeneratorTest {
 
+        private final String table;
         private final SqlForPreparedStatement expected;
 
-        GenerateSqlForPreparedStatementTest(SqlForPreparedStatement expected) {
+        GenerateSqlForPreparedStatementTest(String table, SqlForPreparedStatement expected) {
+            this.table = table;
             this.expected = expected;
         }
 
         @Test
         public void shouldGenerateCorrectSqlForPreparedStatement() {
-            SqlForPreparedStatement actual = createQuery(generatorUnderTest);
+            SqlForPreparedStatement actual = createQuery(generatorUnderTest, table);
             assertEquals(expected, actual);
         }
 
-        protected abstract SqlForPreparedStatement createQuery(SqlGenerator generator);
+        protected abstract SqlForPreparedStatement createQuery(SqlGenerator generator, String table);
     }
 
     @RunWith(Parameterized.class)
@@ -215,35 +218,33 @@ public abstract class SqlGeneratorTest {
         }
     }
 
-    /*
-            final String[] p = projectionHelper.formatProjection(projection);
-        final String orderBy = expressOrdering(orderings);
-        final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
-        final String limit = qc.getLimit() > 0 ? "LIMIT " + qc.getLimit() : null;
-        final boolean distinct = projection != null && projection.isDistinct();
-        return new SqlForPreparedStatement(
-                buildQuery(distinct, table, p, qc.getSelection(true), null, null, orderBy, limit),
-                qc.getSelectionArgs()
-        );
-     */
-    @RunWith(Parameterized.class)
-    public static class CreateSingleTableQuerySql extends GenerateSqlForPreparedStatementTest {
+    static abstract class QuerySqlCreationTest extends GenerateSqlForPreparedStatementTest {
 
-        private final String table;
-        private final FSProjection projection;
-        private final FSSelection selection;
-        private final List<FSOrdering> orderings;
+        protected final FSSelection selection;
+        protected final List<FSOrdering> orderings;
 
-        public CreateSingleTableQuerySql(String table,
-                                         FSProjection projection,
-                                         FSSelection selection,
-                                         List<FSOrdering> orderings,
-                                         SqlForPreparedStatement expected) {
-            super(expected);
-            this.table = table;
-            this.projection = projection;
+        public QuerySqlCreationTest(String table,
+                                           FSSelection selection,
+                                           List<FSOrdering> orderings,
+                                           SqlForPreparedStatement expected) {
+            super(table, expected);
             this.selection = selection;
             this.orderings = orderings;
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class SingleTableQuerySqlCreation extends QuerySqlCreationTest {
+
+        private final FSProjection projection;
+
+        public SingleTableQuerySqlCreation(String table,
+                                           FSProjection projection,
+                                           FSSelection selection,
+                                           List<FSOrdering> orderings,
+                                           SqlForPreparedStatement expected) {
+            super(table, selection, orderings, expected);
+            this.projection = projection;
         }
 
         @Parameterized.Parameters
@@ -417,8 +418,262 @@ public abstract class SqlGeneratorTest {
         }
 
         @Override
-        protected SqlForPreparedStatement createQuery(SqlGenerator generator) {
+        protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
             return generator.createQuerySql(table, projection, selection, orderings);
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class JoinQuery extends QuerySqlCreationTest {
+
+        private final List<FSJoin> joins;
+        private final List<FSProjection> projections;
+
+        public JoinQuery(String table,
+                         List<FSJoin> joins,
+                         List<FSProjection> projections,
+                         FSSelection selection,
+                         List<FSOrdering> orderings,
+                         SqlForPreparedStatement expected) {
+            super(table, selection, orderings, expected);
+            this.joins = joins;
+            this.projections = projections;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {   // 00: SELECT with null joins should not create join query;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "table",
+                            null,
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM table;",
+                                    new String[0]
+                            )
+                    },
+
+                    // 01-08 are testing kinds of joins
+
+                    {   // 01: SELECT with one natural join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child01",
+                            Arrays.asList(
+                                    new FSJoin(Type.NATURAL, "parent01", "child01", stringMapOf())
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child01 NATURAL JOIN parent01;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 02: SELECT with one left join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child02",
+                            Arrays.asList(
+                                    new FSJoin(Type.LEFT, "parent02", "child02", stringMapOf("parent02_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child02 LEFT JOIN parent02 ON child02.parent02_id=parent02._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 03: SELECT with one inner join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child03",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent03", "child03", stringMapOf("parent03_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child03 INNER JOIN parent03 ON child03.parent03_id=parent03._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 04: SELECT with one outer join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child04",
+                            Arrays.asList(
+                                    new FSJoin(Type.OUTER, "parent04", "child04", stringMapOf("parent04_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child04 OUTER JOIN parent04 ON child04.parent04_id=parent04._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 05: SELECT with one left outer join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child05",
+                            Arrays.asList(
+                                    new FSJoin(Type.LEFT_OUTER, "parent05", "child05", stringMapOf("parent05_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child05 LEFT OUTER JOIN parent05 ON child05.parent05_id=parent05._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 06: SELECT with one cross join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child06",
+                            Arrays.asList(
+                                    new FSJoin(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child06 CROSS JOIN parent06 ON child06.parent06_id=parent06._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 06: SELECT with two joins should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child06",
+                            Arrays.asList(
+                                    new FSJoin(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child06 CROSS JOIN parent06 ON child06.parent06_id=parent06._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 07: SELECT with two joins should properly add the joins;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child07",
+                            Arrays.asList(
+                                    new FSJoin(Type.LEFT, "parent07", "child07", stringMapOf("parent07_id", "_id")),
+                                    new FSJoin(Type.INNER, "child07", "grandchild07", stringMapOf("child07_id", "_id"))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child07 LEFT JOIN parent07 ON child07.parent07_id=parent07._id INNER JOIN grandchild07 ON grandchild07.child07_id=child07._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 08: SELECT with single composite join should properly add the join;
+                            // null projections should use wildcard;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child08",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent08", "child08", stringMapOf(
+                                            "parent08_first_name", "first_name",
+                                            "parent08_last_name", "last_name"
+                                    ))
+                            ),
+                            null,
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT * FROM child08 INNER JOIN parent08 ON child08.parent08_last_name=parent08.last_name AND child08.parent08_first_name=parent08.first_name;",
+                                    new String[0]
+                            )
+                    },
+
+                    // 09 - 11 test the projections
+
+                    {   // 09: SELECT with single join;
+                            // single projection should unambiguously alias the columns;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child09",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent09", "child09", stringMapOf("parent09_id", "_id"))
+                            ),
+                            Arrays.asList(
+                                    createProjection("child09", "col1", "col2")
+                            ),
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT child09.col1 AS child09_col1, child09.col2 AS child09_col2 FROM child09 INNER JOIN parent09 ON child09.parent09_id=parent09._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 10: SELECT with single join;
+                            // multiple projections should unambiguously alias the columns;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child10",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent10", "child10", stringMapOf("parent10_id", "_id"))
+                            ),
+                            Arrays.asList(
+                                    createProjection("child10", "col1", "col2"),
+                                    createProjection("parent10", "col1", "col2")
+                            ),
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT child10.col1 AS child10_col1, child10.col2 AS child10_col2, parent10.col1 AS parent10_col1, parent10.col2 AS parent10_col2 FROM child10 INNER JOIN parent10 ON child10.parent10_id=parent10._id;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 11: SELECT with single join;
+                            // single distinct projection;
+                            // null selection should take away WHERE clause;
+                            // null ordering should take away ORDER BY clause
+                            "child11",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent11", "child11", stringMapOf("parent11_id", "_id"))
+                            ),
+                            Arrays.asList(
+                                    createDistinctProjection("child11", "col1", "col2")
+                            ),
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT DISTINCT child11.col1 AS child11_col1, child11.col2 AS child11_col2 FROM child11 INNER JOIN parent11 ON child11.parent11_id=parent11._id;",
+                                    new String[0]
+                            )
+                    },
+
+                    // Further testing should not be necessary due to the fact that it would be doubling testing with SingleTableQuerySqlCreation
+            });
+        }
+
+        @Override
+        protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
+            return generator.createQuerySql(table, joins, projections, selection, orderings);
         }
     }
 }
