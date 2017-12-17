@@ -24,6 +24,23 @@ public abstract class SqlGeneratorTest {
         generatorUnderTest = new SqlGenerator();
     }
 
+    static abstract class GenerateSqlForPreparedStatementTest extends SqlGeneratorTest {
+
+        private final SqlForPreparedStatement expected;
+
+        GenerateSqlForPreparedStatementTest(SqlForPreparedStatement expected) {
+            this.expected = expected;
+        }
+
+        @Test
+        public void shouldGenerateCorrectSqlForPreparedStatement() {
+            SqlForPreparedStatement actual = createQuery(generatorUnderTest);
+            assertEquals(expected, actual);
+        }
+
+        protected abstract SqlForPreparedStatement createQuery(SqlGenerator generator);
+    }
+
     @RunWith(Parameterized.class)
     public static class InsertionQueryGeneration extends SqlGeneratorTest{
 
@@ -210,24 +227,23 @@ public abstract class SqlGeneratorTest {
         );
      */
     @RunWith(Parameterized.class)
-    public static class CreateSingleTableQuerySql extends SqlGeneratorTest {
+    public static class CreateSingleTableQuerySql extends GenerateSqlForPreparedStatementTest {
 
         private final String table;
         private final FSProjection projection;
         private final FSSelection selection;
         private final List<FSOrdering> orderings;
-        private final SqlForPreparedStatement expected;
 
         public CreateSingleTableQuerySql(String table,
                                          FSProjection projection,
                                          FSSelection selection,
                                          List<FSOrdering> orderings,
                                          SqlForPreparedStatement expected) {
+            super(expected);
             this.table = table;
             this.projection = projection;
             this.selection = selection;
             this.orderings = orderings;
-            this.expected = expected;
         }
 
         @Parameterized.Parameters
@@ -400,10 +416,9 @@ public abstract class SqlGeneratorTest {
             });
         }
 
-        @Test
-        public void shouldGenerateCorrectSqlForPreparedStatement() {
-            SqlForPreparedStatement actual = generatorUnderTest.createQuerySql(table, projection, selection, orderings);
-            assertEquals(expected, actual);
+        @Override
+        protected SqlForPreparedStatement createQuery(SqlGenerator generator) {
+            return generator.createQuerySql(table, projection, selection, orderings);
         }
     }
 }
