@@ -85,6 +85,10 @@ class QueryCorrector {
         return retrieval || (limit <= 0 && offset <= 0) ? where : innerSelectWhereClause();
     }
 
+    public boolean hasCompoundSelect() {
+        return findingLast;
+    }
+
     @Nonnull
     public String getOrderBy() {
         return findingLast && orderBy.isEmpty() ? tableName + "._id ASC" : orderBy;

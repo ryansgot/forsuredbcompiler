@@ -80,7 +80,16 @@ class QueryBuilder {
                 .toString();
     }
 
-    public static String buildQuery(boolean distinct, String tables, String[] columns, String where, String groupBy, String having, String orderBy, String limit) {
+    public static String buildQuery(boolean isCompound,
+                                    boolean distinct,
+                                    String tables,
+                                    String[] columns,
+                                    String where,
+                                    String groupBy,
+                                    String having,
+                                    String orderBy,
+                                    String limit,
+                                    String offset) {
         if ((groupBy == null || groupBy.isEmpty()) && !(having == null || having.isEmpty())) {
             throw new IllegalArgumentException("HAVING clauses are only permitted when using a groupBy clause");
         }
@@ -103,8 +112,12 @@ class QueryBuilder {
         appendClause(queryBuf, " WHERE ", where);
         appendClause(queryBuf, " GROUP BY ", groupBy);
         appendClause(queryBuf, " HAVING ", having);
-        appendClause(queryBuf, " ORDER BY ", orderBy);
-        appendClause(queryBuf, " LIMIT ", limit);
+//        appendClause(queryBuf, " ORDER BY ", orderBy);
+        queryBuf.append(orderBy);                   // <-- TODO: fix this oddity in QueryCorrector or just get rid of QueryCorrector
+        if (!isCompound) {
+            appendClause(queryBuf, " LIMIT ", limit);
+            appendClause(queryBuf, " OFFSET ", offset);
+        }
         return queryBuf.append(';').toString();
     }
 

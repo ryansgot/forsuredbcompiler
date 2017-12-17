@@ -172,10 +172,12 @@ public class SqlGenerator implements DBMSIntegrator {
         final String[] p = projectionHelper.formatProjection(projection);
         final String orderBy = expressOrdering(orderings);
         final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
-        final String limit = qc.getLimit() > 0 ? "LIMIT " + qc.getLimit() : null;
+        final String where = qc.getSelection(true);
+        final String limit = qc.getLimit() > 0 ? Integer.toString(qc.getLimit()) : null;
+        final String offset = qc.getOffset() > 0 ? Integer.toString(qc.getOffset()) : null;
         final boolean distinct = projection != null && projection.isDistinct();
         return new SqlForPreparedStatement(
-                buildQuery(distinct, table, p, qc.getSelection(true), null, null, orderBy, limit),
+                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, limit, offset),
                 qc.getSelectionArgs()
         );
     }

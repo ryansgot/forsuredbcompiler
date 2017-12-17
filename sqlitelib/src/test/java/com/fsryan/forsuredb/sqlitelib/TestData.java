@@ -18,6 +18,9 @@
 package com.fsryan.forsuredb.sqlitelib;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
+import com.fsryan.forsuredb.api.FSProjection;
+import com.fsryan.forsuredb.api.FSSelection;
+import com.fsryan.forsuredb.api.Limits;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
@@ -165,6 +168,88 @@ public class TestData {
         return fki(foreignKeyTableName)
                 .updateAction(ForeignKey.ChangeAction.RESTRICT.toString())
                 .deleteAction(ForeignKey.ChangeAction.RESTRICT.toString());
+    }
+
+    static FSSelection createSelection(String where, String... replacements) {
+        return createSelection(null, where, replacements);
+    }
+
+    static FSSelection createSelection(final Limits limits, final String where, final String... replacements) {
+        return new FSSelection() {
+
+            @Override
+            public String where() {
+                return where;
+            }
+
+            @Override
+            public String[] replacements() {
+                return replacements;
+            }
+
+            @Override
+            public Limits limits() {
+                return limits;
+            }
+        };
+    }
+
+    static Limits createLimits(int count) {
+        return createLimits(count, 0);
+    }
+
+    static Limits createLimits(int count, int offset) {
+        return createLimits(count, offset, false);
+    }
+
+    static Limits createLimits(int count, boolean isBottom) {
+        return createLimits(count, 0, isBottom);
+    }
+
+    static Limits createLimits(final int count, final int offset, final boolean isBottom) {
+        return new Limits() {
+            @Override
+            public int count() {
+                return count;
+            }
+
+            @Override
+            public int offset() {
+                return offset;
+            }
+
+            @Override
+            public boolean isBottom() {
+                return isBottom;
+            }
+        };
+    }
+
+    static FSProjection createProjection(String table, String... columns) {
+        return createProjection(false, table, columns);
+    }
+
+    static FSProjection createDistinctProjection(String table, String... columns) {
+        return createProjection(true, table, columns);
+    }
+
+    private static FSProjection createProjection(final boolean distinct, final String table, final String... columns) {
+        return new FSProjection() {
+            @Override
+            public String tableName() {
+                return table;
+            }
+
+            @Override
+            public String[] columns() {
+                return columns;
+            }
+
+            @Override
+            public boolean isDistinct() {
+                return distinct;
+            }
+        };
     }
 
     private static ForeignKeyInfo.Builder fki(String foreignKeyTableName) {
