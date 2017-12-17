@@ -366,7 +366,7 @@ public abstract class SqlGeneratorTest {
                             )
                     },
                     {   // 10: SELECT with non-null projection and multiple columns--distinct
-                            // non-null selection with multiple parameters should have correct WHERE clause--with limit from top from bottom
+                            // non-null selection with multiple parameters should have correct WHERE clause--with limit from bottom
                             // ordering with multiple conditions should have correct ORDER BY clause
                             "table10",
                             createDistinctProjection("table10", "col01", "col02"),
@@ -378,6 +378,22 @@ public abstract class SqlGeneratorTest {
                             new SqlForPreparedStatement(
                                     // from the spec: In a compound SELECT, only the last or right-most simple SELECT may contain a LIMIT clause
                                     "SELECT DISTINCT table10.col01 AS table10_col01, table10.col02 AS table10_col02 FROM table10 WHERE table10.rowid IN (SELECT table10.rowid FROM table10 WHERE table10.col01 < ? AND table10.col01 > ? ORDER BY table10._id ASC, table10.modified DESC LIMIT 3) ORDER BY table10._id DESC, table10.modified ASC;",
+                                    new String[] {"5", "0"}
+                            )
+                    },
+                    {   // 11: SELECT with non-null projection and multiple columns--distinct
+                            // non-null selection with multiple parameters should have correct WHERE clause--with limit and offset from bottom
+                            // ordering with multiple conditions should have correct ORDER BY clause
+                            "table11",
+                            createDistinctProjection("table11", "col01", "col02"),
+                            createSelection(createLimits(3, 4, true), "table11.col01 < ? AND table11.col01 > ?", "5", "0"),
+                            Arrays.asList(
+                                    new FSOrdering("table11", "_id", OrderBy.ORDER_DESC),
+                                    new FSOrdering("table11", "modified", OrderBy.ORDER_ASC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    // from the spec: In a compound SELECT, only the last or right-most simple SELECT may contain a LIMIT clause
+                                    "SELECT DISTINCT table11.col01 AS table11_col01, table11.col02 AS table11_col02 FROM table11 WHERE table11.rowid IN (SELECT table11.rowid FROM table11 WHERE table11.col01 < ? AND table11.col01 > ? ORDER BY table11._id ASC, table11.modified DESC LIMIT 3 OFFSET 4) ORDER BY table11._id DESC, table11.modified ASC;",
                                     new String[] {"5", "0"}
                             )
                     }
