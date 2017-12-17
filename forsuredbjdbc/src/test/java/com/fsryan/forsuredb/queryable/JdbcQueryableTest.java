@@ -163,32 +163,6 @@ public abstract class JdbcQueryableTest {
         }
     }
 
-    /*
-
-        if (recordContainer.keySet().isEmpty()) {
-            return 0;
-        }
-
-        final List<String> columns = new ArrayList<>(recordContainer.keySet());
-        SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
-        try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
-            int pos;
-            for (pos = 0; pos < columns.size(); pos++) {
-                //noinspection ConstantConditions
-                bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
-            }
-            if (pssql.getReplacements() != null) {
-                for (String replacement : pssql.getReplacements()) {
-                    pStatement.setString(pos + 1, replacement);
-                    pos++;
-                }
-            }
-            return pStatement.executeUpdate();
-        } catch (SQLException sqle) {
-            throw new RuntimeException(sqle);
-        }
-     */
-
     public static class Update extends JdbcQueryableTest {
 
         private String[] replacements = new String[] {"r1", "r2", "r3"};

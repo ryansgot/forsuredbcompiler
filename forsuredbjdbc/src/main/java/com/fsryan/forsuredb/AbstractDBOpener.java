@@ -10,7 +10,7 @@ import java.util.Properties;
 public abstract class AbstractDBOpener {
 
     private Connection db;
-    private boolean mIsInitializing;
+    private boolean isInitializing;
 
     @Nonnull private final String jdbcUrl;
     @Nonnull private final Properties connectionProps;
@@ -52,13 +52,13 @@ public abstract class AbstractDBOpener {
             }
         }
 
-        if (mIsInitializing) {
+        if (isInitializing) {
             throw new IllegalStateException("getDatabase called recursively");
         }
 
         Connection tempDb = this.db;
         try {
-            mIsInitializing = true;
+            isInitializing = true;
             if (tempDb != null) {
                 if (writable && tempDb.isReadOnly()) {
                     tempDb.setReadOnly(false);
@@ -123,7 +123,7 @@ public abstract class AbstractDBOpener {
             this.db = tempDb;
             return tempDb;
         } finally {
-            mIsInitializing = false;
+            isInitializing = false;
             if (tempDb != null && tempDb != this.db) {
                 tempDb.close();
             }
@@ -184,6 +184,7 @@ public abstract class AbstractDBOpener {
     }
 
     private Properties connectionPropsWithReadOnly() {
+        // TODO: check whether this is accurate
         if (connectionProps.getProperty("open_mode", "0").equals("1")) {   // <-- 1 -> read only
             return connectionProps;
         }
