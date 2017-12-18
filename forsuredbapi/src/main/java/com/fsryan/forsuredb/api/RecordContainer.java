@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import java.util.Set;
+
 /**
  * <p>
  *     Contains a Record that is yet to be inserted or updated in the database. This <i>IS NOT</i> a
@@ -40,6 +42,7 @@ public interface RecordContainer {
     void put(String column, double value);
     void put(String column, float value);
     void put(String column, byte[] value);
+    Set<String> keySet();
 
     /**
      * <p>

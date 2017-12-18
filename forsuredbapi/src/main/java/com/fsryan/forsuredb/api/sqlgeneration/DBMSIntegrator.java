@@ -1,12 +1,11 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
-import com.fsryan.forsuredb.api.FSOrdering;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -40,10 +39,10 @@ public interface DBMSIntegrator {
      *     a command to do nothing.
      * </p>
      * @param tableName the name of the table to which the row should be inserted
-     * @param columnValueMap map of columns to the values to be inserted
+     * @param columns map of columns to the values to be inserted
      * @return the raw SQL query for insertion of a record in the table.
      */
-    String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap);
+    String newSingleRowInsertionSql(String tableName, List<String> columns);
 
     /**
      * <p>
@@ -142,4 +141,14 @@ public interface DBMSIntegrator {
      * @return the OR symbol/keyword
      */
     String orKeyword();
+
+    SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings);
+
+    SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings);
+
+    boolean alwaysUnambiguouslyAliasColumns();
+
+    SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings);
+
+    SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings);
 }

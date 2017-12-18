@@ -29,8 +29,8 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
     static {
         try {
             columnQualifiedTypeToRetrieverMethodNameMap.put(
-                    byte[].class.getName(),
-                    Retriever.class.getDeclaredMethod("getBlob", String.class).getName()
+                    "byte[]",
+                    Retriever.class.getDeclaredMethod("getBytes", String.class).getName()
             );
             columnQualifiedTypeToRetrieverMethodNameMap.put(
                     float.class.getName(),
@@ -82,7 +82,7 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
         returnTypeMap.put(Double.class.getName(), Double.class);
         returnTypeMap.put(float.class.getName(), float.class);
         returnTypeMap.put(Float.class.getName(), Float.class);
-        returnTypeMap.put(byte[].class.getName(), byte[].class);
+        returnTypeMap.put("byte[]", byte[].class);
         returnTypeMap.put(String.class.getName(), String.class);
         returnTypeMap.put(BigInteger.class.getName(), BigInteger.class);
         returnTypeMap.put(BigDecimal.class.getName(), BigDecimal.class);

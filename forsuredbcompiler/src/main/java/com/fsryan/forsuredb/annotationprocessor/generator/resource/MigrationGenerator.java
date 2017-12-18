@@ -72,7 +72,7 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
             return null;
         }
 
-        return new Gson().toJson(migrationSet);
+        return new FSDbInfoGsonSerializer().serialize(migrationSet);
     }
 
     private String getRelativeFileName() {

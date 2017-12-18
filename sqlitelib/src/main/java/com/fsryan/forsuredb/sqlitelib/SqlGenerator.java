@@ -17,18 +17,21 @@
  */
 package com.fsryan.forsuredb.sqlitelib;
 
-import com.fsryan.forsuredb.api.FSOrdering;
-import com.fsryan.forsuredb.api.Finder;
-import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -55,10 +58,13 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     // visible for testing
-    /*package*/ static final String EMPTY_SQL = ";";
     private static final Set<String> columnExclusionFilter = new HashSet<>(Arrays.asList("_id", "created", "modified"));
 
-    public SqlGenerator() {}
+    private final ProjectionHelper projectionHelper;
+
+    public SqlGenerator() {
+        projectionHelper = new ProjectionHelper(this);
+    }
 
     @Override
     public List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer serializer) {
@@ -85,39 +91,21 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap) {
-        if (tableName == null || tableName.isEmpty() || columnValueMap == null || columnValueMap.isEmpty()) {
-            return EMPTY_SQL;
+    public String newSingleRowInsertionSql(String tableName, List<String> columns) {
+        if (tableName == null || tableName.isEmpty() || columns == null || columns.isEmpty()) {
+            return QueryBuilder.EMPTY_SQL;
         }
-
-        final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
-        final StringBuilder valueBuf = new StringBuilder();
-
-        for (Map.Entry<String, String> colValEntry : columnValueMap.entrySet()) {
-            final String columnName = colValEntry.getKey();
-            if (columnName.isEmpty() || columnExclusionFilter.contains(columnName)) {
-                continue;   // <-- never insert _id, created, or modified columns
-            }
-            final String val = colValEntry.getValue();
-            if (val != null && !val.isEmpty()) {
-                queryBuf.append(columnName).append(", ");
-                valueBuf.append("'").append(val).append("', ");
-            }
-        }
-
-        queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
-        valueBuf.delete(valueBuf.length() - 2, valueBuf.length());  // <-- remove final ", "
-        return queryBuf.append(") VALUES (").append(valueBuf.toString()).append(");").toString();
+        return singleRecordInsertion(tableName, columns);
     }
 
     @Override
     public String unambiguousColumn(String tableName, String columnName) {
-        return tableName + "." + columnName;
+        return tableName + '.' + columnName;
     }
 
     @Override
     public String unambiguousRetrievalColumn(String tableName, String columnName) {
-        return unambiguousColumn(tableName, columnName);
+        return tableName + '_' + columnName;
     }
 
     @Override
@@ -179,6 +167,70 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public String orKeyword() {
         return "OR";
+    }
+
+    @Override
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return true;
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(@Nonnull String table,
+                                                  @Nullable FSProjection projection,
+                                                  @Nullable FSSelection selection,
+                                                  @Nullable List<FSOrdering> orderings) {
+        final String[] p = projectionHelper.formatProjection(projection);
+        final String orderBy = expressOrdering(orderings);
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
+        final String where = qc.getSelection(true);
+        final String limit = qc.getLimit() > 0 ? Integer.toString(qc.getLimit()) : null;
+        final String offset = qc.getOffset() > 0 ? Integer.toString(qc.getOffset()) : null;
+        final boolean distinct = projection != null && projection.isDistinct();
+        return new SqlForPreparedStatement(
+                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, limit, offset),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(@Nonnull String table,
+                                                  @Nullable List<FSJoin> joins,
+                                                  @Nullable List<FSProjection> projections,
+                                                  @Nullable FSSelection selection,
+                                                  @Nullable List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, joins, selection, expressOrdering(orderings));
+        final String[] p = projectionHelper.formatProjection(projections);
+        final String joinStr = qc.getJoinString();
+        final String where = qc.getSelection(true);
+        final String orderBy = qc.getOrderBy();
+        final int limit = qc.getLimit();
+        return new SqlForPreparedStatement(
+                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, limit, qc.getOffset()),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
+    public SqlForPreparedStatement createUpdateSql(@Nonnull String table,
+                                                   @Nonnull List<String> updateColumns,
+                                                   @Nullable FSSelection selection,
+                                                   @Nullable List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
+        return new SqlForPreparedStatement(
+                buildUpdate(table, updateColumns, qc.getSelection(false)),
+                qc.getSelectionArgs()
+        );
+    }
+
+    @Override
+    public SqlForPreparedStatement createDeleteSql(@Nonnull String table,
+                                                   @Nullable FSSelection selection,
+                                                   @Nullable List<FSOrdering> orderings) {
+        final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
+        return new SqlForPreparedStatement(
+                buildDelete(table, qc.getSelection(false)),
+                qc.getSelectionArgs()
+        );
     }
 
     private static boolean isMigrationHandledOnCreate(Migration m, Map<String, TableInfo> targetSchema) {

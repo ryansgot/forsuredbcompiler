@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.api;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>
@@ -56,19 +57,19 @@ public final class TypedRecordContainer implements RecordContainer {
 
     @Override
     public void put(String column, int value) {
-        columnToValueMap.put(column, Integer.toString(value));
+        columnToValueMap.put(column, value);
         columnToTypeMap.put(column, int.class);
     }
 
     @Override
     public void put(String column, double value) {
-        columnToValueMap.put(column, Double.toString(value));
+        columnToValueMap.put(column, value);
         columnToTypeMap.put(column, double.class);
     }
 
     @Override
     public void put(String column, float value) {
-        columnToValueMap.put(column, Float.toString(value));
+        columnToValueMap.put(column, value);
         columnToTypeMap.put(column, float.class);
     }
 
@@ -82,6 +83,11 @@ public final class TypedRecordContainer implements RecordContainer {
     public void clear() {
         columnToValueMap.clear();
         columnToTypeMap.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return columnToValueMap.keySet();
     }
 
     public Type getType(String column) {
@@ -99,18 +105,6 @@ public final class TypedRecordContainer implements RecordContainer {
     public <T> T typedGet(String column) {
         if (!columnToValueMap.containsKey(column)) {
             return null;
-        }
-
-        Object value = columnToValueMap.get(column);
-        Type type = columnToTypeMap.get(column);
-        if (type.equals(int.class)) {
-            return (T) Integer.valueOf(value.toString());
-        }
-        if (type.equals(float.class)) {
-            return (T) Float.valueOf(value.toString());
-        }
-        if (type.equals(double.class)) {
-            return (T) Double.valueOf(value.toString());
         }
         return (T) get(column);
     }

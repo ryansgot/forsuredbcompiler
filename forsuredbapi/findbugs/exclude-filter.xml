@@ -17,6 +17,15 @@
         <Bug pattern="DM_DEFAULT_ENCODING" />
     </Match>
 
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
     <!-- TODO: Remove these when you are able to write a robust set of tests -->
     <Match>
         <Or>

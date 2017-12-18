@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
@@ -26,7 +27,7 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap) {
+    public String newSingleRowInsertionSql(String tableName, List<String> columns) {
         return "";
     }
 
@@ -78,5 +79,30 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     @Override
     public String orKeyword() {
         return "";
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return false;
+    }
+
+    @Override
+    public SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
+    }
+
+    @Override
+    public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
     }
 }

@@ -119,7 +119,7 @@ import java.util.Map;
     private SaveResult<U> performUpsert() {
         Retriever retriever = queryable.query(null, selection, null);
         try {
-            if (retriever == null || retriever.getCount() < 1) {
+            if (retriever == null || !retriever.moveToFirst()) {
                 return performInsert();
             }
             return performUpdate();

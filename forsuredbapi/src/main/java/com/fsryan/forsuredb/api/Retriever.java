@@ -17,19 +17,21 @@
  */
 package com.fsryan.forsuredb.api;
 
+import java.io.Closeable;
+
 /**
  * <p>
  *     An interface capable of pulling information from a database query
  * </p>
  * @author Ryan Scott
  */
-public interface Retriever {
+public interface Retriever extends Closeable {
     String getString(String column);
     int getInt(String column);
     long getLong(String column);
     double getDouble(String column);
     float getFloat(String column);
-    byte[] getBlob(String column);
+    byte[] getBytes(String column);
     int getCount();
 
     boolean isClosed();

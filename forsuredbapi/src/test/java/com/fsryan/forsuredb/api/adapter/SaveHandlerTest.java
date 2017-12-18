@@ -322,8 +322,9 @@ public abstract class SaveHandlerTest<U> {
         @Test
         public void shouldCallUpdateWithSelectionCriteriaWhenRecordsMatchingFSSelectionExist() throws Throwable {
             Retriever mockRetriever = mock(Retriever.class);
-            when(mockRetriever.getCount()).thenReturn(1);
-            when(mockFSQueryable.query(null, mockFSSelection, null)).thenReturn(mockRetriever);
+            when(mockRetriever.moveToFirst()).thenReturn(true);
+            when(mockFSQueryable.query(null, mockFSSelection, null))
+                    .thenReturn(mockRetriever);
             shut.invoke(shut, FSSaveApi.class.getMethod("save"), new Class<?>[0]);
             verify(mockFSQueryable, times(0)).insert(mockRecordContainer);
             verify(mockFSQueryable).update(eq(mockRecordContainer), eq(mockFSSelection), any(List.class));
