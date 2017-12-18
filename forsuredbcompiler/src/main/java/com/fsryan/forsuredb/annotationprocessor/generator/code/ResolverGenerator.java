@@ -23,11 +23,10 @@ public class ResolverGenerator extends JavaSourceGenerator {
     private List<ColumnInfo> columnsSortedByName;
     private final TypeName[] parameterNames;
     private final TypeName generatedClassName;
-    private final TypeName getClassName;
-    private final TypeName setClassName;
     private final TypeName finderClassName;
     private final TypeName orderByClassName;
     private final TypeName getterClassName;
+    private final TypeName setterClassName;
 
     public ResolverGenerator(ProcessingEnvironment processingEnv, TableInfo table, TableContext targetContext) {
         super(processingEnv, table.qualifiedClassName() + "Resolver");
@@ -36,11 +35,10 @@ public class ResolverGenerator extends JavaSourceGenerator {
         parentJoins = createParentJoins(table, targetContext);
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         generatedClassName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver");
-        getClassName = ClassName.bestGuess(table.qualifiedClassName());
-        setClassName = ClassName.bestGuess(table.qualifiedClassName() + "SaveApi");
         finderClassName = ClassName.bestGuess(table.qualifiedClassName() + "Finder");
         orderByClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
         getterClassName = ClassName.bestGuess(table.qualifiedClassName() + "Getter");
+        setterClassName = ClassName.bestGuess(table.qualifiedClassName() + "Setter");
         parameterNames = createParameterNames(table).toArray(new TypeName[0]);
     }
 
@@ -63,6 +61,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .build())
                 .build());
         codeBuilder.addMethod(getApiMethod());
+        codeBuilder.addMethod(setMethod());
         addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
@@ -76,9 +75,22 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return MethodSpec.methodBuilder("getApi")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(Override.class)
-                .returns(ClassName.bestGuess(table.qualifiedClassName()))
+                .returns(getterClassName)
                 .addStatement("return $T.$N()", getterClassName, "inst")
                 .build();
+    }
+
+    private MethodSpec setMethod() {
+        return MethodSpec.methodBuilder("set")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addAnnotation(Override.class)
+                .returns(ClassName.bestGuess(table.qualifiedClassName()))
+                .addStatement("return new $T(\ninfoFactory.createQueryable(lookupResource)," +
+                        "\ndetermineSelection(false)," +
+                        "\ndetermineOrderings(false)," +
+                        "\ninfoFactory.createRecordContainer()\n)"
+                        , setterClassName
+                ).build();
     }
 
     private static List<Pair<TableInfo, TableForeignKeyInfo>> createParentJoins(TableInfo table, TableContext targetContext) {
@@ -342,19 +354,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
     }
 
     private void addAbstractMethodImplementations(TypeSpec.Builder codeBuilder) {
-        codeBuilder.addMethod(MethodSpec.methodBuilder("getApiClass")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(ParameterizedTypeName.get(ClassName.get(Class.class), getClassName))
-                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName()))
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("setApiClass")
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(ParameterizedTypeName.get(ClassName.get(Class.class), setClassName))
-                        .addStatement("return $L.class", CodeUtil.simpleClassNameFrom(table.qualifiedClassName() + "SaveApi"))
-                        .build())
-                .addMethod(MethodSpec.methodBuilder("projection")
+        codeBuilder.addMethod(MethodSpec.methodBuilder("projection")
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(FSProjection.class)
@@ -388,8 +388,8 @@ public class ResolverGenerator extends JavaSourceGenerator {
         }
         ret.add(ClassName.bestGuess(getResultParameter()));
         ret.add(ClassName.bestGuess(getRecordContainer()));
-        ret.add(getClassName);
-        ret.add(setClassName);
+        ret.add(getterClassName);
+        ret.add(setterClassName);
         ret.add(ParameterizedTypeName.get((ClassName) finderClassName, TypeVariableName.get("T")));
         ret.add(ParameterizedTypeName.get((ClassName) orderByClassName, TypeVariableName.get("T")));
         return ret;
