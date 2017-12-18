@@ -28,10 +28,17 @@ public abstract class SqlGeneratorTest {
     static abstract class GenerateSqlForPreparedStatementTest extends SqlGeneratorTest {
 
         private final String table;
+        protected final FSSelection selection;
+        protected final List<FSOrdering> orderings;
         private final SqlForPreparedStatement expected;
 
-        GenerateSqlForPreparedStatementTest(String table, SqlForPreparedStatement expected) {
+        public GenerateSqlForPreparedStatementTest(String table,
+                                    FSSelection selection,
+                                    List<FSOrdering> orderings,
+                                    SqlForPreparedStatement expected) {
             this.table = table;
+            this.selection = selection;
+            this.orderings = orderings;
             this.expected = expected;
         }
 
@@ -218,23 +225,8 @@ public abstract class SqlGeneratorTest {
         }
     }
 
-    static abstract class QuerySqlCreationTest extends GenerateSqlForPreparedStatementTest {
-
-        protected final FSSelection selection;
-        protected final List<FSOrdering> orderings;
-
-        public QuerySqlCreationTest(String table,
-                                           FSSelection selection,
-                                           List<FSOrdering> orderings,
-                                           SqlForPreparedStatement expected) {
-            super(table, expected);
-            this.selection = selection;
-            this.orderings = orderings;
-        }
-    }
-
     @RunWith(Parameterized.class)
-    public static class SingleTableQuerySqlCreation extends QuerySqlCreationTest {
+    public static class SingleTableQuerySqlCreation extends GenerateSqlForPreparedStatementTest {
 
         private final FSProjection projection;
 
@@ -424,7 +416,7 @@ public abstract class SqlGeneratorTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class JoinQuery extends QuerySqlCreationTest {
+    public static class JoinQuery extends GenerateSqlForPreparedStatementTest {
 
         private final List<FSJoin> joins;
         private final List<FSProjection> projections;
@@ -667,6 +659,27 @@ public abstract class SqlGeneratorTest {
                             )
                     },
 
+                    // should correctly pass through limit and offset
+
+                    {   // 12: SELECT with single join;
+                            // single distinct projection;
+                            // selection with limit and offset;
+                            // null ordering should take away ORDER BY clause
+                            "child12",
+                            Arrays.asList(
+                                    new FSJoin(Type.INNER, "parent12", "child12", stringMapOf("parent12_id", "_id"))
+                            ),
+                            Arrays.asList(
+                                    createDistinctProjection("child12", "col1", "col2")
+                            ),
+                            createSelection(createLimits(5, 20), null, null),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "SELECT DISTINCT child12.col1 AS child12_col1, child12.col2 AS child12_col2 FROM child12 INNER JOIN parent12 ON child12.parent12_id=parent12._id LIMIT 5 OFFSET 20;",
+                                    new String[0]
+                            )
+                    }
+
                     // Further testing should not be necessary due to the fact that it would be doubling testing with SingleTableQuerySqlCreation
             });
         }
@@ -674,6 +687,213 @@ public abstract class SqlGeneratorTest {
         @Override
         protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
             return generator.createQuerySql(table, joins, projections, selection, orderings);
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class DeleteQuery extends GenerateSqlForPreparedStatementTest {
+
+        public DeleteQuery(String table,
+                           FSSelection selection,
+                           List<FSOrdering> orderings,
+                           SqlForPreparedStatement expected) {
+            super(table, selection, orderings, expected);
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {   // 00: DELETE with null selection should take away WHERE clause;
+                            // null ordering should NOT have inner select query
+                            "table",
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 01: DELETE with non null selection and no limits should NOT have where clause;
+                            // null ordering should NOT have inner select query
+                            "table01",
+                            createSelection("table01.col1=? AND table01.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table01 WHERE table01.col1=? AND table01.col2<?;",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 02: DELETE with non null selection and limit should have inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table02",
+                            createSelection(createLimits(5), "table02.col1=? AND table02.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table02 WHERE table02.rowid IN (SELECT table02.rowid FROM table02 WHERE table02.col1=? AND table02.col2<? ORDER BY table02._id ASC LIMIT 5);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 03: DELETE with non null selection and limit and offset should have correct inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table03",
+                            createSelection(createLimits(5, 9), "table03.col1=? AND table03.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table03 WHERE table03.rowid IN (SELECT table03.rowid FROM table03 WHERE table03.col1=? AND table03.col2<? ORDER BY table03._id ASC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 04: DELETE with non null selection and limit and offset from bottom should have correct inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table04",
+                            createSelection(createLimits(5, 9, true), "table04.col1=? AND table04.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table04 WHERE table04.rowid IN (SELECT table04.rowid FROM table04 WHERE table04.col1=? AND table04.col2<? ORDER BY table04._id DESC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 05: DELETE with non null selection and limit and offset should have correct inner SELECT;
+                            // non-null ordering should be correctly applied to inner query
+                            "table05",
+                            createSelection(createLimits(5, 9), "table05.col1=? AND table05.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table05", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table05", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table05 WHERE table05.rowid IN (SELECT table05.rowid FROM table05 WHERE table05.col1=? AND table05.col2<? ORDER BY table05.col2 ASC, table05.col1 DESC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 06: DELETE with non null selection and limit and offset and from bottom should have correct inner SELECT (flipping the order);
+                            // non-null ordering should be correctly applied to inner query
+                            "table06",
+                            createSelection(createLimits(5, 9, true), "table06.col1=? AND table06.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table06", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table06", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table06 WHERE table06.rowid IN (SELECT table06.rowid FROM table06 WHERE table06.col1=? AND table06.col2<? ORDER BY table06.col2 DESC, table06.col1 ASC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+            });
+        }
+
+        @Override
+        protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
+            return generator.createDeleteSql(table, selection, orderings);
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class UpdateQuery extends GenerateSqlForPreparedStatementTest {
+
+        private final List<String> updateColumns;
+
+        public UpdateQuery(String table,
+                           List<String> updateColumns,
+                           FSSelection selection,
+                           List<FSOrdering> orderings,
+                           SqlForPreparedStatement expected) {
+            super(table, selection, orderings, expected);
+            this.updateColumns = updateColumns;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {   // 00: UPDATE with null selection should take away WHERE clause;
+                            // null ordering should NOT have inner select query
+                            "table",
+                            Arrays.asList("col1", "col2"),
+                            null,
+                            null,
+                            new SqlForPreparedStatement(
+                                    "UPDATE table SET col1=?,col2=?;",
+                                    new String[0]
+                            )
+                    },
+                    {   // 01: UPDATE with non null selection and no limits should NOT have where clause;
+                            // null ordering should NOT have inner select query
+                            "table01",
+                            Arrays.asList("col1", "col2"),
+                            createSelection("table01.col1=? AND table01.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "UPDATE table01 SET col1=?,col2=? WHERE table01.col1=? AND table01.col2<?;",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 02: UPDATE with non null selection and limit should have inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table02",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(5), "table02.col1=? AND table02.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "UPDATE table02 SET col1=?,col2=? WHERE table02.rowid IN (SELECT table02.rowid FROM table02 WHERE table02.col1=? AND table02.col2<? ORDER BY table02._id ASC LIMIT 5);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 03: UPDATE with non null selection and limit and offset should have correct inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table03",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(5, 9), "table03.col1=? AND table03.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "UPDATE table03 SET col1=?,col2=? WHERE table03.rowid IN (SELECT table03.rowid FROM table03 WHERE table03.col1=? AND table03.col2<? ORDER BY table03._id ASC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 04: UPDATE with non null selection and limit and offset from bottom should have correct inner SELECT;
+                            // null ordering should NOT have inner select query
+                            "table04",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(5, 9, true), "table04.col1=? AND table04.col2<?", new String[] {"hello", "5"}),
+                            null,
+                            new SqlForPreparedStatement(
+                                    "UPDATE table04 SET col1=?,col2=? WHERE table04.rowid IN (SELECT table04.rowid FROM table04 WHERE table04.col1=? AND table04.col2<? ORDER BY table04._id DESC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 05: UPDATE with non null selection and limit and offset should have correct inner SELECT;
+                            // non-null ordering should be correctly applied to inner query
+                            "table05",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(5, 9), "table05.col1=? AND table05.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table05", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table05", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "UPDATE table05 SET col1=?,col2=? WHERE table05.rowid IN (SELECT table05.rowid FROM table05 WHERE table05.col1=? AND table05.col2<? ORDER BY table05.col2 ASC, table05.col1 DESC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 06: UPDATE with non null selection and limit and offset and from bottom should have correct inner SELECT (flipping the order);
+                            // non-null ordering should be correctly applied to inner query
+                            "table06",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(5, 9, true), "table06.col1=? AND table06.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table06", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table06", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "UPDATE table06 SET col1=?,col2=? WHERE table06.rowid IN (SELECT table06.rowid FROM table06 WHERE table06.col1=? AND table06.col2<? ORDER BY table06.col2 DESC, table06.col1 ASC LIMIT 5 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+            });
+        }
+
+        @Override
+        protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
+            return generator.createUpdateSql(table, updateColumns, selection, orderings);
         }
     }
 }

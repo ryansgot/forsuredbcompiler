@@ -25,6 +25,8 @@ import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -168,7 +170,15 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return true;
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(@Nonnull String table,
+                                                  @Nullable FSProjection projection,
+                                                  @Nullable FSSelection selection,
+                                                  @Nullable List<FSOrdering> orderings) {
         final String[] p = projectionHelper.formatProjection(projection);
         final String orderBy = expressOrdering(orderings);
         final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
@@ -183,7 +193,11 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+    public SqlForPreparedStatement createQuerySql(@Nonnull String table,
+                                                  @Nullable List<FSJoin> joins,
+                                                  @Nullable List<FSProjection> projections,
+                                                  @Nullable FSSelection selection,
+                                                  @Nullable List<FSOrdering> orderings) {
         final QueryCorrector qc = new QueryCorrector(table, joins, selection, expressOrdering(orderings));
         final String[] p = projectionHelper.formatProjection(projections);
         final String joinStr = qc.getJoinString();
@@ -197,12 +211,10 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public boolean alwaysUnambiguouslyAliasColumns() {
-        return true;
-    }
-
-    @Override
-    public SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings) {
+    public SqlForPreparedStatement createUpdateSql(@Nonnull String table,
+                                                   @Nonnull List<String> updateColumns,
+                                                   @Nullable FSSelection selection,
+                                                   @Nullable List<FSOrdering> orderings) {
         final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
         return new SqlForPreparedStatement(
                 buildUpdate(table, updateColumns, qc.getSelection(false)),
@@ -211,7 +223,9 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+    public SqlForPreparedStatement createDeleteSql(@Nonnull String table,
+                                                   @Nullable FSSelection selection,
+                                                   @Nullable List<FSOrdering> orderings) {
         final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
         return new SqlForPreparedStatement(
                 buildDelete(table, qc.getSelection(false)),

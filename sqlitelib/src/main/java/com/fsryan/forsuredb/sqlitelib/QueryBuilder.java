@@ -48,11 +48,11 @@ class QueryBuilder {
             i++;
         }
         appendClause(queryBuf, " WHERE ", whereClause);
-        return queryBuf.toString();
+        return queryBuf.append(';').toString();
     }
 
     public static String buildDelete(String table, String whereClause) {
-        return "DELETE FROM " + table + (whereClause == null || whereClause.isEmpty() ? "" : " WHERE " + whereClause);
+        return "DELETE FROM " + table + (whereClause == null || whereClause.isEmpty() ? "" : " WHERE " + whereClause) + ';';
     }
 
     public static String buildJoinQuery(boolean isCompound,
@@ -73,7 +73,7 @@ class QueryBuilder {
                 null,
                 null,
                 orderBy,
-                limit == 0 ? null : Integer.toBinaryString(limit),
+                limit == 0 ? null : Integer.toString(limit),
                 offset == 0 ? null : Integer.toString(offset)
         );
     }
