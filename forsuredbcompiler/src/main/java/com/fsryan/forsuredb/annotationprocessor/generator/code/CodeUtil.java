@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
@@ -28,7 +29,15 @@ import static com.google.common.base.Strings.isNullOrEmpty;
     private static final String LOG_TAG = CodeUtil.class.getSimpleName();
 
     public static TypeName typeNameOf(ColumnInfo column) {
-        return isPrimitive(column) ? primitiveTypeOf(column) : ClassName.bestGuess(column.qualifiedType());
+        return isPrimitive(column)
+                ? primitiveTypeOf(column)
+                : isByteArrayColumn(column)
+                ? ArrayTypeName.of(byte.class)
+                : ClassName.bestGuess(column.qualifiedType());
+    }
+
+    public static boolean isByteArrayColumn(ColumnInfo column) {
+        return column.qualifiedType().equals("byte[]");
     }
 
     public static TypeName primitiveTypeOf(ColumnInfo column) {
