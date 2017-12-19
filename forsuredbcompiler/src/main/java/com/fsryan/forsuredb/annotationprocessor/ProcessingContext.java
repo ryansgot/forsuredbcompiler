@@ -237,7 +237,8 @@ public class ProcessingContext implements TableContext {
             builder.columnName(at.property("value").as(String.class))
                     .searchable(at.property("searchable").castSafe(true))
                     .orderable(at.property("orderable").castSafe(true))
-                    .valueAccess(Arrays.asList(at.property("valueAccess").as(String[].class)));
+                    // TODO: error check and return appropriate exception instead of NPE
+                    .valueAccess(at.property("documentValueAccess").asListOf(String.class));
         } else if (annotationClass.equals(ForeignKey.class.getName())) {
             APLog.w(ProcessingContext.class.getSimpleName(), "Ignoring legacy " + ForeignKey.class.getSimpleName() + "; this info will be picked up at the table level.");
         } else if (annotationClass.equals(FSPrimaryKey.class.getName())) {
