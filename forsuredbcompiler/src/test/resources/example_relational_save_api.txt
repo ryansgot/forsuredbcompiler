@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  *   This is an auto-generated class. DO NOT modify it!
  * </p>
  * <p>
- *   TestTable3Setter is an automatically generated interface describing the
+ *   TestTable3SaveApi is an automatically generated interface describing the
  *   contract for a fluent API for building queries to update or delete one
  *   or more records from the test_table_3 table.
  *   You DO NOT need to implement this interface in order to use it.
@@ -34,7 +34,7 @@ import java.math.BigDecimal;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see FSSaveApi
  */
-public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
+public interface TestTable3SaveApi extends FSSaveApi<SaveApiGeneratorTest> {
     String TABLE_NAME = "test_table_3";
 
     /**
@@ -43,7 +43,7 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("_id")
-    TestTable3Setter id(long id);
+    TestTable3SaveApi id(long id);
 
     /**
      * <p>
@@ -51,7 +51,7 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("app_rating")
-    TestTable3Setter appRating(double appRating);
+    TestTable3SaveApi appRating(double appRating);
 
     /**
      * <p>
@@ -59,7 +59,7 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("competitor_app_rating")
-    TestTable3Setter competitorAppRating(BigDecimal competitorAppRating);
+    TestTable3SaveApi competitorAppRating(BigDecimal competitorAppRating);
 
     /**
      * <p>
@@ -67,7 +67,7 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("deleted")
-    TestTable3Setter deleted(boolean deleted);
+    TestTable3SaveApi deleted(boolean deleted);
 
     /**
      * <p>
@@ -75,7 +75,7 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("global_id")
-    TestTable3Setter globalId(long globalId);
+    TestTable3SaveApi globalId(long globalId);
 
     /**
      * <p>
@@ -83,5 +83,5 @@ public interface TestTable3Setter extends FSSaveApi<SaveApiGeneratorTest> {
      * </p>
      */
     @FSColumn("login_count")
-    TestTable3Setter loginCount(int loginCount);
+    TestTable3SaveApi loginCount(int loginCount);
 }

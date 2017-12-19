@@ -31,7 +31,7 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
             excludes: [
                     '**/*Test.class',
                     '**/TestData.class',
-                    '**/TestData$*.class'
+                    '**/TestData$*.class',
             ]
     )
 

@@ -114,7 +114,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     public SaveResult<DirectLocator> upsert(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> sortOrder) {
         // TODO: implement the upsert method
         throw new UnsupportedOperationException();
-        // whole idea here is to create a transaction and perform the check-then-act sequence inside it
+        // whole idea here is to create a transaction and perform the check-then-act sequence inside it, and then commit the transaction
     }
 
     @Override

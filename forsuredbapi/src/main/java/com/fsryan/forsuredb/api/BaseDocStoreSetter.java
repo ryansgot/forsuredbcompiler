@@ -3,8 +3,6 @@ package com.fsryan.forsuredb.api;
 import com.fsryan.forsuredb.api.adapter.FSSerializer;
 import com.fsryan.forsuredb.api.adapter.FSSerializerFactoryPluginHelper;
 
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.util.Date;

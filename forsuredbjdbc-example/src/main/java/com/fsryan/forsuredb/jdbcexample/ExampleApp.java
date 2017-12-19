@@ -142,14 +142,6 @@ public class ExampleApp {
 
             summarizeSave(textIO, setter.object(myPojo).save());
         }
-        /*
-                private static final int PRINT_ALL_RECORDS_ALL_TYPES = 1;
-        private static final int PRINT_ALL_RECORDS_DOC_STORE = PRINT_ALL_RECORDS_ALL_TYPES + 1;
-        private static final int PRINT_ALL_RECORDS_JOINED = PRINT_ALL_RECORDS_DOC_STORE + 1;
-        private static final int PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID = PRINT_ALL_RECORDS_JOINED + 1;
-        private static final int PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID = PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + 1;
-        private static final int PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID = PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + 1;
-         */
 
         private void printRecords(TextIO textIO) {
             int selection = textIO.newIntInputReader()

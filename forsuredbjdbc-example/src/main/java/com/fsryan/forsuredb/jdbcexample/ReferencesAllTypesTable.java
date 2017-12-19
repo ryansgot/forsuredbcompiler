@@ -20,8 +20,8 @@ public interface ReferencesAllTypesTable extends FSDocStoreGetApi<MyPojo> {
     long allTypesId(Retriever retriever);
 
     @FSColumn(
-            value = "composed_int",
-            documentValueAccess = {"getComposedPojo", "getComposedInt"}
+            value = "composed_int",                                     // <-- the name of the column
+            documentValueAccess = {"getComposedPojo", "getComposedInt"} // <-- the sequence of methods to call in a chain to get the value
     )
     @Index
     int composedInt(Retriever retriever);
