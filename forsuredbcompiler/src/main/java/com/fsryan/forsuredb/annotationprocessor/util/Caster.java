@@ -65,22 +65,25 @@ public class Caster {
     }
 
     private static <T> void addConstantToListAs(Class<T> cls, List<T> dest, Object src) {
+        String val = src.toString();
+        val = val.substring(1, val.length() - 1);   // <-- strips beginning and ending "
+
         if (cls.equals(Integer.class)) {
-            dest.add((T) Integer.valueOf(src.toString()));
+            dest.add((T) Integer.valueOf(val));
         } else if (cls.equals(Long.class)) {
-            dest.add((T) Long.valueOf(src.toString()));
+            dest.add((T) Long.valueOf(val));
         } else if(cls.equals(Float.class)) {
-            dest.add((T) Float.valueOf(src.toString()));
+            dest.add((T) Float.valueOf(val));
         } else if (cls.equals(Double.class)) {
-            dest.add((T) Double.valueOf(src.toString()));
+            dest.add((T) Double.valueOf(val));
         } else if (cls.equals(Short.class)) {
-            dest.add((T) Short.valueOf(src.toString()));
+            dest.add((T) Short.valueOf(val));
         } else if (cls.equals(Boolean.class)) {
-            dest.add((T) Boolean.valueOf(src.toString()));
+            dest.add((T) Boolean.valueOf(val));
         } else if (cls.equals(Byte.class)) {
-            dest.add((T) Byte.valueOf(src.toString()));
+            dest.add((T) Byte.valueOf(val));
         } else if (cls.equals(String.class)) {
-            dest.add((T) String.valueOf(src));
+            dest.add((T) String.valueOf(val));
         } else if (Enum.class.isAssignableFrom(cls)) {
             // TODO: not sure this works
             dest.add((T) Enum.valueOf(cls.asSubclass(Enum.class), src.toString()));

@@ -45,20 +45,25 @@ public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extend
     protected abstract void enrichRecordContainerFromPropertiesOf(T obj);
 
     protected void performPropertyEnrichment(String columnName, Object obj) {
-        Type type = obj.getClass();
+        if (obj == null || columnName == null || columnName.isEmpty()) {
+            // TODO: check what to do when this occurs
+            return;
+        }
+
+        Class<?> type = obj.getClass();
         if (type.equals(String.class)) {
             recordContainer.put(columnName, (String) obj);
-        } else if (type.equals(int.class) || type.equals(Integer.class)) {
+        } else if (type.equals(Integer.class)) {
             recordContainer.put(columnName, (int) obj);
-        } else if (type.equals(long.class) || type.equals(Long.class)) {
+        } else if (type.equals(Long.class)) {
             recordContainer.put(columnName, (long) obj);
-        } else if (type.equals(double.class) || type.equals(Double.class)) {
+        } else if (type.equals(Double.class)) {
             recordContainer.put(columnName, (double) obj);
-        } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
+        } else if (type.equals(Boolean.class)) {
             recordContainer.put(columnName, (boolean) obj ? 1 : 0);
-        } else if (type.equals(BigDecimal.class) || type.equals(BigInteger.class)) {
+        } else if (type.equals(BigInteger.class)) {
             recordContainer.put(columnName, obj.toString());
-        } else if (type.equals(float.class) || type.equals(Float.class)) {
+        } else if (type.equals(Float.class)) {
             recordContainer.put(columnName, (float) obj);
         } else if (type.equals(Date.class)) {
             recordContainer.put(columnName, dateFormat.format((Date) obj));

@@ -25,8 +25,6 @@ import static com.fsryan.forsuredb.info.TableInfo.docStoreColumns;
 
 public abstract class SetterGenerator extends JavaSourceGenerator {
 
-    static final String defaultStringArg = new String(new byte[] {34, 34});
-
     static final String RECORD_CONTAINER_FIELD = "recordContainer";
 
     final TypeName recordContainerType = ClassName.bestGuess(getRecordContainer());
@@ -227,6 +225,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
 
                 if (!isDefaultValueAccess(valueAccess)) {
 
+                    enrichingMethodBuilder.beginControlFlow("try");
                     StringBuilder buf = new StringBuilder("final Object $N = $N");
                     String[] replacements = new String[2 + column.valueAccess().size()];
                     replacements[0] = column.methodName();
@@ -235,8 +234,10 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                         replacements[i + 2] = column.valueAccess().get(i);
                         buf.append(".$N()");
                     }
-                    enrichingMethodBuilder.addStatement(buf.append(")").toString(), replacements);
+                    enrichingMethodBuilder.addStatement(buf.toString(), replacements);
                     enrichingMethodBuilder.addStatement("$N($S, $N)", "performPropertyEnrichment", column.columnName(), replacements[0]);
+                    enrichingMethodBuilder.nextControlFlow("catch($T e)", ClassName.get(Exception.class))
+                            .endControlFlow();
                 }
             }
 
@@ -272,7 +273,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
         }
 
         private boolean isDefaultValueAccess(List<String> valueAccess) {
-            return valueAccess == null || (valueAccess.size() == 1 && valueAccess.get(0).equals(defaultStringArg));
+            return valueAccess == null || (valueAccess.size() == 1 && valueAccess.get(0).isEmpty());
         }
 
         private static void throwIfIllegalType(ColumnInfo column) {

@@ -71,9 +71,30 @@ public @interface FSColumn {
     boolean orderable() default true;
 
     /**
-     * <p>Only has meaning when the definition is in an extension of
-     * {@link com.fsryan.forsuredb.api.FSDocStoreGetApi FSDocStoreGetApi}. If your interface is an
-     * extension of {@link FSGetApi}, then this property will be ignored.
+     * <p>This is a powerful construct of the forsuredb framework that facilitates a hybrid of
+     * doc store and relational database features. It allows you to store columns beside your
+     * serialized object that contain values pulled out of that object. The value for that column
+     * can be nested arbitrarily deep within the object that is getting serialized. This property
+     * is the way in which you tell forsuredb how to access the value of this column on the object
+     * that is being stored in the doc store table.
+     *
+     * <p>Why should you use this?
+     * <ol>
+     *     <li>
+     *         You want to access data in an object you've stored in a doc store table without
+     *         deserializing the document first.
+     *     </li>
+     *     <li>
+     *         You want to sort records from this table based upon data that in the object that
+     *         was stored in this table without having to deserialize all of the documents of all
+     *         records that come back on a query (you can use {@link Index} to make the sort
+     *         super-fast).
+     *     </li>
+     *     <li>
+     *         You want to look up documents by some index (you can use {@link Index} to make the
+     *         lookup super-fast).
+     *     </li>
+     * </ol>
      *
      * <p>These strings are the names of methods that must be called in order to pull out the value of the
      * property from an object (that is to be serialized) into the data store. These methods
@@ -129,7 +150,23 @@ public @interface FSColumn {
      * set the inner_int_column value by calling {@code obj.getMyInnerClass().getMyInnerInt()} and the
      * str_value_column value by calling {@code obj.getStrValue()}.
      *
-     * <p><i>IF YOU DON'T specify this property, then a compile-time error will be generated.</i>
+     * <p>Here are a few things to keep in mind:
+     * <ul>
+     *     <li>
+     *         If you don't specify this property, then the framework won't insert the value drawn from the
+     *         object that you insert/update. It is useful to not specify this property when the column you
+     *         add is just a foreign key to some other table or the column data does not come any value
+     *         composed in the object you are storing.
+     *     </li>
+     *     <li>
+     *         You can specify arbitrarily deep method call chains, but <i>EACH METHOD MUST BE A NO-ARG
+     *         METHOD</i>
+     *     </li>
+     *     <li>
+     *         This property only has meaning if your interface is an extension of
+     *         {@link com.fsryan.forsuredb.api.FSDocStoreGetApi FSDocStoreGetApi}.
+     *     </li>
+     * </ul>
      *
      *<p>Note that the following types are supported for column values:
      * <ul>
