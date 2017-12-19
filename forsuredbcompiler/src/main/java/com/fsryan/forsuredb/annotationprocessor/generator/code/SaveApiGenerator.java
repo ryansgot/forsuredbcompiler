@@ -135,7 +135,7 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
 
     static class DocStore extends SaveApiGenerator {
 
-        private static final Set<String> DOC_STORE_READ_ONLY_COLUMNS = Sets.newHashSet("class_name", "doc");
+        private static final Set<String> DOC_STORE_READ_ONLY_COLUMNS = Sets.newHashSet("class_name", "doc", "blob_doc");
 
         protected DocStore(ProcessingEnvironment processingEnv, TableInfo table) {
             super(processingEnv, table);
