@@ -129,6 +129,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     private void createSetterApis(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
             SaveApiGenerator.getFor(processingEnv, tableInfo).generate();
+            SetterGenerator.getFor(processingEnv, tableInfo).generate();
         }
         saveApisCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
     }
