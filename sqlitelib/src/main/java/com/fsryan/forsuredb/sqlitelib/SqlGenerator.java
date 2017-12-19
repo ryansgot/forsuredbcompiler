@@ -27,6 +27,7 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -152,6 +153,12 @@ public class SqlGenerator implements DBMSIntegrator {
             pe.printStackTrace();
         }
         return null;
+    }
+
+    @Nonnull
+    @Override
+    public DateFormat getDateFormat() {
+        return DATE_FORMAT.get();
     }
 
     @Override
