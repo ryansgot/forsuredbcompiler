@@ -1,20 +1,33 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.adapter.SaveResultFactory;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
+import java.text.DateFormat;
 import java.util.List;
 
-public abstract class BaseSetter<U> implements FSSaveApi<U> {
+public abstract class BaseSetter<U, R extends RecordContainer> implements FSSaveApi<U> {
 
-    private final FSQueryable<U, RecordContainer> queryable;
+    protected DateFormat dateFormat;
+    private final FSQueryable<U, R> queryable;
     private final FSSelection selection;
     private final List<FSOrdering> orderings;
-    protected final RecordContainer recordContainer;
+    protected final R recordContainer;
 
-    public BaseSetter(FSQueryable<U, RecordContainer> queryable,
+    public BaseSetter(FSQueryable<U, R> queryable,
                       FSSelection selection,
                       List<FSOrdering> orderings,
-                      RecordContainer recordContainer) {
+                      R recordContainer) {
+        this(Sql.generator().getDateFormat(), queryable, selection, orderings, recordContainer);
+    }
+
+    // intended for use in testing
+    protected BaseSetter(DateFormat dateFormat,
+               FSQueryable<U, R> queryable,
+               FSSelection selection,
+               List<FSOrdering> orderings,
+               R recordContainer) {
+        this.dateFormat = dateFormat;
         this.queryable = queryable;
         this.selection = selection;
         this.orderings = orderings;
@@ -41,13 +54,20 @@ public abstract class BaseSetter<U> implements FSSaveApi<U> {
     public SaveResult<U> softDelete() {
         recordContainer.clear();
         recordContainer.put("deleted", 1);
-        int rowsAffected = queryable.update(recordContainer, selection, orderings);
-        return SaveResultFactory.create(null, rowsAffected, null);
+        try {
+            int rowsAffected = queryable.update(recordContainer, selection, orderings);
+            return SaveResultFactory.create(null, rowsAffected, null);
+        } finally {
+            recordContainer.clear();
+        }
     }
 
     @Override
     public int hardDelete() {
-        recordContainer.clear();
-        return queryable.delete(selection, orderings);
+        try {
+            return queryable.delete(selection, orderings);
+        } finally {
+            recordContainer.clear();
+        }
     }
 }

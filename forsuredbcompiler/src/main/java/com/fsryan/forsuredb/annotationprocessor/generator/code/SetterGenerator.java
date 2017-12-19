@@ -1,8 +1,10 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
+import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.collect.Streams;
@@ -10,6 +12,7 @@ import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,8 +25,11 @@ import static com.fsryan.forsuredb.info.TableInfo.docStoreColumns;
 
 public abstract class SetterGenerator extends JavaSourceGenerator {
 
+    static final String defaultStringArg = new String(new byte[] {34, 34});
+
     static final String RECORD_CONTAINER_FIELD = "recordContainer";
 
+    final TypeName recordContainerType = ClassName.bestGuess(getRecordContainer());
     final TypeName fsQueryableType = ParameterizedTypeName.get(
             ClassName.get(FSQueryable.class),
             ClassName.bestGuess(getResultParameter()),
@@ -118,7 +124,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 builder.addStatement("$N.put($S, $N ? 1 : 0)", RECORD_CONTAINER_FIELD, column.columnName(), column.methodName());
                 break;
             case "java.util.Date":
-                builder.addStatement("$N.put($S, $N.formatDate($N))", RECORD_CONTAINER_FIELD, column.columnName(), "sqlGenerator", column.methodName());
+                builder.addStatement("$N.put($S, $N.format($N))", RECORD_CONTAINER_FIELD, column.columnName(), "dateFormat", column.methodName());
                 break;
             case "java.math.BigDecimal":    // intentionally fall through
             case "java.math.BigInteger":
@@ -145,28 +151,38 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
         protected TypeName superClassType() {
             return ParameterizedTypeName.get(
                     ClassName.get(BaseSetter.class),
-                    ClassName.bestGuess(getResultParameter())
+                    ClassName.bestGuess(getResultParameter()),
+                    recordContainerType
             );
         }
 
         @Override
         protected List<MethodSpec> addExtraMethods() {
-            return Collections.emptyList();
+            return Arrays.asList(MethodSpec.constructorBuilder()
+                    .addParameter(DateFormat.class, "dateFormat")
+                    .addParameter(fsQueryableType, "queryable")
+                    .addParameter(FSSelection.class, "selection")
+                    .addParameter(ParameterizedTypeName.get(List.class, FSOrdering.class), "orderings")
+                    .addParameter(recordContainerType, "recordContainer")
+                    .addStatement("super(dateFormat, queryable, selection, orderings, recordContainer)")
+                    .build());
         }
 
         @Override
         protected ColumnInfo[] columnExclusions() {
-            return TableInfo.defaultColumns().values().toArray(new ColumnInfo[0]);
+            return TableInfo.defaultColumns().values().stream()
+                    .filter(c -> c.columnName().equals("modified") || c.columnName().equals("created"))
+                    .toArray(ColumnInfo[]::new);
         }
 
         @Override
         protected MethodSpec constructorMethod() {
             return MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
-                    .addParameter(fsQueryableType, "queryble")
+                    .addParameter(fsQueryableType, "queryable")
                     .addParameter(FSSelection.class, "selection")
                     .addParameter(ParameterizedTypeName.get(List.class, FSOrdering.class), "orderings")
-                    .addParameter(RecordContainer.class, "recordContainer")
+                    .addParameter(recordContainerType, "recordContainer")
                     .addStatement("super(queryable, selection, orderings, recordContainer)")
                     .build();
         }
@@ -184,8 +200,9 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
         @Override
         protected TypeName superClassType() {
             return ParameterizedTypeName.get(
-                    ClassName.get(BaseSetter.class),
+                    ClassName.get(BaseDocStoreSetter.class),
                     ClassName.bestGuess(getResultParameter()),
+                    recordContainerType,
                     baseClass
             );
         }
@@ -197,56 +214,68 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                     .addModifiers(Modifier.PROTECTED, Modifier.FINAL)
                     .addParameter(baseClass, "obj", Modifier.FINAL);
             for (ColumnInfo column : TableDataUtil.columnsSortedByName(table, columnExclusions())) {
+                if (defaultColumns().containsValue(column)) {
+                    continue;
+                }
                 throwIfIllegalType(column);
 
-                if (column.valueAccess() == null) {
+                List<String> valueAccess = column.valueAccess();
+                APLog.i("RYAN", "valueAccess = " + valueAccess);
+                if (valueAccess == null) {
                     throw new IllegalStateException(String.format("Column %s on table %s must be defined with a valueAccess property so that the column may be updated with the value from the underlying object document when stored.", column.columnName(), table.tableName()));
                 }
 
-                StringBuilder buf = new StringBuilder("final Object $N = $N");
-                String[] replacements = new String[2 + column.valueAccess().size()];
-                replacements[0] = column.methodName();
-                replacements[1] = "obj";
-                for (int i = 0; i < column.valueAccess().size(); i++) {
-                    replacements[i + 2] = column.valueAccess().get(i);
-                    buf.append(".$N()");
+                if (!isDefaultValueAccess(valueAccess)) {
+
+                    StringBuilder buf = new StringBuilder("final Object $N = $N");
+                    String[] replacements = new String[2 + column.valueAccess().size()];
+                    replacements[0] = column.methodName();
+                    replacements[1] = "obj";
+                    for (int i = 0; i < column.valueAccess().size(); i++) {
+                        replacements[i + 2] = column.valueAccess().get(i);
+                        buf.append(".$N()");
+                    }
+                    enrichingMethodBuilder.addStatement(buf.append(")").toString(), replacements);
+                    enrichingMethodBuilder.addStatement("$N($S, $N)", "performPropertyEnrichment", column.columnName(), replacements[0]);
                 }
-                enrichingMethodBuilder.addStatement(buf.append(")").toString(), replacements);
-                enrichingMethodBuilder.addStatement("$N($S, $N)", "performPropertyEnrichment", column.columnName(), replacements[0]);
             }
 
             MethodSpec.Builder testingConstructorBuilder = MethodSpec.constructorBuilder()
-                    .addParameter(DBMSIntegrator.class, "sqlGenerator")
-                    .addParameter(fsQueryableType, "queryble")
+                    .addParameter(DateFormat.class, "dateFormat")
+                    .addParameter(fsQueryableType, "queryable")
                     .addParameter(FSSelection.class, "selection")
                     .addParameter(ParameterizedTypeName.get(List.class, FSOrdering.class), "orderings")
-                    .addParameter(RecordContainer.class, "recordContainer")
-                    .addStatement("super(queryable, selection, orderings, recordContainer)")
-                    .addStatement("this.sqlGenerator = sqlGenerator");
+                    .addParameter(recordContainerType, "recordContainer")
+                    .addStatement("super(dateFormat, queryable, selection, orderings, recordContainer)");
 
             return Arrays.asList(enrichingMethodBuilder.build(), testingConstructorBuilder.build());
         }
 
         @Override
         protected ColumnInfo[] columnExclusions() {
-            return Streams.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
-                    .collect(Collectors.toList())
-                    .toArray(new ColumnInfo[0]);
+            return Streams.concat(defaultColumns().values().stream()
+                    .filter(c -> c.columnName().equals("modified") || c.columnName().equals("created")),
+                    docStoreColumns().values().stream())
+                    .toArray(ColumnInfo[]::new);
         }
 
         @Override
         protected MethodSpec constructorMethod() {
             return MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
-                    .addParameter(fsQueryableType, "queryble")
+                    .addParameter(fsQueryableType, "queryable")
                     .addParameter(FSSelection.class, "selection")
                     .addParameter(ParameterizedTypeName.get(List.class, FSOrdering.class), "orderings")
-                    .addParameter(RecordContainer.class, "recordContainer")
-                    .addStatement("this(Sql.generator(), queryable, selection, orderings, recordContainer)")
+                    .addParameter(recordContainerType, "recordContainer")
+                    .addStatement("super(queryable, selection, orderings, recordContainer)")
                     .build();
         }
 
-        private static boolean throwIfIllegalType(ColumnInfo column) {
+        private boolean isDefaultValueAccess(List<String> valueAccess) {
+            return valueAccess == null || (valueAccess.size() == 1 && valueAccess.get(0).equals(defaultStringArg));
+        }
+
+        private static void throwIfIllegalType(ColumnInfo column) {
             switch (column.qualifiedType()) {
                 case "int": // intentionally fall through
                 case "java.lang.Integer": // intentionally fall through
@@ -261,6 +290,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 case "java.util.Date":  // intentionally fall through
                 case "java.math.BigDecimal":    // intentionally fall through
                 case "java.math.BigInteger": // intentionally fall through
+                    return;
                 default:
                     throw new IllegalStateException("Cannot set value of type: " + column.qualifiedType());
             }

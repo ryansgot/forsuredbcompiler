@@ -2,40 +2,38 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.adapter.FSSerializer;
 import com.fsryan.forsuredb.api.adapter.FSSerializerFactoryPluginHelper;
-import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
-import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public abstract class BaseDocStoreSetter<U, T> extends BaseSetter<U> implements FSDocStoreSaveApi<U, T> {
+public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extends BaseSetter<U, R> implements FSDocStoreSaveApi<U, T> {
 
     private static FSSerializer serializer = new FSSerializerFactoryPluginHelper().getNew().create();
 
-    protected final DBMSIntegrator sqlGenerator;
-
-    public BaseDocStoreSetter(FSQueryable<U, RecordContainer> queryable,
+    public BaseDocStoreSetter(FSQueryable<U, R> queryable,
                               FSSelection selection,
                               List<FSOrdering> orderings,
-                              RecordContainer recordContainer) {
-        this(Sql.generator(), queryable, selection, orderings, recordContainer);
+                              R recordContainer) {
+        super(queryable, selection, orderings, recordContainer);
     }
 
-    public BaseDocStoreSetter(DBMSIntegrator sqlGenerator,
-                              FSQueryable<U, RecordContainer> queryable,
-                              FSSelection selection,
-                              List<FSOrdering> orderings,
-                              RecordContainer recordContainer) {
-        super(queryable, selection, orderings, recordContainer);
-        this.sqlGenerator = sqlGenerator;
+    // intended for use in testing
+    protected BaseDocStoreSetter(DateFormat dateFormat,
+                       FSQueryable<U, R> queryable,
+                       FSSelection selection,
+                       List<FSOrdering> orderings,
+                       R recordContainer) {
+        super(dateFormat, queryable, selection, orderings, recordContainer);
     }
 
     @Override
     public final FSDocStoreSaveApi<U, T> object(T obj) {
         enrichRecordContainerFromPropertiesOf(obj);
+        recordContainer.put("class_name", obj.getClass().getName());
         if (serializer.storeAsBlob()) {
             recordContainer.put("blob_doc", serializer.createBlobDoc(obj.getClass(), obj));
         } else {
@@ -63,7 +61,7 @@ public abstract class BaseDocStoreSetter<U, T> extends BaseSetter<U> implements 
         } else if (type.equals(float.class) || type.equals(Float.class)) {
             recordContainer.put(columnName, (float) obj);
         } else if (type.equals(Date.class)) {
-            recordContainer.put(columnName, sqlGenerator.formatDate((Date) obj));
+            recordContainer.put(columnName, dateFormat.format((Date) obj));
         } else if (type.equals(byte[].class)) {
             recordContainer.put(columnName, (byte[]) obj);
         } else {
