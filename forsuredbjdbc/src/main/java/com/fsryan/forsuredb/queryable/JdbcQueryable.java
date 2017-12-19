@@ -111,6 +111,13 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     }
 
     @Override
+    public SaveResult<DirectLocator> upsert(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> sortOrder) {
+        // TODO: implement the upsert method
+        throw new UnsupportedOperationException();
+        // whole idea here is to create a transaction and perform the check-then-act sequence inside it
+    }
+
+    @Override
     public int delete(FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createDeleteSql(locator.table, selection, orderings);
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
