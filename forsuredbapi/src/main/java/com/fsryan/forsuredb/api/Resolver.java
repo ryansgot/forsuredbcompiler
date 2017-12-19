@@ -77,12 +77,12 @@ import java.util.Map;
 public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
     protected final ForSureInfoFactory<U, R> infoFactory;
+    protected U lookupResource;
 
     private final List<FSJoin> joins = new ArrayList<>();
     private final List<FSProjection> projections = new ArrayList<>();
     private boolean addedThisProjection = false;
 
-    private U lookupResource;
     private F finder;
     private O orderBy;
 

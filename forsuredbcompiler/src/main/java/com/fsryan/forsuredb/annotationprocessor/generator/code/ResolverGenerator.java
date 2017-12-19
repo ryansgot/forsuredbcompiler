@@ -84,7 +84,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return MethodSpec.methodBuilder("set")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(Override.class)
-                .returns(ClassName.bestGuess(table.qualifiedClassName()))
+                .returns(setterClassName)
                 .addStatement("return new $T(\ninfoFactory.createQueryable(lookupResource)," +
                         "\ndetermineSelection(false)," +
                         "\ndetermineOrderings(false)," +
