@@ -1,10 +1,8 @@
-package com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi;
+package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
-import com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavaSourceGenerator;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.TableDataUtil;
 import com.fsryan.forsuredb.annotations.FSColumn;
+import com.fsryan.forsuredb.api.FSDocStoreSaveApi;
+import com.fsryan.forsuredb.api.FSSaveApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
@@ -25,13 +23,15 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
     private final List<ColumnInfo> columnsSortedByName;
 
     protected SaveApiGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
-        super(processingEnv, table.qualifiedClassName() + "Setter");
+        super(processingEnv, table.qualifiedClassName() + "SaveApi");
         this.table = table;
         this.columnsSortedByName = TableDataUtil.columnsSortedByName(table);
     }
 
     public static SaveApiGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
-        return table.isDocStore() ? new DocStoreSaveApiGenerator(processingEnv, table) : new RelationalSaveApiGenerator(processingEnv, table);
+        return table.isDocStore()
+                ? new DocStore(processingEnv, table)
+                : new Relational(processingEnv, table);
     }
 
     @Override
@@ -131,5 +131,50 @@ public abstract class SaveApiGenerator extends JavaSourceGenerator {
                 .returns(ClassName.get(table.getPackageName(), getOutputClassName(false)))
                 .addParameter(CodeUtil.typeFromName(column.getQualifiedType()), column.methodName())
                 .build();
+    }
+
+    static class DocStore extends SaveApiGenerator {
+
+        private static final Set<String> DOC_STORE_READ_ONLY_COLUMNS = Sets.newHashSet("class_name", "doc", "blob_doc");
+
+        protected DocStore(ProcessingEnvironment processingEnv, TableInfo table) {
+            super(processingEnv, table);
+        }
+
+        @Override
+        public void addFields(TypeSpec.Builder codeBuilder) {
+            super.addFields(codeBuilder);
+            codeBuilder.addField(FieldSpec.builder(Class.class, "BASE_CLASS", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                    .initializer(CodeBlock.builder()
+                            .add("$L.class", table.docStoreParameterization())
+                            .build())
+                    .build());
+        }
+
+        @Override
+        protected ParameterizedTypeName createSuperinterfaceParameterizedTypeName(TableInfo table) {
+            final ClassName raw = ClassName.get(FSDocStoreSaveApi.class);
+            final ClassName resultParam = ClassName.bestGuess(getResultParameter());
+            final ClassName docStoreParam = ClassName.bestGuess(table.docStoreParameterization());
+            return ParameterizedTypeName.get(raw, resultParam, docStoreParam);
+        }
+
+        @Override
+        protected boolean isBlockedFromSetterMethods(ColumnInfo column) {
+            return DOC_STORE_READ_ONLY_COLUMNS.contains(column.getColumnName())
+                    || super.isBlockedFromSetterMethods(column);
+        }
+    }
+
+    static class Relational extends SaveApiGenerator {
+
+        protected Relational(ProcessingEnvironment processingEnv, TableInfo table) {
+            super(processingEnv, table);
+        }
+
+        @Override
+        protected ParameterizedTypeName createSuperinterfaceParameterizedTypeName(TableInfo table) {
+            return ParameterizedTypeName.get(ClassName.get(FSSaveApi.class), ClassName.bestGuess(getResultParameter()));
+        }
     }
 }

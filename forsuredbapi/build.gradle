@@ -28,6 +28,8 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
                     '**/*Test.class',
                     '**/TestData.class',
                     '**/*Test$*.class',
+                    '**/CollectionUtil*',
+                    '**/DummyDbmsIntegrator.class',
                     '**/com/fsryan/forsuredb/api/adapter/ColumnDescriptor.class',   // Implementation by lombok
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTable.class',
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTableSetter.class',

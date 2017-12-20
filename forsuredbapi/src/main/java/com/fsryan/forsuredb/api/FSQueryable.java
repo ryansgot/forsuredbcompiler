@@ -51,6 +51,24 @@ public interface FSQueryable<U, R extends RecordContainer> {
     int update(R recordContainer, FSSelection selection, List<FSOrdering> sortOrder);
 
     /**
+     * An upsert is equivalent to the following:
+     * <ol>
+     *     <li>Check whether there are any matching records</li>
+     *     <li>If no records, insert. If records exist, then update.</li>
+     * </ol>
+     *
+     * Your implementation of this method should ensure atomic modification of the underlying
+     * data store. For example, databases make use of transactions for this purpose.
+     *
+     * @param recordContainer An extension of {@link RecordContainer} which contains the record to be updated
+     * @param selection The {@link FSSelection} that defines the subset of records to update
+     * @param sortOrder A list of {@link FSOrdering} that the ordering of the records to match
+     * @return A {@link SaveResult} summarizing the result of the upsert
+     * @see #update(RecordContainer, FSSelection, List)
+     */
+    SaveResult<U> upsert(R recordContainer, FSSelection selection, List<FSOrdering> sortOrder);
+
+    /**
      * In the normal case, the sort order will be null/empty. In the case that the user has
      * requested that the matching set be limited in some way (by calling {@link Finder#first()},
      * {@link Finder#first(int)}, {@link Finder#first(int, int)}, {@link Finder#last()},

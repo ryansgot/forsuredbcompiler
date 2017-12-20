@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.api.adapter;
 
 import com.fsryan.forsuredb.api.SaveResult;
 
-/*package*/ class SaveResultFactory {
+public abstract class SaveResultFactory {
     public static <U> SaveResult<U> create(final U inserted, final int rowsAffected, final Exception e) {
         return new SaveResult<U>() {
             @Override

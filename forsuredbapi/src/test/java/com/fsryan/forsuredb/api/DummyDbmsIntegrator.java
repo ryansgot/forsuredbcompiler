@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +65,11 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
             pe.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public DateFormat getDateFormat() {
+        return DATE_FORMAT;
     }
 
     @Override

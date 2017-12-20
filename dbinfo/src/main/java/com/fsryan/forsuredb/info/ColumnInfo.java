@@ -35,18 +35,18 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
     @AutoValue.Builder
     public static abstract class Builder {
         public abstract Builder methodName(String methodName);    // method_name
-        @Nullable public abstract Builder columnName(String columnName);    // column_name
-        @Nullable public abstract Builder qualifiedType(String qualifiedType); // column_type
+        public abstract Builder columnName(@Nullable String columnName);    // column_name
+        public abstract Builder qualifiedType(@Nullable String qualifiedType); // column_type
         public abstract Builder index(boolean index);  // index
         public abstract Builder defaultValue(String defaultValue);  // default_value
         public abstract Builder unique(boolean unique); // unique
         @Deprecated
         public abstract Builder primaryKey(boolean primaryKey); // primary_key
         @Deprecated
-        @Nullable
-        public abstract Builder foreignKeyInfo(ForeignKeyInfo foreignKeyInfo);    // foreign_key_info
+        public abstract Builder foreignKeyInfo(@Nullable ForeignKeyInfo foreignKeyInfo);    // foreign_key_info
         public abstract Builder searchable(boolean searchable); // searchable
         public abstract Builder orderable(boolean orderable);  // orderable
+        public abstract Builder valueAccess(@Nullable List<String> access);
         public abstract ColumnInfo build();
     }
 
@@ -72,6 +72,13 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
     public abstract ForeignKeyInfo foreignKeyInfo();    // foreign_key_info
     public abstract boolean searchable(); // searchable
     public abstract boolean orderable();  // orderable
+
+    /**
+     * <p><i>NOT SERIALIZED</i>--only useful in code generation
+     * @return the method access path on an object for accessing a possibly-nested value at runtime.
+     */
+    @Nullable
+    public abstract List<String> valueAccess();
     public abstract Builder toBuilder();
 
     public boolean isValid() {

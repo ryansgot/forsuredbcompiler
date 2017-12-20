@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.jdbcexample;
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.annotations.FSForeignKey;
 import com.fsryan.forsuredb.annotations.FSTable;
+import com.fsryan.forsuredb.annotations.Index;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.Retriever;
 
@@ -17,4 +18,11 @@ public interface ReferencesAllTypesTable extends FSDocStoreGetApi<MyPojo> {
             deleteAction = "CASCADE"            // <-- what to do when the record pointed to is deleted
     )
     long allTypesId(Retriever retriever);
+
+    @FSColumn(
+            value = "composed_int",                                     // <-- the name of the column
+            documentValueAccess = {"getComposedPojo", "getComposedInt"} // <-- the sequence of methods to call in a chain to get the value
+    )
+    @Index
+    int composedInt(Retriever retriever);
 }

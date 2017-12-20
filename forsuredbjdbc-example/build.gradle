@@ -18,8 +18,21 @@ configurations {
     apt
 }
 
+def generatedSources = new File(project.buildDir, "generated-src")
+
 compileJava {
+    if (project.hasProperty('intellijHack')) {
+        dependsOn clean
+    }
+    doFirst {
+        (generatedSources.exists() && generatedSources.isDirectory()) || generatedSources.mkdirs()
+    }
     options.annotationProcessorPath = configurations.apt
+    options.compilerArgs = ['-s', "${generatedSources}"]
+}
+
+if (project.hasProperty('intellijHack')) {
+    sourceSets.main.java.srcDirs += generatedSources
 }
 
 dependencies {

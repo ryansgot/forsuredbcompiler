@@ -4,6 +4,8 @@ import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import javax.annotation.Nonnull;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -126,6 +128,9 @@ public interface DBMSIntegrator {
      * @return a Date representation of the date string
      */
     Date parseDate(String dateStr);
+
+    @Nonnull
+    DateFormat getDateFormat();
 
     /**
      * @return The wildcard symbol/keyword

@@ -197,5 +197,19 @@ public abstract class GetterTest<T extends BaseGetter> {
         public void shouldThrowWhenRetrieverNullAndGettingBigDecimalColumn() {
             getterUnderTest.parseBigIntegerColumn(null, "a_column");
         }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldThrowWhenNFEInParsingBigDecimal() {
+            when(mockDBMSIntegrator.unambiguousRetrievalColumn(anyString(), eq("col"))).thenReturn("col");
+            when(mockRetriever.getString(eq("col"))).thenReturn("Not a BigDecimal");
+            getterUnderTest.parseBigDecimalColumn(mockRetriever, "col");
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldThrowWhenNFEInParsingBigInteger() {
+            when(mockDBMSIntegrator.unambiguousRetrievalColumn(anyString(), eq("col"))).thenReturn("col");
+            when(mockRetriever.getString(eq("col"))).thenReturn("Not a BigInteger");
+            getterUnderTest.parseBigIntegerColumn(mockRetriever, "col");
+        }
     }
 }

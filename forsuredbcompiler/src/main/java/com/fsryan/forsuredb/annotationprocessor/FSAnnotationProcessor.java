@@ -18,7 +18,7 @@
 package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.*;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.saveapi.SaveApiGenerator;
+import com.fsryan.forsuredb.annotationprocessor.generator.code.SaveApiGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.info.TableInfo;
@@ -48,8 +48,9 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private static final String LOG_TAG = FSAnnotationProcessor.class.getSimpleName();
 
-    private static boolean getterApisCreated = false;
-    private static boolean setterApisCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
+    private static boolean getterImplementationsCreated = false;
+    private static boolean saveApisCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
+    private static boolean setterImplementationsCreated = false;
     private static boolean migrationsCreated = false;          // <-- maintain state so migrations don't have to be created more than once
     private static boolean tableCreatorClassCreated = false;   // <-- maintain state so TableCreator class does not have to be created more than once
     private static boolean finderClassesCreated = false;       // <-- maintain state so finder classes don't have to be created more than once
@@ -80,11 +81,11 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         }
         ProcessingContext pc = new ProcessingContext(tableTypes);
 
-        if (!getterApisCreated) {
+        if (!getterImplementationsCreated) {
             createGetterApis(pc);
         }
 
-        if (!setterApisCreated) {
+        if (!saveApisCreated) {
             createSetterApis(pc);
         }
         if (!migrationsCreated && Boolean.getBoolean("createMigrations")) {
@@ -112,11 +113,11 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         for (TableInfo table : pc.allTables()) {
             GetterGenerator.getFor(processingEnv, table).generate();
         }
-        getterApisCreated = true;
+        getterImplementationsCreated = true;
     }
 
     private static boolean shouldProcessAnything() {
-        return !setterApisCreated
+        return !saveApisCreated
                 || !migrationsCreated
                 || !tableCreatorClassCreated
                 || !orderByClassesCreated
@@ -128,8 +129,9 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     private void createSetterApis(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
             SaveApiGenerator.getFor(processingEnv, tableInfo).generate();
+            SetterGenerator.getFor(processingEnv, tableInfo).generate();
         }
-        setterApisCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
+        saveApisCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
     }
 
     private void createMigrations(ProcessingContext pc) {

@@ -97,14 +97,12 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
     protected TableInfo table;
 
     protected GetterGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
-        super(processingEnv, getterClassQualifiedName(table, true));
+        super(processingEnv, getterClassNameStr(table, true));
         this.table = table;
     }
 
     public static GetterGenerator getFor(ProcessingEnvironment processingEnv, TableInfo table) {
-        return table.isDocStore()
-                ? new GetterGenerator.DocStore(processingEnv, table)
-                : new GetterGenerator.Relational(processingEnv, table);
+        return table.isDocStore() ? new DocStore(processingEnv, table) : new Relational(processingEnv, table);
     }
 
     protected abstract TypeName getSuperclass();
@@ -125,7 +123,7 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
                 .endParagraph()
                 .addLine()
                 .build();
-        return TypeSpec.classBuilder(getterClassQualifiedName(table, false))
+        return TypeSpec.classBuilder(getterClassNameStr(table, false))
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(ClassName.bestGuess(table.qualifiedClassName()))
                 .addAnnotation(GENERATED_ANNOTATION)
@@ -208,10 +206,10 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
     }
 
     private static ClassName getterClassName(TableInfo table) {
-        return ClassName.bestGuess(getterClassQualifiedName(table, false));
+        return ClassName.bestGuess(getterClassNameStr(table, false));
     }
 
-    private static String getterClassQualifiedName(TableInfo table, boolean qualified) {
+    private static String getterClassNameStr(TableInfo table, boolean qualified) {
         return (qualified ? table.qualifiedClassName() : table.getSimpleClassName()) + "Getter";
     }
 

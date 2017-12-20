@@ -16,6 +16,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.function.BiConsumer;
 
+import static com.fsryan.forsuredb.jdbcexample.ForSure.allTypesTable;
+import static com.fsryan.forsuredb.jdbcexample.ForSure.referencesAllTypesTable;
+
 
 public class ExampleApp {
 
@@ -115,8 +118,8 @@ public class ExampleApp {
             RecordModel recordModel = RecordModelInputter.withRandomSuggestions(textIO).createRecord();
 
             AllTypesTableSetter setter = newRecord
-                    ? ForSure.allTypesTable().set()
-                    : ForSure.allTypesTable().find()
+                    ? allTypesTable().set()
+                    : allTypesTable().find()
                     .byId(textIO.newLongInputReader()
                             .read("ID of the record you want to upsert"))
                     .then()
@@ -131,22 +134,14 @@ public class ExampleApp {
                     .read(newRecord ? "all_types_id" : "ID of the record you want to upsert");
 
             ReferencesAllTypesTableSetter setter = newRecord
-                    ? ForSure.referencesAllTypesTable().set().allTypesId(allTypesId)
-                    : ForSure.referencesAllTypesTable().find()
+                    ? referencesAllTypesTable().set().allTypesId(allTypesId)
+                    : referencesAllTypesTable().find()
                         .byId(allTypesId)
                     .then()
                     .set();
 
             summarizeSave(textIO, setter.object(myPojo).save());
         }
-        /*
-                private static final int PRINT_ALL_RECORDS_ALL_TYPES = 1;
-        private static final int PRINT_ALL_RECORDS_DOC_STORE = PRINT_ALL_RECORDS_ALL_TYPES + 1;
-        private static final int PRINT_ALL_RECORDS_JOINED = PRINT_ALL_RECORDS_DOC_STORE + 1;
-        private static final int PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID = PRINT_ALL_RECORDS_JOINED + 1;
-        private static final int PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID = PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + 1;
-        private static final int PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID = PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + 1;
-         */
 
         private void printRecords(TextIO textIO) {
             int selection = textIO.newIntInputReader()
@@ -193,20 +188,20 @@ public class ExampleApp {
         private void printAllRecords(TextTerminal<?> textTerminal, boolean allTypes, boolean joined) {
             textTerminal.println("Fetching all records from database...");
             if (joined) {
-                try (Retriever r = ForSure.referencesAllTypesTable().joinAllTypesTable(FSJoin.Type.INNER).then().get()) {
+                try (Retriever r = referencesAllTypesTable().joinAllTypesTable(FSJoin.Type.INNER).then().get()) {
                     printRecordsForRetriever(textTerminal, r, true, true);
                 }
                 return;
             }
 
             if (allTypes) {
-                try (Retriever r = ForSure.allTypesTable().get()) {
+                try (Retriever r = allTypesTable().get()) {
                     printRecordsForRetriever(textTerminal, r, true, false);
                 }
                 return;
             }
 
-            try (Retriever r = ForSure.referencesAllTypesTable().get()) {
+            try (Retriever r = referencesAllTypesTable().get()) {
                 printRecordsForRetriever(textTerminal, r, false, false);
             }
         }
@@ -220,7 +215,7 @@ public class ExampleApp {
             textTerminal.println(message);
 
             if (joined) {
-                try (Retriever r = ForSure.allTypesTable()
+                try (Retriever r = allTypesTable()
                         .joinReferencesAllTypesTable(FSJoin.Type.INNER)
                         .then()
                         .find()
@@ -232,7 +227,7 @@ public class ExampleApp {
                 return;
             }
             if (allTypes) {
-                try (Retriever r = ForSure.allTypesTable()
+                try (Retriever r = allTypesTable()
                         .find()
                             .byId(id)
                         .then()
@@ -241,7 +236,7 @@ public class ExampleApp {
                 }
                 return;
             }
-            try (Retriever r = ForSure.referencesAllTypesTable()
+            try (Retriever r = referencesAllTypesTable()
                     .find()
                         .byId(id)
                     .then()
@@ -252,7 +247,7 @@ public class ExampleApp {
 
         private void update(TextIO textIO) {
             RecordModel recordModel = RecordModelInputter.withRandomSuggestions(textIO).createRecord();
-            AllTypesTableSetter setter = ForSure.allTypesTable()
+            AllTypesTableSetter setter = allTypesTable()
                     .find()
                         .byId(textIO.newLongInputReader().read("record id"))
                     .then()
@@ -284,14 +279,14 @@ public class ExampleApp {
 
             boolean hard = textIO.newBooleanInputReader().read("hard delete?");
             if (!hard) {
-                summarizeSave(textIO, ForSure.allTypesTable()
+                summarizeSave(textIO, allTypesTable()
                         .find()
                             .byId(textIO.newLongInputReader().read("record id"))
                         .then()
                         .set()
                         .softDelete());
             } else {
-                int hardDeleted = ForSure.allTypesTable()
+                int hardDeleted = allTypesTable()
                         .find()
                             .byId(textIO.newLongInputReader().read("record id"))
                         .then()
@@ -315,13 +310,13 @@ public class ExampleApp {
                     RecordModel model = RecordModel.fromRetriever(r);
                     out.append(model.toString());
                 } else {
-                    MyPojo myPojo = ForSure.referencesAllTypesTable().getApi().get(r);
+                    MyPojo myPojo = referencesAllTypesTable().getApi().get(r);
                     out.append(myPojo.toString());
                 }
                 if (joined) {
                     out.append("\n**** JOINED ****\n");
                     if (allTypesTable) {
-                        MyPojo myPojo = ForSure.referencesAllTypesTable().getApi().get(r);
+                        MyPojo myPojo = referencesAllTypesTable().getApi().get(r);
                         out.append(myPojo.toString());
                     } else {
                         RecordModel model = RecordModel.fromRetriever(r);
