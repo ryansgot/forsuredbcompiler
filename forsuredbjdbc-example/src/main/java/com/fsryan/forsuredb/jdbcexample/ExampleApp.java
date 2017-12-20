@@ -12,6 +12,7 @@ import com.fsryan.forsuredb.jdbcexample.util.RecordModel;
 import com.fsryan.forsuredb.jdbcexample.util.RecordModelInputter;
 import org.beryx.textio.*;
 
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.function.BiConsumer;
@@ -30,8 +31,7 @@ public class ExampleApp {
         private static final int PRINT_RECORDS = 1;
         private static final int INSERT_RECORD = PRINT_RECORDS + 1;
         private static final int UPSERT_RECORD = INSERT_RECORD + 1;
-        private static final int UPDATE_RECORD = UPSERT_RECORD + 1;
-        private static final int DELETE_RECORD = UPDATE_RECORD + 1;
+        private static final int DELETE_RECORD = UPSERT_RECORD + 1;
         private static final int QUIT = DELETE_RECORD + 1;
 
         private static final int PRINT_ALL_RECORDS_ALL_TYPES = 1;
@@ -58,9 +58,6 @@ public class ExampleApp {
                     case UPSERT_RECORD:
                         upsert(textIO, false);
                         break;
-                    case UPDATE_RECORD:
-                        update(textIO);
-                        break;
                     case DELETE_RECORD:
                         delete(textIO);
                         break;
@@ -79,14 +76,13 @@ public class ExampleApp {
 
         private int prompt(TextIO textIO) {
             return textIO.newIntInputReader()
-                    .withPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, UPDATE_RECORD, DELETE_RECORD, QUIT)
+                    .withPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, DELETE_RECORD, QUIT)
                     .withDefaultValue(QUIT)
                     .read(
                             "Choose from the following options",
                             PRINT_RECORDS + ". print records",
                             INSERT_RECORD + ". insert record",
                             UPSERT_RECORD + ". upsert record",
-                            UPDATE_RECORD + ". update record",
                             DELETE_RECORD + ". delete record",
                             QUIT + ". quit"
                     );
@@ -245,16 +241,6 @@ public class ExampleApp {
             }
         }
 
-        private void update(TextIO textIO) {
-            RecordModel recordModel = RecordModelInputter.withRandomSuggestions(textIO).createRecord();
-            AllTypesTableSetter setter = allTypesTable()
-                    .find()
-                        .byId(textIO.newLongInputReader().read("record id"))
-                    .then()
-                    .set();
-            summarizeSave(textIO, saveRecordModel(setter, recordModel));
-        }
-
         private SaveResult<DirectLocator> saveRecordModel(AllTypesTableSetter setter, RecordModel recordModel) {
             return setter.bigDecimalColumn(recordModel.getBigDecimalColumn())
                     .bigIntegerColumn(recordModel.getBigIntegerColumn())
@@ -349,6 +335,15 @@ public class ExampleApp {
                 new FSDbInfoGsonSerializer()
         );
         ForSure.init(ForSureJdbcInfoFactory.inst());
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                System.out.println("Exiting");
+                FSDBHelper.inst().getReadableDatabase().close();
+            } catch (SQLException sqle) {
+                sqle.printStackTrace();
+            }
+        }));
 
         TextIO textIO = TextIoFactory.getTextIO();
         new AllTypesTableData().accept(textIO, null);

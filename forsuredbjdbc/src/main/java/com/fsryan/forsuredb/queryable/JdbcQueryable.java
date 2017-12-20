@@ -1,7 +1,9 @@
 package com.fsryan.forsuredb.queryable;
 
+import com.fsryan.forsuredb.ConnectionUtil;
 import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.*;
+import com.fsryan.forsuredb.api.adapter.SaveResultFactory;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
@@ -111,9 +113,45 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     }
 
     @Override
-    public SaveResult<DirectLocator> upsert(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> sortOrder) {
-        // TODO: implement the upsert method
-        throw new UnsupportedOperationException();
+    public SaveResult<DirectLocator> upsert(TypedRecordContainer recordContainer, FSSelection selection, List<FSOrdering> orderings) {
+        Connection db = null;
+        boolean wasAutoCommit = false;
+        try {
+            db = dbProvider.writeableDb();
+            wasAutoCommit = ConnectionUtil.ensureNotAutoCommit(db);
+
+            try (Retriever r = query(null, selection, orderings)) {
+                int rowsAffected = 0;
+                DirectLocator inserted = null;
+
+                if (r.moveToFirst()) {
+                    rowsAffected = update(recordContainer, selection, orderings);
+                } else {
+                    inserted = insert(recordContainer);
+                    rowsAffected = 1;
+                }
+
+                db.commit();
+                return SaveResultFactory.create(inserted, rowsAffected, null);
+            }
+        } catch (RuntimeException | SQLException sqle) {
+            if (db != null) {
+                try {
+                    db.rollback();
+                } catch (SQLException sqle2) {
+                    // TODO: determine what to do here
+                }
+            }
+            return SaveResultFactory.create(null, 0, sqle);
+        } finally {
+            if (db != null && wasAutoCommit) {
+                try {
+                    db.setAutoCommit(true);
+                } catch (SQLException sqle) {
+                    // TODO: determine what to do here
+                }
+            }
+        }
         // whole idea here is to create a transaction and perform the check-then-act sequence inside it, and then commit the transaction
     }
 

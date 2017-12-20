@@ -90,10 +90,7 @@ public abstract class AbstractDBOpener {
                     String m = String.format("Can't use read-only connection to upgrade from version %d to %d; jdbcUrl: %s", version, newVersion, jdbcUrl);
                     throw new SQLException(m);
                 }
-                boolean prevAutoCommit = tempDb.getAutoCommit();
-                if (prevAutoCommit) {
-                    tempDb.setAutoCommit(false);
-                }
+                boolean prevAutoCommit = ConnectionUtil.ensureNotAutoCommit(tempDb);
                 try {
                     if (version == 0) {
                         onCreate(tempDb);
