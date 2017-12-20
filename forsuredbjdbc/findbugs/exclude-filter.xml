@@ -15,7 +15,7 @@
 
     <!-- ignoring for the exceptions that you can do nothing about but must catch -->
     <Match>
-        <Class name="class com.fsryan.forsuredb.queryable.JdbcQueryable" />
+        <Class name="com.fsryan.forsuredb.queryable.JdbcQueryable" />
         <Method name="upsert" />
         <Bug pattern="DE_MIGHT_IGNORE" />
     </Match>
