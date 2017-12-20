@@ -14,9 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.fsryan.forsuredb.util.Randomizer.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -287,16 +285,99 @@ public abstract class JdbcQueryableTest {
         }
     }
 
-    static String stringify(TypedRecordContainer trc) {
-        StringBuilder buf = new StringBuilder("TypedRecordContainer{");
-        List<String> keys = new ArrayList<>(trc.keySet());
-        Collections.sort(keys);
-        for (String key : keys) {
-            buf.append(key).append('=').append(trc.get(key))
-                    .append('(').append(trc.getType(key)).append(')')
-                    .append(", ");
+    @SuppressWarnings("MagicConstant")
+    public static class Upsert extends JdbcQueryableTest {
+
+        private InOrder inOrder;
+
+        @Before
+        public void setUpConnection() throws SQLException {
+            when(mockDbProvider.readableDb()).thenReturn(mockConnection);
+            when(mockDbProvider.writeableDb()).thenReturn(mockConnection);
+
+            when(mockSqlGenerator.createQuerySql(eq(tableName), nullable(FSProjection.class), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", new String[0]));
+            when(mockSqlGenerator.createUpdateSql(eq(tableName), anyList(), eq(mockSelection), eq(mockOrderings)))
+                    .thenReturn(new SqlForPreparedStatement("", new String[0]));
+
+            when(mockConnection.getAutoCommit()).thenReturn(true);
+            when(mockConnection.prepareStatement(nullable(String.class))).thenReturn(mockPreparedStatement);
+            doReturn(mockPreparedStatement)
+                    .when(mockConnection).prepareStatement(nullable(String.class), eq(Statement.RETURN_GENERATED_KEYS));
+
+            when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+            when(mockPreparedStatement.executeUpdate()).thenReturn(1);
+
+            when(mockResultSet.isBeforeFirst()).thenReturn(true);
+
+            inOrder = inOrder(mockDbProvider, mockConnection, mockPreparedStatement, mockSqlGenerator, mockResultSet);
         }
-        return buf.delete(buf.length() - 2, buf.length()).append('}').toString();
+
+        @Test
+        public void shouldInsertWhenNoRecordsExist() throws SQLException {
+            when(mockResultSet.next()).thenReturn(false).thenReturn(true);
+            when(mockResultSet.getLong(eq(1))).thenReturn(1L);
+            when(mockPreparedStatement.getGeneratedKeys()).thenReturn(mockResultSet);
+
+            SaveResult result = queryableUnderTest.upsert(createRandomTRC(), mockSelection, mockOrderings);
+
+            assertNotNull(result.inserted());
+            inOrder.verify(mockDbProvider).writeableDb();
+            inOrder.verify(mockConnection).getAutoCommit();
+            inOrder.verify(mockConnection).setAutoCommit(false);
+            inOrder.verify(mockSqlGenerator).createQuerySql(eq(tableName), nullable(FSProjection.class), eq(mockSelection), eq(mockOrderings));
+            inOrder.verify(mockDbProvider).readableDb();
+            inOrder.verify(mockConnection).prepareStatement(nullable(String.class));
+            inOrder.verify(mockPreparedStatement).executeQuery();
+            inOrder.verify(mockResultSet).isBeforeFirst();
+            inOrder.verify(mockResultSet).next();
+            inOrder.verify(mockSqlGenerator).newSingleRowInsertionSql(eq(tableName), anyList());
+            inOrder.verify(mockDbProvider).writeableDb();
+            inOrder.verify(mockConnection).prepareStatement(nullable(String.class), eq(Statement.RETURN_GENERATED_KEYS));
+            inOrder.verify(mockPreparedStatement).executeUpdate();
+            inOrder.verify(mockPreparedStatement).getGeneratedKeys();
+            inOrder.verify(mockResultSet).next();
+            inOrder.verify(mockResultSet).getLong(eq(1));
+            inOrder.verify(mockConnection).commit();
+            inOrder.verify(mockConnection).setAutoCommit(eq(true));
+        }
+
+        @Test
+        public void shouldUpdateWhenRecordExists() throws SQLException {
+            when(mockResultSet.next()).thenReturn(true);
+            when(mockPreparedStatement.executeUpdate()).thenReturn(20);
+
+            SaveResult result = queryableUnderTest.upsert(createRandomTRC(), mockSelection, mockOrderings);
+
+            assertNull(result.inserted());
+            assertEquals(20, result.rowsAffected());
+            inOrder.verify(mockDbProvider).writeableDb();
+            inOrder.verify(mockConnection).getAutoCommit();
+            inOrder.verify(mockConnection).setAutoCommit(false);
+            inOrder.verify(mockSqlGenerator).createQuerySql(eq(tableName), nullable(FSProjection.class), eq(mockSelection), eq(mockOrderings));
+            inOrder.verify(mockDbProvider).readableDb();
+            inOrder.verify(mockConnection).prepareStatement(nullable(String.class));
+            inOrder.verify(mockPreparedStatement).executeQuery();
+            inOrder.verify(mockResultSet).isBeforeFirst();
+            inOrder.verify(mockResultSet).next();
+            inOrder.verify(mockSqlGenerator).createUpdateSql(eq(tableName), anyList(), eq(mockSelection), eq(mockOrderings));
+            inOrder.verify(mockDbProvider).writeableDb();
+            inOrder.verify(mockConnection).prepareStatement(nullable(String.class));
+            inOrder.verify(mockPreparedStatement).executeUpdate();
+            inOrder.verify(mockConnection).commit();
+            inOrder.verify(mockConnection).setAutoCommit(eq(true));
+        }
+
+        @Test
+        public void shouldRollbackOnSqlException() throws SQLException {
+            when(mockResultSet.next()).thenReturn(true);
+            when(mockPreparedStatement.executeUpdate()).thenThrow(RuntimeException.class);
+
+            queryableUnderTest.upsert(createRandomTRC(), mockSelection, mockOrderings);
+            verify(mockConnection).rollback();
+            verify(mockConnection, times(0)).commit();
+            verify(mockConnection).setAutoCommit(true);
+        }
     }
 
 }
