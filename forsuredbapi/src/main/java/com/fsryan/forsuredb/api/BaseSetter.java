@@ -57,6 +57,8 @@ public abstract class BaseSetter<U, R extends RecordContainer> implements FSSave
         try {
             int rowsAffected = queryable.update(recordContainer, selection, orderings);
             return SaveResultFactory.create(null, rowsAffected, null);
+        } catch (Exception e) {
+            return SaveResultFactory.create(null, 0, e);
         } finally {
             recordContainer.clear();
         }
@@ -66,6 +68,8 @@ public abstract class BaseSetter<U, R extends RecordContainer> implements FSSave
     public int hardDelete() {
         try {
             return queryable.delete(selection, orderings);
+        } catch (Exception e) {
+            return 0;
         } finally {
             recordContainer.clear();
         }

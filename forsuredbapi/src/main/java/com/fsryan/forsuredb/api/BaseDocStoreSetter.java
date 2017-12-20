@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.api;
 import com.fsryan.forsuredb.api.adapter.FSSerializer;
 import com.fsryan.forsuredb.api.adapter.FSSerializerFactoryPluginHelper;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.util.Date;
@@ -59,7 +60,7 @@ public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extend
             recordContainer.put(columnName, (double) obj);
         } else if (type.equals(Boolean.class)) {
             recordContainer.put(columnName, (boolean) obj ? 1 : 0);
-        } else if (type.equals(BigInteger.class)) {
+        } else if (type.equals(BigInteger.class) || type.equals(BigDecimal.class)) {
             recordContainer.put(columnName, obj.toString());
         } else if (type.equals(Float.class)) {
             recordContainer.put(columnName, (float) obj);
