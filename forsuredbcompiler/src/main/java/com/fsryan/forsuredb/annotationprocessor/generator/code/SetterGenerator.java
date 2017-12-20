@@ -1,10 +1,7 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.*;
-import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
-import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.collect.Streams;
@@ -15,9 +12,7 @@ import javax.lang.model.element.Modifier;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil.typeNameOf;
 import static com.fsryan.forsuredb.info.TableInfo.defaultColumns;
@@ -81,7 +76,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
     protected abstract ColumnInfo[] columnExclusions();
     protected abstract MethodSpec constructorMethod();
 
-    private ClassName setterClassName() {
+    protected ClassName setterClassName() {
         return ClassName.bestGuess(setterClassNameStr(table, false));
     }
 
@@ -218,7 +213,6 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 throwIfIllegalType(column);
 
                 List<String> valueAccess = column.valueAccess();
-                APLog.i("RYAN", "valueAccess = " + valueAccess);
                 if (valueAccess == null) {
                     throw new IllegalStateException(String.format("Column %s on table %s must be defined with a valueAccess property so that the column may be updated with the value from the underlying object document when stored.", column.columnName(), table.tableName()));
                 }
@@ -249,7 +243,17 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                     .addParameter(recordContainerType, "recordContainer")
                     .addStatement("super(dateFormat, queryable, selection, orderings, recordContainer)");
 
-            return Arrays.asList(enrichingMethodBuilder.build(), testingConstructorBuilder.build());
+            return Arrays.asList(
+                    enrichingMethodBuilder.build(),
+                    testingConstructorBuilder.build(),
+                    MethodSpec.methodBuilder("object")
+                            .addAnnotation(Override.class)
+                            .addModifiers(Modifier.PUBLIC)
+                            .returns(setterClassName())
+                            .addParameter(baseClass, "obj")
+                            .addStatement("return ($T) super.object(obj)", setterClassName())
+                            .build()
+            );
         }
 
         @Override
