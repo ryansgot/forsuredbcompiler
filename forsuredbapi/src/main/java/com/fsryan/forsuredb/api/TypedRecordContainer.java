@@ -18,6 +18,7 @@
 package com.fsryan.forsuredb.api;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -107,5 +108,25 @@ public final class TypedRecordContainer implements RecordContainer {
             return null;
         }
         return (T) get(column);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder(TypedRecordContainer.class.getSimpleName())
+                .append("{columnToValueMap={");
+        for (String key : keySet()) {
+            buf.append(key).append('=');
+            if (byte[].class == columnToTypeMap.get(key)) {
+                byte[] ba = typedGet(key);
+                buf.append(Arrays.toString(ba));
+            } else {
+                buf.append(String.valueOf(columnToValueMap.get(key)));
+            }
+            buf.append(", ");
+        }
+        return buf.delete(buf.length() - 2, buf.length())
+                .append("}, columnToTypeMap=")
+                .append(columnToTypeMap)
+                .append('}').toString();
     }
 }
