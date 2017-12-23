@@ -141,8 +141,7 @@ public class ProcessingContext implements TableContext {
                 .docStoreParameterization(docStoreParameterization)
                 .primaryKey(primaryKeyFrom(intf))
                 .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
-                .staticDataAsset(createStaticDataAsset(intf))
-                .staticDataRecordName(createStaticDataRecordName(intf)));
+                .staticDataAsset(createStaticDataAsset(intf)));
 
         methodsIn(intf.getEnclosedElements()).forEach(ee -> {
             builder.addColumn(tableName, columnNameOf(ee), columnBuilderOf(ee));
@@ -267,12 +266,7 @@ public class ProcessingContext implements TableContext {
 
     private static String createStaticDataAsset(TypeElement intf) {
         FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
-        return staticData == null ? null : staticData.asset();
-    }
-
-    private static String createStaticDataRecordName(TypeElement intf) {
-        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
-        return staticData == null ? null : staticData.recordName();
+        return staticData == null ? null : staticData.value();
     }
 
     private static String primaryKeyOnConflictFrom(TypeElement intf) {

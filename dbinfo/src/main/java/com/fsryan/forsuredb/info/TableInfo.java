@@ -280,11 +280,15 @@ public abstract class TableInfo {
         return docStoreParameterization() != null;
     }
 
+    /**
+     * <p>Note that the accuracy of this method depends upon how it was created. For example,
+     * if the {@link TableInfo} was created from some serialized object, then the return will
+     * be the state at the time the object was serialized rather than at the time the object
+     * is used.
+     * @return true if this table has static data, false otherwise
+     */
     public boolean hasStaticData() {
-        return staticDataAsset() != null
-                && !staticDataAsset().isEmpty()
-                && staticDataRecordName() != null
-                && !staticDataRecordName().isEmpty();
+        return staticDataAsset() != null && !staticDataAsset().isEmpty();
     }
 
     public boolean hasColumn(String columnName) {
