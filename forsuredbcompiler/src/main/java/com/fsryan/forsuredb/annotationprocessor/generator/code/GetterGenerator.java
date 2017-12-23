@@ -76,6 +76,8 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
     static {
         returnTypeMap.put(int.class.getName(), int.class);
         returnTypeMap.put(Integer.class.getName(), Integer.class);
+        returnTypeMap.put(boolean.class.getName(), boolean.class);
+        returnTypeMap.put(Boolean.class.getName(), Boolean.class);
         returnTypeMap.put(long.class.getName(), long.class);
         returnTypeMap.put(Long.class.getName(), Long.class);
         returnTypeMap.put(double.class.getName(), double.class);

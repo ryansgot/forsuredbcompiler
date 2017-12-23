@@ -119,9 +119,11 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
             case "java.util.Date":
                 builder.addStatement("$N.put($S, $N.format($N))", RECORD_CONTAINER_FIELD, column.columnName(), "dateFormat", column.methodName());
                 break;
-            case "java.math.BigDecimal":    // intentionally fall through
             case "java.math.BigInteger":
-                builder.addStatement("$N.put($S, $N.toString())", RECORD_CONTAINER_FIELD, column.columnName(), column.methodName());
+                builder.addStatement("$N.put($S, $N.toString(10))", RECORD_CONTAINER_FIELD, column.columnName(), column.methodName());
+                break;
+            case "java.math.BigDecimal":
+                builder.addStatement("$N.put($S, $N.toPlainString())", RECORD_CONTAINER_FIELD, column.columnName(), column.methodName());
                 break;
             default:
                 throw new IllegalStateException("Cannot set value of type: " + column.qualifiedType());
