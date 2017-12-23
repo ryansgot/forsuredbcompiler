@@ -25,57 +25,43 @@ package com.fsryan.forsuredb.api;
  */
 public interface FSLogger {
 
-    SilentLog SILENT_LOG = new SilentLog();
-
     void e(String message, Object... replacements);
     void i(String message, Object... replacements);
     void w(String message, Object... replacements);
     void o(String message, Object... replacements);
 
-    /**
-     * <p>
-     *     Does nothing.
-     * </p>
-     */
-    class SilentLog implements FSLogger {
+    FSLogger SILENT = new FSLogger() {
         public void e(String message, Object... replacements) {}
         public void i(String message, Object... replacements) {}
         public void w(String message, Object... replacements) {}
         public void o(String message, Object... replacements) {}
-    }
+    };
 
-    /**
-     * <p>
-     *     Prints log messages to {@link System#out System.out}
-     * </p>
-     */
-    class DefaultFSLogger implements FSLogger {
-
-        private static final String TAG = "FS_DEFAULT_LOGGER";
+    FSLogger TO_SYSTEM_OUT = new FSLogger() {
 
         @Override
         public void e(String message, Object... replacements) {
             message = String.format(message, replacements);
-            System.out.println(String.format("%s/[%s]: %s", "E", TAG, message));
+            System.out.println(String.format("%s/[%s]: %s", "E", "FS_DEFAULT_LOGGER", message));
         }
 
         @Override
         public void i(String message, Object... replacements) {
             message = String.format(message, replacements);
-            System.out.println(String.format("%s/[%s]: %s", "I", TAG, message));
+            System.out.println(String.format("%s/[%s]: %s", "I", "FS_DEFAULT_LOGGER", message));
         }
 
         @Override
         public void w(String message, Object... replacements) {
             message = String.format(message, replacements);
-            System.out.println(String.format("%s/[%s]: %s", "W", TAG, message));
+            System.out.println(String.format("%s/[%s]: %s", "W", "FS_DEFAULT_LOGGER", message));
 
         }
 
         @Override
         public void o(String message, Object... replacements) {
             message = String.format(message, replacements);
-            System.out.println(String.format("%s/[%s]: %s", "O", TAG, message));
+            System.out.println(String.format("%s/[%s]: %s", "O", "FS_DEFAULT_LOGGER", message));
         }
-    }
+    };
 }

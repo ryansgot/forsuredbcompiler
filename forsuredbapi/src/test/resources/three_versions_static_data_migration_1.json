@@ -6,22 +6,7 @@
     },
     {
       "table_name": "all_types",
-      "column_name": "big_decimal_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
-      "column_name": "big_integer_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
       "column_name": "byte_array_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
-      "column_name": "date_column",
       "migration_type": "ALTER_TABLE_ADD_COLUMN"
     },
     {
@@ -31,17 +16,7 @@
     },
     {
       "table_name": "all_types",
-      "column_name": "double_wrapper_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
       "column_name": "float_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
-      "column_name": "float_wrapper_column",
       "migration_type": "ALTER_TABLE_ADD_COLUMN"
     },
     {
@@ -51,48 +26,23 @@
     },
     {
       "table_name": "all_types",
-      "column_name": "integer_wrapper_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
       "column_name": "long_column",
-      "migration_type": "ALTER_TABLE_ADD_COLUMN"
-    },
-    {
-      "table_name": "all_types",
-      "column_name": "long_wrapper_column",
       "migration_type": "ALTER_TABLE_ADD_COLUMN"
     },
     {
       "table_name": "all_types",
       "column_name": "string_column",
       "migration_type": "ALTER_TABLE_ADD_COLUMN"
+    },
+    {
+      "table_name": "all_types",
+      "column_name": "boolean_column",
+      "migration_type": "ALTER_TABLE_ADD_COLUMN"
     }
   ],
   "target_schema": {
     "all_types": {
       "column_info_map": {
-        "float_wrapper_column": {
-          "method_name": "floatWrapperColumn",
-          "column_name": "float_wrapper_column",
-          "column_type": "java.lang.Float",
-          "index": false,
-          "unique": false,
-          "primary_key": false,
-          "searchable": true,
-          "orderable": true
-        },
-        "long_wrapper_column": {
-          "method_name": "longWrapperColumn",
-          "column_name": "long_wrapper_column",
-          "column_type": "java.lang.Long",
-          "index": false,
-          "unique": false,
-          "primary_key": false,
-          "searchable": true,
-          "orderable": true
-        },
         "string_column": {
           "method_name": "stringColumn",
           "column_name": "string_column",
@@ -125,30 +75,10 @@
           "searchable": true,
           "orderable": true
         },
-        "big_decimal_column": {
-          "method_name": "bigDecimalColumn",
-          "column_name": "big_decimal_column",
-          "column_type": "java.math.BigDecimal",
-          "index": false,
-          "unique": false,
-          "primary_key": false,
-          "searchable": true,
-          "orderable": true
-        },
-        "big_integer_column": {
-          "method_name": "bigIntegerColumn",
-          "column_name": "big_integer_column",
-          "column_type": "java.math.BigInteger",
-          "index": false,
-          "unique": false,
-          "primary_key": false,
-          "searchable": true,
-          "orderable": true
-        },
-        "date_column": {
-          "method_name": "dateColumn",
-          "column_name": "date_column",
-          "column_type": "java.util.Date",
+        "boolean_column": {
+          "method_name": "booleanColumn",
+          "column_name": "boolean_column",
+          "column_type": "boolean",
           "index": false,
           "unique": false,
           "primary_key": false,
@@ -217,16 +147,6 @@
           "searchable": true,
           "orderable": true
         },
-        "double_wrapper_column": {
-          "method_name": "doubleWrapperColumn",
-          "column_name": "double_wrapper_column",
-          "column_type": "java.lang.Double",
-          "index": false,
-          "unique": false,
-          "primary_key": false,
-          "searchable": true,
-          "orderable": true
-        },
         "_id": {
           "method_name": "id",
           "column_name": "_id",
@@ -234,17 +154,6 @@
           "index": false,
           "unique": false,
           "primary_key": true,
-          "searchable": true,
-          "orderable": true
-        },
-        "integer_wrapper_column": {
-          "method_name": "integerWrapperColumn",
-          "column_name": "integer_wrapper_column",
-          "column_type": "java.lang.Integer",
-          "index": false,
-          "default_value": "1792",
-          "unique": false,
-          "primary_key": false,
           "searchable": true,
           "orderable": true
         }

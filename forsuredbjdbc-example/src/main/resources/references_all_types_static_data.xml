@@ -1,0 +1,45 @@
+<static_data>
+
+    <!--
+       - This file declares static data for a doc store table. The notes below describe the extra care you
+       - must take when adding static data to a doc store table.
+       -->
+
+    <records db_version="2">
+        <!--
+           - when inserting static data for doc store tables, you should either specify the doc column with the
+           - string serialization or the blob_doc column with the hexadecimal string representing the bytes of
+           - your object. Additionally, it's important to specify the fully-qualified class name of the object
+           - serialized in the doc or blob_doc columns.
+           -
+           - all_types_id is a foreign key reference to all_types._id, it's best to ensure that, at this
+           - db_version, there is static data and that the id exists. How do you know the value of the _id?
+           - Static data is organized in <records> aggregate tags and <record> detail tags. The <records>
+           - aggregates are sorted by way of their db_version attribute, and then each <record> detail is
+           - inserted sequentially. Therefore, you can figure out the _id by organizing the <records>
+           - aggregates in order of their db_version attribute and counting the records.
+           -->
+        <record doc='{"my_int":1,"my_string":"This is a string","my_composed_object":{"composed_int":2,"composed_string":"This is a composed string"}}'
+                class_name="com.fsryan.forsuredb.jdbcexample.MyPojo"
+                all_types_id="1" />
+        <record doc='{"my_int":2,"my_string":"This is a string, too","my_composed_object":{"composed_int":3,"composed_string":"This is a composed string, too"}}'
+                class_name="com.fsryan.forsuredb.jdbcexample.MyPojo"
+                all_types_id="1" />
+    </records>
+
+    <!--
+       - Static Data DOES NOT deserialize the document prior to inserting the record. Therefore, if you have
+       - any columns derived from the object, you have to specify the value of that column in the static
+       - data.
+       -->
+    <records db_version="3">
+        <record doc='{"my_int":-1774884465,"my_string":"Hello, World!","my_composed_object":{"composed_int":-1019802552,"composed_string":"Composed Hello, World!"}}'
+                class_name="com.fsryan.forsuredb.jdbcexample.MyPojo"
+                all_types_id="2"
+                composed_int="-1019802552" />
+        <record doc='{"my_int":1885715946,"my_string":"Hello, World!","my_composed_object":{"composed_int":1487612471,"composed_string":"Hello, World!"}}'
+                class_name="com.fsryan.forsuredb.jdbcexample.MyPojo"
+                all_types_id="2"
+                composed_int="1487612471" />
+    </records>
+</static_data>

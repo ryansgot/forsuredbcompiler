@@ -14,6 +14,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fsryan.forsuredb.queryable.StatementBinder.bindObject;
+import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
+
 public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordContainer> {
 
     /*package*/ interface DBProvider {
@@ -69,10 +72,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         final String sql = sqlGenerator.newSingleRowInsertionSql(locator.table, columns);
 
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            for (int pos = 0; pos < columns.size(); pos++) {
-                //noinspection ConstantConditions
-                bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
-            }
+            bindObjects(pStatement, columns, recordContainer);
             if (pStatement.executeUpdate() < 1) {
                 return null;
             }
@@ -193,26 +193,6 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
             return new FSResultSet(statement.executeQuery());
         } catch (SQLException sqle) {
             throw new RuntimeException(sqle);
-        }
-    }
-
-    // TODO: perhaps this should be a helper
-    private static void bindObject(int idx, PreparedStatement pStatement, Object obj) throws SQLException {
-        Class<?> cls = obj.getClass();
-        if (cls == Long.class) {
-            pStatement.setLong(idx, (long) obj);
-        } else if (cls == Integer.class) {
-            pStatement.setInt(idx, (int) obj);
-        } else if (cls == Double.class) {
-            pStatement.setDouble(idx, (double) obj);
-        } else if (cls == Float.class) {
-            pStatement.setFloat(idx, (float) obj);
-        } else if (cls == String.class) {
-            pStatement.setString(idx, (String) obj);
-        } else if (cls == byte[].class) {
-            pStatement.setBytes(idx, (byte[]) obj);
-        } else {
-            throw new IllegalArgumentException("Cannot bind object of type: " + cls);
         }
     }
 }

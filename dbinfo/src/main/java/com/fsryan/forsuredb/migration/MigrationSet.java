@@ -23,8 +23,14 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>Contains an ordered set of {@link Migration} as well as a database version and
+ * target schema (modeled as a map, table name -> {@link TableInfo})
+ *
+ * Note: this class has a natural ordering that is inconsistent with equals.
+ */
 @AutoValue
-public abstract class MigrationSet {
+public abstract class MigrationSet implements Comparable<MigrationSet> {
 
     @AutoValue.Builder
     public static abstract class Builder {
@@ -41,6 +47,13 @@ public abstract class MigrationSet {
     public abstract List<Migration> orderedMigrations();    // ordered_migrations
     public abstract Map<String, TableInfo> targetSchema();  // target_schema
     public abstract int dbVersion();    // db_version
+
+    @Override
+    public int compareTo(MigrationSet other) {
+        final int v = dbVersion();
+        final int otherV = other.dbVersion();
+        return v < otherV ? -1 : (v == otherV) ? 0 : 1;
+    }
 
     public boolean containsMigrations() {
         return orderedMigrations() != null && !orderedMigrations().isEmpty();

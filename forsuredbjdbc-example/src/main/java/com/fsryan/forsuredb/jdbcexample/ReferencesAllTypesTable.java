@@ -1,13 +1,11 @@
 package com.fsryan.forsuredb.jdbcexample;
 
-import com.fsryan.forsuredb.annotations.FSColumn;
-import com.fsryan.forsuredb.annotations.FSForeignKey;
-import com.fsryan.forsuredb.annotations.FSTable;
-import com.fsryan.forsuredb.annotations.Index;
+import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.api.Retriever;
 
 @FSTable("references_all_types")
+@FSStaticData("references_all_types_static_data.xml")
 public interface ReferencesAllTypesTable extends FSDocStoreGetApi<MyPojo> {
     Class BASE_CLASS = MyPojo.class;
     @FSColumn("all_types_id")

@@ -41,7 +41,7 @@ public class MigrationRetrieverFactory {
 
     public MigrationRetrieverFactory(@Nonnull FSDbInfoSerializer migrationSerializer, @Nullable FSLogger log) {
         this.migrationSerializer = migrationSerializer;
-        this.log = log == null ? new FSLogger.SilentLog() : log;
+        this.log = log == null ? FSLogger.SILENT : log;
     }
 
     public MigrationRetriever fromStream(@Nonnull final InputStream inputStream) {

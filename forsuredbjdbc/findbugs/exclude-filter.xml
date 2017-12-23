@@ -23,7 +23,7 @@
     <!-- Prepared statement being generated from a non-constant string is the point -->
     <Match>
         <Class name="com.fsryan.forsuredb.FSDBHelper" />
-        <Method name="executeSqlList" />
+        <Method name="migrateSchema" />
         <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING" />
     </Match>
 
@@ -32,10 +32,6 @@
         <Class name="com.fsryan.forsuredb.resources.Resources" />
         <Method name="iterateEntry" />
         <Bug pattern="DM_CONVERT_CASE" />
-    </Match>\\
-
-    <!-- TODO: when you fix StaticDataSQL, fix this -->
-    <Match>
-        <Class name="com.fsryan.forsuredb.StaticDataSQL" />
     </Match>
+
 </FindBugsFilter>

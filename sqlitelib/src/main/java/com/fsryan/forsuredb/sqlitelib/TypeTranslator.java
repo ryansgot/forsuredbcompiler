@@ -24,8 +24,8 @@ import java.util.Date;
 import javax.lang.model.type.TypeMirror;
 
 public enum TypeTranslator {
-    BIG_INTEGER(BigInteger.class.getName(), "INTEGER"),
-    BIG_DECIMAL(BigDecimal.class.getName(), "REAL"),
+    BIG_INTEGER(BigInteger.class.getName(), "TEXT"),    // <-- storing as TEXT means you cannot sort reliably
+    BIG_DECIMAL(BigDecimal.class.getName(), "TEXT"),    // <-- storing as TEXT means you cannot sort reliably
     BOOLEAN("boolean", "INTEGER"),
     BOOLEAN_WRAPPER(Boolean.class.getName(), "INTEGER"),
     BYTE_ARRAY("byte[]", "BLOB"),

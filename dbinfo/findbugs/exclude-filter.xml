@@ -8,4 +8,8 @@
         <Class name="com.fsryan.forsuredb.migration.Migration" />
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
     </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.migration.MigrationSet" />
+        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+    </Match>
 </FindBugsFilter>

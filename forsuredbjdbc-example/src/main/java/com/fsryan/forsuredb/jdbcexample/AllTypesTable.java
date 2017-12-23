@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.jdbcexample;
 
 import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.annotations.FSDefault;
+import com.fsryan.forsuredb.annotations.FSStaticData;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
@@ -11,6 +12,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 @FSTable("all_types")
+@FSStaticData("all_types_static_data.xml")
 public interface AllTypesTable extends FSGetApi {
     @FSColumn("int_column") @FSDefault("42") int intColumn(Retriever retriever);
     @FSColumn("integer_wrapper_column") @FSDefault("1792") Integer integerWrapperColumn(Retriever retriever);
@@ -25,4 +27,6 @@ public interface AllTypesTable extends FSGetApi {
     @FSColumn("big_integer_column") BigInteger bigIntegerColumn(Retriever retriever);
     @FSColumn("big_decimal_column") BigDecimal bigDecimalColumn(Retriever retriever);
     @FSColumn("date_column") Date dateColumn(Retriever retriever);
+    @FSColumn("boolean_column") boolean booleanColumn(Retriever retriever);
+    @FSColumn("boolean_wrapper_column") Boolean booleanWrapperColumn(Retriever retriever);
 }

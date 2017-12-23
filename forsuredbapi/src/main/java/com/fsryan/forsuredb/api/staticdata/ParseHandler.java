@@ -17,55 +17,171 @@
  */
 package com.fsryan.forsuredb.api.staticdata;
 
-import com.fsryan.forsuredb.api.FSLogger;
-
+import com.fsryan.forsuredb.api.RecordContainer;
+import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
- * <p>
- *     Handler for {@link SAXParser SAXParser} that is capable of handling static data XML
- * </p>
- * @author Ryan Scott
+ * <p>Handler for {@link SAXParser SAXParser} that is capable of handling static data XML
  */
-/*package*/ abstract class ParseHandler<T> extends DefaultHandler {
+class ParseHandler extends DefaultHandler {
 
-    private final String recordName;
-    private final FSLogger log;
-    private final Parser.RecordListener<T> recordListener;
+    private static Pattern hexPattern = Pattern.compile("([0-9a-fA-f]{2})+");   // <-- hexadecimal digits must come in pairs
 
-    /*package*/ ParseHandler(String recordName, FSLogger log, Parser.RecordListener<T> recordListener) {
-        this.recordName = recordName;
-        this.log = log == null ? new FSLogger.SilentLog() : log;
-        this.recordListener = recordListener == null ? (Parser.RecordListener<T>) Parser.RecordListener.NOOP : recordListener;
+    private final DateFormat dateFormat;
+    private final String tableName;
+    private final List<MigrationSet> migrationSets;
+    private final OnRecordRetrievedListener recordListener;
+    private final Stack<String> tagStack = new Stack<>();
+    private int lowestVersionToHonor;
+
+    private MigrationSet currentMigrationSet;
+    private final Map<Integer, List<RecordContainer>> recordQueue = new HashMap<>();
+
+    /*package*/ ParseHandler(DateFormat dateFormat,
+                             String tableName,
+                             List<MigrationSet> migrationSets,
+                             OnRecordRetrievedListener recordListener) {
+        this.dateFormat = dateFormat;
+        this.tableName = tableName;
+        this.migrationSets = migrationSets;
+        this.recordListener = recordListener;
+        lowestVersionToHonor = migrationSets.get(0).dbVersion();
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (!isRecordElement(qName)) {
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
+        switch (qName) {
+            case "records":
+                setCurrentMigrationSet(Integer.parseInt(attributes.getValue("db_version")));
+                break;
+            case "record":
+                if (currentMigrationSet != null) {
+                    // TODO: work on logic to update early rather than pushing each record to the queue
+                    pushToQueue(currentMigrationSet.dbVersion(), createRecord(attributes));
+                }
+                break;
+            default:
+        }
+        tagStack.push(qName);
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) {
+        String ended = tagStack.pop();
+        if ("records".equals(ended)) {
+            currentMigrationSet = null;
+        }
+    }
+
+    @Override
+    public void endDocument() {
+        recordListener.onRecord(recordQueue);
+    }
+
+    private void pushToQueue(int version, RecordContainer recordContainer) {
+        List<RecordContainer> records = recordQueue.get(version);
+        if (records == null) {
+            records = new LinkedList<>();
+            recordQueue.put(version, records);
+        }
+        records.add(recordContainer);
+    }
+
+    private RecordContainer createRecord(Attributes attributes) {
+        RecordContainer ret = new TypedRecordContainer();
+        for (int idx = 0; idx < attributes.getLength(); idx++) {
+            String column = attributes.getQName(idx);
+            String value = attributes.getValue(idx);
+
+            TableInfo table = currentMigrationSet.targetSchema().get(tableName);
+            String qualifiedTypeString = table.getColumn(column).qualifiedType();
+
+            try {
+                switch (qualifiedTypeString) {
+                    case "java.lang.String":
+                        ret.put(column, value);
+                        break;
+                    case "boolean":
+                    case "java.lang.Boolean":
+                        ret.put(column, Boolean.parseBoolean(value) ? 1 : 0);
+                        break;
+                    case "int":
+                    case "java.lang.Integer":
+                        ret.put(column, Integer.parseInt(value));
+                        break;
+                    case "long":
+                    case "java.lang.Long":
+                        ret.put(column, Long.parseLong(value));
+                        break;
+                    case "float":
+                    case "java.lang.Float":
+                        ret.put(column, Float.parseFloat(value));
+                        break;
+                    case "double":
+                    case "java.lang.Double":
+                        ret.put(column, Double.parseDouble(value));
+                        break;
+                    case "java.util.Date":
+                        dateFormat.parse(value);
+                        ret.put(column, value);
+                        break;
+                    case "java.math.BigDecimal":
+                        ret.put(column, new BigDecimal(value).toPlainString());
+                        break;
+                    case "BigInteger":
+                    case "java.math.BigInteger":
+                        ret.put(column, new BigInteger(value).toString(10));
+                        break;
+                    case "byte[]":
+                    case "Byte[]":
+                        ret.put(column, hexStringToByteArray(value));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Cannot insert static data of type: " + qualifiedTypeString);
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Static data insertion failed for column: " + column + "; version: " + currentMigrationSet.dbVersion() + "; target schema = " + currentMigrationSet.targetSchema(), e);
+            }
+        }
+        return ret;
+    }
+
+    private void setCurrentMigrationSet(int dbVersion) {
+        if (dbVersion < lowestVersionToHonor) {
             return;
         }
 
-        log.i("found " + recordName);
-        recordListener.onRecord(createRecord(attributes));
+        for (MigrationSet migrationSet : migrationSets) {
+            if (migrationSet.dbVersion() == dbVersion) {
+                currentMigrationSet = migrationSet;
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Schema for DB version " + dbVersion + " not found");
     }
 
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        log.i("End Element :" + qName + " with localName: " + localName);
-    }
+    private static byte[] hexStringToByteArray(String s) {
+        if (s.isEmpty() || !hexPattern.matcher(s).matches()) {
+            throw new IllegalArgumentException("byte arrays must be represented in static data as hexadecimal strings; your entry: " + s);
+        }
 
-    @Override
-    public void characters(char ch[], int start, int length) throws SAXException {
-        log.i("characters: " + new String(ch, start, length));
-    }
-
-    protected abstract T createRecord(Attributes attributes);
-
-    private boolean isRecordElement(String qName) {
-        return qName != null && recordName.equals(qName);
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 }

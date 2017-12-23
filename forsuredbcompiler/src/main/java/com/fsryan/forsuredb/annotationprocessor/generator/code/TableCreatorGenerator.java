@@ -126,8 +126,7 @@ public class TableCreatorGenerator extends JavaSourceGenerator {
                 .append(tableInfo.qualifiedClassName()).append(".class");
 
         if (tableInfo.hasStaticData()) {
-            buf.append(", \"").append(tableInfo.staticDataAsset()).append("\"")
-                    .append(", \"").append(tableInfo.staticDataRecordName()).append("\"");
+            buf.append(", \"").append(tableInfo.staticDataAsset()).append("\"");
         }
 
         for (TableForeignKeyInfo foreignKey : tableInfo.foreignKeys()) {

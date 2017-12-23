@@ -1,0 +1,69 @@
+<static_data>
+    <records db_version="1">
+        <record big_decimal_column="9826435762398.382385674"
+                big_integer_column="2389436753498534987659834598345634897"
+                byte_array_column="8fc8633d4d0111621a41a90f071e59d627ff6257"
+                date_column="2017-12-22 23:48:59.999"
+                double_column="4783.5235"
+                double_wrapper_column="934834.5"
+                float_column="1.1"
+                float_wrapper_column="7.8"
+                int_column="5"
+                integer_wrapper_column="3058578"
+                long_column="58504"
+                long_wrapper_column="95474849054747"
+                string_column="This is the first record that should be inserted in the db_version 1 static data insertions" />
+        <record big_decimal_column="1.2"
+                big_integer_column="2"
+                byte_array_column="fdba278bf82d07479a85e83fb6850755a9dd609b"
+                date_column="2017-12-22 23:49:59.999"
+                double_column="3.5235"
+                double_wrapper_column="6.5"
+                float_column="2.2"
+                float_wrapper_column="7.8"
+                int_column="5"
+                integer_wrapper_column="23456"
+                long_column="9"
+                long_wrapper_column="2354"
+                string_column="This is the second record that should be inserted in the db_version 1 static data insertions" />
+    </records>
+
+    <!-- Versions two and three intentionally skipped to show that not all versions need to have static data -->
+
+    <!--
+       - Version 4 static data below relies upon boolean_column and boolean_wrapper_column being added
+       - through in the migration on this table in version 4
+       -->
+    <records db_version="4">
+        <record big_decimal_column="476583283.8932675346289"
+                big_integer_column="7984365438954389567894358943576349832"
+                byte_array_column="7526ff726d95e170f09a14a1261110d4d3368cf8"
+                date_column="2017-12-22 23:53:59.999"
+                double_column="5325.3874"
+                double_wrapper_column="5.438439"
+                float_column="1.1"
+                float_wrapper_column="8.7"
+                int_column="5"
+                integer_wrapper_column="8758503"
+                long_column="40585"
+                long_wrapper_column="74745094847459"
+                boolean_column="true"
+                boolean_wrapper_column="false"
+                string_column="This is the first record that should be inserted in the db_version 4 static data insertions" />
+        <record big_decimal_column="2.1"
+                big_integer_column="2"
+                byte_array_column="b906dd9a5570586bf38e58a97470d28fb872abdf"
+                date_column="2017-12-22 23:58:59.999"
+                double_column="5325.3"
+                double_wrapper_column="5.6"
+                float_column="2.2"
+                float_wrapper_column="8.7"
+                int_column="5"
+                integer_wrapper_column="65432"
+                long_column="9"
+                long_wrapper_column="4532"
+                boolean_column="false"
+                boolean_wrapper_column="true"
+                string_column="This is the second record that should be inserted in the db_version 4 static data insertions" />
+    </records>
+</static_data>
