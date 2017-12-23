@@ -26,6 +26,17 @@
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
 
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.StaticDataRetrieverFactory$1" />
+        <Method name="retrieve" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.ParseHandler" />
+        <Method name="createRecord" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+
     <!-- TODO: Remove these when you are able to write a robust set of tests -->
     <Match>
         <Or>
@@ -33,15 +44,6 @@
             <Class name="com.fsryan.forsuredb.api.migration.QueryGenerator" />
         </Or>
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
-    </Match>
-
-    <!-- TODO: Remove these when you're no longer using lombok -->
-    <Match>
-        <Or>
-            <Class name="com.fsryan.forsuredb.info.TableInfo" />
-            <Class name="com.fsryan.forsuredb.info.ColumnInfo" />
-        </Or>
-        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
     </Match>
 
     <!-- These are okay. There is no need to remove this at present. But keep them on your radar. -->

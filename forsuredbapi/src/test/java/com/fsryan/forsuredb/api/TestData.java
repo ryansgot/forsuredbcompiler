@@ -20,14 +20,11 @@ package com.fsryan.forsuredb.api;
 import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class TestData {
 
@@ -54,10 +51,18 @@ public class TestData {
         return out.toString();
     }
 
+    public static InputStream resourceStream(String resource) {
+        return TestData.class.getClassLoader().getResourceAsStream(resource);
+    }
+
     // Convenience methods for making data to go into the tests
     public static TableInfo.BuilderCompat table() {
         return TableInfo.builder().tableName(TABLE_NAME)
                 .qualifiedClassName(TABLE_CLASS_NAME);
+    }
+
+    public static TableInfo.BuilderCompat table(String name) {
+        return table().tableName(name);
     }
 
     public static Map<String, ColumnInfo> columnMapOf(ColumnInfo... columns) {
@@ -74,6 +79,25 @@ public class TestData {
             retMap.put(table.tableName(), table);
         }
         return retMap;
+    }
+
+    public static <K, V> Map<K, V> mapOf() {
+        return new HashMap<>();
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1) {
+        Map<K, V> ret = mapOf();
+        ret.put(k1, v1);
+        return ret;
+    }
+
+    public static TableForeignKeyInfo.Builder foreignKeyTo(String foreignTableName) {
+        return TableForeignKeyInfo.builder()
+                .foreignTableName(foreignTableName)
+                .deleteChangeAction("CASCADE")
+                .updateChangeAction("CASCADE")
+                .localToForeignColumnMap(mapOf("local", "foreign"))
+                .foreignTableApiClassName(TestData.class.getName());
     }
 
     public static ColumnInfo idCol() {
@@ -169,6 +193,10 @@ public class TestData {
                 .deleteAction(ForeignKey.ChangeAction.RESTRICT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
+    }
+
+    public static <T> Set<T> setOf(T... ts) {
+        return new HashSet<>(Arrays.asList(ts));
     }
 
     // Helpers for covenience methods

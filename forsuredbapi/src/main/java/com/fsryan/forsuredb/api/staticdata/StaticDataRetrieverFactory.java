@@ -17,85 +17,62 @@
  */
 package com.fsryan.forsuredb.api.staticdata;
 
-
-import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.RecordContainer;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+import com.fsryan.forsuredb.migration.MigrationSet;
 
+import javax.annotation.Nonnull;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.net.URL;
+import java.text.DateFormat;
 import java.util.List;
-import java.util.Map;
 
 /**
- * <p>
- *     Factory that creates {@link StaticDataRetriever StaticDataRetriever} objects that are capable
- *     of getting {@link RecordContainer RecordContainer} objects.
- * </p>
+ * <p>Factory that creates {@link StaticDataRetriever StaticDataRetriever} objects that are capable
+ * of parsing {@link RecordContainer RecordContainer} objects from static data XML
  * @author Ryan Scott
  */
-public class StaticDataRetrieverFactory {
+public abstract class StaticDataRetrieverFactory {
 
-    private final FSLogger log;
-
-    public StaticDataRetrieverFactory(FSLogger log) {
-        this.log = log == null ? new FSLogger.SilentLog() : log;
+    public static StaticDataRetriever createFor(@Nonnull String tableName,
+                                                @Nonnull List<MigrationSet> migrationSets,
+                                                @Nonnull URL staticDataAsset) throws IOException {
+        return createFor(tableName, migrationSets, staticDataAsset.openStream());
     }
 
-    /**
-     * @param xmlStream {@link InputStream InputStream} that <i>MUST</i> be XML
-     * @return A {@link StaticDataRetriever StaticDataRetriever} that can get
-     * {@link RecordContainer RecordContainer} objects given the {@link InputStream InputStream}
-     */
-    public StaticDataRetriever fromStream(final InputStream xmlStream) {
-        return xmlStream == null ? StaticDataRetriever.NOOP : new RetrieverFromStream(log, xmlStream);
+    public static StaticDataRetriever createFor(@Nonnull String tableName,
+                                                @Nonnull List<MigrationSet> migrationSets,
+                                                @Nonnull final InputStream xmlStream) {
+        return createFor(Sql.generator().getDateFormat(), tableName, migrationSets, xmlStream);
     }
 
-    private static class RetrieverFromStream implements StaticDataRetriever {
-
-        private final FSLogger log;
-        private final InputStream xmlStream;
-
-        private List<RecordContainer> records;
-        private List<Map<String, String>> rawRecords;
-
-        public RetrieverFromStream(FSLogger log, InputStream xmlStream) {
-            this.log = log;
-            this.xmlStream = xmlStream;
-        }
-
-        @Override
-        public List<RecordContainer> getRecords(final String recordName) {
-            if (records != null) {
-                return records;
-            }
-
-            records = new LinkedList<>();
-            Parser.parse(xmlStream, new RecordContainerParseHandler(recordName, log, new Parser.RecordListener<RecordContainer>() {
-                @Override
-                public void onRecord(RecordContainer record) {
-                    records.add(record);
+    static StaticDataRetriever createFor(@Nonnull final DateFormat dateFormat,
+                                         @Nonnull final String tableName,
+                                         @Nonnull final List<MigrationSet> migrationSets,
+                                         @Nonnull final InputStream xmlStream) {
+        return new StaticDataRetriever() {
+            @Override
+            public void retrieve(OnRecordRetrievedListener recordRetrievalListener) {
+                try {
+                    ParseHandler parseHandler = new ParseHandler(
+                            dateFormat,
+                            tableName,
+                            migrationSets,
+                            recordRetrievalListener
+                    );
+                    SAXParserFactory.newInstance().newSAXParser().parse(xmlStream, parseHandler);
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                } finally {
+                    try {
+                        xmlStream.close();
+                    } catch (IOException ioe) {
+                        // TODO: check what to do
+                    }
                 }
-            }));
-
-            return records;
-        }
-
-        @Override
-        public List<Map<String, String>> getRawRecords(String recordName) {
-            if (rawRecords != null) {
-                return rawRecords;
             }
-
-            rawRecords = new LinkedList<>();
-            Parser.parse(xmlStream, new RawRecordParseHandler(recordName, log, new Parser.RecordListener<Map<String, String>>() {
-                @Override
-                public void onRecord(Map<String, String> record) {
-                    rawRecords.add(record);
-                }
-            }));
-
-            return rawRecords;
-        }
-    };
+        };
+    }
 }
