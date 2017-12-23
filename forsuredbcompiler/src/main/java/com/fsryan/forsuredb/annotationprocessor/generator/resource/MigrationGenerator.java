@@ -28,7 +28,6 @@ import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.migration.MigrationContext;
 
 import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.Date;
@@ -56,7 +55,7 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
         super(processingEnv);
         date = new Date();
         this.pContext = pContext;
-        mr = new MigrationRetrieverFactory(new FSDbInfoGsonSerializer(), new FSLogger.DefaultFSLogger()).fromDirectory(migrationDirectory);
+        mr = new MigrationRetrieverFactory(new FSDbInfoGsonSerializer(), FSLogger.TO_SYSTEM_OUT).fromDirectory(migrationDirectory);
     }
 
     @Override
