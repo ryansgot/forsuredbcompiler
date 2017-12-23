@@ -1,19 +1,26 @@
 package com.fsryan.forsuredb;
 
 import com.fsryan.forsuredb.api.FSTableCreator;
+import com.fsryan.forsuredb.api.RecordContainer;
+import com.fsryan.forsuredb.api.TableInfoUtil;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+import com.fsryan.forsuredb.api.staticdata.StaticDataRetrieverFactory;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.resources.Resources;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+
+import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
 
 public class FSDBHelper extends AbstractDBOpener {
 
@@ -65,6 +72,7 @@ public class FSDBHelper extends AbstractDBOpener {
                        boolean debugMode) {
         super(jdbcUrl, connectionProps, dbConfigurer, identifyDbVersion(migrationSets));
         this.tables = tables;
+        Collections.sort(tables);
         this.migrationSets = migrationSets;
         this.dbInfoSerializer = dbInfoSerializer;
         this.debugMode = debugMode;
@@ -93,6 +101,7 @@ public class FSDBHelper extends AbstractDBOpener {
             return;
         }
         List<MigrationSet> migrationSets = new Migrator(dbInfoSerializer).getMigrationSets();
+        Collections.sort(migrationSets);
         instance = new FSDBHelper(
                 jdbcUrl,
                 connectionProps,
@@ -180,11 +189,6 @@ public class FSDBHelper extends AbstractDBOpener {
     @Override
     public void onCreate(Connection db) {
         applyMigrations(db, 0);
-
-        Collections.sort(tables);
-        for (FSTableCreator table : tables) {
-            executeSqlList(db, new StaticDataSQL(table).getInsertionSQL(), "inserting static data: ");
-        }
     }
 
     @Override
@@ -234,17 +238,76 @@ public class FSDBHelper extends AbstractDBOpener {
     }
 
     private void applyMigrations(Connection db, int previousVersion) {
-        for (MigrationSet migrationSet : migrationSets) {
-            if (previousVersion >= migrationSet.dbVersion()) {
+        int staticDataInsertFromVersion = 0;
+        final Map<String, Map<Integer, List<RecordContainer>>> versionToStaticDataRecordContainers = new HashMap<>();
+        while (migrationSets.size() > 0) {
+            MigrationSet migrationSet = migrationSets.get(0);
+            int version = migrationSet.dbVersion();
+            if (previousVersion >= version) {
+                migrationSets.remove(0);
                 continue;
             }
+
+            if (staticDataInsertFromVersion == 0) {
+                staticDataInsertFromVersion = migrationSet.dbVersion();
+                versionToStaticDataRecordContainers.putAll(createStaticDataRecordContainers());
+            }
+            migrationSets.remove(0);
+
             final List<String> sqlScript = Sql.generator().generateMigrationSql(migrationSet, dbInfoSerializer);
-            executeSqlList(db, sqlScript, "performing migration sql: ");
+            migrateSchema(db, sqlScript, "performing migration sql: ");
+            insertStaticData(db, migrationSet, versionToStaticDataRecordContainers);
         }
     }
 
-    private void executeSqlList(Connection db, List<String> sqlScript, String logPrefix) {
-        // TODO: batch this up and make it work with a prepared statement
+    private void insertStaticData(Connection db, MigrationSet migrationSet, Map<String, Map<Integer, List<RecordContainer>>> versionToStaticDataRecordContainers) {
+        TableInfoUtil.bestEffortDAGSort(migrationSet.targetSchema()).stream()
+                .map(TableInfo::tableName)
+                .filter(this::hasStaticData)
+                .filter(versionToStaticDataRecordContainers::containsKey)
+                .forEach(tableName -> {
+                    Map<Integer, List<RecordContainer>> versionRecordMap = versionToStaticDataRecordContainers.get(tableName);
+                    List<RecordContainer> records = versionRecordMap.get(migrationSet.dbVersion());
+                    if (records == null) {
+                        return;
+                    }
+                    insertStaticData(db, tableName, records);
+                });
+    }
+
+    private boolean hasStaticData(String tableName) {
+        return tables.stream()
+                .filter(tc -> tc.getTableName().equals((tableName)))
+                .anyMatch(tc -> tc.getStaticDataAsset() != null && !tc.getStaticDataAsset().isEmpty());
+    }
+
+    private Map<String, Map<Integer, List<RecordContainer>>> createStaticDataRecordContainers() {
+        Map<String, Map<Integer, List<RecordContainer>>> ret = new HashMap<>();
+        for (FSTableCreator tc : tables) {
+            String staticDataAsset = tc.getStaticDataAsset();
+            if (staticDataAsset == null || staticDataAsset.isEmpty()) {
+                continue;
+            }
+
+            URL url = null;
+            try {
+                // TODO: this is bound to fail. Change.
+                url = Resources.getResourceURLs(resourceUrl -> resourceUrl.toString().endsWith(staticDataAsset)).get(0);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                StaticDataRetrieverFactory.createFor(tc.getTableName(), migrationSets, url).retrieve(versionRecordMap -> {
+                    ret.put(tc.getTableName(), versionRecordMap);
+                });
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        return ret;
+    }
+
+    private void migrateSchema(Connection db, List<String> sqlScript, String logPrefix) {
         for (String insertionSqlString : sqlScript) {
             if (debugMode) {
                 System.out.println(String.format("[forsuredb] %s %s", logPrefix, insertionSqlString));
@@ -255,5 +318,19 @@ public class FSDBHelper extends AbstractDBOpener {
                 throw new RuntimeException(sqle);
             }
         }
+    }
+
+    private void insertStaticData(Connection db, String tableName, List<RecordContainer> records) {
+        // TODO: records are inserted individually, but there is not a strong reason why they should--investigate batching instead of individual record insertion
+        records.forEach(record -> {
+            final List<String> columns = new ArrayList<>(record.keySet());
+            String sql = Sql.generator().newSingleRowInsertionSql(tableName, columns);
+            try (PreparedStatement statement = db.prepareStatement(sql)) {
+                bindObjects(statement, columns, record);
+                statement.executeUpdate();  // TODO: figure out what to do with the return
+            } catch (SQLException sqle) {
+                throw new RuntimeException(sqle);
+            }
+        });
     }
 }
