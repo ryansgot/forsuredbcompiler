@@ -2,8 +2,6 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
-import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -13,6 +11,8 @@ import javax.annotation.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+
+import static com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever.properties;
 
 public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> {
 
@@ -59,7 +59,7 @@ public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> 
 
     protected String getResultParameter() {
         if (resultParameter == null) {
-            resultParameter = System.getProperty("resultParameter");
+            resultParameter = properties().resultParameter();
             resultParameter = resultParameter == null ? "java.lang.Object" : resultParameter;
         }
         return resultParameter;
@@ -67,7 +67,7 @@ public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> 
 
     protected String getRecordContainer() {
         if (recordContainer == null) {
-            recordContainer = System.getProperty("recordContainer");
+            recordContainer = properties().recordContainer();
             recordContainer = recordContainer == null || recordContainer.isEmpty()
                     ? TypedRecordContainer.class.getName()
                     : recordContainer;
