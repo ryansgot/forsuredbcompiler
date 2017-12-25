@@ -193,6 +193,12 @@ subprojects { subproject ->
             }
             destination = file("$buildDir/poms/pom-default.xml")
         }
+        tasks.generatePomFileForMavenPublication {
+            doFirst {
+                file("$buildDir/poms").mkdirs()
+            }
+            destination = file("$buildDir/poms/pom-default.xml")
+        }
     }
 
     afterEvaluate { project ->
