@@ -4,6 +4,9 @@ buildscript {
         def awsSecretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : ""
         jcenter()
         maven {
+            url  "https://dl.bintray.com/ryansgot/maven"
+        }
+        maven {
             name 'release'
             url "s3://repo.fsryan.com/release"
             credentials(AwsCredentials) {
