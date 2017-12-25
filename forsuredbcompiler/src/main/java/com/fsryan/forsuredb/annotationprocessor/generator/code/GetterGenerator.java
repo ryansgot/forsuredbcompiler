@@ -128,7 +128,7 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
         return TypeSpec.classBuilder(getterClassNameStr(table, false))
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(ClassName.bestGuess(table.qualifiedClassName()))
-                .addAnnotation(GENERATED_ANNOTATION)
+                .addAnnotations(getClassAnnotations())
                 .superclass(getSuperclass())
                 .addJavadoc(jdInfo.stringToFormat(), jdInfo.replacements())
                 .addField(singletonInstanceFieldSpec())

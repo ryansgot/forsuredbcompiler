@@ -26,6 +26,8 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 
+import static com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever.properties;
+
 /**
  * <p>
  *     A helper that makes the creation of new resources easier.
@@ -41,7 +43,7 @@ import javax.tools.StandardLocation;
     private final CharSequence relativeName;
 
     public ResourceCreator(final String relativeName) {
-        this(System.getProperty("applicationPackageName"), relativeName, StandardLocation.CLASS_OUTPUT);
+        this(properties().applicationPackage(), relativeName, StandardLocation.CLASS_OUTPUT);
     }
 
     public ResourceCreator(String pkg, String relativeName, JavaFileManager.Location location) {

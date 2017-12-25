@@ -84,7 +84,6 @@ public class MigrationContext implements TableContext {
             retMap.put(entry.getKey(), entry.getValue().build());
         }
 
-        APLog.i(LOG_TAG, "created tables: " + retMap.toString());
         return retMap;
     }
 

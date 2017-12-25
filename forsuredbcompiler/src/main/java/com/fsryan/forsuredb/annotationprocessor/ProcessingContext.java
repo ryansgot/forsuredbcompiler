@@ -115,7 +115,6 @@ public class ProcessingContext implements TableContext {
                         .parentColumns(parentColumns)
                         .build();
                 joins.add(join);
-                APLog.i(LOG_TAG, "found join: " + join.toString());
             }
         }
     }

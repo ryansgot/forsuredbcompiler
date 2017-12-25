@@ -19,4 +19,9 @@
         <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.GetterGenerator" />
         <Bug pattern="REC_CATCH_EXCEPTION" />
     </Match>
+    <!-- It's fine to lazy init this way in this case -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever" />
+        <Bug pattern="LI_LAZY_INIT_STATIC" />
+    </Match>
 </FindBugsFilter>

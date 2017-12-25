@@ -1,16 +1,37 @@
 buildscript {
     repositories {
+        def awsAccessKeyId = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : ""
+        def awsSecretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : ""
         jcenter()
+        maven {
+            url  "https://dl.bintray.com/ryansgot/maven"
+        }
+        maven {
+            name 'release'
+            url "s3://repo.fsryan.com/release"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
+        maven {
+            name 'snapshot'
+            url "s3://repo.fsryan.com/snapshot"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
     }
     dependencies {
-        classpath 'com.fsryan:forsuredbplugin:0.4.0'
+        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.5.0'
     }
 }
 
-apply plugin: 'com.fsryan.forsuredb'
-apply plugin: 'application'
-
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+apply plugin: 'com.fsryan.gradle.forsuredb'
+apply plugin: 'application'
 
 mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
 

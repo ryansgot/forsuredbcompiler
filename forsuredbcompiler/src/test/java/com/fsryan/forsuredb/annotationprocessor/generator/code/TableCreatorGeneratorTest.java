@@ -22,7 +22,7 @@ public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
     private final String packageName;
 
     public TableCreatorGeneratorTest(String expectedCode, String packageName, Collection<TableInfo> tables) {
-        super(expectedCode);
+        super(expectedCode, TableCreatorGeneratorTest.class.getName(), true);
         this.packageName = packageName;
         this.tables = tables;
     }

@@ -22,10 +22,9 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableContext inputTargetContext;
 
     public ResolverGeneratorTest(String classCode, TableInfo inputTable, TableContext inputTargetContext) {
-        super(classCode);
+        super(classCode, ResolverGeneratorTest.class.getName(), true);
         this.inputTable = inputTable;
         this.inputTargetContext = inputTargetContext;
-        System.setProperty("resultParameter", ResolverGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters

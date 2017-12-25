@@ -20,11 +20,14 @@ package com.fsryan.forsuredb.annotationprocessor;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.*;
 import com.fsryan.forsuredb.annotationprocessor.generator.code.SaveApiGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
+import com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever;
 import com.fsryan.forsuredb.annotations.FSTable;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -34,6 +37,8 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+
+import static com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever.properties;
 
 /**
  * <p>
@@ -67,8 +72,10 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
         APLog.init(processingEnv);
         AnnotationTranslatorFactory.init(processingEnv);
-
         APLog.i(LOG_TAG, "Running FSAnnotationProcessor");
+
+        PropertyRetriever.init(processingEnv);
+
         processFSTableAnnotations(tableTypes);
 
         return true;
@@ -88,7 +95,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
         if (!saveApisCreated) {
             createSetterApis(pc);
         }
-        if (!migrationsCreated && Boolean.getBoolean("createMigrations")) {
+        if (!migrationsCreated && properties().createMigrations()) {
             createMigrations(pc);
         }
         if (!tableCreatorClassCreated) {
@@ -135,16 +142,14 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     }
 
     private void createMigrations(ProcessingContext pc) {
-        String migrationDirectory = System.getProperty("migrationDirectory");
-        APLog.i(LOG_TAG, "got migration directory: " + migrationDirectory);
-        new MigrationGenerator(processingEnv, migrationDirectory, pc).generate();
+        APLog.i(LOG_TAG, "got migration directory: " + properties().migrationDirectory());
+        new MigrationGenerator(processingEnv, properties().migrationDirectory(), pc).generate();
         migrationsCreated = true;   // <-- maintain state so migrations don't have to be created more than once
     }
 
     private void createTableCreatorClass(ProcessingContext pc) {
-        String applicationPackageName = System.getProperty("applicationPackageName");
-        APLog.i(LOG_TAG, "got applicationPackageName: " + applicationPackageName);
-        new TableCreatorGenerator(processingEnv, applicationPackageName, pc.allTables()).generate();
+        APLog.i(LOG_TAG, "got applicationPackageName: " + properties().applicationPackage());
+        new TableCreatorGenerator(processingEnv, properties().applicationPackage(), pc.allTables()).generate();
         tableCreatorClassCreated = true;    // <-- maintain state so TableCreator class does not have to be created more than once
     }
 
@@ -170,8 +175,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     }
 
     private void createForSureClass(ProcessingContext pc) {
-        String applicationPackageName = System.getProperty("applicationPackageName");
-        new ForSureGenerator(processingEnv, applicationPackageName, pc).generate();
+        new ForSureGenerator(processingEnv, properties().applicationPackage(), pc).generate();
         forSureClassCreated = true; // <-- maintain state so ForSure doesn't have to be created more than once
     }
 }

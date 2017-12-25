@@ -18,9 +18,8 @@ public class SetterGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableInfo table;
 
     public SetterGeneratorTest(String expectedCode, TableInfo table, Class<?> resultParameter) {
-        super(expectedCode);
+        super(expectedCode, resultParameter.getName(), true);
         this.table = table;
-        System.setProperty("resultParameter", resultParameter.getName());
     }
 
     @Parameterized.Parameters
