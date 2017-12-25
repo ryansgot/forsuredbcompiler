@@ -18,9 +18,8 @@ public class SaveApiGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableInfo table;
 
     public SaveApiGeneratorTest(String expectedCode, TableInfo table, Class<?> resultParameter) {
-        super(expectedCode);
+        super(expectedCode, resultParameter.getName(), true);
         this.table = table;
-        System.setProperty("resultParameter", resultParameter.getName());
     }
 
     @Parameterized.Parameters

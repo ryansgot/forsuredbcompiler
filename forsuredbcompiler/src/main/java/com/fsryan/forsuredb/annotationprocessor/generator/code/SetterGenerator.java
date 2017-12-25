@@ -50,7 +50,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 .build();
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(setterClassName())
                 .addJavadoc(jdInfo.stringToFormat(), jdInfo.replacements())
-                .addAnnotation(GENERATED_ANNOTATION)
+                .addAnnotations(getClassAnnotations())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(superClassType())
                 .addSuperinterface(ClassName.bestGuess(table.qualifiedClassName() + "SaveApi"))

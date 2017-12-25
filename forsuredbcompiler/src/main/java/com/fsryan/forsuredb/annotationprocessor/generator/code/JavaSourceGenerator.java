@@ -11,12 +11,15 @@ import javax.annotation.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever.properties;
 
 public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> {
 
-    protected static final AnnotationSpec GENERATED_ANNOTATION = AnnotationSpec.builder(Generated.class)
+    private static final AnnotationSpec GENERATED_ANNOTATION = AnnotationSpec.builder(Generated.class)
             .addMember("value", CodeBlock.builder()
                     .add("$S", ClassName.get(FSAnnotationProcessor.class))
                     .build())
@@ -37,6 +40,13 @@ public abstract class JavaSourceGenerator extends BaseGenerator<JavaFileObject> 
     @Override
     protected JavaFileObject createFileObject(ProcessingEnvironment processingEnv) throws IOException {
         return processingEnv.getFiler().createSourceFile(getOutputClassName(true));
+    }
+
+    protected List<AnnotationSpec> getClassAnnotations() {
+        if (properties().addGeneratedAnnotation()) {
+            return Arrays.asList(GENERATED_ANNOTATION);
+        }
+        return Collections.emptyList();
     }
 
     protected String getOutputClassName(boolean fullyQualified) {

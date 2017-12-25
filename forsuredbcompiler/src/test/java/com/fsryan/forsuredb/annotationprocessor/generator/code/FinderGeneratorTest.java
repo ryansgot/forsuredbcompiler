@@ -19,9 +19,12 @@ public class FinderGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableInfo inputTable;
 
     public FinderGeneratorTest(String classCode, TableInfo inputTable) {
-        super(classCode);
+        super(
+                classCode,
+                FinderGeneratorTest.class.getName(),
+                true
+        );
         this.inputTable = inputTable;
-        System.setProperty("resultParameter", FinderGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters

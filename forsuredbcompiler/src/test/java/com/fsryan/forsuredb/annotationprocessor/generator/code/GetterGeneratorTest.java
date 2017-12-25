@@ -19,9 +19,12 @@ public class GetterGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableInfo inputTable;
 
     public GetterGeneratorTest(String classCode, TableInfo inputTable) {
-        super(classCode);
+        super(
+                classCode,
+                GetterGeneratorTest.class.getName(),
+                true
+        );
         this.inputTable = inputTable;
-        System.setProperty("resultParameter", GetterGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters
