@@ -1,8 +1,8 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,12 +17,7 @@ public class TableDataUtil {
     }
 
     public static List<ColumnInfo> columnsSortedByName(Collection<ColumnInfo> unsortedColumns, ColumnInfo... excludedColumns) {
-        return sortedByName(unsortedColumns, new Comparator<ColumnInfo>() {
-            @Override
-            public int compare(ColumnInfo t1, ColumnInfo t2) {
-                return t1.getColumnName().compareToIgnoreCase(t2.getColumnName());
-            }
-        }, excludedColumns);
+        return sortedByName(unsortedColumns, (t1, t2) -> t1.getColumnName().compareToIgnoreCase(t2.getColumnName()), excludedColumns);
     }
 
     public static List<TableInfo> tablesSortedByName(TableContext tableContext, TableInfo... excludedTables) {
@@ -30,12 +25,7 @@ public class TableDataUtil {
     }
 
     public static List<TableInfo> tablesSortedByName(Collection<TableInfo> unsortedTables, TableInfo... excludedTables) {
-        return sortedByName(unsortedTables, new Comparator<TableInfo>() {
-            @Override
-            public int compare(TableInfo t1, TableInfo t2) {
-                return t1.getTableName().compareToIgnoreCase(t2.getTableName());
-            }
-        }, excludedTables);
+        return sortedByName(unsortedTables, (t1, t2) -> t1.tableName().compareToIgnoreCase(t2.tableName()), excludedTables);
     }
 
     private static <T> List<T> sortedByName(Collection<T> unsorted, Comparator<T> comparator, T... exclusions) {

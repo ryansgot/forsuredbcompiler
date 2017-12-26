@@ -1,0 +1,98 @@
+buildscript {
+    repositories {
+        def awsAccessKeyId = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : ""
+        def awsSecretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : ""
+        jcenter()
+        maven {
+            url  "https://dl.bintray.com/ryansgot/maven"
+        }
+        maven {
+            name 'release'
+            url "s3://repo.fsryan.com/release"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
+        maven {
+            name 'snapshot'
+            url "s3://repo.fsryan.com/snapshot"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
+    }
+    dependencies {
+        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.5.0'
+    }
+}
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+apply plugin: 'com.fsryan.gradle.forsuredb'
+apply plugin: 'application'
+
+mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
+
+configurations {
+    apt
+}
+
+def generatedSources = new File(project.buildDir, "generated-src")
+
+compileJava {
+    if (project.hasProperty('intellijHack')) {
+        dependsOn clean
+    }
+    doFirst {
+        (generatedSources.exists() && generatedSources.isDirectory()) || generatedSources.mkdirs()
+    }
+    options.annotationProcessorPath = configurations.apt
+    options.compilerArgs = ['-s', "${generatedSources}"]
+}
+
+if (project.hasProperty('intellijHack')) {
+    sourceSets.main.java.srcDirs += generatedSources
+}
+
+dependencies {
+    compile project(':forsuredbapi')
+    compile project(':forsuredbjdbc')
+    compile project(':sqlitelib')
+    compile project(':forsuredbmodels-gson')
+
+    compile 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+
+    compile 'org.beryx:text-io:3.0.0'   // <-- a library I found for making interactive command line apps
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    apt project(':forsuredbcompiler')
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.13.0'
+}
+
+forsuredb {
+    // should be the same as the applicationId from the android extension
+    applicationPackageName = 'com.fsryan.forsuredb.jdbcexample'
+    // the fully-qualified class name of the parameterization of the SaveResult.
+    resultParameter = "com.fsryan.forsuredb.queryable.DirectLocator"
+    // The fully-qualified class name of the parameterization of the generated
+    // ForSure class. It is the class that stores a record before it is
+    // deleted/inserted/updated etc.
+    recordContainer = "com.fsryan.forsuredb.api.TypedRecordContainer"
+    // the assets directory of your app starting at your project's base directory
+    migrationDirectory = 'forsuredbjdbc-example/src/main/resources'
+    // Your application module's base directory
+    appProjectDirectory = 'forsuredbjdbc-example'
+    // (optional) this is the directory in which your META-INF/services files will go for your custom plugins
+    resourcesDirectory = 'forsuredbjdbc-example/src/main/resources'
+    // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
+    fsSerializerFactoryClass = 'com.fsryan.forsuredb.jdbcexample.JsonAdapterFactory'
+    // (required) This is the glue that ties in your chosen DBMS. forsuresqlitelib 0.4.0 contains a version for SQLite,
+    // however, for Android projects, this must be used in conjunction with forsuredbandroid 0.9.+ because there are
+    // additional Android platform considerations here to allow for smooth integration with android.database.sqlite
+    dbmsIntegratorClass = 'com.fsryan.forsuredb.sqlitelib.SqlGenerator'
+}

@@ -5,12 +5,14 @@ plugins {
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-
-    compile 'com.google.code.gson:gson:2.8.0'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    compile project(':dbinfo')
 
     processor 'org.projectlombok:lombok:1.16.6'
 
+    testCompile project(':forsuredbmodels-gson')
     testCompile 'junit:junit:4.12'
+    testCompile 'com.google.code.gson:gson:2.8.2'
     testCompile 'org.mockito:mockito-core:1.10.19'
 }
 
@@ -27,6 +29,8 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
                     '**/*Test.class',
                     '**/TestData.class',
                     '**/*Test$*.class',
+                    '**/CollectionUtil*',
+                    '**/DummyDbmsIntegrator.class',
                     '**/com/fsryan/forsuredb/api/adapter/ColumnDescriptor.class',   // Implementation by lombok
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTable.class',
                     '**/com/fsryan/forsuredb/api/adapter/FSDocStoreGetApiExtensionTestTableSetter.class',

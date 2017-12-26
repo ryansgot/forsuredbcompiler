@@ -25,7 +25,8 @@ import com.fsryan.forsuredb.annotations.FSColumn;
  *           you will lose basic type-safety guarantees, but it's not the end of the world, as the
  *           somewhat flimsy {@link #className(Retriever)} method will be able to track the java
  *           class of the object. The downfall of this approach is that it is brittle across class
- *           name refactoring.
+ *           name refactoring. Additionally, you should not minify these classes, the class objects
+ *           are reflectively instantiated with {@link Class#forName(String)}
  */
 public interface FSDocStoreGetApi<T> extends FSGetApi {
     /**
@@ -61,7 +62,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
      * </p>
      * <p>
      *     Note that this will most-likely lead to errors if you change the fields of this class and their
-     *     serialization
+     *     jacksonserialization
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return an object of type S deseralized from the string in the doc column
@@ -71,7 +72,7 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
 
     /**
      * <p>
-     *     Use this only if you want to perform your own deserialization and that the initial serialization
+     *     Use this only if you want to perform your own deserialization and that the initial jacksonserialization
      *     was to a String.
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
@@ -81,19 +82,19 @@ public interface FSDocStoreGetApi<T> extends FSGetApi {
 
     /**
      * <p>
-     *     Use this only if you want to perform your own deserialization and that the original serialization
+     *     Use this only if you want to perform your own deserialization and that the original jacksonserialization
      *     was into a byte array.
      * </p>
      * @param retriever a {@link Retriever} which points to a set of results for this {@link FSDocStoreGetApi}
      * @return A byte array representation of the object
      */
-    @FSColumn("blob_doc") String blobDoc(Retriever retriever);
+    @FSColumn("blob_doc") byte[] blobDoc(Retriever retriever);
 
     // TODO: create a migration that is designed to update records whenever a class name changes
     /**
      * <p>
      *     Meta-data for the record that allows you to select all records by their java class. This
-     *     column has nothing to do with serialization/deserialization. And thus, if you refactor
+     *     column has nothing to do with jacksonserialization/deserialization. And thus, if you refactor
      *     the package name or the class name for a class, then this will not be reflected in this
      *     column . . . yet.
      * </p>

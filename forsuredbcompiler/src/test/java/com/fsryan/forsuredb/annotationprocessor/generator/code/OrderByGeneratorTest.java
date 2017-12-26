@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.TestData;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -19,9 +19,8 @@ public class OrderByGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableInfo inputTable;
 
     public OrderByGeneratorTest(String classCode, TableInfo inputTable) {
-        super(classCode);
+        super(classCode, OrderByGeneratorTest.class.getName(), true);
         this.inputTable = inputTable;
-        System.setProperty("resultParameter", OrderByGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters

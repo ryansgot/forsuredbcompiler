@@ -31,21 +31,19 @@ public class FSTableCreator implements Comparable<FSTableCreator> {
     private final String authority;
     private final Class<? extends FSGetApi> tableApiClass;
     private final String staticDataAsset;
-    private final String staticDataRecordName;
     private final Class<? extends FSGetApi>[] foreignKeyClasses;
     private final String tableName;
 
-    public FSTableCreator(String authority, String tableName, Class<? extends FSGetApi> tableApiClass, String staticDataAsset, String staticDataRecordName, Class<? extends FSGetApi>... foreignKeyClasses) {
+    public FSTableCreator(String authority, String tableName, Class<? extends FSGetApi> tableApiClass, String staticDataAsset, Class<? extends FSGetApi>... foreignKeyClasses) {
         this.authority = authority;
         this.tableApiClass = tableApiClass;
         this.staticDataAsset = staticDataAsset;
-        this.staticDataRecordName = staticDataRecordName;
         this.foreignKeyClasses = foreignKeyClasses;
         this.tableName = tableName;
     }
 
     public FSTableCreator(String authority, String tableName, Class<? extends FSGetApi> tableApiClass, Class<? extends FSGetApi>... foreignKeyClasses) {
-        this(authority, tableName, tableApiClass, NO_STATIC_DATA_ASSET, "", foreignKeyClasses);
+        this(authority, tableName, tableApiClass, NO_STATIC_DATA_ASSET, foreignKeyClasses);
     }
 
     /**
@@ -85,10 +83,6 @@ public class FSTableCreator implements Comparable<FSTableCreator> {
 
     public String getStaticDataAsset() {
         return staticDataAsset;
-    }
-
-    public String getStaticDataRecordName() {
-        return staticDataRecordName;
     }
 
     private boolean hasForeignKeyTo(Class<? extends FSGetApi> otherTableApi) {

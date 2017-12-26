@@ -7,7 +7,7 @@ As the central part of the forsuredb project, it is one of libraries necessary f
 | Gradle Version | forsuredb compiler version |
 | -------------- | -------------------------- |
 | <= 3.x         | 0.11.0                     |
-| >= 4.0         | 0.11.1                     | 
+| >= 4.0         | 0.11.1 or greater          |
 
 ## Quickstart
 
@@ -18,8 +18,16 @@ As the central part of the forsuredb project, it is one of libraries necessary f
 4. An SQL library conforming to the forsuredb standards (see https://github.com/ryansgot/forsuredbsqlitelib for an example). Libraries 3 and 4 can be combined, however.
 
 ### Using forsuredb in Android
-- Create a new Android project (see https://github.com/ryansgot/forsuredbandroid for a sample app)
-- Set up the project build.gradle repositories and dependencies like this:
+You have two choices of how you want forsuredb to access data in your project:
+
+| Platform Integration Library | Traits                                                         | When to use                                                               |
+| ---------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| forsuredb-contentprovider    | `ContentProvider` implementation and special `ContentObserver` | You have an MVC-style app or need to expose content via `ContentProvider` |
+| forsuredb-directdb           | Invokes the `SQLiteDatabase` directly                          | Neither of the above hold                                                 |
+
+#### Instructions for both platform integration libraries
+1. Create a new Android project
+2. Set up the project build.gradle repositories and dependencies like this:
 ```groovy
 buildscript {
     repositories {
@@ -27,47 +35,62 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
-        classpath 'com.fsryan:forsuredbplugin:0.4.0'    // <-- if using forsuredbapi 0.8.1 and below, use forsuredbplugin 0.3.1
+        classpath 'com.fsryan:forsuredbplugin:0.4.0'
     }
 }
 
 allprojects {
     repositories {
-        jcenter() // <-- all jar/aar files for forsuredb are hosted on jcenter
-        maven {     // <-- except for forsuredbcompiler 7.0 and up . . . which are currently hosted here
+        jcenter()
+        maven {
             url  "http://dl.bintray.com/ryansgot/maven"
         }
     }
 }
 ```
-- Amend your app build.gradle file as such:
+3. Amend your app's build.gradle file to apply the plugins
 ```groovy
 apply plugin: 'com.android.application'
 apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
-
-/*...*/
-
+```
+4. Add the following dependencies:
+```groovy
 dependencies {
-    compile 'com.google.guava:guava:19.0'
+    /*...*/
+    // common API for your code and the supporting libraries
+    compile 'com.fsryan.forsuredb:forsuredbapi:0.12.0'
+    // the SQLite DBMS integration
+    compile 'com.fsryan.forsuredb:sqlitelib:0.6.0'
 
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.11.0'          // common API for your code and the supporting libraries
-    compile 'com.fsryan.forsuredb:sqlitelib:0.5.0'              // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:forsuredbandroid:0.11.1@aar'  // the Android integration and useful tools
-
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'    // these classes are not needed at runtime--they do code generation
-    annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.11.0'         // runs the forsuredb annotation processor at compile time
+    // you can use compileOnly configuration instead of provided
+    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.12.0'// these classes are not needed at runtime--they do code generation
+    annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.12.0'         // runs the forsuredb annotation processor at compile time
 }
+```
+5. Define an interface that extends FSGetApi, for example:
+```java
+@FSTable("user")
+public interface UserTable extends FSGetApi {   // <-- you must extend FSGetApi when @FSTable annotates an interface or your app won't compile
+    @FSColumn("global_id") long globalId(Retriever retriever);
+    @FSColumn("login_count") int loginCount(Retriever retriever);
+    @FSColumn("app_rating") double appRating(Retriever retriever);
+    @FSColumn("competitor_app_rating") BigDecimal competitorAppRating(Retriever retriever);
+}
+```
+6. Choose whether you're going to use the forsuredb-contentprovider or forsuredb-directdb and then follow the instructions for the one you choose
 
+#### Instructions for forsuredb-contentprovider platform integration library
+7. Configure forsuredb with the forsuredb gradle extension
+```groovy
 forsuredb {
     // should be the same as the applicationId from the android extension
     applicationPackageName = 'com.fsryan.testapp'
     // the fully-qualified class name of the parameterization of the SaveResult.
-    // If you have an Android project, this should be the result parameter.
     resultParameter = "android.net.Uri"
     // The fully-qualified class name of the parameterization of the generated
     // ForSure class. It is the class that stores a record before it is 
     // deleted/inserted/updated etc.
-    recordContainer = "com.fsryan.forsuredb.provider.FSContentValues"
+    recordContainer = "com.fsryan.forsuredb.queryable.FSContentValues"
     // the assets directory of your app starting at your project's base directory
     migrationDirectory = 'app/src/main/assets'
     // Your application module's base directory
@@ -82,7 +105,7 @@ forsuredb {
     dbmsIntegratorClass = 'com.fsryan.forsuredb.FSAndroidSQLiteGenerator'
 }
 ```
-- Declare an application class and the ```FSDefaultProvider``` in your app's AndroidManifest.xml file:
+8. Declare an extension of ```Application``` or ```MultiDexApplication``` in your apps AndroidManifest.xml file as well as a `ContentProvider` as below (note that the authority string must be unique)
 ```xml
 <application
         android:name=".App" >
@@ -92,9 +115,9 @@ forsuredb {
       android:authorities="com.fsryan.testapp.content"
       android:enabled="true"
       android:exported="false" />
-</application
+</application>
 ```
-- Create the App class that you declared above
+9. Create the App class that you declared above
 ```java
 public class App extends Application {
     @Override
@@ -115,19 +138,67 @@ public class App extends Application {
     }
 }
 ```
-- Define an interface that extends FSGetApi
-```java
-@FSTable("user")
-public interface UserTable extends FSGetApi {   // <-- you must extend FSGetApi when @FSTable annotates an interface or your app won't compile
-    @FSColumn("global_id") long globalId(Retriever retriever);
-    @FSColumn("login_count") int loginCount(Retriever retriever);
-    @FSColumn("app_rating") double appRating(Retriever retriever);
-    @FSColumn("competitor_app_rating") BigDecimal competitorAppRating(Retriever retriever);
+10. Migrate the database by using the dbmigrate gradle task (defined by forsuredbplugin)
+```
+$ ./gradlew dbmigrate
+```
+
+#### Instructions for the forsuredb-directdb platform integration library
+7. Configure forsuredb with the forsuredb gradle extension
+```groovy
+forsuredb {
+    // should be the same as the applicationId from the android extension
+    applicationPackageName = 'com.fsryan.testapp'
+    // the fully-qualified class name of the parameterization of the SaveResult.
+    resultParameter = "com.fsryan.forsuredb.queryable.DirectLocator"
+    // The fully-qualified class name of the parameterization of the generated
+    // ForSure class. It is the class that stores a record before it is
+    // deleted/inserted/updated etc.
+    recordContainer = "com.fsryan.forsuredb.queryable.DirectLocator"
+    // the assets directory of your app starting at your project's base directory
+    migrationDirectory = 'app/src/main/assets'
+    // Your application module's base directory
+    appProjectDirectory = 'app'
+    // (optional) this is the directory in which your META-INF/services files will go for your custom plugins. Note that this is not the same directory as your Android resources (res)
+    resourcesDirectory = 'app/src/main/resources'
+    // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
+    fsSerializerFactoryClass = 'com.my.application.json.AdapterFactory'
+    // (required) This is the glue that ties in your chosen DBMS. forsuresqlitelib 0.4.0 contains a version for SQLite,
+    // however, for Android projects, this must be used in conjunction with forsuredbandroid 0.9.+ because there are
+    // additional Android platform considerations here to allow for smooth integration with android.database.sqlite
+    dbmsIntegratorClass = 'com.fsryan.forsuredb.FSAndroidSQLiteGenerator'
 }
 ```
-- Migrate the database by using the dbmigrate gradle task (defined by forsuredbplugin)
+8. Declare an extension of ```Application``` or ```MultiDexApplication``` in your apps AndroidManifest.xml file as well as a `ContentProvider` as below (note that the authority string must be unique)
+```xml
+<application
+        android:name=".App" >
+</application>
 ```
-./gradlew dbmigrate
+9. Create the App class that you declared above
+```java
+public class App extends Application {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // creates the tables based upon your FSGetApi extensions
+        // pass your custom authority in to TableGenerator.generate() if you don't want the default
+        // if your app has a debug mode, you can call FSDBHelper.initDebug() method instead to get queries spit out to the log
+        if (BuildConfig.DEBUG) {
+            FSDBHelper.initDebug(this, "testapp.db", TableGenerator.generate("com.fsryan.testapp.content"));
+        } else {
+            FSDBHelper.init(this, "testapp.db", TableGenerator.generate("com.fsryan.testapp.content"));
+        }
+        // the String is your Content Provider's authority
+        ForSureAndroidInfoFactory.init(this, "com.fsryan.testapp.content");
+        // ForSureAndroidInfoFactory tells ForSure everything it needs to know.
+        ForSure.init(ForSureAndroidInfoFactory.inst());
+    }
+}
+```
+10. Migrate the database by using the dbmigrate gradle task (defined by forsuredbplugin)
+```
+$ ./gradlew dbmigrate
 ```
 
 ## Using the Doc Store feature
@@ -151,13 +222,15 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - Add a foreign key column to a table
 
 ## Coming up
-- support for inverse migrations of each of the currently supported migrations in 0.12.0? This is going to be a big change because it will mean no need to delete or manually edit migration json files.
-- More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store (0.12.0?)
-- More querying API improvement?
-- An Android Studio/Intellij plugin. Not sure when I'll be able to get to this, though, and it will almost assuredly be part of a separate repo.
-- A library for making use of the ```FSSerializer``` plugin which allows for encryption/decryption of stored documents. I'm not sure exactly when I'll be able to get to this, but it will allow you to partially encrypt your database as opposed to using a tool like SQL Cipher.
+- Support for inverse migrations of each of the currently supported migrations. This is going to be a big change because it will mean no need to delete or manually edit migration json files.
+- More Doc store support such as adding a migration for when you refactor class names of objects that you may store in the doc store
+- More querying API improvement
+- Removal of Gson dependency
 
 ## Revisions
+
+### 0.12.0
+- Pagination of records via first/last method on the `Finder` class
 
 ### 0.11.0
 - Removed dependency on Guava
@@ -167,7 +240,7 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - Fix issue wherein you had to join to another table in order to do a DISTINCT projection.
 
 ### 0.10.0
-- You can now narrow down the columns returned by any query by calling the ```Finder``` methods ```columns(String...)``` or ```distinct(String...)```. Calling ```distinct(String...)``` will query for distinct values. Note that if you call either of these methods, then your table API will contain methods that are invalid for the ```Retriever``` that gets returned when you call the ```Resolver.get()``` method.
+- You can now narrow down the columns returned by any query by calling the `Finder` methods `columns(String...)` or `distinct(String...)`. Calling `distinct(String...)` will query for distinct values. Note that if you call either of these methods, then your table API will contain methods that are invalid for the `Retriever` that gets returned when you call the `Resolver.get()` method.
 
 ### 0.9.5
 - varargs argument when you want to query for different exact values of the same column. Previously, you had to store an intermediate reference to a Finder class, which, based upon the way resolvers nest, could be really difficult to find the correct type to reference.

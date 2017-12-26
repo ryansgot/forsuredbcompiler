@@ -7,7 +7,6 @@ import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
-import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import java.util.Map;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends Resolver<T, ResolverGeneratorTest, TypedRecordContainer, TestTable2, TestTable2Setter, TestTable2Finder<T>, TestTable2OrderBy<T>> {
+public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends Resolver<T, ResolverGeneratorTest, TypedRecordContainer, TestTable2Getter, TestTable2Setter, TestTable2Finder<T>, TestTable2OrderBy<T>> {
     public static final String TABLE_NAME = "test_table_2";
 
     public static final String[] columns = {"_id","created","deleted","modified","test_table_3_id",};
@@ -70,6 +69,21 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
     }
 
     @Override
+    public final TestTable2Getter getApi() {
+        return TestTable2Getter.inst();
+    }
+
+    @Override
+    public final TestTable2Setter set() {
+        return new TestTable2Setter(
+                infoFactory.createQueryable(lookupResource),
+                determineSelection(false),
+                determineOrderings(false),
+                infoFactory.createRecordContainer()
+                );
+    }
+
+    @Override
     public Map<String, String> methodNameToColumnNameMap() {
         return methodNameToColumnNameMap;
     }
@@ -98,16 +112,6 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
         localToForeignColumnMap.put("test_table_2_id", "_id");
         addJoin(new FSJoin(type, "test_table_2", "test_table", localToForeignColumnMap));
         return new JoinTestTable(infoFactory, this);
-    }
-
-    @Override
-    public Class<TestTable2> getApiClass() {
-        return TestTable2.class;
-    }
-
-    @Override
-    public Class<TestTable2Setter> setApiClass() {
-        return TestTable2Setter.class;
     }
 
     @Override

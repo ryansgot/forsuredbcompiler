@@ -17,9 +17,6 @@
  */
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.adapter.FSGetAdapter;
-import com.fsryan.forsuredb.api.adapter.FSSaveAdapter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,13 +77,12 @@ import java.util.Map;
 public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
     protected final ForSureInfoFactory<U, R> infoFactory;
+    protected U lookupResource;
 
     private final List<FSJoin> joins = new ArrayList<>();
     private final List<FSProjection> projections = new ArrayList<>();
     private boolean addedThisProjection = false;
 
-    private U lookupResource;
-    private G getApi;
     private F finder;
     private O orderBy;
 
@@ -106,13 +102,6 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         // If the child also had projections (via a joinResolvers call) then they need to be included as well
         parent.projections.add(child.finder == null ? child.projection() : child.finder.projection());
         parent.projections.addAll(child.projections);
-    }
-
-    public final G getApi() {
-        if (getApi == null) {
-            getApi = FSGetAdapter.create(this);
-        }
-        return getApi;
     }
 
     public Retriever get() {
@@ -136,7 +125,8 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
             projections.add(finder == null ? projection() : finder.projection());
             addedThisProjection = true;
         }
-        return joins.size() == 0 ? queryable.query(projections.get(0), selection, orderings)
+        return joins.size() == 0
+                ? queryable.query(projections.get(0), selection, orderings)
                 : queryable.query(joins, projections, selection, orderings);
     }
 
@@ -145,17 +135,6 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
             orderBy = newOrderByInstance();
         }
         return orderBy;
-    }
-
-    public final S set() {
-        final FSSelection selection = finder == null ? null : finder.selection();
-        finder = null;  // <-- When used, a finder must be nullified unless specifically preserving query state
-
-        final List<FSOrdering> orderings = orderBy == null ? Collections.<FSOrdering>emptyList() : orderBy.getOrderings();
-        orderBy = null; // <-- When used, an orderBy must be nullified unless specifically preserving query state
-
-        final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
-        return FSSaveAdapter.create(queryable, selection, orderings, infoFactory.createRecordContainer(), this);
     }
 
     public final F find() {
@@ -177,15 +156,29 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         return lookupResource;
     }
 
-    // the following methods fill in the details for the Resolver class
-
+    public abstract G getApi();
+    public abstract S set();
     public abstract Map<String, String> methodNameToColumnNameMap();
-    public abstract Class<G> getApiClass();
-    public abstract Class<S> setApiClass();
     public abstract FSProjection projection();
     public abstract String tableName();
     protected abstract F newFinderInstance();
     protected abstract O newOrderByInstance();
+
+    protected FSSelection determineSelection(boolean retainFinder) {
+        final FSSelection ret = finder == null ? null : finder.selection();
+        if (!retainFinder) {
+            finder = null;  // <-- When used, a finder must be nullified unless specifically preserving query state
+        }
+        return ret;
+    }
+
+    protected List<FSOrdering> determineOrderings(boolean retainOrderBy) {
+        final List<FSOrdering> ret = orderBy == null ? Collections.<FSOrdering>emptyList() : orderBy.getOrderings();
+        if (!retainOrderBy) {
+            orderBy = null; // <-- When used, an orderBy must be nullified unless specifically preserving query state
+        }
+        return ret;
+    }
 
     protected void addJoin(FSJoin join) {
         joins.add(join);
