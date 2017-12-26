@@ -142,18 +142,24 @@ subprojects { subproject ->
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
             }
             bintray(MavenPublication) {
                 groupId = rootProject.group
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
             }
             mavenS3(MavenPublication) {
                 groupId = rootProject.group
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
                 pom.withXml {
                     asNode().appendNode('build')
                             .appendNode('extensions')
