@@ -45,8 +45,6 @@ import static javax.lang.model.util.ElementFilter.methodsIn;
  */
 public class ProcessingContext implements TableContext {
 
-    private static final String LOG_TAG = ProcessingContext.class.getSimpleName();
-
     private final Set<TypeElement> tableTypes = new HashSet<>();
     private Map<String, TableInfo> tableMap;
     private List<JoinInfo> joins;
@@ -86,6 +84,9 @@ public class ProcessingContext implements TableContext {
     }
 
     private void createTableMapIfNecessary() {
+        if (tableMap != null) {
+            return;
+        }
         TableContext.Builder builder = new TableContext.Builder();
         tableTypes.forEach(tableType -> addToBuilder(builder, tableType));
         // TODO: There is no need for ProcessingContext class once the allJoins method is on the TableContext interface
