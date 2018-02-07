@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
+import static com.fsryan.forsuredb.sqlitelib.QueryCorrector.LIMIT_NONE;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -190,11 +191,9 @@ public class SqlGenerator implements DBMSIntegrator {
         final String orderBy = expressOrdering(orderings);
         final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
         final String where = qc.getSelection(true);
-        final String limit = qc.getLimit() > 0 ? Integer.toString(qc.getLimit()) : null;
-        final String offset = qc.getOffset() > 0 ? Integer.toString(qc.getOffset()) : null;
         final boolean distinct = projection != null && projection.isDistinct();
         return new SqlForPreparedStatement(
-                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, limit, offset),
+                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, qc.getLimit(), qc.getOffset()),
                 qc.getSelectionArgs()
         );
     }

@@ -405,6 +405,32 @@ public abstract class SqlGeneratorTest {
                                     "SELECT DISTINCT table11.col01 AS table11_col01, table11.col02 AS table11_col02 FROM table11 WHERE table11.rowid IN (SELECT table11.rowid FROM table11 WHERE table11.col01 < ? AND table11.col01 > ? ORDER BY table11._id ASC, table11.modified DESC LIMIT 3 OFFSET 4) ORDER BY table11._id DESC, table11.modified ASC;",
                                     new String[] {"5", "0"}
                             )
+                    },
+                    {   // 12: SELECT with non null selection offset without limit from top
+                            "table12",
+                            createProjection("table12", "col01", "col02"),
+                            createSelection(createLimits(0, 9), "table12.col1=? AND table12.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table12", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table12", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "SELECT table12.col01 AS table12_col01, table12.col02 AS table12_col02 FROM table12 WHERE table12.col1=? AND table12.col2<? ORDER BY table12.col2 ASC, table12.col1 DESC LIMIT -1 OFFSET 9;",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 13: SELECT with non null selection offset without limit from bottom
+                            "table13",
+                            createProjection("table13", "col01", "col02"),
+                            createSelection(createLimits(0, 9, true), "table13.col1=? AND table13.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table13", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table13", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "SELECT table13.col01 AS table13_col01, table13.col02 AS table13_col02 FROM table13 WHERE table13.rowid IN (SELECT table13.rowid FROM table13 WHERE table13.col1=? AND table13.col2<? ORDER BY table13.col2 DESC, table13.col1 ASC LIMIT -1 OFFSET 9) ORDER BY table13.col2 ASC, table13.col1 DESC;",
+                                    new String[] {"hello", "5"}
+                            )
                     }
             });
         }
@@ -779,6 +805,30 @@ public abstract class SqlGeneratorTest {
                                     new String[] {"hello", "5"}
                             )
                     },
+                    {   // 07: DELETE with non null selection offset without limit from top
+                            "table07",
+                            createSelection(createLimits(0, 9), "table07.col1=? AND table07.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table07", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table07", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table07 WHERE table07.rowid IN (SELECT table07.rowid FROM table07 WHERE table07.col1=? AND table07.col2<? ORDER BY table07.col2 ASC, table07.col1 DESC LIMIT -1 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 08: DELETE with non null selection offset without limit from bottom
+                            "table08",
+                            createSelection(createLimits(0, 9, true), "table08.col1=? AND table08.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table08", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table08", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "DELETE FROM table08 WHERE table08.rowid IN (SELECT table08.rowid FROM table08 WHERE table08.col1=? AND table08.col2<? ORDER BY table08.col2 DESC, table08.col1 ASC LIMIT -1 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    }
             });
         }
 
@@ -888,6 +938,32 @@ public abstract class SqlGeneratorTest {
                                     new String[] {"hello", "5"}
                             )
                     },
+                    {   // 07: UPDATE with non null selection offset without limit from top
+                            "table07",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(0, 9), "table07.col1=? AND table07.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table07", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table07", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "UPDATE table07 SET col1=?,col2=? WHERE table07.rowid IN (SELECT table07.rowid FROM table07 WHERE table07.col1=? AND table07.col2<? ORDER BY table07.col2 ASC, table07.col1 DESC LIMIT -1 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    },
+                    {   // 08: UPDATE with non null selection offset without limit from bottom
+                            "table08",
+                            Arrays.asList("col1", "col2"),
+                            createSelection(createLimits(0, 9, true), "table08.col1=? AND table08.col2<?", new String[] {"hello", "5"}),
+                            Arrays.asList(
+                                    new FSOrdering("table08", "col2", OrderBy.ORDER_ASC),
+                                    new FSOrdering("table08", "col1", OrderBy.ORDER_DESC)
+                            ),
+                            new SqlForPreparedStatement(
+                                    "UPDATE table08 SET col1=?,col2=? WHERE table08.rowid IN (SELECT table08.rowid FROM table08 WHERE table08.col1=? AND table08.col2<? ORDER BY table08.col2 DESC, table08.col1 ASC LIMIT -1 OFFSET 9);",
+                                    new String[] {"hello", "5"}
+                            )
+                    }
             });
         }
 
