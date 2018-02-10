@@ -30,6 +30,8 @@ import java.util.Set;
 
 class QueryCorrector {
 
+    static final int LIMIT_NONE = -1;
+
     private final String tableName;
     private final String joinString;
     private final String where;
@@ -99,7 +101,7 @@ class QueryCorrector {
     }
 
     public int getLimit() {
-        return limit;
+        return offset > 0 && limit == 0 ? LIMIT_NONE : limit;
     }
 
     @Nonnull
@@ -120,9 +122,9 @@ class QueryCorrector {
                 + (where.isEmpty() ? "" : " WHERE " + where)
                 + " ORDER BY "
                 + (orderBy.isEmpty()
-                        ?  tableName + "._id " + (findingLast ? "DESC" : "ASC")
+                        ?  tableName + ".rowid " + (findingLast ? "DESC" : "ASC")
                         : (findingLast ? flipOrderBy() : orderBy).trim())
-                + (limit > 0 ? " LIMIT " + limit : "")
+                + (getLimit() != 0 ? " LIMIT " + getLimit() : "")
                 + (offset > 0 ? " OFFSET " + offset : "")
                 + ")";
     }

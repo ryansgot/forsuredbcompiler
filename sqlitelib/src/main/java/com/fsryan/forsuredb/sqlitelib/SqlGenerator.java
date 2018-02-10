@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
+import static com.fsryan.forsuredb.sqlitelib.QueryCorrector.LIMIT_NONE;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -115,7 +116,7 @@ public class SqlGenerator implements DBMSIntegrator {
             return "";
         }
 
-        StringBuilder buf = new StringBuilder(" ORDER BY ");
+        StringBuilder buf = new StringBuilder();
         for (FSOrdering ordering : orderings) {
             buf.append(unambiguousColumn(ordering.table, ordering.column))
                     .append(" ")
@@ -190,11 +191,9 @@ public class SqlGenerator implements DBMSIntegrator {
         final String orderBy = expressOrdering(orderings);
         final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
         final String where = qc.getSelection(true);
-        final String limit = qc.getLimit() > 0 ? Integer.toString(qc.getLimit()) : null;
-        final String offset = qc.getOffset() > 0 ? Integer.toString(qc.getOffset()) : null;
         final boolean distinct = projection != null && projection.isDistinct();
         return new SqlForPreparedStatement(
-                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, limit, offset),
+                buildQuery(qc.hasCompoundSelect(), distinct, table, p, where, null, null, orderBy, qc.getLimit(), qc.getOffset()),
                 qc.getSelectionArgs()
         );
     }
@@ -210,9 +209,8 @@ public class SqlGenerator implements DBMSIntegrator {
         final String joinStr = qc.getJoinString();
         final String where = qc.getSelection(true);
         final String orderBy = qc.getOrderBy();
-        final int limit = qc.getLimit();
         return new SqlForPreparedStatement(
-                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, limit, qc.getOffset()),
+                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, qc.getLimit(), qc.getOffset()),
                 qc.getSelectionArgs()
         );
     }
@@ -235,7 +233,7 @@ public class SqlGenerator implements DBMSIntegrator {
                                                    @Nullable List<FSOrdering> orderings) {
         final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
         return new SqlForPreparedStatement(
-                buildDelete(table, qc.getSelection(false)),
+                buildDelete(table, qc.getSelection(false)), // <-- todo delete
                 qc.getSelectionArgs()
         );
     }

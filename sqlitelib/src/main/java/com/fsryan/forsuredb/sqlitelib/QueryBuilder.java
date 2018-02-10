@@ -13,8 +13,6 @@ class QueryBuilder {
     static final String EMPTY_SQL = ";";
     private static final Set<String> COLUMN_EXCLUSION_FILTER = new HashSet<>(Arrays.asList("_id", "created", "modified"));
 
-    private static final Pattern SQLITE_LIMIT_PATTERN = Pattern.compile("\\s*\\d+\\s*(,\\s*\\d+\\s*)?");
-
     static String singleRecordInsertion(@Nonnull String tableName, @Nonnull List<String> columns) {
         final StringBuilder queryBuf = new StringBuilder("INSERT INTO " + tableName + " (");
 
@@ -73,8 +71,8 @@ class QueryBuilder {
                 null,
                 null,
                 orderBy,
-                limit == 0 ? null : Integer.toString(limit),
-                offset == 0 ? null : Integer.toString(offset)
+                limit,
+                offset
         );
     }
 
@@ -85,15 +83,12 @@ class QueryBuilder {
                                     @Nullable String[] projection,
                                     @Nullable String where,
                                     @Nullable String groupBy,
-                                    @Nullable  String having,
+                                    @Nullable String having,
                                     @Nullable String orderBy,
-                                    @Nullable String limit,
-                                    @Nullable String offset) {
+                                    int limit,
+                                    int offset) {
         if ((groupBy == null || groupBy.isEmpty()) && !(having == null || having.isEmpty())) {
             throw new IllegalArgumentException("Cannot have HAVING without GROUP BY");
-        }
-        if (!(limit == null || limit.isEmpty()) && !SQLITE_LIMIT_PATTERN.matcher(limit).matches()) {
-            throw new IllegalArgumentException("invalid LIMIT clause:" + limit);
         }
 
         StringBuilder queryBuf = new StringBuilder(120);
@@ -111,11 +106,14 @@ class QueryBuilder {
         appendClause(queryBuf, " WHERE ", where);
         appendClause(queryBuf, " GROUP BY ", groupBy);
         appendClause(queryBuf, " HAVING ", having);
-//        appendClause(queryBuf, " ORDER BY ", orderBy);
-        queryBuf.append(orderBy);                   // <-- TODO: fix this oddity in QueryCorrector or just get rid of QueryCorrector
-        if (!isCompound) {
-            appendClause(queryBuf, " LIMIT ", limit);
-            appendClause(queryBuf, " OFFSET ", offset);
+        appendClause(queryBuf, " ORDER BY ", orderBy);
+        if (isCompound || (offset == 0 && limit == 0)) {
+            return queryBuf.append(';').toString();
+        }
+
+        appendClause(queryBuf, " LIMIT ", Integer.toString(limit));
+        if (offset > 0) {
+            appendClause(queryBuf, " OFFSET ", Integer.toString(offset));
         }
         return queryBuf.append(';').toString();
     }
@@ -134,11 +132,11 @@ class QueryBuilder {
         buf.append(' ');
     }
 
-    private static void appendClause(StringBuilder s, String name, String clause) {
+    private static void appendClause(StringBuilder buf, String name, String clause) {
         if (clause == null || clause.isEmpty()) {
             return;
         }
-        s.append(name);
-        s.append(clause);
+        buf.append(name);
+        buf.append(clause);
     }
 }
