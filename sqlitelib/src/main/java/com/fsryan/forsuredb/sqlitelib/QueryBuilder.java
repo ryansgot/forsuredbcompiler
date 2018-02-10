@@ -106,8 +106,7 @@ class QueryBuilder {
         appendClause(queryBuf, " WHERE ", where);
         appendClause(queryBuf, " GROUP BY ", groupBy);
         appendClause(queryBuf, " HAVING ", having);
-//        appendClause(queryBuf, " ORDER BY ", orderBy);
-        queryBuf.append(orderBy);                   // <-- TODO: fix this oddity in QueryCorrector or just get rid of QueryCorrector
+        appendClause(queryBuf, " ORDER BY ", orderBy);
         if (isCompound || (offset == 0 && limit == 0)) {
             return queryBuf.append(';').toString();
         }
@@ -133,11 +132,11 @@ class QueryBuilder {
         buf.append(' ');
     }
 
-    private static void appendClause(StringBuilder s, String name, String clause) {
+    private static void appendClause(StringBuilder buf, String name, String clause) {
         if (clause == null || clause.isEmpty()) {
             return;
         }
-        s.append(name);
-        s.append(clause);
+        buf.append(name);
+        buf.append(clause);
     }
 }

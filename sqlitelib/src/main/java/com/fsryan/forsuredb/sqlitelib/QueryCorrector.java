@@ -122,7 +122,7 @@ class QueryCorrector {
                 + (where.isEmpty() ? "" : " WHERE " + where)
                 + " ORDER BY "
                 + (orderBy.isEmpty()
-                        ?  tableName + "._id " + (findingLast ? "DESC" : "ASC")
+                        ?  tableName + ".rowid " + (findingLast ? "DESC" : "ASC")
                         : (findingLast ? flipOrderBy() : orderBy).trim())
                 + (getLimit() != 0 ? " LIMIT " + getLimit() : "")
                 + (offset > 0 ? " OFFSET " + offset : "")

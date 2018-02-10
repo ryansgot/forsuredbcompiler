@@ -116,7 +116,7 @@ public class SqlGenerator implements DBMSIntegrator {
             return "";
         }
 
-        StringBuilder buf = new StringBuilder(" ORDER BY ");
+        StringBuilder buf = new StringBuilder();
         for (FSOrdering ordering : orderings) {
             buf.append(unambiguousColumn(ordering.table, ordering.column))
                     .append(" ")
@@ -209,9 +209,8 @@ public class SqlGenerator implements DBMSIntegrator {
         final String joinStr = qc.getJoinString();
         final String where = qc.getSelection(true);
         final String orderBy = qc.getOrderBy();
-        final int limit = qc.getLimit();
         return new SqlForPreparedStatement(
-                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, limit, qc.getOffset()),
+                buildJoinQuery(qc.hasCompoundSelect(), projectionHelper.isDistinct(projections), table, p, joinStr, where, orderBy, qc.getLimit(), qc.getOffset()),
                 qc.getSelectionArgs()
         );
     }
@@ -234,7 +233,7 @@ public class SqlGenerator implements DBMSIntegrator {
                                                    @Nullable List<FSOrdering> orderings) {
         final QueryCorrector qc = new QueryCorrector(table, null, selection, expressOrdering(orderings));
         return new SqlForPreparedStatement(
-                buildDelete(table, qc.getSelection(false)),
+                buildDelete(table, qc.getSelection(false)), // <-- todo delete
                 qc.getSelectionArgs()
         );
     }
