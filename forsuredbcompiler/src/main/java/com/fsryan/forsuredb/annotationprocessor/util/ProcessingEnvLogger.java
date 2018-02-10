@@ -37,22 +37,22 @@ import javax.tools.Diagnostic;
     }
 
     @Override
-    public void e(String message) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message);
+    public void e(String message, Object... replacements) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, String.format(message, replacements));
     }
 
     @Override
-    public void i(String message) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
+    public void i(String message, Object... replacements) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, String.format(message, replacements));
     }
 
     @Override
-    public void w(String message) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
+    public void w(String message, Object... replacements) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, String.format(message, replacements));
     }
 
     @Override
-    public void o(String message) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.OTHER, message);
+    public void o(String message, Object... replacements) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.OTHER, String.format(message, replacements));
     }
 }

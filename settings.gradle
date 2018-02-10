@@ -1,2 +1,9 @@
-include 'forsuredbcompiler', 'forsuredbapi'
+include 'forsuredbcompiler'
+include 'forsuredbapi'
+include 'dbinfo'
+include 'forsuredbmodels-gson'
+include 'forsuredbmodels-jackson'
+include 'sqlitelib'
+include 'forsuredbjdbc'
+include 'forsuredbjdbc-example'
 

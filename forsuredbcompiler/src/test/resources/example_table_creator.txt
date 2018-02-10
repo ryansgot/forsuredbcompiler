@@ -68,7 +68,7 @@ public class TableGenerator {
         // provide a reasonable default authority
         authority = authority == null || authority.isEmpty() ? "com.fsryan.testapp.content" : authority;
         final List<FSTableCreator> retList = new LinkedList<FSTableCreator>();
-        retList.add(new FSTableCreator(authority, "test_table", com.fsryan.annotationprocessor.generator.code.TestTable.class, "test_table_data.xml", "test_table_data", com.fsryan.annotationprocessor.generator.code.TestTable2.class));
+        retList.add(new FSTableCreator(authority, "test_table", com.fsryan.annotationprocessor.generator.code.TestTable.class, "test_table_data.xml", com.fsryan.annotationprocessor.generator.code.TestTable2.class));
         retList.add(new FSTableCreator(authority, "test_table_2", com.fsryan.annotationprocessor.generator.code.TestTable2.class, com.fsryan.annotationprocessor.generator.code.TestTable3.class));
         retList.add(new FSTableCreator(authority, "test_table_3", com.fsryan.annotationprocessor.generator.code.TestTable3.class));
         return retList;

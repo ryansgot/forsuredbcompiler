@@ -1,10 +1,15 @@
 package com.fsryan.forsuredb.api.adapter;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +49,7 @@ public abstract class FSSerializerFactoryHelperTest {
 
         @Test
         public void shouldDefaultToGsonSerializer() {
-            assertEquals(FSGsonSerializer.class, new FSSerializerFactoryPluginHelper(fsSerializerFactoryClass).getNew().create().getClass());
+            assertEquals(FSDefaultSerializer.class, new FSSerializerFactoryPluginHelper(fsSerializerFactoryClass).getNew().create().getClass());
         }
 
     }
@@ -63,7 +68,35 @@ public abstract class FSSerializerFactoryHelperTest {
 
     public static class FSGsonSerializerFactoryImpl implements FSSerializerFactory {
 
-        /*package*/ static FSSerializer gsonSerializer = new FSGsonSerializer(new GsonBuilder().setPrettyPrinting().create());
+        /*package*/ static FSSerializer gsonSerializer = new FSSerializer() {
+
+            private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+            @Override
+            public boolean storeAsBlob() {
+                return false;
+            }
+
+            @Override
+            public String createStringDoc(Type type, Object val) {
+                return gson.toJson(val, type);
+            }
+
+            @Override
+            public byte[] createBlobDoc(Type type, Object val) {
+                return createStringDoc(type, val).getBytes();
+            }
+
+            @Override
+            public <T> T fromStorage(Type typeOfT, byte[] objectBytes) {
+                return gson.fromJson(new JsonReader(new InputStreamReader(new ByteArrayInputStream(objectBytes))), typeOfT);
+            }
+
+            @Override
+            public <T> T fromStorage(Type typeOfT, String stringRepresentation) {
+                return gson.fromJson(stringRepresentation, typeOfT);
+            }
+        };
 
         @Override
         public FSSerializer create() {

@@ -28,9 +28,9 @@ public abstract class BuiltInSerializerTest {
 
     protected abstract <T> T serializeThenDeserialize(T o);
 
-    public static class FSSerializableSerializerSerialization extends BuiltInSerializerTest {
+    public static class FSDefaultSerializerSerialization extends BuiltInSerializerTest {
 
-        public FSSerializableSerializerSerialization() {
+        public FSDefaultSerializerSerialization() {
             super(TestSerializable.builder().stringField("This is a String")
                     .intField(56)
                     .longField(84573875L)
@@ -41,28 +41,9 @@ public abstract class BuiltInSerializerTest {
 
         @Override
         protected <T> T serializeThenDeserialize(T o) {
-            FSSerializer serializableSerializer = new FSSerializableSerializer();
+            FSSerializer serializableSerializer = new FSDefaultSerializer();
             byte[] objectBytes = serializableSerializer.createBlobDoc(o.getClass(), o);
             return serializableSerializer.fromStorage(o.getClass(), objectBytes);
-        }
-    }
-
-    public static class FSGsonSerializerSerialization extends BuiltInSerializerTest {
-
-        public FSGsonSerializerSerialization() {
-            super(TestSerializable.builder().stringField("This is a String")
-                    .intField(56)
-                    .longField(84573875L)
-                    .floatField(457.67F)
-                    .doubleField(3.5D)
-                    .build());
-        }
-
-        @Override
-        protected <T> T serializeThenDeserialize(T o) {
-            FSSerializer gsonSerializer = new FSGsonSerializer();
-            String json = gsonSerializer.createStringDoc(o.getClass(), o);
-            return gsonSerializer.fromStorage(o.getClass(), json);
         }
     }
 

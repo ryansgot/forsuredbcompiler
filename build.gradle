@@ -57,6 +57,9 @@ allprojects {
 subprojects { subproject ->
 
     apply plugin: 'java'
+    if (subproject.name == 'forsuredbjdbc-example') {
+        return
+    }
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
@@ -82,7 +85,7 @@ subprojects { subproject ->
         excludeFilter = project.file("${subproject.projectDir}${File.separator}findbugs${File.separator}exclude-filter.xml")
 
         source = subproject.sourceSets.main.allJava.sourceDirectories.asFileTree
-        classes = subproject.fileTree(subproject.sourceSets.main.output.classesDir)
+        classes = subproject.fileTree(subproject.sourceSets.main.output.classesDir) // TODO: remove prior to upgrading to gradle 5.0
         classpath = subproject.sourceSets.main.compileClasspath
 
         reports {
@@ -139,18 +142,24 @@ subprojects { subproject ->
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
             }
             bintray(MavenPublication) {
                 groupId = rootProject.group
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
             }
             mavenS3(MavenPublication) {
                 groupId = rootProject.group
                 artifactId = subproject.name
                 version = subproject.version
                 from components.java
+                artifact sourcesJar
+                artifact javadocJar
                 pom.withXml {
                     asNode().appendNode('build')
                             .appendNode('extensions')
@@ -185,6 +194,12 @@ subprojects { subproject ->
 
     model {
         tasks.generatePomFileForBintrayPublication {
+            doFirst {
+                file("$buildDir/poms").mkdirs()
+            }
+            destination = file("$buildDir/poms/pom-default.xml")
+        }
+        tasks.generatePomFileForMavenPublication {
             doFirst {
                 file("$buildDir/poms").mkdirs()
             }

@@ -1,9 +1,8 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotations.FSTable;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.FSTableCreator;
 import com.squareup.javapoet.CodeBlock;
@@ -123,16 +122,15 @@ public class TableCreatorGenerator extends JavaSourceGenerator {
     private String createAddFSTableCreatorLine(TableInfo tableInfo) {
         StringBuffer buf = new StringBuffer("retList").append(".add(new FSTableCreator(")
                 .append("authority, ")
-                .append("\"" + tableInfo.getTableName() + "\", ")
-                .append(tableInfo.getQualifiedClassName()).append(".class");
+                .append("\"" + tableInfo.tableName() + "\", ")
+                .append(tableInfo.qualifiedClassName()).append(".class");
 
         if (tableInfo.hasStaticData()) {
-            buf.append(", \"").append(tableInfo.getStaticDataAsset()).append("\"")
-                    .append(", \"").append(tableInfo.getStaticDataRecordName()).append("\"");
+            buf.append(", \"").append(tableInfo.staticDataAsset()).append("\"");
         }
 
-        for (TableForeignKeyInfo foreignKey : tableInfo.getForeignKeys()) {
-            buf.append(", ").append(foreignKey.getForeignTableApiClassName()).append(".class");
+        for (TableForeignKeyInfo foreignKey : tableInfo.foreignKeys()) {
+            buf.append(", ").append(foreignKey.foreignTableApiClassName()).append(".class");
         }
 
         return buf.append("))").toString();

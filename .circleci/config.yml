@@ -39,11 +39,26 @@ jobs:
       - run: ./gradlew clean jacocoReport findbugs bumpVersion
 
       - store_artifacts:
+          path: dbinfo/build/reports
+          destination: dbinfo/reports
+      - store_artifacts:
           path: forsuredbapi/build/reports
           destination: forsuredbapi/reports
       - store_artifacts:
           path: forsuredbcompiler/build/reports
           destination: forsuredbcompiler/reports
+      - store_artifacts:
+          path: forsuredbjdbc/build/reports
+          destination: forsuredbjdbc/reports
+      - store_artifacts:
+          path: forsuredbmodels-gson/build/reports
+          destination: forsuredbmodels-gson/reports
+      - store_artifacts:
+          path: forsuredbmodels-jackson/build/reports
+          destination: forsuredbmodels-jackson/reports
+      - store_artifacts:
+          path: sqlitelib/build/reports
+          destination: sqlitelib/reports
 
       - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
 

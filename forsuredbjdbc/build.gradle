@@ -1,0 +1,40 @@
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    compile project(':forsuredbapi')
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+
+    testCompile 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.13.0'
+}
+
+task jacocoReport(type: JacocoReport, dependsOn: 'test') {
+
+    group = 'Reporting'
+    description = 'Generate Jacoco coverage reports after running tests.'
+
+    executionData = files('build/jacoco/test.exec')
+    sourceDirectories = files('src/main/java')
+    classDirectories = fileTree(
+            dir: 'build/classes',
+            excludes: [
+                    '**/*Test.class',
+                    '**/TestData.class',
+                    '**/*Test$*.class',
+                    '**/*_*.class'
+            ]
+    )
+
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.enabled = true
+    }
+}
+
+test {
+    testLogging.showStandardStreams = true
+}

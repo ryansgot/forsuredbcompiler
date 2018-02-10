@@ -51,7 +51,7 @@ public @interface FSForeignKey {
 
     /**
      * <p>
-     *     Specify a compositeId if you intend to make a composite foreign key. You jus have
+     *     Specify a compositeId if you intend to make a composite foreign key. You just have
      *     to be sure that the other columns in the composite foreign key have the same
      *     composite id. Empty string specifies that you do not want a composite foreign key.
      * </p>

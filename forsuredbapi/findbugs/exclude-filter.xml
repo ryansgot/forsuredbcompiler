@@ -2,22 +2,12 @@
 <FindBugsFilter>
     <!-- TODO: remove these in 0.13.0 -->
     <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
+        <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
         <Method name="createStringDoc" />
         <Bug pattern="DM_DEFAULT_ENCODING" />
     </Match>
     <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.FSByteSerializer" />
-        <Method name="fromStorage" />
-        <Bug pattern="DM_DEFAULT_ENCODING" />
-    </Match>
-    <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
-        <Method name="createBlobDoc" />
-        <Bug pattern="DM_DEFAULT_ENCODING" />
-    </Match>
-    <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.FSStringSerializer" />
+        <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
         <Method name="fromStorage" />
         <Bug pattern="DM_DEFAULT_ENCODING" />
     </Match>
@@ -27,6 +17,26 @@
         <Bug pattern="DM_DEFAULT_ENCODING" />
     </Match>
 
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.StaticDataRetrieverFactory$1" />
+        <Method name="retrieve" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.ParseHandler" />
+        <Method name="createRecord" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+
     <!-- TODO: Remove these when you are able to write a robust set of tests -->
     <Match>
         <Or>
@@ -34,15 +44,6 @@
             <Class name="com.fsryan.forsuredb.api.migration.QueryGenerator" />
         </Or>
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
-    </Match>
-
-    <!-- TODO: Remove these when you're no longer using lombok -->
-    <Match>
-        <Or>
-            <Class name="com.fsryan.forsuredb.api.info.TableInfo" />
-            <Class name="com.fsryan.forsuredb.api.info.ColumnInfo" />
-        </Or>
-        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
     </Match>
 
     <!-- These are okay. There is no need to remove this at present. But keep them on your radar. -->
@@ -55,9 +56,5 @@
     <Match>
         <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory$RetrieverFromStream" />
         <Bug pattern="DM_DEFAULT_ENCODING" /> <!-- Using JSON parsing -->
-    </Match>
-    <Match>
-        <Class name="com.fsryan.forsuredb.api.adapter.DocStoreRetrieveHandler" />
-        <Bug pattern="REC_CATCH_EXCEPTION" />
     </Match>
 </FindBugsFilter>

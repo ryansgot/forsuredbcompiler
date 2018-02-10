@@ -24,10 +24,10 @@ import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 import com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory;
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.migration.MigrationContext;
 
-import com.google.gson.Gson;
+import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 
 import java.io.IOException;
 import java.util.Date;
@@ -55,7 +55,7 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
         super(processingEnv);
         date = new Date();
         this.pContext = pContext;
-        mr = new MigrationRetrieverFactory(new FSLogger.DefaultFSLogger()).fromDirectory(migrationDirectory);
+        mr = new MigrationRetrieverFactory(new FSDbInfoGsonSerializer(), FSLogger.TO_SYSTEM_OUT).fromDirectory(migrationDirectory);
     }
 
     @Override
@@ -66,12 +66,12 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
     @Override
     protected String getCode() {
         MigrationSet migrationSet = new DiffGenerator(new MigrationContext(mr), mr.latestDbVersion()).analyzeDiff(pContext);
-        APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.getOrderedMigrations().size());
-        if (migrationSet.getOrderedMigrations().size() == 0) {
+        APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.orderedMigrations().size());
+        if (migrationSet.orderedMigrations().size() == 0) {
             return null;
         }
 
-        return new Gson().toJson(migrationSet);
+        return new FSDbInfoGsonSerializer().serialize(migrationSet);
     }
 
     private String getRelativeFileName() {

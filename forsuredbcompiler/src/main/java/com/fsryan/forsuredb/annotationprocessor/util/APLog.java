@@ -34,19 +34,19 @@ public class APLog {
     }
 
     public static void e(String tag, String message) {
-        (log == null ? FSLogger.SILENT_LOG : log).e(combine(tag, message));
+        (log == null ? FSLogger.SILENT : log).e(combine(tag, message));
     }
 
     public static void i(String tag, String message) {
-        (log == null ? FSLogger.SILENT_LOG : log).i(combine(tag, message));
+        (log == null ? FSLogger.SILENT : log).i(combine(tag, message));
     }
 
     public static void o(String tag, String message) {
-        (log == null ? FSLogger.SILENT_LOG : log).o(combine(tag, message));
+        (log == null ? FSLogger.SILENT : log).o(combine(tag, message));
     }
 
     public static void w(String tag, String message) {
-        (log == null ? FSLogger.SILENT_LOG : log).w(combine(tag, message));
+        (log == null ? FSLogger.SILENT : log).w(combine(tag, message));
     }
 
     private static String combine(String tag, String message) {
