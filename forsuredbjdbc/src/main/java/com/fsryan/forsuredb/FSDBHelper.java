@@ -14,7 +14,6 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import static com.fsryan.forsuredb.queryable.ApiCorrections.correctColumnsForInsert;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
 
 public class FSDBHelper extends AbstractDBOpener {
@@ -63,8 +63,7 @@ public class FSDBHelper extends AbstractDBOpener {
     private final List<FSTableCreator> tables;
     private final List<MigrationSet> migrationSets;
     private final FSDbInfoSerializer dbInfoSerializer;
-    private final boolean debugMode;
-    private final FSLogger log;
+    @Nullable private final FSLogger log;
 
     private FSDBHelper(String jdbcUrl,
                        Properties connectionProps,
@@ -88,8 +87,9 @@ public class FSDBHelper extends AbstractDBOpener {
         Collections.sort(tables);
         this.migrationSets = migrationSets;
         this.dbInfoSerializer = dbInfoSerializer;
-        this.debugMode = debugMode;
+        LogHelper.setLoggingOn(debugMode);
         this.log = log;
+        ForSureJdbcInfoFactory.inst().setLogger(log);
     }
 
     /**
@@ -270,10 +270,6 @@ public class FSDBHelper extends AbstractDBOpener {
         }
     }
 
-    public boolean inDebugMode() {
-        return debugMode;
-    }
-
     /**
      * @param migrationSets The {@link List} of
      * {@link com.fsryan.forsuredb.migration.MigrationSet MigrationSet}
@@ -310,8 +306,8 @@ public class FSDBHelper extends AbstractDBOpener {
 
             final List<String> sqlScript = Sql.generator().generateMigrationSql(migrationSet, dbInfoSerializer);
 
-            if (debugMode && !sqlScript.isEmpty()) {
-                log.i("[migration] performing migration for db version %d", migrationSet.dbVersion());
+            if (!sqlScript.isEmpty()) {
+                LogHelper.logWith(log, "[forsuredb.migrate] performing migration for db version %d", migrationSet.dbVersion());
             }
             migrateSchema(db, sqlScript, "performing migration sql: ");
             insertStaticData(db, migrationSet, versionToStaticDataRecordContainers);
@@ -330,9 +326,7 @@ public class FSDBHelper extends AbstractDBOpener {
                         return;
                     }
 
-                    if (debugMode) {
-                        log.i("[migration] inserting static data for db version %d", migrationSet.dbVersion());
-                    }
+                    LogHelper.logWith(log,"[forsuredb.migrate] inserting static data for db version %d", migrationSet.dbVersion());
                     insertStaticData(db, tableName, records);
                 });
     }
@@ -371,9 +365,7 @@ public class FSDBHelper extends AbstractDBOpener {
 
     private void migrateSchema(Connection db, List<String> sqlScript, String logPrefix) {
         for (String insertionSqlString : sqlScript) {
-            if (debugMode) {
-                log.i("[migration] %s %s", logPrefix, insertionSqlString);
-            }
+            LogHelper.logMigration(log, logPrefix, insertionSqlString);
             try (PreparedStatement ps = db.prepareStatement(insertionSqlString)) {
                 ps.execute();
             } catch (SQLException sqle) {
@@ -385,12 +377,10 @@ public class FSDBHelper extends AbstractDBOpener {
     private void insertStaticData(Connection db, String tableName, List<RecordContainer> records) {
         // TODO: records are inserted individually, but there is not a strong reason why they should--investigate batching instead of individual record insertion
         records.forEach(record -> {
-            List<String> columns = correctInsertionForNoColumns(record);
+            List<String> columns = correctColumnsForInsert(record);
             String insertionSql = Sql.generator().newSingleRowInsertionSql(tableName, columns);
 
-            if (debugMode) {
-                logStatementManualBinding(insertionSql, columns, record);
-            }
+            LogHelper.logInsertion(log, insertionSql, columns, record);
             try (PreparedStatement statement = db.prepareStatement(insertionSql)) {
                 bindObjects(statement, columns, record);
                 statement.executeUpdate();  // TODO: figure out what to do with the return
@@ -398,35 +388,5 @@ public class FSDBHelper extends AbstractDBOpener {
                 throw new RuntimeException(sqle);
             }
         });
-    }
-
-    private void logStatementManualBinding(String sql, List<String> columns, RecordContainer record) {
-        String bound = sql;
-        List<Object> replacements = new ArrayList<>(columns.size());
-        for (String column : columns) {
-            replacements.add(record.get(column));
-        }
-        for (int i = 0; i < columns.size(); i++) {
-            Object o = replacements.get(i);
-            if (o.getClass().isArray() && o.getClass().getComponentType() == byte.class) {
-                int len = Array.getLength(o);
-                byte[] asArray = new byte[len];
-                for (int idx = 0; idx < len; idx++) {
-                    asArray[idx] = Array.getByte(o, idx);
-                }
-                bound = bound.replaceFirst("\\?", Arrays.toString(asArray));
-            } else {
-                bound = bound.replaceFirst("\\?", String.valueOf(o));
-            }
-        }
-        log.i("[migration] inserting record: %s", bound);
-    }
-
-    private static List<String> correctInsertionForNoColumns(RecordContainer record) {
-        if (record.keySet().isEmpty()) {
-            record.put("deleted", 0);
-            return Collections.singletonList("deleted");
-        }
-        return new ArrayList<>(record.keySet());
     }
 }

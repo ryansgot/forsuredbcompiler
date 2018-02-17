@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.queryable;
 
 import com.fsryan.forsuredb.ConnectionUtil;
 import com.fsryan.forsuredb.FSDBHelper;
+import com.fsryan.forsuredb.LogHelper;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.api.adapter.SaveResultFactory;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
@@ -10,10 +11,12 @@ import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import com.fsryan.forsuredb.resultset.FSResultSet;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fsryan.forsuredb.queryable.ApiCorrections.correctColumnsForInsert;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObject;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
 
@@ -44,34 +47,43 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     private final DBProvider dbProvider;
     @Nonnull
     private final DBMSIntegrator sqlGenerator;
+    @Nullable
+    private final FSLogger log;
 
     // TODO: output the queries by passing in a logger
 
     @SuppressWarnings("unused")
     public JdbcQueryable(@Nonnull String tableToQuery) {
-        this(new DirectLocator(tableToQuery));
+        this(tableToQuery, null);
+    }
+
+    @SuppressWarnings("unused")
+    public JdbcQueryable(@Nonnull String tableToQuery, @Nullable  FSLogger log) {
+        this(new DirectLocator(tableToQuery), log);
     }
 
     public JdbcQueryable(@Nonnull DirectLocator locator) {
-        this(locator, realProvider, Sql.generator());
+        this(locator, null);
+    }
+
+    public JdbcQueryable(@Nonnull DirectLocator locator, @Nullable FSLogger log) {
+        this(locator, realProvider, Sql.generator(), log);
     }
 
     @SuppressWarnings("WeakerAccess")   // visible for testing
-    JdbcQueryable(@Nonnull DirectLocator locator, @Nonnull DBProvider dbProvider, DBMSIntegrator sqlGenerator) {
+    JdbcQueryable(@Nonnull DirectLocator locator, @Nonnull DBProvider dbProvider, @Nonnull DBMSIntegrator sqlGenerator, FSLogger log) {
         this.locator = locator;
         this.dbProvider = dbProvider;
         this.sqlGenerator = sqlGenerator;
+        this.log = log;
     }
 
     @Override
     public DirectLocator insert(TypedRecordContainer recordContainer) {
-        // this is kind of a hack to make the insertion logic easier
-        if (recordContainer.keySet().isEmpty()) {
-            recordContainer.put("deleted", 0);
-        }
-
-        final List<String> columns = new ArrayList<>(recordContainer.keySet());
+        final List<String> columns = correctColumnsForInsert(recordContainer);
         final String sql = sqlGenerator.newSingleRowInsertionSql(locator.table, columns);
+
+        LogHelper.logInsertion(log, sql, columns, recordContainer);
 
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bindObjects(pStatement, columns, recordContainer);
@@ -96,6 +108,9 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
 
         final List<String> columns = new ArrayList<>(recordContainer.keySet());
         SqlForPreparedStatement pssql = sqlGenerator.createUpdateSql(locator.table, columns, selection, orderings);
+
+        LogHelper.logUpdate(log, columns, pssql, recordContainer);
+
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
             int pos;
             for (pos = 0; pos < columns.size(); pos++) {
@@ -160,6 +175,9 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     @Override
     public int delete(FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createDeleteSql(locator.table, selection, orderings);
+
+        LogHelper.logDeletion(log, pssql);
+
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
             if (pssql.getReplacements() != null) {
                 for (int pos = 0; pos < pssql.getReplacements().length; pos++) {
@@ -175,12 +193,14 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     @Override
     public Retriever query(FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, projection, selection, orderings);
+        LogHelper.logQuery(log, pssql);
         return query(pssql, dbProvider);
     }
 
     @Override
     public Retriever query(List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
         SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, joins, projections, selection, orderings);
+        LogHelper.logQuery(log, pssql);
         return query(pssql, dbProvider);
     }
 
