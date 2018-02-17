@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.integrationtest.singletable;
 import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.api.Retriever;
+import com.fsryan.forsuredb.integrationtest.RandomString;
 import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nonnull;
@@ -60,11 +61,18 @@ public interface AllTypesTable extends FSGetApi {
         }
 
         public static Record createRandom() {
+            return createRandom(
+                    ThreadLocalRandom.current().nextInt(32) + 1,
+                    ThreadLocalRandom.current().nextInt(32) + 1
+            );
+        }
+
+        public static Record createRandom(int byteLength, int stringLength) {
             final BigDecimal bigDecimal = new BigDecimal(Long.toString(ThreadLocalRandom.current().nextLong()) + '.' + Long.toString(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)));
             final BigInteger bigInteger = new BigInteger(Long.toString(ThreadLocalRandom.current().nextLong()));
             final boolean booleanColumn = ThreadLocalRandom.current().nextBoolean();
             final Boolean booleanWrapperColumn = ThreadLocalRandom.current().nextBoolean();
-            final byte[] byteArrayColumn = new byte[16];
+            final byte[] byteArrayColumn = new byte[Math.max(0, byteLength)];
             ThreadLocalRandom.current().nextBytes(byteArrayColumn);
             final Date dateColumn = new Date(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE));
             final double doubleColumn = ThreadLocalRandom.current().nextDouble() * ThreadLocalRandom.current().nextLong();
@@ -75,7 +83,7 @@ public interface AllTypesTable extends FSGetApi {
             final Integer integerWrapperColumn = ThreadLocalRandom.current().nextInt();
             final long longColumn = ThreadLocalRandom.current().nextLong();
             final Long longWrapperColumn = ThreadLocalRandom.current().nextLong();
-            final String stringColumn = "Some other string";
+            final String stringColumn = new RandomString(stringLength).nextString();
             return create(
                     bigDecimal,
                     bigInteger,

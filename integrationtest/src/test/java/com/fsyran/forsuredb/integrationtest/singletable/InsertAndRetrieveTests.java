@@ -1,39 +1,31 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
-import com.fsryan.forsuredb.FSDBHelper;
-import com.fsryan.forsuredb.api.Retriever;
-import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
-import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
 import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.sql.SQLException;
+import java.util.List;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith({DBSetup.class, ExecutionLog.class})
-public class InsertionAndDeletionTest {
+public class InsertAndRetrieveTests {
 
-    private static AllTypesTable allTypesApi;
-
-    @BeforeAll
-    public static void initApi() throws SQLException {
-        allTypesApi = allTypesTable().getApi();
-    }
+    private static final Logger log = LogManager.getLogger(InsertAndRetrieveTests.class);
 
     @BeforeEach
     public void startFromEmptyTable() {
+        log.debug("clearing all_types_table_test");
         allTypesTable().set().hardDelete();
     }
 
@@ -55,9 +47,17 @@ public class InsertionAndDeletionTest {
         assertEquals(updatePair.attempted, stored);
     }
 
+    @Test
+    @DisplayName("multiple record insertion")
+    public void shouldCorrectlyInsertMultipleRecords() {
+        List<AttemptedSavePair<AllTypesTable.Record>> insertedPairs = insertRandomRecords(10, 1L);
+        verifyConsecutiveRecords(insertedPairs, 1L);
+    }
+
 //    @Test
 //    @DisplayName("multiple record insertion")
 //    public void shouldCorrectlyInsertMultipleRecords() {
-//        insertConsecutivelyIncreasingRecords();
+//        List<AttemptedSavePair<AllTypesTable.Record>> insertedPairs = insertRandomRecords(10, 1L);
+//        verifyConsecutiveRecords(insertedPairs, 1L);
 //    }
 }

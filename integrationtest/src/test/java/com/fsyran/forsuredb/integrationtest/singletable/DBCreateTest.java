@@ -6,6 +6,7 @@ import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
 import com.fsyran.forsuredb.integrationtest.SqlMasterAssertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -32,27 +33,31 @@ public class DBCreateTest {
     }
 
     @Test
+    @DisplayName("FSDBHelper should be initialized")
     public void shouldBeInitialized() {
         assertNotNull(FSDBHelper.inst());
     }
 
     @Test
+    @DisplayName("all_types table should exist")
     public void shouldHaveAllTypesTable() throws SQLException {
         SqlMasterAssertions.tableExists(connection, "all_types");
     }
 
     @Test
+    @DisplayName("non-unique index should should be on integer_wrapper_column")
     public void shouldHaveNonUniqueIndexOnIntegerWrapperColumn() throws SQLException {
         SqlMasterAssertions.nonUniqueIndexExists(connection, "all_types", "integer_wrapper_column");
     }
 
     @Test
+    @DisplayName("unique index should shoudl be on string_column")
     public void shouldHaveUniqueIndexOnStringColumn() throws SQLException {
         SqlMasterAssertions.uniqueIndexExists(connection, "all_types", "string_column");
     }
 
-    // see all_types_static_data.xml for values
     @Test
+    @DisplayName("all static data should be inserted as in all_types_static_data.xml")
     public void verifyCorrectStaticDataInsertion() throws SQLException {
         final Retriever r = allTypesTable().get();
         assertTrue(r.moveToPosition(1));

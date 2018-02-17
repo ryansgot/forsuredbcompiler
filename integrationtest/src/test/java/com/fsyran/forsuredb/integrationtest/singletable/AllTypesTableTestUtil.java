@@ -23,7 +23,7 @@ abstract class AllTypesTableTestUtil {
 
     private static final AllTypesTable allTypesApi = allTypesTable().getApi();
 
-    public static AttemptedSavePair<AllTypesTable.Record> insertRandomRecord(int expectedId) {
+    public static AttemptedSavePair<AllTypesTable.Record> insertRandomRecord(long expectedId) {
         AllTypesTable.Record record = AllTypesTable.Record.createRandom();
 
         SaveResult<DirectLocator> result = allTypesTable().set()
@@ -76,6 +76,28 @@ abstract class AllTypesTableTestUtil {
         assertSuccessfulUpdate(result, 1);
 
         return new AttemptedSavePair<>(result, overwriteRecord);
+    }
+
+    public static void verifyConsecutiveRecords(List<AttemptedSavePair<AllTypesTable.Record>> attemptedSaves, long startingIdInclusive) {
+        verifyConsecutiveRecords(attemptedSaves, startingIdInclusive, Long.MAX_VALUE);
+    }
+
+    public static void verifyConsecutiveRecords(List<AttemptedSavePair<AllTypesTable.Record>> attemptedSaves, long startingIdInclusive, long endingIdExclusive) {
+        try (Retriever r = allTypesTable()
+                .find().byIdBetweenInclusive(startingIdInclusive).and(endingIdExclusive)
+                .then()
+                .get()) {
+            if (!r.moveToFirst()) {
+                fail("there were no records at or above id: " + startingIdInclusive);
+            }
+            int i = 0;
+            do {
+                assertEquals(startingIdInclusive + i, allTypesApi.id(r));
+                assertEquals(attemptedSaves.get(i).attempted, extractRecordFrom(r));
+                i++;
+            } while (r.moveToNext());
+            assertEquals(attemptedSaves.size(), i);
+        }
     }
 
     public static void verifyColumnsAtCurrentPosition(Retriever r, long id, AllTypesTable.Record record) {
@@ -140,7 +162,7 @@ abstract class AllTypesTableTestUtil {
         assertEquals(expectedIntColumn, allTypesApi.intColumn(r));
     }
 
-    public static List<AttemptedSavePair<AllTypesTable.Record>> insertRandomRecords(int count, int expectedFirstId) {
+    public static List<AttemptedSavePair<AllTypesTable.Record>> insertRandomRecords(int count, long expectedFirstId) {
         List<AttemptedSavePair<AllTypesTable.Record>> ret = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             ret.add(insertRandomRecord(expectedFirstId + i));
@@ -158,7 +180,6 @@ abstract class AllTypesTableTestUtil {
             }
             return extractRecordFrom(r);
         }
-
     }
 
     private static AllTypesTable.Record extractRecordFrom(Retriever r) {

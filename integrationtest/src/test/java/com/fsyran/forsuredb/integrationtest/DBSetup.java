@@ -19,11 +19,10 @@ public class DBSetup implements BeforeAllCallback, AfterAllCallback {
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        log.debug("Creating in-memory database");
-
         try {
             FSDBHelper.inst();
         } catch (IllegalStateException ise) {
+            log.debug("Creating in-memory database");
             FSDBHelper.initDebugSQLite(
                     "jdbc:sqlite::memory:",
                     null,
@@ -38,12 +37,12 @@ public class DBSetup implements BeforeAllCallback, AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        log.debug("Destroying in-memory database");
-        FSDBHelper.inst().getReadableDatabase().close();
-
-        // resets the helper value to null
-        Field f = FSDBHelper.class.getDeclaredField("instance");
-        f.setAccessible(true);
-        f.set(null, null);
+//        log.debug("Destroying in-memory database");
+//        FSDBHelper.inst().getReadableDatabase().close();
+//
+//        // resets the helper value to null
+//        Field f = FSDBHelper.class.getDeclaredField("instance");
+//        f.setAccessible(true);
+//        f.set(null, null);
     }
 }
