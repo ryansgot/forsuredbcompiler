@@ -308,6 +308,10 @@ public class FSDBHelper extends AbstractDBOpener {
             migrationSets.remove(0);
 
             final List<String> sqlScript = Sql.generator().generateMigrationSql(migrationSet, dbInfoSerializer);
+
+            if (debugMode && !sqlScript.isEmpty()) {
+                log.i("[migration] performing migration for db version %d", migrationSet.dbVersion());
+            }
             migrateSchema(db, sqlScript, "performing migration sql: ");
             insertStaticData(db, migrationSet, versionToStaticDataRecordContainers);
         }
