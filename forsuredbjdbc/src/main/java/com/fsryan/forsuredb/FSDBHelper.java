@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb;
 
+import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.FSTableCreator;
 import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.api.TableInfoUtil;
@@ -62,6 +63,16 @@ public class FSDBHelper extends AbstractDBOpener {
     private final List<MigrationSet> migrationSets;
     private final FSDbInfoSerializer dbInfoSerializer;
     private final boolean debugMode;
+    private final FSLogger log;
+
+    private FSDBHelper(String jdbcUrl,
+                       Properties connectionProps,
+                       DBConfigurer dbConfigurer,
+                       List<FSTableCreator> tables,
+                       List<MigrationSet> migrationSets,
+                       FSDbInfoSerializer dbInfoSerializer) {
+        this(jdbcUrl, connectionProps, dbConfigurer, tables, migrationSets, dbInfoSerializer, false, null);
+    }
 
     private FSDBHelper(String jdbcUrl,
                        Properties connectionProps,
@@ -69,28 +80,30 @@ public class FSDBHelper extends AbstractDBOpener {
                        List<FSTableCreator> tables,
                        List<MigrationSet> migrationSets,
                        FSDbInfoSerializer dbInfoSerializer,
-                       boolean debugMode) {
+                       boolean debugMode,
+                       FSLogger log) {
         super(jdbcUrl, connectionProps, dbConfigurer, identifyDbVersion(migrationSets));
         this.tables = tables;
         Collections.sort(tables);
         this.migrationSets = migrationSets;
         this.dbInfoSerializer = dbInfoSerializer;
         this.debugMode = debugMode;
+        this.log = log;
     }
 
     /**
      * <p>Use in thethe production version of your app. It has debug mode set to false. If you want
      * debugMode on, then call
-     * {@link #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer)}.
+     * {@link #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer, FSLogger)}.
      * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
      * @param connectionProps any additional properties required to connect to the database
      * @param dbVersionUpdater an object capable of discovering and updating a database version
      * @param tables The information for creating tables
      * @param dbInfoSerializer the {@link FSDbInfoSerializer} that your project will use to deserialize
      *                         db schema and migration info
-     * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer) if you're using SQLite and
+     * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer, FSLogger) if you're using SQLite and
      * want to initialize in debug mode
-     * @see #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
+     * @see #initDebug(String, Properties, DBConfigurer, List, FSDbInfoSerializer, FSLogger)
      */
     public static synchronized void init(@Nonnull String jdbcUrl,
                                          @Nullable Properties connectionProps,
@@ -108,27 +121,60 @@ public class FSDBHelper extends AbstractDBOpener {
                 dbVersionUpdater,
                 tables,
                 migrationSets,
-                dbInfoSerializer,
-                false
+                dbInfoSerializer
         );
     }
 
     /**
      * <p>Use in thethe production version of your app. It has debug mode set to false. If you want
      * debugMode on, then call
-     * {@link #initDebugSQLite(String, Properties, List, FSDbInfoSerializer)}.
+     * {@link #initDebugSQLite(String, Properties, List, FSDbInfoSerializer, FSLogger)}.
      * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
      * @param connectionProps any additional properties required to connect to the database
      * @param tables The information for creating tables
      * @param dbInfoSerializer the {@link FSDbInfoSerializer} that your project will use to deserialize
      *                         db schema and migration info
-     * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer)
+     * @see #initDebugSQLite(String, Properties, List, FSDbInfoSerializer, FSLogger)
      */
     public static synchronized void initSQLite(@Nonnull String jdbcUrl,
                                                @Nullable Properties connectionProps,
                                                @Nonnull List<FSTableCreator> tables,
                                                @Nonnull FSDbInfoSerializer dbInfoSerializer) {
         init(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
+    }
+
+    /**
+     * <p>Use in thethe debug version of your app. It has debug mode set to true. If you want
+     * debugMode off, then call {@link #init(String, Properties, DBConfigurer, List, FSDbInfoSerializer)}.
+     * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
+     * @param connectionProps any additional properties required to connect to the database
+     * @param dbVersionUpdater
+     * @param tables The information for creating tables
+     * @param dbInfoSerializer the {@link FSDbInfoSerializer} that your project will use to deserialize
+     *                         db schema and migration info
+     * @param logger an {@link FSLogger} that will log queries
+     * @see #init(String, Properties, DBConfigurer, List, FSDbInfoSerializer)
+     */
+    public static synchronized void initDebug(@Nonnull String jdbcUrl,
+                                              @Nullable Properties connectionProps,
+                                              @Nonnull DBConfigurer dbVersionUpdater,
+                                              @Nonnull List<FSTableCreator> tables,
+                                              @Nonnull FSDbInfoSerializer dbInfoSerializer,
+                                              @Nonnull FSLogger logger) {
+        if (instance != null) {
+            return;
+        }
+        List<MigrationSet> migrationSets = new Migrator(dbInfoSerializer).getMigrationSets();
+        instance = new FSDBHelper(
+                jdbcUrl,
+                connectionProps,
+                dbVersionUpdater,
+                tables,
+                migrationSets,
+                dbInfoSerializer,
+                true,
+                logger
+        );
     }
 
     /**
@@ -147,19 +193,26 @@ public class FSDBHelper extends AbstractDBOpener {
                                               @Nonnull DBConfigurer dbVersionUpdater,
                                               @Nonnull List<FSTableCreator> tables,
                                               @Nonnull FSDbInfoSerializer dbInfoSerializer) {
-        if (instance != null) {
-            return;
-        }
-        List<MigrationSet> migrationSets = new Migrator(dbInfoSerializer).getMigrationSets();
-        instance = new FSDBHelper(
-                jdbcUrl,
-                connectionProps,
-                dbVersionUpdater,
-                tables,
-                migrationSets,
-                dbInfoSerializer,
-                true
-        );
+        initDebug(jdbcUrl, connectionProps, dbVersionUpdater, tables, dbInfoSerializer, FSLogger.TO_SYSTEM_OUT);
+    }
+
+    /**
+     * <p>Use in thethe debug version of your app. It has debug mode set to true. If you want
+     * debugMode off, then call {@link #initSQLite(String, Properties, List, FSDbInfoSerializer)}.
+     * @param jdbcUrl The jdbc url of the database (eg: jdbc:sqlite:memory)
+     * @param connectionProps any additional properties required to connect to the database
+     * @param tables The information for creating tables
+     * @param dbInfoSerializer the {@link FSDbInfoSerializer} that your project will use to deserialize
+     *                         db schema and migration info
+     * @param logger an {@link FSLogger} that will log queries
+     * @see #initSQLite(String, Properties, List, FSDbInfoSerializer)
+     */
+    public static synchronized void initDebugSQLite(@Nonnull String jdbcUrl,
+                                                    @Nullable Properties connectionProps,
+                                                    @Nonnull List<FSTableCreator> tables,
+                                                    @Nonnull FSDbInfoSerializer dbInfoSerializer,
+                                                    @Nonnull FSLogger logger) {
+        initDebug(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer, logger);
     }
 
     /**
@@ -176,7 +229,7 @@ public class FSDBHelper extends AbstractDBOpener {
                                                     @Nullable Properties connectionProps,
                                                     @Nonnull List<FSTableCreator> tables,
                                                     @Nonnull FSDbInfoSerializer dbInfoSerializer) {
-        initDebug(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer);
+        initDebug(jdbcUrl, connectionProps, sqliteDBConfigurer, tables, dbInfoSerializer, FSLogger.TO_SYSTEM_OUT);
     }
 
     public static synchronized FSDBHelper inst() {
@@ -310,7 +363,7 @@ public class FSDBHelper extends AbstractDBOpener {
     private void migrateSchema(Connection db, List<String> sqlScript, String logPrefix) {
         for (String insertionSqlString : sqlScript) {
             if (debugMode) {
-                System.out.println(String.format("[forsuredb] %s %s", logPrefix, insertionSqlString));
+                log.i("[migration] %s %s", logPrefix, insertionSqlString);
             }
             try (PreparedStatement ps = db.prepareStatement(insertionSqlString)) {
                 ps.execute();

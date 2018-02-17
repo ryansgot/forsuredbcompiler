@@ -24,7 +24,13 @@ public class DBSetup implements BeforeAllCallback, AfterAllCallback {
         try {
             FSDBHelper.inst();
         } catch (IllegalStateException ise) {
-            FSDBHelper.initDebugSQLite("jdbc:sqlite::memory:", null, TableGenerator.generate(), new FSDbInfoGsonSerializer());
+            FSDBHelper.initDebugSQLite(
+                    "jdbc:sqlite::memory:",
+                    null,
+                    TableGenerator.generate(),
+                    new FSDbInfoGsonSerializer(),
+                    new Log4JFSLogger("forsure")
+            );
             ForSure.init(ForSureJdbcInfoFactory.inst());
         }
 
