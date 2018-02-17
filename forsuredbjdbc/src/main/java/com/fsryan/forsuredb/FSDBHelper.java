@@ -307,7 +307,7 @@ public class FSDBHelper extends AbstractDBOpener {
             final List<String> sqlScript = Sql.generator().generateMigrationSql(migrationSet, dbInfoSerializer);
 
             if (!sqlScript.isEmpty()) {
-                LogHelper.logWith(log, "[forsuredb.migrate] performing migration for db version %d", migrationSet.dbVersion());
+                LogHelper.logWith(log, "[migrate] performing migration for db version %d", migrationSet.dbVersion());
             }
             migrateSchema(db, sqlScript, "performing migration sql: ");
             insertStaticData(db, migrationSet, versionToStaticDataRecordContainers);
@@ -326,7 +326,7 @@ public class FSDBHelper extends AbstractDBOpener {
                         return;
                     }
 
-                    LogHelper.logWith(log,"[forsuredb.migrate] inserting static data for db version %d", migrationSet.dbVersion());
+                    LogHelper.logWith(log,"[migrate] inserting static data for db version %d", migrationSet.dbVersion());
                     insertStaticData(db, tableName, records);
                 });
     }

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class SqlMasterVerify {
+public abstract class SqlMasterAssertions {
 
     public static void tableExists(Connection c, String tableName) throws SQLException {
         ResultSet rs = null;

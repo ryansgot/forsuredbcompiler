@@ -15,11 +15,12 @@ public class ExecutionLog implements BeforeTestExecutionCallback, AfterTestExecu
         long amount = finished - started;
         long millis = amount / 1000000;
         long nanos = amount % 1000000;
-        log.debug(context.getDisplayName() + ": " + millis + "." + nanos + " ms");
+        log.debug("FINISHED: {}.{} ms", millis, nanos);
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
+        log.debug("STARTING: {}({})", context.getRequiredTestClass().getSimpleName(), context.getDisplayName());
         context.getStore(ExtensionContext.Namespace.GLOBAL).put("current_time", System.nanoTime());
     }
 }

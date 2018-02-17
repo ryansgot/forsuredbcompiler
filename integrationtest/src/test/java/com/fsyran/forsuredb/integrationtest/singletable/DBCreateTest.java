@@ -2,10 +2,9 @@ package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.Retriever;
-import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
-import com.fsyran.forsuredb.integrationtest.SqlMasterVerify;
+import com.fsyran.forsuredb.integrationtest.SqlMasterAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,21 +16,19 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
-import static com.fsyran.forsuredb.integrationtest.TestUtil.SMALL_DOUBLE;
-import static com.fsyran.forsuredb.integrationtest.TestUtil.SMALL_FLOAT;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.bytesFromHex;
+import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyDefaultValuesAtCurrentPosition;
+import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyColumnsAtCurrentPosition;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({DBSetup.class, ExecutionLog.class})
 public class DBCreateTest {
 
     private static Connection connection;
-    private static AllTypesTable allTypesTable;
 
     @BeforeAll
     public static void initConnection() throws SQLException {
         connection = FSDBHelper.inst().getReadableDatabase();
-        allTypesTable = allTypesTable().getApi();
     }
 
     @Test
@@ -41,17 +38,17 @@ public class DBCreateTest {
 
     @Test
     public void shouldHaveAllTypesTable() throws SQLException {
-        SqlMasterVerify.tableExists(connection, "all_types");
+        SqlMasterAssertions.tableExists(connection, "all_types");
     }
 
     @Test
     public void shouldHaveNonUniqueIndexOnIntegerWrapperColumn() throws SQLException {
-        SqlMasterVerify.nonUniqueIndexExists(connection, "all_types", "integer_wrapper_column");
+        SqlMasterAssertions.nonUniqueIndexExists(connection, "all_types", "integer_wrapper_column");
     }
 
     @Test
     public void shouldHaveUniqueIndexOnStringColumn() throws SQLException {
-        SqlMasterVerify.uniqueIndexExists(connection, "all_types", "string_column");
+        SqlMasterAssertions.uniqueIndexExists(connection, "all_types", "string_column");
     }
 
     // see all_types_static_data.xml for values
@@ -59,7 +56,7 @@ public class DBCreateTest {
     public void verifyCorrectStaticDataInsertion() throws SQLException {
         final Retriever r = allTypesTable().get();
         assertTrue(r.moveToPosition(1));
-        verifyItemAtPosition(
+        verifyColumnsAtCurrentPosition(
                 r,
                 1L,
                 new BigDecimal("476583283.8932675346289"),
@@ -79,7 +76,7 @@ public class DBCreateTest {
                 "Record 1"
         );
         assertTrue(r.moveToPosition(2));
-        verifyItemAtPosition(
+        verifyColumnsAtCurrentPosition(
                 r,
                 2L,
                 new BigDecimal("2.1"),
@@ -99,52 +96,9 @@ public class DBCreateTest {
                 "Record 2"
         );
         assertTrue(r.moveToPosition(3));
-        verifyDefaultValuesAtPosition(
-                r,
-                3L,
-                42
-        );
+        // This was a default-column
+        verifyDefaultValuesAtCurrentPosition(r, 3L, 42);
         assertFalse(r.moveToNext());
         r.close();
-    }
-
-    private static void verifyItemAtPosition(Retriever r,
-                                             long id,
-                                             BigDecimal expectedBigDecimalColumn,
-                                             BigInteger expectedBigIntegerColumn,
-                                             boolean expectedBooleanColumn,
-                                             Boolean expectedBooleanWrapperColumn,
-                                             byte[] expectedBytArrayColumn,
-                                             Date expectedDateColumn,
-                                             double expectedDoubleColumn,
-                                             Double expectedDoubleWrapperColumn,
-                                             float expetedFloatColumn,
-                                             Float expectedFloatWrapperColumn,
-                                             int expectedIntColumn,
-                                             Integer expectedIntegerWrapperColumn,
-                                             long expectedLongColumn,
-                                             Long expectedLongWrapperColumn,
-                                             String expectedStringColumn) {
-        assertEquals(id, allTypesTable.id(r));
-        assertEquals(expectedBigDecimalColumn, allTypesTable.bigDecimalColumn(r));
-        assertEquals(expectedBigIntegerColumn, allTypesTable.bigIntegerColumn(r));
-        assertEquals(expectedBooleanColumn, allTypesTable.booleanColumn(r));
-        assertEquals(expectedBooleanWrapperColumn, allTypesTable.booleanWrapperColumn(r));
-        assertArrayEquals(expectedBytArrayColumn, allTypesTable.byteArrayColumn(r));
-        assertEquals(expectedDateColumn, allTypesTable.dateColumn(r));
-        assertEquals(expectedDoubleColumn, allTypesTable.doubleColumn(r), SMALL_DOUBLE);
-        assertEquals(expectedDoubleWrapperColumn, allTypesTable.doubleWrapperColumn(r), SMALL_DOUBLE);
-        assertEquals(expetedFloatColumn, allTypesTable.floatColumn(r), SMALL_FLOAT);
-        assertEquals(expectedFloatWrapperColumn, allTypesTable.floatWrapperColumn(r), SMALL_FLOAT);
-        assertEquals(expectedIntColumn, allTypesTable.intColumn(r));
-        assertEquals(expectedIntegerWrapperColumn, allTypesTable.integerWrapperColumn(r));
-        assertEquals(expectedLongColumn, allTypesTable.longColumn(r));
-        assertEquals(expectedLongWrapperColumn, allTypesTable.longWrapperColumn(r));
-        assertEquals(expectedStringColumn, allTypesTable.stringColumn(r));
-    }
-
-    private static void verifyDefaultValuesAtPosition(Retriever r, long id, int expectedIntColumn) {
-        assertEquals(id, allTypesTable.id(r));
-        assertEquals(expectedIntColumn, allTypesTable.intColumn(r));
     }
 }

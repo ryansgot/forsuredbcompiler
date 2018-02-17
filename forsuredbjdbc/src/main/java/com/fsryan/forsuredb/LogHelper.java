@@ -27,14 +27,14 @@ public abstract class LogHelper {
             return;
         }
 
-        logger.i("[forsuredb.insert] %s", bindColumnsFirst(sql, columns, record));
+        logger.i("[insert] %s", bindColumnsFirst(sql, columns, record));
     }
 
     public static void logMigration(@Nullable FSLogger logger, @Nullable String prefix, @Nonnull String sql) {
         if (loggingDisabled || logger == null) {
             return;
         }
-        logger.i("[forsuredb.migrate] %s %s", prefix == null ? "" : prefix, sql);
+        logger.i("[migrate] %s %s", prefix == null ? "" : prefix, sql);
     }
 
     public static boolean isLoggingOn() {
@@ -51,7 +51,7 @@ public abstract class LogHelper {
 
         String actual = bindColumnsFirst(pssql.getSql(), columns, recordContainer);
         actual = bindColumnsFirst(actual, pssql.getReplacements());
-        logger.i("[forsuredb.update] %s", actual);
+        logger.i("[update] %s", actual);
     }
 
     public static void logDeletion(@Nullable FSLogger logger, @Nonnull SqlForPreparedStatement pssql) {
@@ -59,7 +59,7 @@ public abstract class LogHelper {
             return;
         }
 
-        logger.i("[forsuredb.delete] %s", bindColumnsFirst(pssql.getSql(), pssql.getReplacements()));
+        logger.i("[delete] %s", bindColumnsFirst(pssql.getSql(), pssql.getReplacements()));
     }
 
     public static void logQuery(@Nullable FSLogger logger, @Nonnull SqlForPreparedStatement pssql) {
@@ -67,7 +67,7 @@ public abstract class LogHelper {
             return;
         }
 
-        logger.i("[forsuredb.query] %s", bindColumnsFirst(pssql.getSql(), pssql.getReplacements()));
+        logger.i("[query] %s", bindColumnsFirst(pssql.getSql(), pssql.getReplacements()));
     }
 
     public static void logWith(@Nullable FSLogger logger, @Nonnull String message, @Nonnull Object... replacements) {
