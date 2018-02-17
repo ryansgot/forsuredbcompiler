@@ -45,6 +45,8 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
     @Nonnull
     private final DBMSIntegrator sqlGenerator;
 
+    // TODO: output the queries by passing in a logger
+
     @SuppressWarnings("unused")
     public JdbcQueryable(@Nonnull String tableToQuery) {
         this(new DirectLocator(tableToQuery));
