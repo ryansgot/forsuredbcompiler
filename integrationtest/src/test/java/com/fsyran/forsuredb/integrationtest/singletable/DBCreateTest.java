@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.queryable.StatementBinder;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
 import com.fsyran.forsuredb.integrationtest.SqlMasterVerify;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith({DBSetup.class, ExecutionLog.class})
 public class DBCreateTest {
 
+    private static Connection connection;
+
+    @BeforeAll
+    public static void initConnection() throws SQLException {
+        connection = FSDBHelper.inst().getReadableDatabase();
+    }
+
     @Test
     public void shouldBeInitialized() {
         assertNotNull(FSDBHelper.inst());
@@ -27,13 +35,16 @@ public class DBCreateTest {
 
     @Test
     public void shouldHaveAllTypesTable() throws SQLException {
-        final Connection c = FSDBHelper.inst().getReadableDatabase();
-        SqlMasterVerify.tableExists(c, "all_types");
+        SqlMasterVerify.tableExists(connection, "all_types");
     }
 
     @Test
-    public void shouldHaveNonUniqueIndexOn() throws SQLException {
-        final Connection c = FSDBHelper.inst().getReadableDatabase();
-        SqlMasterVerify.indexExists(c, "all_types", "integer_wrapper_column", false);
+    public void shouldHaveNonUniqueIndexOnIntegerWrapperColumn() throws SQLException {
+        SqlMasterVerify.nonUniqueIndexExists(connection, "all_types", "integer_wrapper_column");
+    }
+
+    @Test
+    public void shouldHaveUniqueIndexOnStringColumn() throws SQLException {
+        SqlMasterVerify.uniqueIndexExists(connection, "all_types", "string_column");
     }
 }
