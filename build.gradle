@@ -56,6 +56,9 @@ allprojects {
 
 subprojects { subproject ->
 
+    if (subproject.name == 'integrationtest') {
+        return
+    }
     apply plugin: 'java'
     if (subproject.name == 'forsuredbjdbc-example') {
         return
