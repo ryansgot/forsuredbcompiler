@@ -46,6 +46,7 @@ public interface TableContext {
         public Builder addTable(String tableName, String tableClassName, TableInfo.BuilderCompat builder) {
             tableClassNameToNameMap.put(tableClassName, tableName);
             tableInfoMap.put(tableName, builder);
+            TableInfo.defaultColumns().values().forEach(c -> addColumn(tableName, c.columnName(), c.toBuilder()));
             return this;
         }
 
