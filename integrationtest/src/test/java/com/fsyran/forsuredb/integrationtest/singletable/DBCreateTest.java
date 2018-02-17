@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.queryable.StatementBinder;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
+import com.fsyran.forsuredb.integrationtest.SqlMasterVerify;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,13 +27,13 @@ public class DBCreateTest {
 
     @Test
     public void shouldHaveAllTypesTable() throws SQLException {
-        Connection c = FSDBHelper.inst().getReadableDatabase();
+        final Connection c = FSDBHelper.inst().getReadableDatabase();
+        SqlMasterVerify.tableExists(c, "all_types");
+    }
 
-        try (PreparedStatement ps = c.prepareStatement("SELECT * FROM SQLITE_MASTER WHERE type = ? AND tbl_name = ?")) {
-            StatementBinder.bindObject(1, ps,"table");
-            StatementBinder.bindObject(2, ps, "all_types");
-            ResultSet rs = ps.executeQuery();
-            assertTrue(rs.next());
-        }
+    @Test
+    public void shouldHaveNonUniqueIndexOn() throws SQLException {
+        final Connection c = FSDBHelper.inst().getReadableDatabase();
+        SqlMasterVerify.indexExists(c, "all_types", "integer_wrapper_column", false);
     }
 }
