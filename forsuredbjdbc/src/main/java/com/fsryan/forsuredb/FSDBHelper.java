@@ -14,6 +14,7 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -328,6 +329,10 @@ public class FSDBHelper extends AbstractDBOpener {
                     if (records == null) {
                         return;
                     }
+
+                    if (debugMode) {
+                        log.i("[migration] inserting static data for db version %d", migrationSet.dbVersion());
+                    }
                     insertStaticData(db, tableName, records);
                 });
     }
@@ -382,6 +387,10 @@ public class FSDBHelper extends AbstractDBOpener {
         records.forEach(record -> {
             List<String> columns = correctInsertionForNoColumns(record);
             String insertionSql = Sql.generator().newSingleRowInsertionSql(tableName, columns);
+
+            if (debugMode) {
+                logStatementManualBinding(insertionSql, columns, record);
+            }
             try (PreparedStatement statement = db.prepareStatement(insertionSql)) {
                 bindObjects(statement, columns, record);
                 statement.executeUpdate();  // TODO: figure out what to do with the return
@@ -389,6 +398,28 @@ public class FSDBHelper extends AbstractDBOpener {
                 throw new RuntimeException(sqle);
             }
         });
+    }
+
+    private void logStatementManualBinding(String sql, List<String> columns, RecordContainer record) {
+        String bound = sql;
+        List<Object> replacements = new ArrayList<>(columns.size());
+        for (String column : columns) {
+            replacements.add(record.get(column));
+        }
+        for (int i = 0; i < columns.size(); i++) {
+            Object o = replacements.get(i);
+            if (o.getClass().isArray() && o.getClass().getComponentType() == byte.class) {
+                int len = Array.getLength(o);
+                byte[] asArray = new byte[len];
+                for (int idx = 0; idx < len; idx++) {
+                    asArray[idx] = Array.getByte(o, idx);
+                }
+                bound = bound.replaceFirst("\\?", Arrays.toString(asArray));
+            } else {
+                bound = bound.replaceFirst("\\?", String.valueOf(o));
+            }
+        }
+        log.i("[migration] inserting record: %s", bound);
     }
 
     private static List<String> correctInsertionForNoColumns(RecordContainer record) {
