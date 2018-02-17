@@ -323,14 +323,22 @@ public class FSDBHelper extends AbstractDBOpener {
     private void insertStaticData(Connection db, String tableName, List<RecordContainer> records) {
         // TODO: records are inserted individually, but there is not a strong reason why they should--investigate batching instead of individual record insertion
         records.forEach(record -> {
-            final List<String> columns = new ArrayList<>(record.keySet());
-            String sql = Sql.generator().newSingleRowInsertionSql(tableName, columns);
-            try (PreparedStatement statement = db.prepareStatement(sql)) {
+            List<String> columns = correctInsertionForNoColumns(record);
+            String insertionSql = Sql.generator().newSingleRowInsertionSql(tableName, columns);
+            try (PreparedStatement statement = db.prepareStatement(insertionSql)) {
                 bindObjects(statement, columns, record);
                 statement.executeUpdate();  // TODO: figure out what to do with the return
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);
             }
         });
+    }
+
+    private static List<String> correctInsertionForNoColumns(RecordContainer record) {
+        if (record.keySet().isEmpty()) {
+            record.put("deleted", 0);
+            return Collections.singletonList("deleted");
+        }
+        return new ArrayList<>(record.keySet());
     }
 }
