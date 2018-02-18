@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
+import com.fsyran.forsuredb.integrationtest.Pair;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -14,32 +15,36 @@ import java.util.*;
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertAscending;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertDescending;
+import static com.fsyran.forsuredb.integrationtest.TestUtil.MEMCMP_COMPARATOR;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static java.util.stream.Collectors.toList;
 
-/**
- * <p>There is a possibility for one fo these tests to fail due to equal random values ending up in sorting the
- * records differently
- */
 @ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyBeforeClass.class, ExecutionLog.class})
-public class RetrieveOneColumnSortingTest {
+public class RetrieveSortingTest {
 
-    // took from guava--mimics the memcmp() algorithm used by sqlite
-    private static final Comparator<byte[]> memcmpComparator = (left, right) -> {
-        int minLength = Math.min(left.length, right.length);
-        for (int i = 0; i < minLength; i++) {
-            int diff = (left[i] & 0xFF) - (right[i] & 0xFF);
-            if (diff != 0) {
-                return diff;
-            }
-        }
-        return left.length - right.length;
+    // TWO COLUMN COMPARATORS
+
+    private static final Comparator<Pair<Boolean, String>> sameDirectionComparator = (o1, o2) -> {
+        int compare = Boolean.compare(o1.first, o2.first);
+        return compare != 0 ? compare : o1.second.compareTo(o2.second);
+    };
+
+    private static final Comparator<Pair<Boolean, String>> firstDescSecondAscComparator = (o1, o2) -> {
+        int compare = Boolean.compare(o1.first, o2.first);
+        return compare != 0 ? compare * -1 : o1.second.compareTo(o2.second);
+    };
+
+    private static final Comparator<Pair<Boolean, String>> firstASCSecondDescComparator = (o1, o2) -> {
+        int compare = Boolean.compare(o1.first, o2.first);
+        return compare != 0 ? compare : o1.second.compareTo(o2.second) * -1;
     };
 
     @BeforeAll
     public static void insert128RandomRecords() {
         insertRandomRecords(128, 1L);
     }
+
+    // ONE COLUMN
 
     @Test
     @DisplayName("sort retrieval by boolean ASC")
@@ -270,7 +275,7 @@ public class RetrieveOneColumnSortingTest {
                 .stream()
                 .map(AllTypesTable.Record::byteArrayColumn)
                 .collect(toList());
-        assertAscending(expectedAscending, memcmpComparator);
+        assertAscending(expectedAscending, MEMCMP_COMPARATOR);
     }
 
     @Test
@@ -280,7 +285,7 @@ public class RetrieveOneColumnSortingTest {
                 .stream()
                 .map(AllTypesTable.Record::byteArrayColumn)
                 .collect(toList());
-        assertDescending(expectedDescending, memcmpComparator);
+        assertDescending(expectedDescending, MEMCMP_COMPARATOR);
     }
 
     @Test
@@ -345,5 +350,67 @@ public class RetrieveOneColumnSortingTest {
                 .map(AllTypesTable.Record::bigDecimalColumn)
                 .collect(toList());
         assertDescending(expectedDescending);
+    }
+
+    // TWO COLUMNS: boolean column will have a fair number of duplicates, so it's ideal to use as the first sorting criteria for the tests
+
+    @Test
+    @DisplayName("sort by two columns both ASC")
+    public void sortByTwoColumnsBothASC() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .order().byBooleanColumn(OrderBy.ORDER_ASC)
+                        .and().byStringColumn(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, sameDirectionComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns both DESC")
+    public void sortByTwoColumnsBothDESC() {
+        List<Pair<Boolean, String>> expectedDescending = retrieveToList(
+                allTypesTable()
+                        .order().byBooleanColumn(OrderBy.ORDER_DESC)
+                        .and().byStringColumn(OrderBy.ORDER_DESC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertDescending(expectedDescending, sameDirectionComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns first ASC second DESC")
+    public void sortByTwoColumnsFirstASCSecondDESC() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .order().byBooleanColumn(OrderBy.ORDER_ASC)
+                        .and().byStringColumn(OrderBy.ORDER_DESC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, firstASCSecondDescComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns first DESC second ASC")
+    public void sortByTwoColumnsFirstDESCSecondASC() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .order().byBooleanColumn(OrderBy.ORDER_DESC)
+                        .and().byStringColumn(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, firstDescSecondAscComparator);
     }
 }
