@@ -16,7 +16,7 @@ import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTest
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-@ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyExtension.class, ExecutionLog.class})
+@ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyBeforeTest.class, ExecutionLog.class})
 public class BasicCreateRetrieveTest {
 
     @Test
