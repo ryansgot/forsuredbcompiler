@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
+import com.fsyran.forsuredb.integrationtest.ForceMigrationsExtension;
 import com.fsyran.forsuredb.integrationtest.SqlMasterAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +23,7 @@ import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTest
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyColumnsAtCurrentPosition;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith({DBSetup.class, ExecutionLog.class})
+@ExtendWith({ForceMigrationsExtension.class, DBSetup.class, ExecutionLog.class})
 public class DBCreateTest {
 
     private static Connection connection;

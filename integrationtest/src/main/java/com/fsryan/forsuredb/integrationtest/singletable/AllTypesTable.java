@@ -61,13 +61,21 @@ public interface AllTypesTable extends FSGetApi {
         }
 
         public static Record createRandom() {
-            return createRandom(
+            return createRandomBuilder().build();
+        }
+
+        public static Record createRandom(int byteLength, int stringLength) {
+            return createRandomBuilder(byteLength, stringLength).build();
+        }
+
+        public static Builder createRandomBuilder() {
+            return createRandomBuilder(
                     ThreadLocalRandom.current().nextInt(32) + 1,
                     ThreadLocalRandom.current().nextInt(32) + 1
             );
         }
 
-        public static Record createRandom(int byteLength, int stringLength) {
+        public static Builder createRandomBuilder(int byteLength, int stringLength) {
             final BigDecimal bigDecimal = new BigDecimal(Long.toString(ThreadLocalRandom.current().nextLong()) + '.' + Long.toString(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)));
             final BigInteger bigInteger = new BigInteger(Long.toString(ThreadLocalRandom.current().nextLong()));
             final boolean booleanColumn = ThreadLocalRandom.current().nextBoolean();
@@ -84,23 +92,22 @@ public interface AllTypesTable extends FSGetApi {
             final long longColumn = ThreadLocalRandom.current().nextLong();
             final Long longWrapperColumn = ThreadLocalRandom.current().nextLong();
             final String stringColumn = new RandomString(stringLength).nextString();
-            return create(
-                    bigDecimal,
-                    bigInteger,
-                    booleanColumn,
-                    booleanWrapperColumn,
-                    byteArrayColumn,
-                    dateColumn,
-                    doubleColumn,
-                    doubleWrapperColumn,
-                    floatColumn,
-                    floatWrapperColumn,
-                    intColumn,
-                    integerWrapperColumn,
-                    longColumn,
-                    longWrapperColumn,
-                    stringColumn
-            );
+            return builder()
+                    .bigDecimalColumn(bigDecimal)
+                    .bigIntegerColumn(bigInteger)
+                    .booleanColumn(booleanColumn)
+                    .booleanWrapperColumn(booleanWrapperColumn)
+                    .byteArrayColumn(byteArrayColumn)
+                    .dateColumn(dateColumn)
+                    .doubleColumn(doubleColumn)
+                    .doubleWrapperColumn(doubleWrapperColumn)
+                    .floatColumn(floatColumn)
+                    .floatWrapperColumn(floatWrapperColumn)
+                    .intColumn(intColumn)
+                    .integerWrapperColumn(integerWrapperColumn)
+                    .longColumn(longColumn)
+                    .longWrapperColumn(longWrapperColumn)
+                    .stringColumn(stringColumn);
         }
 
         public static Record create(@Nullable BigDecimal bigDecimal,

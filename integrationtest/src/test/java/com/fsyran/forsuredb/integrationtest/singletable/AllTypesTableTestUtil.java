@@ -3,20 +3,28 @@ package com.fsyran.forsuredb.integrationtest.singletable;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
+import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTableResolver;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.IntConsumer;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertSuccessfulInsertion;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertSuccessfulUpdate;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.SMALL_DOUBLE;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.SMALL_FLOAT;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AllTypesTableTestUtil {
@@ -47,6 +55,18 @@ abstract class AllTypesTableTestUtil {
         assertSuccessfulInsertion(result, "all_types", expectedId);
 
         return new AttemptedSavePair<>(result, record);
+    }
+
+    public static void assertListEquals(List<AllTypesTable.Record> expectedList, List<AllTypesTable.Record> actualList) {
+        IntStream.range(0, expectedList.size())
+                .forEach(i -> {
+                    final AllTypesTable.Record expected = expectedList.get(i);
+                    final AllTypesTable.Record actual = actualList.get(i);
+                    if (!(expected.equals(actual))) {
+                        fail("ASC[" + i + "]: expected = " + expected + "; but was = " + actual);
+                    }
+                });
+        assertEquals(expectedList.size(), actualList.size());
     }
 
     public static AttemptedSavePair<AllTypesTable.Record> updateWithRandom(long id) {
@@ -163,10 +183,20 @@ abstract class AllTypesTableTestUtil {
     }
 
     public static List<AttemptedSavePair<AllTypesTable.Record>> insertRandomRecords(int count, long expectedFirstId) {
-        List<AttemptedSavePair<AllTypesTable.Record>> ret = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            ret.add(insertRandomRecord(expectedFirstId + i));
+        return IntStream.range(0, count)
+                .mapToObj(i -> insertRandomRecord(expectedFirstId + i))
+                .collect(toList());
+    }
+
+    public static List<AllTypesTable.Record> retrieveToList(Retriever r) {
+        if (!r.moveToFirst()) {
+            return Collections.emptyList();
         }
+
+        List<AllTypesTable.Record> ret = new ArrayList<>();
+        do {
+            ret.add(extractRecordFrom(r));
+        } while (r.moveToNext());
         return ret;
     }
 
