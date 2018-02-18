@@ -23,7 +23,7 @@ public class BasicCreateRetrieveTest {
     @DisplayName("single record insertion")
     public void shouldCorrectlyInsertASingleRecord() {
         AttemptedSavePair<AllTypesTable.Record> attemptedSavePair = insertRandomRecord(1);
-        assertEquals(attemptedSavePair.attempted, recordWithId(1L));
+        assertEquals(attemptedSavePair.getRecord(), recordWithId(1L));
     }
 
     @Test
@@ -33,8 +33,8 @@ public class BasicCreateRetrieveTest {
         AttemptedSavePair<AllTypesTable.Record> updatePair = updateWithRandom(1);
 
         AllTypesTable.Record stored = recordWithId(1L);
-        assertNotEquals(insertionPair.attempted, stored);
-        assertEquals(updatePair.attempted, stored);
+        assertNotEquals(insertionPair.getRecord(), stored);
+        assertEquals(updatePair.getRecord(), stored);
 
         assertCount("all_types", 1);
     }

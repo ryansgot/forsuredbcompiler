@@ -30,7 +30,7 @@ abstract class AllTypesTableTestUtil {
 
     public static AttemptedSavePair<AllTypesTable.Record> insertRandomRecord(long expectedId) {
         AttemptedSavePair<AllTypesTable.Record> asp = insertRecord(AllTypesTable.Record.createRandom());
-        assertSuccessfulInsertion(asp.result, "all_types", expectedId);
+        assertSuccessfulInsertion(asp.getResult(), "all_types", expectedId);
         return asp;
     }
 
@@ -100,7 +100,7 @@ abstract class AllTypesTableTestUtil {
             int i = 0;
             do {
                 assertEquals(startingIdInclusive + i, allTypesApi.id(r));
-                assertEquals(attemptedSaves.get(i).attempted, extractRecordFrom(r));
+                assertEquals(attemptedSaves.get(i).getRecord(), extractRecordFrom(r));
                 i++;
             } while (r.moveToNext());
             assertEquals(attemptedSaves.size(), i);

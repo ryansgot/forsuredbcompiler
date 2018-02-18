@@ -3,12 +3,17 @@ package com.fsyran.forsuredb.integrationtest;
 import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 
-public class AttemptedSavePair<R> {
-    public final SaveResult<DirectLocator> result;
-    public final R attempted;
+public class AttemptedSavePair<R> extends Pair<SaveResult<DirectLocator>, R> {
 
     public AttemptedSavePair(SaveResult<DirectLocator> result, R attempted) {
-        this.result = result;
-        this.attempted = attempted;
+        super(result, attempted);
+    }
+
+    public SaveResult<DirectLocator> getResult() {
+        return first;
+    }
+
+    public R getRecord() {
+        return second;
     }
 }
