@@ -2,6 +2,7 @@ package com.fsyran.forsuredb.integrationtest;
 
 import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.SaveResult;
+import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 
 import java.sql.Connection;
@@ -10,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,5 +70,17 @@ public abstract class MoreAssertions {
                 fail("expected sort " + lesser + " after " + greater);
             }
         }
+    }
+
+    public static <T> void assertListEquals(List<T> expectedList, List<T> actualList) {
+        IntStream.range(0, expectedList.size())
+                .forEach(i -> {
+                    final T expected = expectedList.get(i);
+                    final T actual = actualList.get(i);
+                    if (!expected.equals(actual)) {
+                        fail("ASC[" + i + "]: expected = " + expected + "; but was = " + actual);
+                    }
+                });
+        assertEquals(expectedList.size(), actualList.size());
     }
 }

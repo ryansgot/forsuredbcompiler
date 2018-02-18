@@ -57,18 +57,6 @@ abstract class AllTypesTableTestUtil {
         return new AttemptedSavePair<>(result, record);
     }
 
-    public static void assertListEquals(List<AllTypesTable.Record> expectedList, List<AllTypesTable.Record> actualList) {
-        IntStream.range(0, expectedList.size())
-                .forEach(i -> {
-                    final AllTypesTable.Record expected = expectedList.get(i);
-                    final AllTypesTable.Record actual = actualList.get(i);
-                    if (!(expected.equals(actual))) {
-                        fail("ASC[" + i + "]: expected = " + expected + "; but was = " + actual);
-                    }
-                });
-        assertEquals(expectedList.size(), actualList.size());
-    }
-
     public static AttemptedSavePair<AllTypesTable.Record> updateWithRandom(long id) {
         AllTypesTable.Record overwriteRecord = AllTypesTable.Record.createRandom();
         SaveResult<DirectLocator> result = allTypesTable()
