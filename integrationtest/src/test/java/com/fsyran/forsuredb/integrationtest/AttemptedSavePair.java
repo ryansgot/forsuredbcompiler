@@ -13,7 +13,7 @@ public class AttemptedSavePair<R> extends Pair<SaveResult<DirectLocator>, R> {
         return first;
     }
 
-    public R getRecord() {
+    public R getAttemptedRecord() {
         return second;
     }
 }

@@ -3,18 +3,13 @@ package com.fsyran.forsuredb.integrationtest.singletable;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
-import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTableResolver;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.function.IntConsumer;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertSuccessfulInsertion;
@@ -100,7 +95,7 @@ abstract class AllTypesTableTestUtil {
             int i = 0;
             do {
                 assertEquals(startingIdInclusive + i, allTypesApi.id(r));
-                assertEquals(attemptedSaves.get(i).getRecord(), extractRecordFrom(r));
+                assertEquals(attemptedSaves.get(i).getAttemptedRecord(), extractRecordFrom(r));
                 i++;
             } while (r.moveToNext());
             assertEquals(attemptedSaves.size(), i);

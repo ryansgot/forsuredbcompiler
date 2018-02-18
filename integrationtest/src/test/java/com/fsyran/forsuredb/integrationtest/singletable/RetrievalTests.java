@@ -534,7 +534,7 @@ public class RetrievalTests {
     @DisplayName("finding by exact id")
     public void findColumnByExactId() {
         int id = ThreadLocalRandom.current().nextInt(0, NUM_RECORDS);
-        assertEquals(savedRecords.get(id).getRecord(), recordWithId(id + 1));
+        assertEquals(savedRecords.get(id).getAttemptedRecord(), recordWithId(id + 1));
     }
 
     @Test
@@ -550,7 +550,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id >= idRange.first && asr.getResult().inserted().id < idRange.second)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -569,7 +569,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id > idRange.first && asr.getResult().inserted().id < idRange.second)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -588,7 +588,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id >= idRange.first && asr.getResult().inserted().id <= idRange.second)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -607,7 +607,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id > idRange.first && asr.getResult().inserted().id <= idRange.second)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -626,7 +626,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id >= lowerInclusiveBound)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -645,7 +645,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id > exclusiveLowerBound)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -664,7 +664,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id <= inclusiveUpperBound)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -683,7 +683,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id < exclusiveUpperBound)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -702,7 +702,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> asr.getResult().inserted().id != exclusion)
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -726,7 +726,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> allowedIds.contains(asr.getResult().inserted().id))
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
@@ -754,7 +754,7 @@ public class RetrievalTests {
         );
         List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
                 .filter(asr -> allowedIds.contains(asr.getResult().inserted().id))
-                .map(asr -> asr.getRecord())
+                .map(asr -> asr.getAttemptedRecord())
                 .collect(toList());
 
         assertListEquals(filteredSavedRecords, returnedList);
