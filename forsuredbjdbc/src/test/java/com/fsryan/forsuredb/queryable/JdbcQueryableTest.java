@@ -60,7 +60,7 @@ public abstract class JdbcQueryableTest {
         when(mockDbProvider.writeableDb()).thenReturn(mockConnection);
         when(mockConnection.prepareStatement(eq(""))).thenReturn(mockPreparedStatement);
 
-        queryableUnderTest = new JdbcQueryable(directLocator, mockDbProvider, mockSqlGenerator);
+        queryableUnderTest = new JdbcQueryable(directLocator, mockDbProvider, mockSqlGenerator, FSLogger.SILENT);
     }
 
     public static class Insert extends JdbcQueryableTest {
