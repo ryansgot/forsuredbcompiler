@@ -413,4 +413,107 @@ public class RetrieveSortingTest {
                 .collect(toList());
         assertAscending(expectedAscending, firstDescSecondAscComparator);
     }
+
+    // TODO: test with limits from bottom
+
+
+    @Test
+    @DisplayName("sort retrieval by int ASC from bottom")
+    public void shouldCorrectlySortRetrievalByIntASCFromBottom() {
+        List<Integer> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byIntColumn(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(AllTypesTable.Record::intColumn)
+                .collect(toList());
+        assertAscending(expectedAscending);
+    }
+
+    @Test
+    @DisplayName("sort retrieval by int DESC")
+    public void shouldCorrectlySortRetrievalByIntDESCFromBottom() {
+        List<Integer> expectedDescending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byIntColumn(OrderBy.ORDER_DESC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(AllTypesTable.Record::intColumn)
+                .collect(toList());
+        assertDescending(expectedDescending);
+    }
+
+    @Test
+    @DisplayName("sort by two columns both ASC from bottom")
+    public void sortByTwoColumnsBothASCFromBottom() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byBooleanColumn(OrderBy.ORDER_ASC)
+                        .and().byStringColumn(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, sameDirectionComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns both DESC from bottom")
+    public void sortByTwoColumnsBothDESCFromBottom() {
+        List<Pair<Boolean, String>> expectedDescending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byBooleanColumn(OrderBy.ORDER_DESC)
+                        .and().byStringColumn(OrderBy.ORDER_DESC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertDescending(expectedDescending, sameDirectionComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns first ASC second DESC from bottom")
+    public void sortByTwoColumnsFirstASCSecondDESCFromBottom() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byBooleanColumn(OrderBy.ORDER_ASC)
+                        .and().byStringColumn(OrderBy.ORDER_DESC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, firstASCSecondDescComparator);
+    }
+
+    @Test
+    @DisplayName("sort by two columns first DESC second ASC from bottom")
+    public void sortByTwoColumnsFirstDESCSecondASCFromBottom() {
+        List<Pair<Boolean, String>> expectedAscending = retrieveToList(
+                allTypesTable()
+                        .find().last(64).byNotDeleted()
+                        .then()
+                        .order().byBooleanColumn(OrderBy.ORDER_DESC)
+                        .and().byStringColumn(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        ).stream()
+                .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
+                .collect(toList());
+        assertAscending(expectedAscending, firstDescSecondAscComparator);
+    }
 }

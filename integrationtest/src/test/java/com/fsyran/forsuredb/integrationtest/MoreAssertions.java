@@ -42,6 +42,7 @@ public abstract class MoreAssertions {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void assertDescending(List<T> list) {
         assertDescending(list, (Comparator<T>) Comparator.naturalOrder());
     }
@@ -50,6 +51,7 @@ public abstract class MoreAssertions {
         assertAscending(list, comparator.reversed());
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void assertAscending(List<T> list) {
         assertAscending(list, (Comparator<T>) Comparator.naturalOrder());
     }
