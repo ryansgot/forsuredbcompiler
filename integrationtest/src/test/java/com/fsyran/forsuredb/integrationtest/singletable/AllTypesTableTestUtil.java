@@ -189,15 +189,19 @@ abstract class AllTypesTableTestUtil {
     }
 
     public static List<AllTypesTable.Record> retrieveToList(Retriever r) {
-        if (!r.moveToFirst()) {
-            return Collections.emptyList();
-        }
+        try {
+            if (!r.moveToFirst()) {
+                return Collections.emptyList();
+            }
+            List<AllTypesTable.Record> ret = new ArrayList<>();
+            do {
+                ret.add(extractRecordFrom(r));
+            } while (r.moveToNext());
 
-        List<AllTypesTable.Record> ret = new ArrayList<>();
-        do {
-            ret.add(extractRecordFrom(r));
-        } while (r.moveToNext());
-        return ret;
+            return ret;
+        } finally {
+            r.close();
+        }
     }
 
     public static AllTypesTable.Record recordWithId(long id) {

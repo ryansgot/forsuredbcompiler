@@ -1,7 +1,10 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
+import com.fsryan.forsuredb.queryable.DirectLocator;
+import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
 import com.fsyran.forsuredb.integrationtest.Pair;
@@ -11,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertAscending;
@@ -18,9 +23,10 @@ import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertDescendi
 import static com.fsyran.forsuredb.integrationtest.TestUtil.MEMCMP_COMPARATOR;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyBeforeClass.class, ExecutionLog.class})
-public class RetrieveSortingTest {
+public class RetrievalTests {
 
     // TWO COLUMN COMPARATORS
 
@@ -39,12 +45,14 @@ public class RetrieveSortingTest {
         return compare != 0 ? compare : o1.second.compareTo(o2.second) * -1;
     };
 
+    private static List<AttemptedSavePair<AllTypesTable.Record>> savedRecords;
+
     @BeforeAll
     public static void insert128RandomRecords() {
-        insertRandomRecords(128, 1L);
+        savedRecords = insertRandomRecords(128, 1L);
     }
 
-    // ONE COLUMN
+    // ONE COLUMN SORTS
 
     @Test
     @DisplayName("sort retrieval by boolean ASC")
@@ -352,7 +360,7 @@ public class RetrieveSortingTest {
         assertDescending(expectedDescending);
     }
 
-    // TWO COLUMNS: boolean column will have a fair number of duplicates, so it's ideal to use as the first sorting criteria for the tests
+    // TWO COLUMN SORTS: boolean column will have a fair number of duplicates, so it's ideal to use as the first sorting criteria for the tests
 
     @Test
     @DisplayName("sort by two columns both ASC")
@@ -414,8 +422,7 @@ public class RetrieveSortingTest {
         assertAscending(expectedAscending, firstDescSecondAscComparator);
     }
 
-    // TODO: test with limits from bottom
-
+    // FROM BOTTOM SORTS (which have inner queries that have sorting options flipped):
 
     @Test
     @DisplayName("sort retrieval by int ASC from bottom")
@@ -515,5 +522,246 @@ public class RetrieveSortingTest {
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
         assertAscending(expectedAscending, firstDescSecondAscComparator);
+    }
+
+    // FIND by single column (id)
+
+    @Test
+    @DisplayName("finding by exact id")
+    public void findColumnByExactId() {
+        int id = ThreadLocalRandom.current().nextInt(0, 128);
+        assertEquals(savedRecords.get(id).attempted, recordWithId(id + 1));
+    }
+
+    @Test
+    @DisplayName("finding by id between clopen range [)")
+    public void findColumnWithIdBetweenClopenRangeLowerInclusive() {
+        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdBetweenInclusive(idRange.first).and(idRange.second)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id >= idRange.first && asr.result.inserted().id < idRange.second)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id between open range ()")
+    public void findColumnWithIdBetweenOpenRange() {
+        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdBetween(idRange.first).and(idRange.second)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id > idRange.first && asr.result.inserted().id < idRange.second)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id between closed range []")
+    public void findColumnWithIdBetweenClosedRange() {
+        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdBetweenInclusive(idRange.first).andInclusive(idRange.second)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id >= idRange.first && asr.result.inserted().id <= idRange.second)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id between clopen range (]")
+    public void findColumnWithIdBetweenClopenRangeUpperInclusive() {
+        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdBetween(idRange.first).andInclusive(idRange.second)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id > idRange.first && asr.result.inserted().id <= idRange.second)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id >=")
+    public void findColumnWithIdGE() {
+        final long lowerInclusiveBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdGreaterThanInclusive(lowerInclusiveBound)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id >= lowerInclusiveBound)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id >")
+    public void findColumnWithIdGT() {
+        final long exclusiveLowerBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdGreaterThan(exclusiveLowerBound)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id > exclusiveLowerBound)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id <=")
+    public void findColumnWithIdLE() {
+        final long inclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdLessThanInclusive(inclusiveUpperBound)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id <= inclusiveUpperBound)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id <")
+    public void findColumnWithIdLT() {
+        final long exclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdLessThan(exclusiveUpperBound)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id < exclusiveUpperBound)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id NOT")
+    public void findColumnWithIdNOT() {
+        final long exclusion = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byIdNot(exclusion)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> asr.result.inserted().id != exclusion)
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id from several match criteria")
+    public void findColumnWithIdInExactMatchCriteria() {
+        long id1 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id2 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id3 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id4 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id5 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        Set<Long> allowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byId(id1, id2, id3, id4, id5)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> allowedIds.contains(asr.result.inserted().id))
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by id from several match criteria using OR")
+    public void findColumnWithIdInExactMatchCriteriaUsingOR() {
+        long id1 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id2 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id3 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id4 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id5 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        Set<Long> allowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable()
+                        .find().byId(id1)
+                            .or().byId(id2)
+                            .or().byId(id3)
+                            .or().byId(id4)
+                            .or().byId(id5)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecords.stream()
+                .filter(asr -> allowedIds.contains(asr.result.inserted().id))
+                .map(asr -> asr.attempted)
+                .collect(toList());
+
+        assertListEquals(filteredSavedRecords, returnedList);
+    }
+
+    private Pair<Long, Long> createRandomRange(long inclusiveLowerBound, long inclusiveUpperBound) {
+        long id1 = ThreadLocalRandom.current().nextLong(inclusiveLowerBound, inclusiveUpperBound) + 1;
+        long id2 = ThreadLocalRandom.current().nextLong(inclusiveLowerBound, inclusiveUpperBound) + 1;
+        while (id1 == id2) {
+            id2 = ThreadLocalRandom.current().nextLong(inclusiveLowerBound, inclusiveUpperBound) + 1;
+        }
+        return new Pair<>(Math.min(id1, id2), Math.max(id1, id2));
     }
 }
