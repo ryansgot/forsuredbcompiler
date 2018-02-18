@@ -9,10 +9,7 @@ import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -32,8 +29,12 @@ abstract class AllTypesTableTestUtil {
     private static final AllTypesTable allTypesApi = allTypesTable().getApi();
 
     public static AttemptedSavePair<AllTypesTable.Record> insertRandomRecord(long expectedId) {
-        AllTypesTable.Record record = AllTypesTable.Record.createRandom();
+        AttemptedSavePair<AllTypesTable.Record> asp = insertRecord(AllTypesTable.Record.createRandom());
+        assertSuccessfulInsertion(asp.result, "all_types", expectedId);
+        return asp;
+    }
 
+    public static AttemptedSavePair<AllTypesTable.Record> insertRecord(AllTypesTable.Record record) {
         SaveResult<DirectLocator> result = allTypesTable().set()
                 .bigDecimalColumn(record.bigDecimalColumn())
                 .bigIntegerColumn(record.bigIntegerColumn())
@@ -51,8 +52,6 @@ abstract class AllTypesTableTestUtil {
                 .longWrapperColumn(record.longWrapperColumn())
                 .stringColumn(record.stringColumn())
                 .save();
-
-        assertSuccessfulInsertion(result, "all_types", expectedId);
 
         return new AttemptedSavePair<>(result, record);
     }
@@ -170,9 +169,16 @@ abstract class AllTypesTableTestUtil {
         assertEquals(expectedIntColumn, allTypesApi.intColumn(r));
     }
 
-    public static List<AttemptedSavePair<AllTypesTable.Record>> insertRandomRecords(int count, long expectedFirstId) {
+    public static List<AttemptedSavePair<AllTypesTable.Record>> insertRandomRecords(int count) {
+        final Set<String> insertedStringColumns = new HashSet<>(count);
         return IntStream.range(0, count)
-                .mapToObj(i -> insertRandomRecord(expectedFirstId + i))
+                .mapToObj(i -> {
+                    AllTypesTable.Record record = AllTypesTable.Record.createRandom();
+                    while (insertedStringColumns.contains(record.stringColumn())) {
+                        record = AllTypesTable.Record.createRandom();
+                    }
+                    return insertRecord(record);
+                })
                 .collect(toList());
     }
 

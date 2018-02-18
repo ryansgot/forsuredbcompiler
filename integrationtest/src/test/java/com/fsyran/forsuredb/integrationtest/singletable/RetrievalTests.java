@@ -23,8 +23,14 @@ import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTest
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * <p>No tests in this class may modify the database. They can only retrieve from the 128 records
+ * that get inserted for all tests in the class
+ */
 @ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyBeforeClass.class, ExecutionLog.class})
 public class RetrievalTests {
+    
+    private static final int NUM_RECORDS = 128;
 
     // TWO COLUMN COMPARATORS
 
@@ -47,7 +53,7 @@ public class RetrievalTests {
 
     @BeforeAll
     public static void insert128RandomRecords() {
-        savedRecords = insertRandomRecords(128, 1L);
+        savedRecords = insertRandomRecords(NUM_RECORDS);
     }
 
     // ONE COLUMN SORTS
@@ -527,14 +533,14 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by exact id")
     public void findColumnByExactId() {
-        int id = ThreadLocalRandom.current().nextInt(0, 128);
+        int id = ThreadLocalRandom.current().nextInt(0, NUM_RECORDS);
         assertEquals(savedRecords.get(id).attempted, recordWithId(id + 1));
     }
 
     @Test
     @DisplayName("finding by id between clopen range [)")
     public void findColumnWithIdBetweenClopenRangeLowerInclusive() {
-        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+        Pair<Long, Long> idRange = createRandomRange(1L, NUM_RECORDS);
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -553,7 +559,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between open range ()")
     public void findColumnWithIdBetweenOpenRange() {
-        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+        Pair<Long, Long> idRange = createRandomRange(1L, NUM_RECORDS);
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -572,7 +578,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between closed range []")
     public void findColumnWithIdBetweenClosedRange() {
-        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+        Pair<Long, Long> idRange = createRandomRange(1L, NUM_RECORDS);
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -591,7 +597,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between clopen range (]")
     public void findColumnWithIdBetweenClopenRangeUpperInclusive() {
-        Pair<Long, Long> idRange = createRandomRange(1L, 128L);
+        Pair<Long, Long> idRange = createRandomRange(1L, NUM_RECORDS);
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -610,7 +616,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id >=")
     public void findColumnWithIdGE() {
-        final long lowerInclusiveBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        final long lowerInclusiveBound = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -629,7 +635,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id >")
     public void findColumnWithIdGT() {
-        final long exclusiveLowerBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        final long exclusiveLowerBound = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -648,7 +654,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id <=")
     public void findColumnWithIdLE() {
-        final long inclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        final long inclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -667,7 +673,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id <")
     public void findColumnWithIdLT() {
-        final long exclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        final long exclusiveUpperBound = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -686,7 +692,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id NOT")
     public void findColumnWithIdNOT() {
-        final long exclusion = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        final long exclusion = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -705,11 +711,11 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id from several match criteria")
     public void findColumnWithIdInExactMatchCriteria() {
-        long id1 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id2 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id3 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id4 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id5 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id1 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id2 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id3 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id4 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id5 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
         Set<Long> allowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
@@ -729,20 +735,20 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id from several match criteria using OR")
     public void findColumnWithIdInExactMatchCriteriaUsingOR() {
-        long id1 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id2 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id3 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id4 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
-        long id5 = ThreadLocalRandom.current().nextLong(0, 128) + 1;
+        long id1 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id2 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id3 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id4 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
+        long id5 = ThreadLocalRandom.current().nextLong(0, NUM_RECORDS) + 1;
         Set<Long> allowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable()
                         .find().byId(id1)
-                            .or().byId(id2)
-                            .or().byId(id3)
-                            .or().byId(id4)
-                            .or().byId(id5)
+                        .or().byId(id2)
+                        .or().byId(id3)
+                        .or().byId(id4)
+                        .or().byId(id5)
                         .then()
                         .get()
         );
@@ -753,6 +759,9 @@ public class RetrievalTests {
 
         assertListEquals(filteredSavedRecords, returnedList);
     }
+
+    // TODO: find by string, int, date, blob, double, and float
+    // TODO: find by multiple parameters
 
     private Pair<Long, Long> createRandomRange(long inclusiveLowerBound, long inclusiveUpperBound) {
         long id1 = ThreadLocalRandom.current().nextLong(inclusiveLowerBound, inclusiveUpperBound) + 1;

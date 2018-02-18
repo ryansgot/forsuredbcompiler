@@ -71,7 +71,8 @@ public interface AllTypesTable extends FSGetApi {
         public static Builder createRandomBuilder() {
             return createRandomBuilder(
                     ThreadLocalRandom.current().nextInt(32) + 1,
-                    ThreadLocalRandom.current().nextInt(32) + 1
+                    // by default, strings are between 33 and 64 characters to minimize likelihood of collisions
+                    ThreadLocalRandom.current().nextInt(32) + 33
             );
         }
 

@@ -42,7 +42,7 @@ public class BasicCreateRetrieveTest {
     @Test
     @DisplayName("multiple record insertion")
     public void shouldCorrectlyInsertMultipleRecords() {
-        List<AttemptedSavePair<AllTypesTable.Record>> insertedPairs = insertRandomRecords(10, 1L);
+        List<AttemptedSavePair<AllTypesTable.Record>> insertedPairs = insertRandomRecords(10);
         verifyConsecutiveRecords(insertedPairs, 1L);
     }
 }
