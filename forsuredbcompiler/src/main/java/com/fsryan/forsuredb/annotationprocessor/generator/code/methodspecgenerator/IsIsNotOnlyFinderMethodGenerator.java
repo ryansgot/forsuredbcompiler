@@ -3,8 +3,8 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.squareup.javapoet.ParameterizedTypeName;
 
-/*package*/ class BooleanFinderMethodGenerator extends FinderMethodSpecGenerator {
-    public BooleanFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName) {
+class IsIsNotOnlyFinderMethodGenerator extends FinderMethodSpecGenerator {
+    public IsIsNotOnlyFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName) {
         super(column, conjuntionTypeName, betweenTypeName);
     }
 
@@ -35,6 +35,11 @@ import com.squareup.javapoet.ParameterizedTypeName;
 
     @Override
     protected boolean hasLikeGrammar() {
+        return false;
+    }
+
+    @Override
+    protected boolean allowMultipleExactMatches() {
         return false;
     }
 

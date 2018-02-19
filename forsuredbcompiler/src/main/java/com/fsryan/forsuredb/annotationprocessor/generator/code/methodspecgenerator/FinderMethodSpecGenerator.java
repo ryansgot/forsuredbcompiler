@@ -51,17 +51,20 @@ public abstract class FinderMethodSpecGenerator {
             case "java.lang.String":
                 return new StringFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "java.math.BigDecimal":
-                // intentionally fall through
+            case "java.math.BigInteger":
             case "double":
-                // intentionally fall through
+            case "java.lang.Double":
             case "float":
-                // intentionally fall through
+            case "java.lang.Float":
             case "long":
-                // intentionally fall through
+            case "java.lang.Long":
             case "int":
+            case "java.lang.Integer":
                 return new NumberFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "boolean":
-                return new BooleanFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
+            case "java.lang.Boolean":
+            case "byte[]":  // TODO: special handling for other possibly-useful byte[] finding methods
+                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
         }
 
         return new EmptyGenerator(column, conjunctionTypeName, betweenTypeName);
@@ -107,6 +110,7 @@ public abstract class FinderMethodSpecGenerator {
     protected abstract boolean hasOnNotOnGrammar();
     protected abstract boolean hasGreaterThanLessThanGrammar();
     protected abstract boolean hasLikeGrammar();
+    protected abstract boolean allowMultipleExactMatches();
 
     protected String translateParameter(String parameterName) {
         return parameterName;
@@ -165,7 +169,7 @@ public abstract class FinderMethodSpecGenerator {
             codeBuilder.addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName);
         }
 
-        if (op == OP_EQ && !column.getQualifiedType().equals("boolean")) {
+        if (op == OP_EQ && allowMultipleExactMatches()) {
             codeBuilder.varargs()
                     .addParameter(ParameterSpec.builder(ClassName.get(CodeUtil.arrayTypeFromName(column.getQualifiedType())), "orExactMatches")
                     .build())
@@ -247,6 +251,11 @@ public abstract class FinderMethodSpecGenerator {
 
         @Override
         protected boolean hasLikeGrammar() {
+            return false;
+        }
+
+        @Override
+        protected boolean allowMultipleExactMatches() {
             return false;
         }
     }
