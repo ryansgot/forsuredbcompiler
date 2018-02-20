@@ -78,7 +78,7 @@ public abstract class MoreAssertions {
                     final T expected = expectedList.get(i);
                     final T actual = actualList.get(i);
                     if (!expected.equals(actual)) {
-                        fail("ASC[" + i + "]: expected = " + expected + "; but was = " + actual);
+                        fail("idx[" + i + "]: expected = " + expected + "; but was = " + actual);
                     }
                 });
         assertEquals(expectedList.size(), actualList.size());
