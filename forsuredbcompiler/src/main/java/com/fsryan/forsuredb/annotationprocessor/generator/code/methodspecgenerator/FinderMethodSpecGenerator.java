@@ -60,10 +60,10 @@ public abstract class FinderMethodSpecGenerator {
             case "java.lang.Long":
             case "int":
             case "java.lang.Integer":
+            case "byte[]":
                 return new NumberFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "boolean":
             case "java.lang.Boolean":
-            case "byte[]":  // TODO: special handling for other possibly-useful byte[] finding methods
                 return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
         }
 
