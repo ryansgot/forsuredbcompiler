@@ -2,6 +2,7 @@ package com.fsyran.forsuredb.integrationtest;
 
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
@@ -70,6 +71,17 @@ public abstract class TestUtil {
             t2 = supplier.get();
         }
         return t1.compareTo(t2) > 0 ? new Pair<>(t2, t1) : new Pair<>(t1, t2);
+    }
+
+    public static Pair<byte[], byte[]> randomByteArrayRange(int lowSizeLimit, int highSizeLimit) {
+        byte[] ba1 = new byte[ThreadLocalRandom.current().nextInt(lowSizeLimit, highSizeLimit)];
+        byte[] ba2 = new byte[ThreadLocalRandom.current().nextInt(lowSizeLimit, highSizeLimit)];
+        ThreadLocalRandom.current().nextBytes(ba1);
+        ThreadLocalRandom.current().nextBytes(ba2);
+        while (Arrays.equals(ba1, ba2)) {
+            ThreadLocalRandom.current().nextBytes(ba2);
+        }
+        return MEMCMP_COMPARATOR.compare(ba1, ba2) < 0 ? new Pair<>(ba1, ba2) : new Pair<>(ba2, ba1);
     }
 
     public static <T extends Comparable<T>> Predicate<AttemptedSavePair<AllTypesTable.Record>> isBetween(Pair<T, T> range, boolean lowerInclusive, boolean upperInclusive, Unpacker<T> unpacker) {

@@ -708,13 +708,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             whereBuf.append("?");
         }
 
-        if (Date.class.equals(value.getClass())) {
-            replacementsList.add(Sql.generator().formatDate((Date) value));
-        } else if (byte[].class.equals(value.getClass())) {
-            replacementsList.add(value);
-        } else {
-            replacementsList.add(String.valueOf(value));
-        }
+        addToReplacementsList(value);
     }
 
     protected final void addEqualsOrChainToBuf(String column, List orValues) {
@@ -729,19 +723,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
         Object first = orValues.get(0);
         whereBuf.append("(").append(Sql.generator().whereOperation(tableName, column, OP_EQ)).append(" ? ");
-        replacementsList.add(Date.class.equals(first.getClass()) ? Sql.generator().formatDate((Date) first) : first.toString());
+        addToReplacementsList(first);
         for (int i = 1; i < orValues.size(); i++) {
             Object orValue = orValues.get(i);
             whereBuf.append(Sql.generator().orKeyword()).append(" ")
                     .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
                     .append(" ?");
-            if (Date.class.equals(orValue.getClass())) {
-                replacementsList.add(Sql.generator().formatDate((Date) orValue));
-            } else if (byte[].class.equals(orValue.getClass())) {
-                replacementsList.add(orValue);
-            } else {
-                replacementsList.add(String.valueOf(orValue));
-            }
+            addToReplacementsList(orValue);
         }
         whereBuf.append(")");
     }
@@ -836,5 +824,15 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
         }
         return Math.max(num1, num2);
+    }
+
+    private void addToReplacementsList(Object orValue) {
+        if (Date.class.equals(orValue.getClass())) {
+            replacementsList.add(Sql.generator().formatDate((Date) orValue));
+        } else if (byte[].class.equals(orValue.getClass())) {
+            replacementsList.add(orValue);
+        } else {
+            replacementsList.add(String.valueOf(orValue));
+        }
     }
 }

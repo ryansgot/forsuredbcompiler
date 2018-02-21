@@ -2860,7 +2860,7 @@ public class RetrievalTests {
     // FIND by single blob_column
 
     @Test
-    @DisplayName("finding by blob_column exact match")
+    @DisplayName("finding by byte_array_column exact match")
     public void shouldFindRecordsByExactBlobMatch() {
         byte[] exactMatch = randomSavedRecord().byteArrayColumn();
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2872,6 +2872,213 @@ public class RetrievalTests {
                         .get()
         );
         List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), exactMatch) == 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column non match")
+    public void shouldFindRecordsByBlobDoesNotMatch() {
+        byte[] exclusion = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), exclusion) != 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column less than")
+    public void shouldFindRecordsByBlobLT() {
+        byte[] exclusiveUpperLimit = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnLessThan(exclusiveUpperLimit)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), exclusiveUpperLimit) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column greater than")
+    public void shouldFindRecordsByBlobGT() {
+        byte[] exclusiveLowerLimit = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnGreaterThan(exclusiveLowerLimit)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), exclusiveLowerLimit) > 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column less than or equal to")
+    public void shouldFindRecordsByBlobLE() {
+        byte[] inclusiveUpperLimit = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnLessThanInclusive(inclusiveUpperLimit)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), inclusiveUpperLimit) <= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column greater than or equal to")
+    public void shouldFindRecordsByBlobGE() {
+        byte[] inclusiveLowerLimit = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnGreaterThanInclusive(inclusiveLowerLimit)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), inclusiveLowerLimit) >= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column between open range")
+    public void shouldFindRecordsByBlobBetweenOpenRange() {
+        Pair<byte[], byte[]> range = randomByteArrayRange(1, 32);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnBetween(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.first) > 0
+                && MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.second) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column between clopen range [)")
+    public void shouldFindRecordsByBlobBetweenClopenLowerInclusiveRange() {
+        Pair<byte[], byte[]> range = randomByteArrayRange(1, 32);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnBetweenInclusive(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.first) >= 0
+                && MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.second) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column between clopen range (]")
+    public void shouldFindRecordsByBlobBetweenClopenUpperInclusiveRange() {
+        Pair<byte[], byte[]> range = randomByteArrayRange(1, 32);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnBetween(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.first) > 0
+                && MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.second) <= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column between closed range")
+    public void shouldFindRecordsByBlobBetweenClosedRange() {
+        Pair<byte[], byte[]> range = randomByteArrayRange(1, 32);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumnBetweenInclusive(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.first) > 0
+                && MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), range.second) <= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column several matches")
+    public void shouldFindRecordsByBlobSeveralMatches() {
+        byte[] match1 = randomSavedRecord().byteArrayColumn();
+        byte[] match2 = randomSavedRecord().byteArrayColumn();
+        byte[] match3 = randomSavedRecord().byteArrayColumn();
+        byte[] match4 = randomSavedRecord().byteArrayColumn();
+        byte[] match5 = randomSavedRecord().byteArrayColumn();
+        final Set<byte[]> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(byteArrayColOf(asp)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by byte_array_column several matches with OR")
+    public void shouldFindRecordsByBlobSeveralMatchesOR() {
+        byte[] match1 = randomSavedRecord().byteArrayColumn();
+        byte[] match2 = randomSavedRecord().byteArrayColumn();
+        byte[] match3 = randomSavedRecord().byteArrayColumn();
+        byte[] match4 = randomSavedRecord().byteArrayColumn();
+        byte[] match5 = randomSavedRecord().byteArrayColumn();
+        final Set<byte[]> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumn(match1)
+                            .or().byByteArrayColumn(match2)
+                            .or().byByteArrayColumn(match3)
+                            .or().byByteArrayColumn(match4)
+                            .or().byByteArrayColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(byteArrayColOf(asp)));
 
         assertListEquals(expected, actual);
     }
