@@ -60,7 +60,7 @@ public abstract class TestUtil {
     }
 
     public static Date randomDate() {
-        return new Date(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE));
+        return new Date(ThreadLocalRandom.current().nextLong(0, new Date().getTime()));
     }
 
     public static <T extends Comparable<T>> Pair<T, T> randomRange(Supplier<T> supplier) {

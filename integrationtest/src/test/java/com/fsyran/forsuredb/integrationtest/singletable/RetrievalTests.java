@@ -261,7 +261,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("sort retrieval by Date ASC")
-    @Disabled("not sure why this is not currently working") // <-- TODO: figure out why this test is failing. It should not.
     public void shouldCorrectlySortRetrievalByDateASC() {
         List<Date> expectedAscending = retrieveToList(allTypesTable().order().byDateColumn(OrderBy.ORDER_ASC).then().get())
                 .stream()
@@ -272,7 +271,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("sort retrieval by Date DESC")
-    @Disabled("not sure why this is not currently working") // <-- TODO: figure out why this test is failing. It should not.
     public void shouldCorrectlySortRetrievalByDateDESC() {
         List<Date> expectedDescending = retrieveToList(allTypesTable().order().byDateColumn(OrderBy.ORDER_DESC).then().get())
                 .stream()
@@ -2727,7 +2725,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column BEFORE")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnBefore() {
         Date upperExclusiveBound = randomSavedRecord().dateColumn();
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2745,7 +2742,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column AFTER")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnAfter() {
         Date lowerExclusiveBound = randomSavedRecord().dateColumn();
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2763,7 +2759,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column BEFORE or ON")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnBeforeOrOn() {
         Date upperInclusiveBound = randomSavedRecord().dateColumn();
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2781,7 +2776,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column AFTER or ON")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnAfterOrOn() {
         Date lowerInclusiveBound = randomSavedRecord().dateColumn();
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2799,7 +2793,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column in open range")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnInOpenRange() {
         Pair<Date, Date> range = randomRange(TestUtil::randomDate);
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2817,7 +2810,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column in clopen range [)")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnInClopenRangeLowerInclusive() {
         Pair<Date, Date> range = randomRange(TestUtil::randomDate);
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2835,7 +2827,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column in clopen range (]")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnInClopenRangeUpperInclusive() {
         Pair<Date, Date> range = randomRange(TestUtil::randomDate);
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2853,7 +2844,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by date_column in closed range")
-    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
     public void shouldFindRecordsByDateColumnInClosedRange() {
         Pair<Date, Date> range = randomRange(TestUtil::randomDate);
         List<AllTypesTable.Record> actual = retrieveToList(
@@ -2869,7 +2859,7 @@ public class RetrievalTests {
         assertListEquals(expected, actual);
     }
 
-    // TODO: find by date, blob, BigDecimal, BigInteger
+    // TODO: find by blob, BigDecimal, BigInteger
     // TODO: find by multiple parameters with a single AND
     // TODO: find by multiple parameters with multiple ANDs
     // TODO: find by multiple parameters with a single OR

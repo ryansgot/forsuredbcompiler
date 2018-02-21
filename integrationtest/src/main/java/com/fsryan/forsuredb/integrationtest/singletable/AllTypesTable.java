@@ -83,7 +83,7 @@ public interface AllTypesTable extends FSGetApi {
             final Boolean booleanWrapperColumn = ThreadLocalRandom.current().nextBoolean();
             final byte[] byteArrayColumn = new byte[Math.max(0, byteLength)];
             ThreadLocalRandom.current().nextBytes(byteArrayColumn);
-            final Date dateColumn = new Date(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE));
+            final Date dateColumn = new Date(ThreadLocalRandom.current().nextLong(0, new Date().getTime()));
             final double doubleColumn = ThreadLocalRandom.current().nextDouble() * ThreadLocalRandom.current().nextLong();
             final Double doubleWrapperColumn = ThreadLocalRandom.current().nextDouble() * ThreadLocalRandom.current().nextLong();
             final float floatColumn = ThreadLocalRandom.current().nextFloat() * ThreadLocalRandom.current().nextInt();
