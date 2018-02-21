@@ -1,6 +1,5 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
-import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.*;
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -2858,6 +2856,26 @@ public class RetrievalTests {
 
         assertListEquals(expected, actual);
     }
+
+    // FIND by single blob_column
+
+    @Test
+    @DisplayName("finding by blob_column exact match")
+    public void shouldFindRecordsByExactBlobMatch() {
+        byte[] exactMatch = randomSavedRecord().byteArrayColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byByteArrayColumn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> MEMCMP_COMPARATOR.compare(byteArrayColOf(asr), exactMatch) == 0);
+
+        assertListEquals(expected, actual);
+    }
+
 
     // TODO: find by blob, BigDecimal, BigInteger
     // TODO: find by multiple parameters with a single AND

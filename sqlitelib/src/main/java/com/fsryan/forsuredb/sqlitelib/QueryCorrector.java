@@ -35,7 +35,7 @@ class QueryCorrector {
     private final String tableName;
     private final String joinString;
     private final String where;
-    private final String[] selectionArgs;
+    private final Object[] selectionArgs;
     private final String orderBy;
     private final int offset;
     private final int limit;
@@ -49,7 +49,7 @@ class QueryCorrector {
                 tableName,
                 joinStringFrom(tableName, joins),
                 selection == null || selection.where() == null ? "" : selection.where(),
-                selection == null || selection.replacements() == null ? new String[0] : selection.replacements(),
+                selection == null || selection.replacements() == null ? new Object[0] : selection.replacements(),
                 orderBy == null ? "" : orderBy,
                 selection == null || selection.limits() == null ? 0 : selection.limits().offset(),
                 selection == null || selection.limits() == null ? 0 : selection.limits().count(),
@@ -60,7 +60,7 @@ class QueryCorrector {
     /*package*/ QueryCorrector(@Nonnull String tableName,
                                @Nonnull String joinString,
                                @Nonnull String where,
-                               @Nonnull String[] whereArgs,
+                               @Nonnull Object[] whereArgs,
                                @Nonnull String orderBy,
                                int offset,
                                int limit,
@@ -110,7 +110,7 @@ class QueryCorrector {
     }
 
     @Nonnull
-    public String[] getSelectionArgs() {
+    public Object[] getSelectionArgs() {
         return selectionArgs;
     }
 

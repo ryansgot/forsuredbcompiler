@@ -80,7 +80,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     private final FSProjection defaultProjection;
     private final Set<String> possibleColumns;
     private final StringBuffer whereBuf = new StringBuffer();
-    private final List<String> replacementsList = new ArrayList<>();
+    private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
 
     private boolean incorporatedExternalFinder = false;
@@ -310,7 +310,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public final FSSelection selection() {
         return new FSSelection() {
             String where = whereBuf.toString();
-            String[] replacements = replacementsList.toArray(new String[replacementsList.size()]);
+            Object[] replacements = replacementsList.toArray(new Object[replacementsList.size()]);
 
             @Override
             public String where() {
@@ -318,7 +318,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             }
 
             @Override
-            public String[] replacements() {
+            public Object[] replacements() {
                 return replacements;
             }
 
@@ -708,7 +708,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             whereBuf.append("?");
         }
 
-        replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
+        if (Date.class.equals(value.getClass())) {
+            replacementsList.add(Sql.generator().formatDate((Date) value));
+        } else if (byte[].class.equals(value.getClass())) {
+            replacementsList.add(value);
+        } else {
+            replacementsList.add(String.valueOf(value));
+        }
     }
 
     protected final void addEqualsOrChainToBuf(String column, List orValues) {
@@ -729,7 +735,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             whereBuf.append(Sql.generator().orKeyword()).append(" ")
                     .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
                     .append(" ?");
-            replacementsList.add(Date.class.equals(orValue.getClass()) ? Sql.generator().formatDate((Date) orValue) : orValue.toString());
+            if (Date.class.equals(orValue.getClass())) {
+                replacementsList.add(Sql.generator().formatDate((Date) orValue));
+            } else if (byte[].class.equals(orValue.getClass())) {
+                replacementsList.add(orValue);
+            } else {
+                replacementsList.add(String.valueOf(orValue));
+            }
         }
         whereBuf.append(")");
     }

@@ -249,6 +249,10 @@ abstract class AllTypesTableTestUtil {
         return asp.getAttemptedRecord().dateColumn();
     }
 
+    public static byte[] byteArrayColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().byteArrayColumn();
+    }
+
     public static String stringColOf(AttemptedSavePair<AllTypesTable.Record> asr) {
         return asr.getAttemptedRecord().stringColumn();
     }

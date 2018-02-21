@@ -99,12 +99,12 @@ public abstract class LogHelper {
         return toBind;
     }
 
-    private static String bindColumnsFirst(String toBind, String[] values) {
+    private static String bindColumnsFirst(String toBind, Object[] values) {
         if (values == null) {
             return toBind;
         }
 
-        for (String replacement : values) {
+        for (Object replacement : values) {
             toBind = bindToFirst(toBind, replacement);
         }
         return toBind;

@@ -111,9 +111,7 @@ public interface DBMSIntegrator {
     String whereOperation(String tableName, String column, int operator);
 
     /**
-     * <p>
-     *     Format the date in the way the DBMS cares to store it
-     * </p>
+     * <p>Format the date in the way the DBMS cares to store it
      * @param date the date to format
      * @return A string representation of the date
      */

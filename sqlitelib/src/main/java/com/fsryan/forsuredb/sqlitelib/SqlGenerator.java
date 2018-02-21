@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
-import static com.fsryan.forsuredb.sqlitelib.QueryCorrector.LIMIT_NONE;
 
 public class SqlGenerator implements DBMSIntegrator {
 

@@ -118,9 +118,8 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
                 bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
             }
             if (pssql.getReplacements() != null) {
-                for (String replacement : pssql.getReplacements()) {
-                    pStatement.setString(pos + 1, replacement);
-                    pos++;
+                for (int i = 0; i < pssql.getReplacements().length; i++) {
+                    bindObject(pos + i + 1, pStatement, pssql.getReplacements()[i]);
                 }
             }
             return pStatement.executeUpdate();
@@ -181,7 +180,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(pssql.getSql())) {
             if (pssql.getReplacements() != null) {
                 for (int pos = 0; pos < pssql.getReplacements().length; pos++) {
-                    pStatement.setString(pos + 1, pssql.getReplacements()[pos]);
+                    bindObject(pos + 1, pStatement, pssql.getReplacements()[pos]);
                 }
             }
             return pStatement.executeUpdate();
@@ -209,7 +208,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
             PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.getSql());
             if (pssql.getReplacements() != null) {
                 for (int pos = 0; pos < pssql.getReplacements().length; pos++) {
-                    statement.setString(pos + 1, pssql.getReplacements()[pos]);
+                    bindObject(pos + 1, statement, pssql.getReplacements()[pos]);
                 }
             }
             return new FSResultSet(statement.executeQuery());
