@@ -2,6 +2,7 @@ package com.fsyran.forsuredb.integrationtest;
 
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;

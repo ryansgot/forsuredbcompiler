@@ -257,6 +257,14 @@ abstract class AllTypesTableTestUtil {
         return asr.getAttemptedRecord().stringColumn();
     }
 
+    public static BigDecimal bigDecimalColOf(AttemptedSavePair<AllTypesTable.Record> asr) {
+        return asr.getAttemptedRecord().bigDecimalColumn();
+    }
+
+    public static BigInteger bigIntegerColOf(AttemptedSavePair<AllTypesTable.Record> asr) {
+        return asr.getAttemptedRecord().bigIntegerColumn();
+    }
+
     private static AllTypesTable.Record extractRecordFrom(Retriever r) {
         return AllTypesTable.Record.builder()
                 .bigDecimalColumn(allTypesApi.bigDecimalColumn(r))

@@ -77,8 +77,15 @@ public interface AllTypesTable extends FSGetApi {
         }
 
         public static Builder createRandomBuilder(int byteLength, int stringLength) {
-            final BigDecimal bigDecimal = new BigDecimal(Long.toString(ThreadLocalRandom.current().nextLong()) + '.' + Long.toString(ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)));
-            final BigInteger bigInteger = new BigInteger(Long.toString(ThreadLocalRandom.current().nextLong()));
+            long l1 = ThreadLocalRandom.current().nextLong();
+            long l2 = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+            long l3 = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+            final BigDecimal bigDecimal = new BigDecimal(Long.toString(l1) + Long.toString(l2) + "." + Long.toString(l3));
+
+            l1 = ThreadLocalRandom.current().nextLong();
+            l2 = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+            final BigInteger bigInteger = new BigInteger(Long.toString(l1) + Long.toString(l2));
+
             final boolean booleanColumn = ThreadLocalRandom.current().nextBoolean();
             final Boolean booleanWrapperColumn = ThreadLocalRandom.current().nextBoolean();
             final byte[] byteArrayColumn = new byte[Math.max(0, byteLength)];

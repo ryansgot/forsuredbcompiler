@@ -3083,8 +3083,178 @@ public class RetrievalTests {
         assertListEquals(expected, actual);
     }
 
+    // FIND by single big_decimal_column
 
-    // TODO: find by blob, BigDecimal, BigInteger
+    @Test
+    @DisplayName("finding by big_decimal_column exact match")
+    public void shouldFindRecordsByExactBigDecimal() {
+        BigDecimal exactMatch = randomSavedRecord().bigDecimalColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigDecimalColumn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> bigDecimalColOf(asp).equals(exactMatch));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_decimal_column exact match with multiple matches")
+    public void shouldFindRecordsByExactBigDecimalMultipleMatches() {
+        BigDecimal match1 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match2 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match3 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match4 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match5 = randomSavedRecord().bigDecimalColumn();
+        final Set<BigDecimal> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigDecimalColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(bigDecimalColOf(asp)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_decimal_column exact match with multiple matches OR")
+    public void shouldFindRecordsByExactBigDecimalMultipleMatchesOR() {
+        BigDecimal match1 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match2 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match3 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match4 = randomSavedRecord().bigDecimalColumn();
+        BigDecimal match5 = randomSavedRecord().bigDecimalColumn();
+        final Set<BigDecimal> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigDecimalColumn(match1)
+                        .or().byBigDecimalColumn(match2)
+                        .or().byBigDecimalColumn(match3)
+                        .or().byBigDecimalColumn(match4)
+                        .or().byBigDecimalColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(bigDecimalColOf(asp)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_decimal_column NOT")
+    public void shouldFindRecordsByNotBigDecimal() {
+        BigDecimal exclusion = randomSavedRecord().bigDecimalColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigDecimalColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> !bigDecimalColOf(asp).equals(exclusion));
+
+        assertListEquals(expected, actual);
+    }
+
+    // FIND by single big_integer_column
+
+    @Test
+    @DisplayName("finding by big_integer_column exact match")
+    public void shouldFindRecordsByExactBigInteger() {
+        BigInteger exactMatch = randomSavedRecord().bigIntegerColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigIntegerColumn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> bigIntegerColOf(asp).equals(exactMatch));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_integer_column exact match with multiple matches")
+    public void shouldFindRecordsByExactBigIntegerMultipleMatches() {
+        BigInteger match1 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match2 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match3 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match4 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match5 = randomSavedRecord().bigIntegerColumn();
+        final Set<BigInteger> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigIntegerColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(bigIntegerColOf(asp)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_integer_column exact match with multiple matches OR")
+    public void shouldFindRecordsByExactBigIntegerMultipleMatchesOR() {
+        BigInteger match1 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match2 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match3 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match4 = randomSavedRecord().bigIntegerColumn();
+        BigInteger match5 = randomSavedRecord().bigIntegerColumn();
+        final Set<BigInteger> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigIntegerColumn(match1)
+                        .or().byBigIntegerColumn(match2)
+                        .or().byBigIntegerColumn(match3)
+                        .or().byBigIntegerColumn(match4)
+                        .or().byBigIntegerColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> matches.contains(bigIntegerColOf(asp)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by big_integer_column NOT")
+    public void shouldFindRecordsByNotBigBigInteger() {
+        BigInteger exclusion = randomSavedRecord().bigIntegerColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBigIntegerColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> !bigIntegerColOf(asp).equals(exclusion));
+
+        assertListEquals(expected, actual);
+    }
+
     // TODO: find by multiple parameters with a single AND
     // TODO: find by multiple parameters with multiple ANDs
     // TODO: find by multiple parameters with a single OR
