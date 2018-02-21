@@ -205,6 +205,54 @@ abstract class AllTypesTableTestUtil {
         }
     }
 
+    public static long idOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getResult().inserted().id;
+    }
+
+    public static boolean booleanColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().booleanColumn();
+    }
+
+    public static Boolean booleanWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().booleanWrapperColumn();
+    }
+
+    public static int intColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().intColumn();
+    }
+
+    public static Integer integerWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().integerWrapperColumn();
+    }
+
+    public static Long longWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().longWrapperColumn();
+    }
+
+    public static float floatColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().floatColumn();
+    }
+
+    public static Float floatWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().floatWrapperColumn();
+    }
+
+    public static double doubleColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().doubleColumn();
+    }
+
+    public static Double doubleWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().doubleWrapperColumn();
+    }
+
+    public static Date dateColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().dateColumn();
+    }
+
+    public static String stringColOf(AttemptedSavePair<AllTypesTable.Record> asr) {
+        return asr.getAttemptedRecord().stringColumn();
+    }
+
     private static AllTypesTable.Record extractRecordFrom(Retriever r) {
         return AllTypesTable.Record.builder()
                 .bigDecimalColumn(allTypesApi.bigDecimalColumn(r))

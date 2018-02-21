@@ -1,5 +1,6 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
+import com.fsryan.forsuredb.FSDBHelper;
 import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.*;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -2153,17 +2155,17 @@ public class RetrievalTests {
     @DisplayName("finding by exact double_column")
     @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactDoubleColumn() {
-        final double doubleColumn = randomSavedRecord().doubleColumn();
+        final double exactMatch = randomSavedRecord().doubleColumn();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
-                        .find().byDoubleColumn(doubleColumn)
+                        .find().byDoubleColumn(exactMatch)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> doubleColOf(asp) == doubleColumn);
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> doubleColOf(asp) == exactMatch);
 
         assertListEquals(expected, actual);
     }
@@ -2619,7 +2621,255 @@ public class RetrievalTests {
         assertListEquals(expected, actual);
     }
 
-    // TODO: find by date, blob, double, float, wrapper classes, BigDecimal, BigInteger
+    // FIND by single boolean_column
+
+    @Test
+    @DisplayName("finding by boolean_column true")
+    public void shouldFindRecordsByBooleanColumnTrue() {
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBooleanColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(AllTypesTableTestUtil::booleanColOf);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by exact boolean_column false")
+    public void shouldFindRecordsByBooleanColumnFalse() {
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byNotBooleanColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> !booleanColOf(asp));
+
+        assertListEquals(expected, actual);
+    }
+
+    // FIND by single boolean_wrapper_column
+
+    @Test
+    @DisplayName("finding by boolean_wrapper_column true")
+    public void shouldFindRecordsByBooleanWrapperColumnTrue() {
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBooleanWrapperColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(AllTypesTableTestUtil::booleanWrapperColOf);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by exact boolean_wrapper_column false")
+    public void shouldFindRecordsByBooleanWrapperColumnFalse() {
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byNotBooleanWrapperColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> !booleanWrapperColOf(asp));
+
+        assertListEquals(expected, actual);
+    }
+
+    // FIND by single date_column
+
+    @Test
+    @DisplayName("finding by date_column exact match")
+    public void shouldFindRecordsByOnDateColumn() {
+        Date exactMatch = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnOn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> dateColOf(asr).equals(exactMatch));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column NOT")
+    public void shouldFindRecordsByNotOnDateColumn() {
+        Date exclusion = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byNotDateColumnOn(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !dateColOf(asr).equals(exclusion));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column BEFORE")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnBefore() {
+        Date upperExclusiveBound = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBefore(upperExclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> dateColOf(asr).compareTo(upperExclusiveBound) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column AFTER")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnAfter() {
+        Date lowerExclusiveBound = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnAfter(lowerExclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> dateColOf(asr).compareTo(lowerExclusiveBound) > 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column BEFORE or ON")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnBeforeOrOn() {
+        Date upperInclusiveBound = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBeforeInclusive(upperInclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> dateColOf(asr).compareTo(upperInclusiveBound) <= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column AFTER or ON")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnAfterOrOn() {
+        Date lowerInclusiveBound = randomSavedRecord().dateColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnAfterInclusive(lowerInclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> dateColOf(asr).compareTo(lowerInclusiveBound) >= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column in open range")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnInOpenRange() {
+        Pair<Date, Date> range = randomRange(TestUtil::randomDate);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBetween(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(dateColBetween(range, false, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column in clopen range [)")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnInClopenRangeLowerInclusive() {
+        Pair<Date, Date> range = randomRange(TestUtil::randomDate);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBetweenInclusive(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(dateColBetween(range, true, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column in clopen range (]")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnInClopenRangeUpperInclusive() {
+        Pair<Date, Date> range = randomRange(TestUtil::randomDate);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBetween(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(dateColBetween(range, false, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by date_column in closed range")
+    @Disabled("I'm not quite sure why this is not working") // TODO: find out why
+    public void shouldFindRecordsByDateColumnInClosedRange() {
+        Pair<Date, Date> range = randomRange(TestUtil::randomDate);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnBetweenInclusive(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(dateColBetween(range, true, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    // TODO: find by date, blob, BigDecimal, BigInteger
     // TODO: find by multiple parameters with a single AND
     // TODO: find by multiple parameters with multiple ANDs
     // TODO: find by multiple parameters with a single OR
@@ -2627,10 +2877,6 @@ public class RetrievalTests {
     // TODO: find by multiple parameters with an OR and AND
     // TODO: find by multiple parameters with an AND and OR
     // TODO: find by multiple parameters with multiple AND and ORs
-
-    static String stringColOf(AttemptedSavePair<AllTypesTable.Record> asr) {
-        return asr.getAttemptedRecord().stringColumn();
-    }
 
     private static AllTypesTable.Record randomSavedRecord() {
         return randomSavedRecordByIdx(randomSavedRecordIdx());
@@ -2655,38 +2901,6 @@ public class RetrievalTests {
                 .collect(toList());
     }
 
-    private static long idOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getResult().inserted().id;
-    }
-
-    private static int intColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().intColumn();
-    }
-
-    private static Integer integerWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().integerWrapperColumn();
-    }
-
-    private static Long longWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().longWrapperColumn();
-    }
-
-    private static float floatColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().floatColumn();
-    }
-
-    private static Float floatWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().floatWrapperColumn();
-    }
-
-    private static double doubleColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().doubleColumn();
-    }
-
-    private static Double doubleWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
-        return asp.getAttemptedRecord().doubleWrapperColumn();
-    }
-
     private static Pair<String, String> randomStoredStringColumnRange() {
         return randomRange(() -> randomSavedRecord().stringColumn());
     }
@@ -2696,38 +2910,42 @@ public class RetrievalTests {
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> stringColBetween(Pair<String, String> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::stringColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::stringColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> intColBetween(Pair<Integer, Integer> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::intColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::intColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> integerWrapperColBetween(Pair<Integer, Integer> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::integerWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::integerWrapperColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> idBetween(Pair<Long, Long> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::idOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::idOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> longWrapperColBetween(Pair<Long, Long> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::longWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::longWrapperColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> floatColBetween(Pair<Float, Float> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::floatColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::floatColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> floatWrapperColBetween(Pair<Float, Float> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::floatWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::floatWrapperColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> doubleColBetween(Pair<Double, Double> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::doubleColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::doubleColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> doubleWrapperColBetween(Pair<Double, Double> range, boolean lowerInclusive, boolean upperInclusive) {
-        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::doubleWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::doubleWrapperColOf);
+    }
+
+    private static Predicate<AttemptedSavePair<AllTypesTable.Record>> dateColBetween(Pair<Date, Date> range, boolean lowerInclusive, boolean upperInclusive) {
+        return isBetween(range, lowerInclusive, upperInclusive, AllTypesTableTestUtil::dateColOf);
     }
 }

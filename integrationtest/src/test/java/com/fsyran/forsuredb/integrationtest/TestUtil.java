@@ -3,6 +3,7 @@ package com.fsyran.forsuredb.integrationtest;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -56,6 +57,10 @@ public abstract class TestUtil {
 
     public static double randomDouble() {
         return ThreadLocalRandom.current().nextDouble() * ThreadLocalRandom.current().nextLong();
+    }
+
+    public static Date randomDate() {
+        return new Date(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE));
     }
 
     public static <T extends Comparable<T>> Pair<T, T> randomRange(Supplier<T> supplier) {
