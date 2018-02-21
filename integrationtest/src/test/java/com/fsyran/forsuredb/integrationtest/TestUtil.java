@@ -1,8 +1,17 @@
 package com.fsyran.forsuredb.integrationtest;
 
+import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
+
 import java.util.Comparator;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class TestUtil {
+
+    public interface Unpacker<T> {
+        T unpack(AttemptedSavePair<AllTypesTable.Record> asr);
+    }
 
     public static double SMALL_DOUBLE = 0.0000000001D;
     public static double SMALL_FLOAT = 0.0000000001F;
@@ -31,5 +40,41 @@ public abstract class TestUtil {
                     + Character.digit(hex.charAt(i+1), 16));
         }
         return data;
+    }
+
+    public static int randomInt() {
+        return ThreadLocalRandom.current().nextInt();
+    }
+
+    public static long randomLong() {
+        return ThreadLocalRandom.current().nextLong();
+    }
+
+    public static float randomFloat() {
+        return ThreadLocalRandom.current().nextFloat() * ThreadLocalRandom.current().nextInt();
+    }
+
+    public static double randomDouble() {
+        return ThreadLocalRandom.current().nextDouble() * ThreadLocalRandom.current().nextLong();
+    }
+
+    public static <T extends Comparable<T>> Pair<T, T> randomRange(Supplier<T> supplier) {
+        T t1 = supplier.get();
+        T t2 = supplier.get();
+        while (t1.equals(t2)) {
+            t2 = supplier.get();
+        }
+        return t1.compareTo(t2) > 0 ? new Pair<>(t2, t1) : new Pair<>(t1, t2);
+    }
+
+    public static <T extends Comparable<T>> Predicate<AttemptedSavePair<AllTypesTable.Record>> isBetween(Pair<T, T> range, boolean lowerInclusive, boolean upperInclusive, Unpacker<T> unpacker) {
+        return asp -> {
+            int lowCompare = range.first.compareTo(unpacker.unpack(asp));
+            if (lowCompare > 0 || (!lowerInclusive && lowCompare == 0)) {
+                return false;
+            }
+            int highCompare = range.second.compareTo(unpacker.unpack(asp));
+            return highCompare >= 0 && (upperInclusive || highCompare != 0);
+        };
     }
 }

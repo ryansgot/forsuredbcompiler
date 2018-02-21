@@ -2,10 +2,7 @@ package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
-import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
-import com.fsyran.forsuredb.integrationtest.DBSetup;
-import com.fsyran.forsuredb.integrationtest.ExecutionLog;
-import com.fsyran.forsuredb.integrationtest.Pair;
+import com.fsyran.forsuredb.integrationtest.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -14,14 +11,13 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertAscending;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertDescending;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertListEquals;
-import static com.fsyran.forsuredb.integrationtest.TestUtil.MEMCMP_COMPARATOR;
+import static com.fsyran.forsuredb.integrationtest.TestUtil.*;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -543,7 +539,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between clopen range [)")
     public void shouldFindRecordWithIdBetweenClopenRangeLowerInclusive() {
-        Pair<Long, Long> range = createRandomIdRange();
+        Pair<Long, Long> range = randomIdRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -559,7 +555,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between open range ()")
     public void shouldFindRecordWithIdBetweenOpenRange() {
-        Pair<Long, Long> range = createRandomIdRange();
+        Pair<Long, Long> range = randomIdRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -575,7 +571,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between closed range []")
     public void shouldFindRecordWithIdBetweenClosedRange() {
-        Pair<Long, Long> range = createRandomIdRange();
+        Pair<Long, Long> range = randomIdRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -591,7 +587,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by id between clopen range (]")
     public void shouldFindRecordWithIdBetweenClopenRangeUpperInclusive() {
-        Pair<Long, Long> range = createRandomIdRange();
+        Pair<Long, Long> range = randomIdRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -753,7 +749,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by long_wrapper_column between clopen range [)")
     public void shouldFindRecordsByLongWrapperColumnBetweenClopenLowerInclusive() {
-        Pair<Long, Long> range = createRandomLongRange();
+        Pair<Long, Long> range = randomRange(TestUtil::randomLong);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -771,7 +767,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by long_wrapper_column between open range ()")
     public void shouldFindRecordWithLongWrapperColumnBetweenOpenRange() {
-        Pair<Long, Long> range = createRandomLongRange();
+        Pair<Long, Long> range = randomRange(TestUtil::randomLong);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -789,7 +785,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by long_wrapper_column between closed range []")
     public void shouldFindRecordWithLongWrapperColumnBetweenClosedRange() {
-        Pair<Long, Long> range = createRandomLongRange();
+        Pair<Long, Long> range = randomRange(TestUtil::randomLong);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -807,7 +803,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by long_wrapper_column between clopen range (]")
     public void shouldFindRecordWithLongWrapperColumnBetweenClopenRangeUpperInclusive() {
-        Pair<Long, Long> range = createRandomLongRange();
+        Pair<Long, Long> range = randomRange(TestUtil::randomLong);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1126,7 +1122,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding string_column in non-inclusive range")
     public void shouldFindRecordsStringInNonInclusiveRange() {
-        Pair<String, String> range = createRandomStoredStringColumnRange();
+        Pair<String, String> range = randomStoredStringColumnRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
@@ -1144,7 +1140,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding string_column in clopen [) range")
     public void shouldFindRecordsStringInClopenLowerInclusiveRange() {
-        Pair<String, String> range = createRandomStoredStringColumnRange();
+        Pair<String, String> range = randomStoredStringColumnRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
@@ -1162,7 +1158,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding string_column in clopen (] range")
     public void shouldFindRecordsStringInClopenHigherInclusiveRange() {
-        Pair<String, String> range = createRandomStoredStringColumnRange();
+        Pair<String, String> range = randomStoredStringColumnRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
@@ -1180,7 +1176,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding string_column in [] range")
     public void shouldFindRecordsStringInClosedRange() {
-        Pair<String, String> range = createRandomStoredStringColumnRange();
+        Pair<String, String> range = randomStoredStringColumnRange();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
@@ -1238,7 +1234,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column between clopen range [)")
     public void shouldFindRecordsByIntColumnBetweenClopenLowerInclusive() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1256,7 +1252,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column between open range ()")
     public void shouldFindRecordWithIntColumnBetweenOpenRange() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1274,7 +1270,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column between closed range []")
     public void shouldFindRecordWithIntColumnBetweenClosedRange() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1292,7 +1288,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column between clopen range (]")
     public void shouldFindRecordWithIntColumnBetweenClopenRangeUpperInclusive() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1310,7 +1306,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column >=")
     public void shouldFindRecordWithIntColumnGE() {
-        final int lowerInclusiveBound = ThreadLocalRandom.current().nextInt();
+        final int lowerInclusiveBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1328,7 +1324,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column >")
     public void shouldFindRecordWithIntColumnGT() {
-        final int exclusiveLowerBound = ThreadLocalRandom.current().nextInt();
+        final int exclusiveLowerBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1346,7 +1342,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column <=")
     public void shouldFindRecordWithIntColumnLE() {
-        final int inclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final int inclusiveUpperBound = randomInt();
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -1364,7 +1360,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by int_column <")
     public void shouldFindRecordWithIntColumnLT() {
-        final int exclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final int exclusiveUpperBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1470,7 +1466,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column between clopen range [)")
     public void shouldFindRecordsByIntegerWrapperColumnBetweenClopenLowerInclusive() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1488,7 +1484,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column between open range ()")
     public void shouldFindRecordWithIntegerWrapperColumnBetweenOpenRange() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1506,7 +1502,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column between closed range []")
     public void shouldFindRecordWithIntegerWrapperColumnBetweenClosedRange() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1524,7 +1520,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column between clopen range (]")
     public void shouldFindRecordWithIntegerWrapperColumnBetweenClopenRangeUpperInclusive() {
-        Pair<Integer, Integer> range = createRandomIntRange();
+        Pair<Integer, Integer> range = randomRange(TestUtil::randomInt);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1542,7 +1538,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column >=")
     public void shouldFindRecordWithIntegerWrapperColumnGE() {
-        final Integer lowerInclusiveBound = ThreadLocalRandom.current().nextInt();
+        final Integer lowerInclusiveBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1552,7 +1548,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr) >= lowerInclusiveBound);
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr).compareTo(lowerInclusiveBound) >= 0);
 
         assertListEquals(expected, actual);
     }
@@ -1560,7 +1556,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column >")
     public void shouldFindRecordWithIntegerWrapperColumnGT() {
-        final Integer exclusiveLowerBound = ThreadLocalRandom.current().nextInt();
+        final Integer exclusiveLowerBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1570,7 +1566,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> filteredSavedRecords = savedRecordsWhere(asr -> integerWrapperColOf(asr) > exclusiveLowerBound);
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecordsWhere(asr -> integerWrapperColOf(asr).compareTo(exclusiveLowerBound) > 0);
 
         assertListEquals(filteredSavedRecords, actual);
     }
@@ -1578,7 +1574,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column <=")
     public void shouldFindRecordWithIntegerWrapperColumnLE() {
-        final Integer inclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final Integer inclusiveUpperBound = randomInt();
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -1588,7 +1584,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr) <= inclusiveUpperBound);
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr).compareTo(inclusiveUpperBound) <= 0);
 
         assertListEquals(expected, returnedList);
     }
@@ -1596,7 +1592,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by integer_wrapper_column <")
     public void shouldFindRecordWithIntegerWrapperColumnLT() {
-        final Integer exclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final Integer exclusiveUpperBound = randomInt();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1606,7 +1602,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr) < exclusiveUpperBound);
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr).compareTo(exclusiveUpperBound) < 0);
 
         assertListEquals(expected, actual);
     }
@@ -1624,7 +1620,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> integerWrapperColOf(asr) != exclusion);
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !integerWrapperColOf(asr).equals(exclusion));
 
         assertListEquals(expected, actual);
     }
@@ -1682,7 +1678,7 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by exact float_column")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactFloatColumn() {
         final float floatColumn = randomSavedRecord().floatColumn();
 
@@ -1702,7 +1698,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column between clopen range [)")
     public void shouldFindRecordsByFloatColumnBetweenClopenLowerInclusive() {
-        Pair<Float, Float> range = createRandomFloatRange();
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1720,7 +1716,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column between open range ()")
     public void shouldFindRecordWithFloatColumnBetweenOpenRange() {
-        Pair<Float, Float> range = createRandomFloatRange();
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1738,7 +1734,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column between closed range []")
     public void shouldFindRecordWithFloatColumnBetweenClosedRange() {
-        Pair<Float, Float> range = createRandomFloatRange();
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1756,7 +1752,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column between clopen range (]")
     public void shouldFindRecordWithFloatColumnBetweenClopenRangeUpperInclusive() {
-        Pair<Float, Float> range = createRandomFloatRange();
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1774,7 +1770,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column >=")
     public void shouldFindRecordWithFloatColumnGE() {
-        final float lowerInclusiveBound = ThreadLocalRandom.current().nextInt();
+        final float lowerInclusiveBound = randomFloat();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1792,7 +1788,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column >")
     public void shouldFindRecordWithFloatColumnGT() {
-        final float exclusiveLowerBound = ThreadLocalRandom.current().nextInt();
+        final float exclusiveLowerBound = randomFloat();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1810,7 +1806,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column <=")
     public void shouldFindRecordWithFloatColumnLE() {
-        final float inclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final float inclusiveUpperBound = randomFloat();
 
         List<AllTypesTable.Record> returnedList = retrieveToList(
                 allTypesTable().find()
@@ -1828,7 +1824,7 @@ public class RetrievalTests {
     @Test
     @DisplayName("finding by float_column <")
     public void shouldFindRecordWithFloatColumnLT() {
-        final float exclusiveUpperBound = ThreadLocalRandom.current().nextInt();
+        final float exclusiveUpperBound = randomFloat();
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable().find()
@@ -1845,7 +1841,7 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column NOT")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnNOT() {
         final float exclusion = randomSavedRecord().floatColumn();
 
@@ -1864,7 +1860,7 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column from several match criteria")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnInExactMatchCriteria() {
         float match1 = randomSavedRecord().floatColumn();
         float match2 = randomSavedRecord().floatColumn();
@@ -1888,7 +1884,7 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column from several match criteria using OR")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnInExactMatchCriteriaUsingOR() {
         float match1 = randomSavedRecord().floatColumn();
         float match2 = randomSavedRecord().floatColumn();
@@ -1910,6 +1906,715 @@ public class RetrievalTests {
                         .get()
         );
         List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(floatColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+
+    // FIND by single float_wrapper_column
+
+    @Test
+    @DisplayName("finding by exact float_wrapper_column")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordsByExactFloatWrapperColumn() {
+        final Float exactMatch = randomSavedRecord().floatWrapperColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byFloatWrapperColumn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> floatWrapperColOf(asp) == exactMatch);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column between clopen range [)")
+    public void shouldFindRecordsByFloatWrapperColumnBetweenClopenLowerInclusive() {
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnBetweenInclusive(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(floatWrapperColBetween(range, true, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column between open range ()")
+    public void shouldFindRecordWithFloatWrapperColumnBetweenOpenRange() {
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnBetween(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(floatWrapperColBetween(range, false, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column between closed range []")
+    public void shouldFindRecordWithFloatWrapperColumnBetweenClosedRange() {
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnBetweenInclusive(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(floatWrapperColBetween(range, true, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column between clopen range (]")
+    public void shouldFindRecordWithFloatWrapperColumnBetweenClopenRangeUpperInclusive() {
+        Pair<Float, Float> range = randomRange(TestUtil::randomFloat);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnBetween(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(floatWrapperColBetween(range, false, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column >=")
+    public void shouldFindRecordWithFloatWrapperColumnGE() {
+        final Float lowerInclusiveBound = randomFloat();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnGreaterThanInclusive(lowerInclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> floatWrapperColOf(asr).compareTo(lowerInclusiveBound) >= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column >")
+    public void shouldFindRecordWithFloatWrapperColumnGT() {
+        final Float exclusiveLowerBound = randomFloat();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnGreaterThan(exclusiveLowerBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecordsWhere(asr -> floatWrapperColOf(asr).compareTo(exclusiveLowerBound) > 0);
+
+        assertListEquals(filteredSavedRecords, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column <=")
+    public void shouldFindRecordWithFloatWrapperColumnLE() {
+        final Float inclusiveUpperBound = randomFloat();
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnLessThanInclusive(inclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> floatWrapperColOf(asr).compareTo(inclusiveUpperBound) <= 0);
+
+        assertListEquals(expected, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column <")
+    public void shouldFindRecordWithFloatWrapperColumnLT() {
+        final Float exclusiveUpperBound = randomFloat();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnLessThan(exclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> floatWrapperColOf(asr).compareTo(exclusiveUpperBound) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column NOT")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithFloatWrapperColumnNOT() {
+        final Float exclusion = randomSavedRecord().floatWrapperColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !floatWrapperColOf(asr).equals(exclusion));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column from several match criteria")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithFloatWrapperColumnInExactMatchCriteria() {
+        Float match1 = randomSavedRecord().floatWrapperColumn();
+        Float match2 = randomSavedRecord().floatWrapperColumn();
+        Float match3 = randomSavedRecord().floatWrapperColumn();
+        Float match4 = randomSavedRecord().floatWrapperColumn();
+        Float match5 = randomSavedRecord().floatWrapperColumn();
+        Set<Float> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byFloatWrapperColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(floatWrapperColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by float_wrapper_column from several match criteria using OR")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithFloatWrapperColumnInExactMatchCriteriaUsingOR() {
+        Float match1 = randomSavedRecord().floatWrapperColumn();
+        Float match2 = randomSavedRecord().floatWrapperColumn();
+        Float match3 = randomSavedRecord().floatWrapperColumn();
+        Float match4 = randomSavedRecord().floatWrapperColumn();
+        Float match5 = randomSavedRecord().floatWrapperColumn();
+        Set<Float> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byFloatWrapperColumn(match1)
+                            .or().byFloatWrapperColumn(match2)
+                            .or().byFloatWrapperColumn(match3)
+                            .or().byFloatWrapperColumn(match4)
+                            .or().byFloatWrapperColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(floatWrapperColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    // FIND by single double_column
+
+    @Test
+    @DisplayName("finding by exact double_column")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordsByExactDoubleColumn() {
+        final double doubleColumn = randomSavedRecord().doubleColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDoubleColumn(doubleColumn)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> doubleColOf(asp) == doubleColumn);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column between clopen range [)")
+    public void shouldFindRecordsByDoubleColumnBetweenClopenLowerInclusive() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnBetweenInclusive(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleColBetween(range, true, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column between open range ()")
+    public void shouldFindRecordWithDoubleColumnBetweenOpenRange() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnBetween(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleColBetween(range, false, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column between closed range []")
+    public void shouldFindRecordWithDoubleColumnBetweenClosedRange() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnBetweenInclusive(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleColBetween(range, true, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column between clopen range (]")
+    public void shouldFindRecordWithDoubleColumnBetweenClopenRangeUpperInclusive() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnBetween(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleColBetween(range, false, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column >=")
+    public void shouldFindRecordWithDoubleColumnGE() {
+        final double lowerInclusiveBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnGreaterThanInclusive(lowerInclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleColOf(asr) >= lowerInclusiveBound);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column >")
+    public void shouldFindRecordWithDoubleColumnGT() {
+        final double exclusiveLowerBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnGreaterThan(exclusiveLowerBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecordsWhere(asr -> doubleColOf(asr) > exclusiveLowerBound);
+
+        assertListEquals(filteredSavedRecords, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column <=")
+    public void shouldFindRecordWithDoubleColumnLE() {
+        final double inclusiveUpperBound = randomDouble();
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnLessThanInclusive(inclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleColOf(asr) <= inclusiveUpperBound);
+
+        assertListEquals(expected, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by double_column <")
+    public void shouldFindRecordWithDoubleColumnLT() {
+        final double exclusiveUpperBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnLessThan(exclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleColOf(asr) < exclusiveUpperBound);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column NOT")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleColumnNOT() {
+        final double exclusion = randomSavedRecord().doubleColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleColOf(asr) != exclusion);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column from several match criteria")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleColumnInExactMatchCriteria() {
+        double match1 = randomSavedRecord().doubleColumn();
+        double match2 = randomSavedRecord().doubleColumn();
+        double match3 = randomSavedRecord().doubleColumn();
+        double match4 = randomSavedRecord().doubleColumn();
+        double match5 = randomSavedRecord().doubleColumn();
+        Set<Double> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(doubleColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_column from several match criteria using OR")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleColumnInExactMatchCriteriaUsingOR() {
+        double match1 = randomSavedRecord().doubleColumn();
+        double match2 = randomSavedRecord().doubleColumn();
+        double match3 = randomSavedRecord().doubleColumn();
+        double match4 = randomSavedRecord().doubleColumn();
+        double match5 = randomSavedRecord().doubleColumn();
+        Set<Double> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDoubleColumn(match1)
+                            .or().byDoubleColumn(match2)
+                            .or().byDoubleColumn(match3)
+                            .or().byDoubleColumn(match4)
+                            .or().byDoubleColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(doubleColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    // FIND by single double_wrapper_column
+
+    @Test
+    @DisplayName("finding by exact double_wrapper_column")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordsByExactDoubleWrapperColumn() {
+        final Double exactMatch = randomSavedRecord().doubleWrapperColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDoubleWrapperColumn(exactMatch)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> doubleWrapperColOf(asp).equals(exactMatch));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column between clopen range [)")
+    public void shouldFindRecordsByDoubleWrapperColumnBetweenClopenLowerInclusive() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnBetweenInclusive(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleWrapperColBetween(range, true, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column between open range ()")
+    public void shouldFindRecordWithDoubleWrapperColumnBetweenOpenRange() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnBetween(range.first).and(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleWrapperColBetween(range, false, false));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column between closed range []")
+    public void shouldFindRecordWithDoubleWrapperColumnBetweenClosedRange() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnBetweenInclusive(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleWrapperColBetween(range, true, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column between clopen range (]")
+    public void shouldFindRecordWithDoubleWrapperColumnBetweenClopenRangeUpperInclusive() {
+        Pair<Double, Double> range = randomRange(TestUtil::randomDouble);
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnBetween(range.first).andInclusive(range.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(doubleWrapperColBetween(range, false, true));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column >=")
+    public void shouldFindRecordWithDoubleWrapperColumnGE() {
+        final Double lowerInclusiveBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnGreaterThanInclusive(lowerInclusiveBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleWrapperColOf(asr).compareTo(lowerInclusiveBound) >= 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column >")
+    public void shouldFindRecordWithDoubleWrapperColumnGT() {
+        final Double exclusiveLowerBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnGreaterThan(exclusiveLowerBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> filteredSavedRecords = savedRecordsWhere(asr -> doubleWrapperColOf(asr).compareTo(exclusiveLowerBound) > 0);
+
+        assertListEquals(filteredSavedRecords, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column <=")
+    public void shouldFindRecordWithDoubleWrapperColumnLE() {
+        final Double inclusiveUpperBound = randomDouble();
+
+        List<AllTypesTable.Record> returnedList = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnLessThanInclusive(inclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleWrapperColOf(asr).compareTo(inclusiveUpperBound) <= 0);
+
+        assertListEquals(expected, returnedList);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column <")
+    public void shouldFindRecordWithDoubleWrapperColumnLT() {
+        final Double exclusiveUpperBound = randomDouble();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnLessThan(exclusiveUpperBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> doubleWrapperColOf(asr).compareTo(exclusiveUpperBound) < 0);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column NOT")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleWrapperColumnNOT() {
+        final Double exclusion = randomSavedRecord().doubleWrapperColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumnNot(exclusion)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !doubleWrapperColOf(asr).equals(exclusion));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column from several match criteria")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleWrapperColumnInExactMatchCriteria() {
+        Double match1 = randomSavedRecord().doubleWrapperColumn();
+        Double match2 = randomSavedRecord().doubleWrapperColumn();
+        Double match3 = randomSavedRecord().doubleWrapperColumn();
+        Double match4 = randomSavedRecord().doubleWrapperColumn();
+        Double match5 = randomSavedRecord().doubleWrapperColumn();
+        Set<Double> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byDoubleWrapperColumn(match1, match2, match3, match4, match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(doubleWrapperColOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by double_wrapper_column from several match criteria using OR")
+    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
+    public void shouldFindRecordWithDoubleWrapperColumnInExactMatchCriteriaUsingOR() {
+        Double match1 = randomSavedRecord().doubleWrapperColumn();
+        Double match2 = randomSavedRecord().doubleWrapperColumn();
+        Double match3 = randomSavedRecord().doubleWrapperColumn();
+        Double match4 = randomSavedRecord().doubleWrapperColumn();
+        Double match5 = randomSavedRecord().doubleWrapperColumn();
+        Set<Double> matches = new HashSet<>(Arrays.asList(match1, match2, match3, match4, match5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDoubleWrapperColumn(match1)
+                        .or().byDoubleWrapperColumn(match2)
+                        .or().byDoubleWrapperColumn(match3)
+                        .or().byDoubleWrapperColumn(match4)
+                        .or().byDoubleWrapperColumn(match5)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> matches.contains(doubleWrapperColOf(asr)));
 
         assertListEquals(expected, actual);
     }
@@ -1970,72 +2675,59 @@ public class RetrievalTests {
         return asp.getAttemptedRecord().floatColumn();
     }
 
-    private static Pair<String, String> createRandomStoredStringColumnRange() {
-        return createRandomRange(() -> randomSavedRecord().stringColumn());
+    private static Float floatWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().floatWrapperColumn();
     }
 
-    private static Pair<Integer, Integer> createRandomIntRange() {
-        return createRandomRange(() -> ThreadLocalRandom.current().nextInt());
+    private static double doubleColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().doubleColumn();
     }
 
-    private static Pair<Long, Long> createRandomIdRange() {
-        return createRandomRange(RetrievalTests::randomStoredRecordId);
+    private static Double doubleWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().doubleWrapperColumn();
     }
 
-    private static Pair<Long, Long> createRandomLongRange() {
-        return createRandomRange(() -> ThreadLocalRandom.current().nextLong());
+    private static Pair<String, String> randomStoredStringColumnRange() {
+        return randomRange(() -> randomSavedRecord().stringColumn());
     }
 
-    private static Pair<Float, Float> createRandomFloatRange() {
-        return createRandomRange(() -> ThreadLocalRandom.current().nextFloat() * ThreadLocalRandom.current().nextInt());
-    }
-
-    private static <T extends Comparable<T>> Pair<T, T> createRandomRange(Supplier<T> supplier) {
-        T t1 = supplier.get();
-        T t2 = supplier.get();
-        while (t1.equals(t2)) {
-            t2 = supplier.get();
-        }
-        return t1.compareTo(t2) > 0 ? new Pair<>(t2, t1) : new Pair<>(t1, t2);
+    private static Pair<Long, Long> randomIdRange() {
+        return randomRange(RetrievalTests::randomStoredRecordId);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> stringColBetween(Pair<String, String> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::stringColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::stringColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> intColBetween(Pair<Integer, Integer> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::intColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::intColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> integerWrapperColBetween(Pair<Integer, Integer> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::integerWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::integerWrapperColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> idBetween(Pair<Long, Long> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::idOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::idOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> longWrapperColBetween(Pair<Long, Long> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::longWrapperColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::longWrapperColOf);
     }
 
     private static Predicate<AttemptedSavePair<AllTypesTable.Record>> floatColBetween(Pair<Float, Float> range, boolean lowerInclusive, boolean upperInclusive) {
-        return columnBetween(range, lowerInclusive, upperInclusive, RetrievalTests::floatColOf);
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::floatColOf);
     }
 
-    // generic comparison with range
-    private static <T extends Comparable<T>> Predicate<AttemptedSavePair<AllTypesTable.Record>> columnBetween(Pair<T, T> range, boolean lowerInclusive, boolean upperInclusive, Unpacker<T> unpacker) {
-        return asp -> {
-            int lowCompare = range.first.compareTo(unpacker.unpack(asp));
-            if (lowCompare > 0 || (!lowerInclusive && lowCompare == 0)) {
-                return false;
-            }
-            int highCompare = range.second.compareTo(unpacker.unpack(asp));
-            return highCompare >= 0 && (upperInclusive || highCompare != 0);
-        };
+    private static Predicate<AttemptedSavePair<AllTypesTable.Record>> floatWrapperColBetween(Pair<Float, Float> range, boolean lowerInclusive, boolean upperInclusive) {
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::floatWrapperColOf);
     }
 
-    private interface Unpacker<T> {
-        T unpack(AttemptedSavePair<AllTypesTable.Record> asr);
+    private static Predicate<AttemptedSavePair<AllTypesTable.Record>> doubleColBetween(Pair<Double, Double> range, boolean lowerInclusive, boolean upperInclusive) {
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::doubleColOf);
+    }
+
+    private static Predicate<AttemptedSavePair<AllTypesTable.Record>> doubleWrapperColBetween(Pair<Double, Double> range, boolean lowerInclusive, boolean upperInclusive) {
+        return isBetween(range, lowerInclusive, upperInclusive, RetrievalTests::doubleWrapperColOf);
     }
 }
