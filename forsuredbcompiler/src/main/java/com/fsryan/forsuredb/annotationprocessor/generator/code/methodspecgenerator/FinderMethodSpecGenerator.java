@@ -136,7 +136,7 @@ public abstract class FinderMethodSpecGenerator {
         List<MethodSpec> retList = new ArrayList<>();
         retList.add(createSpec(conjunctionTypeName, "by" + methodNameInsertion, "exactMatch", Finder.OP_EQ));
         retList.add(createSpec(conjunctionTypeName,
-                column.getQualifiedType().equals("boolean") ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
+                isForBooleanType() ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
                 "exclusion",
                 OP_NE));
         return retList;
@@ -165,7 +165,7 @@ public abstract class FinderMethodSpecGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(returnType);
 
-        if (!column.getQualifiedType().equals("boolean")) {
+        if (!isForBooleanType()) {
             codeBuilder.addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName);
         }
 
@@ -216,6 +216,10 @@ public abstract class FinderMethodSpecGenerator {
             jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(Conjunction.AndOr.class));
         }
         return jdBuilder.addLine().build();
+    }
+
+    private boolean isForBooleanType() {
+        return column.getQualifiedType().equals("boolean") || column.getQualifiedType().equals("java.lang.Boolean");
     }
 
     private static class EmptyGenerator extends FinderMethodSpecGenerator {
