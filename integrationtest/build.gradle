@@ -31,6 +31,7 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'jacoco'
 apply plugin: 'com.fsryan.gradle.forsuredb'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
@@ -106,4 +107,45 @@ forsuredb {
 
 junitPlatform {
     logManager 'org.apache.logging.log4j.jul.LogManager'
+}
+
+afterEvaluate {
+
+    jacoco {
+        toolVersion = "0.7.6.+"
+        applyTo junitPlatformTest
+    }
+
+    task jacocoReport(type: JacocoReport, dependsOn: 'junitPlatformTest') {
+
+        group = 'Reporting'
+        description = 'Generate Jacoco coverage reports after running tests.'
+
+        executionData = files('build/jacoco/junitPlatformTest.exec')
+        sourceDirectories = files(
+                'build/generated-src',
+                '../forsuredbapi/src/main/java',
+                '../forsuredbjdbc/src/main/java',
+                '../forsuredbmodels-gson/src/main/java',
+                '../sqlitelib/src/main/java'
+        )
+        classDirectories = fileTree(
+                dir: '..',
+                includes: [
+                        '**/build/classes/java/main/**'
+                ],
+                excludes: [
+                        '**/forsuredbcompiler/**',
+                        '**/forsuredbjdbc-example/**',
+                        '**/forsuredbmodels-jackson/**',
+                        '**/dbinfo/**'
+                ]
+        )
+
+        reports {
+            xml.enabled true
+            csv.enabled false
+            html.enabled = true
+        }
+    }
 }

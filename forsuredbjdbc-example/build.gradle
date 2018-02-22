@@ -28,11 +28,11 @@ buildscript {
     }
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-
+apply plugin: 'java'
 apply plugin: 'com.fsryan.gradle.forsuredb'
 apply plugin: 'application'
 
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
 
 configurations {
