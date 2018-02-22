@@ -136,6 +136,12 @@ public interface DBMSIntegrator {
     String wildcardKeyword();
 
     /**
+     * @return a String containing the appropriate LIKE format. For many DBMS integrations, this will be
+     * '%' + like + '%'
+     */
+    String expressLike(String like);
+
+    /**
      * @return the AND symbol/keyword
      */
     String andKeyword();

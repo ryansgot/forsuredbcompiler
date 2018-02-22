@@ -1191,10 +1191,9 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding string_column LIKE")
-    @Disabled("fails due to not surrounding like string with single-quotes")    // TODO: fix this in sqlitelib and write unit test
     public void shouldFindRecordsStringLIKE() {
-        final String likeStr = "a";
-        final Pattern p = Pattern.compile(likeStr);
+        final String likeStr = "ab";
+        final Pattern p = Pattern.compile("[A|a][B|b]");
 
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
@@ -1204,7 +1203,7 @@ public class RetrievalTests {
                         .then()
                         .get()
         );
-        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> p.matcher(stringColOf(asp)).matches());
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> p.matcher(stringColOf(asp)).find());
 
         assertListEquals(expected, actual);
     }

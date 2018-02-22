@@ -702,13 +702,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
-        if (operator == OP_LIKE) {
-            whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
-        } else {
-            whereBuf.append("?");
-        }
+        whereBuf.append("?");
 
-        addToReplacementsList(value);
+        addToReplacementsList(operator == OP_LIKE ? Sql.generator().expressLike(String.valueOf(value)) : value);
     }
 
     protected final void addEqualsOrChainToBuf(String column, List orValues) {

@@ -70,58 +70,38 @@ public abstract class SqlGeneratorTest {
                     {   // 00: empty input map
                             TABLE_NAME,
                             Arrays.asList(),
-                            EMPTY_SQL
+                            "INSERT INTO test_table (deleted) VALUES (?);"
                     },
-                    {   // 01: empty input table name
-                            "",
-                            Arrays.asList("col1"),
-                            EMPTY_SQL
-                    },
-                    {   // 02: null input map
-                            "",
-                            null,
-                            EMPTY_SQL
-                    },
-                    {   // 03: null input table name
-                            null,
-                            Arrays.asList("col1"),
-                            EMPTY_SQL
-                    },
-                    {   // 04: null input table name
-                            null,
-                            Arrays.asList("col1"),
-                            EMPTY_SQL
-                    },
-                    {   // 05: valid args, one column and one value
+                    {   // 01: valid args, one column and one value
                             TABLE_NAME,
                             Arrays.asList("col1"),
                             "INSERT INTO test_table (col1) VALUES (?);"
                     },
-                    {   // 06: valid args, two columns and two values
+                    {   // 02: valid args, two columns and two values
                             TABLE_NAME,
                             Arrays.asList("col2", "col1"),
                             "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
-                    },  // TODO: determine whether you should still filter at this level
-//                    {   // 07: valid args, attempt to insert an _id
-//                            TABLE_NAME,
-//                            Arrays.asList("_id", "col2", "col1"),
-//                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
-//                    },
-//                    {   // 08: valid args, attempt to insert modified
-//                            TABLE_NAME,
-//                            Arrays.asList("modified", "col2", "col1"),
-//                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
-//                    },
-//                    {   // 09: valid args, attempt to insert created
-//                            TABLE_NAME,
-//                            Arrays.asList("created", "col2", "col1"),
-//                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
-//                    },
-//                    {   // 10: valid args, attempt to insert _id, created, modified
-//                            TABLE_NAME,
-//                            Arrays.asList("_id", "created", "modified", "col1", "col2"),
-//                            "INSERT INTO test_table (col1, col2) VALUES (?, ?);"
-//                    }
+                    },
+                    {   // 03: valid args, attempt to insert an _id
+                            TABLE_NAME,
+                            Arrays.asList("_id", "col2", "col1"),
+                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
+                    },
+                    {   // 04: valid args, attempt to insert modified
+                            TABLE_NAME,
+                            Arrays.asList("modified", "col2", "col1"),
+                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
+                    },
+                    {   // 05: valid args, attempt to insert created
+                            TABLE_NAME,
+                            Arrays.asList("created", "col2", "col1"),
+                            "INSERT INTO test_table (col2, col1) VALUES (?, ?);"
+                    },
+                    {   // 06: valid args, attempt to insert _id, created, modified
+                            TABLE_NAME,
+                            Arrays.asList("_id", "created", "modified", "col1", "col2"),
+                            "INSERT INTO test_table (col1, col2) VALUES (?, ?);"
+                    }
             });
         }
 
@@ -139,6 +119,31 @@ public abstract class SqlGeneratorTest {
         @Test
         public void outputShouldEndInSemicolon() {
             assertTrue(generatorUnderTest.newSingleRowInsertionSql(tableName, inputColumns).endsWith(";"));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class InsertionSqlInvalidInput extends SqlGeneratorTest {
+
+        final String invalidTableName;
+
+        public InsertionSqlInvalidInput(String invalidTableName) {
+            this.invalidTableName = invalidTableName;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<? extends Object> data() {
+            return Arrays.asList(null, "");
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldThrowOnInvalidInputs() {
+            generatorUnderTest.newSingleRowInsertionSql(invalidTableName, Collections.<String>emptyList());
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldThrowOnInvalidInputsEvenWhenColumnsListNonempty() {
+            generatorUnderTest.newSingleRowInsertionSql(invalidTableName, Arrays.asList("col1"));
         }
     }
 
@@ -992,6 +997,14 @@ public abstract class SqlGeneratorTest {
         @Override
         protected SqlForPreparedStatement createQuery(SqlGenerator generator, String table) {
             return generator.createUpdateSql(table, updateColumns, selection, orderings);
+        }
+    }
+
+    public static class Expressions extends SqlGeneratorTest {
+
+        @Test
+        public void shouldCorrectlyExpressLike() {
+            assertEquals("%hello%", generatorUnderTest.expressLike("hello"));
         }
     }
 }

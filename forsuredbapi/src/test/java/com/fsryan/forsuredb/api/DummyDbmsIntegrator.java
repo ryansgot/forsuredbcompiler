@@ -78,6 +78,11 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
+    public String expressLike(String like) {
+        return null;
+    }
+
+    @Override
     public String andKeyword() {
         return "";
     }

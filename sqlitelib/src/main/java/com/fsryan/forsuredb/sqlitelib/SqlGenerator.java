@@ -169,6 +169,11 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
+    public String expressLike(String like) {
+        return '%' + like + '%';
+    }
+
+    @Override
     public String andKeyword() {
         return "AND";
     }
