@@ -26,11 +26,13 @@ buildscript {
     dependencies {
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
         classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.5.1'
+        classpath 'com.kncept.junit5.reporter:junit-reporter:1.1.0'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'com.kncept.junit5.reporter'
 apply plugin: 'jacoco'
 apply plugin: 'com.fsryan.gradle.forsuredb'
 
@@ -108,6 +110,8 @@ forsuredb {
 junitPlatform {
     logManager 'org.apache.logging.log4j.jul.LogManager'
 }
+
+junitPlatformTest.finalizedBy 'junitHtmlReport'
 
 afterEvaluate {
 
