@@ -19,6 +19,8 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -823,12 +825,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     private void addToReplacementsList(Object orValue) {
-        if (Date.class.equals(orValue.getClass())) {
+        Class<?> cls = orValue.getClass();
+        if (cls == Date.class) {
             replacementsList.add(Sql.generator().formatDate((Date) orValue));
-        } else if (byte[].class.equals(orValue.getClass())) {
-            replacementsList.add(orValue);
-        } else {
+        } else if (cls == BigInteger.class || cls == BigDecimal.class) {
             replacementsList.add(String.valueOf(orValue));
+        } else {
+            replacementsList.add(orValue);
         }
     }
 }

@@ -1675,7 +1675,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by exact float_column")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactFloatColumn() {
         final float floatColumn = randomSavedRecord().floatColumn();
 
@@ -1838,7 +1837,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column NOT")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnNOT() {
         final float exclusion = randomSavedRecord().floatColumn();
 
@@ -1857,7 +1855,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column from several match criteria")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnInExactMatchCriteria() {
         float match1 = randomSavedRecord().floatColumn();
         float match2 = randomSavedRecord().floatColumn();
@@ -1881,7 +1878,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_column from several match criteria using OR")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatColumnInExactMatchCriteriaUsingOR() {
         float match1 = randomSavedRecord().floatColumn();
         float match2 = randomSavedRecord().floatColumn();
@@ -1912,7 +1908,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by exact float_wrapper_column")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactFloatWrapperColumn() {
         final Float exactMatch = randomSavedRecord().floatWrapperColumn();
 
@@ -2075,7 +2070,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_wrapper_column NOT")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatWrapperColumnNOT() {
         final Float exclusion = randomSavedRecord().floatWrapperColumn();
 
@@ -2094,7 +2088,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_wrapper_column from several match criteria")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatWrapperColumnInExactMatchCriteria() {
         Float match1 = randomSavedRecord().floatWrapperColumn();
         Float match2 = randomSavedRecord().floatWrapperColumn();
@@ -2118,7 +2111,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by float_wrapper_column from several match criteria using OR")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithFloatWrapperColumnInExactMatchCriteriaUsingOR() {
         Float match1 = randomSavedRecord().floatWrapperColumn();
         Float match2 = randomSavedRecord().floatWrapperColumn();
@@ -2148,7 +2140,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by exact double_column")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactDoubleColumn() {
         final double exactMatch = randomSavedRecord().doubleColumn();
 
@@ -2311,7 +2302,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_column NOT")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleColumnNOT() {
         final double exclusion = randomSavedRecord().doubleColumn();
 
@@ -2330,7 +2320,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_column from several match criteria")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleColumnInExactMatchCriteria() {
         double match1 = randomSavedRecord().doubleColumn();
         double match2 = randomSavedRecord().doubleColumn();
@@ -2354,7 +2343,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_column from several match criteria using OR")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleColumnInExactMatchCriteriaUsingOR() {
         double match1 = randomSavedRecord().doubleColumn();
         double match2 = randomSavedRecord().doubleColumn();
@@ -2384,7 +2372,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by exact double_wrapper_column")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordsByExactDoubleWrapperColumn() {
         final Double exactMatch = randomSavedRecord().doubleWrapperColumn();
 
@@ -2547,7 +2534,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_wrapper_column NOT")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleWrapperColumnNOT() {
         final Double exclusion = randomSavedRecord().doubleWrapperColumn();
 
@@ -2566,7 +2552,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_wrapper_column from several match criteria")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleWrapperColumnInExactMatchCriteria() {
         Double match1 = randomSavedRecord().doubleWrapperColumn();
         Double match2 = randomSavedRecord().doubleWrapperColumn();
@@ -2590,7 +2575,6 @@ public class RetrievalTests {
 
     @Test
     @DisplayName("finding by double_wrapper_column from several match criteria using OR")
-    @Disabled("floating point equivalence working out differently than expected after being serialized")    // <-- TODO: fix by using fuzz-factor for floating point values
     public void shouldFindRecordWithDoubleWrapperColumnInExactMatchCriteriaUsingOR() {
         Double match1 = randomSavedRecord().doubleWrapperColumn();
         Double match2 = randomSavedRecord().doubleWrapperColumn();
@@ -2602,10 +2586,10 @@ public class RetrievalTests {
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
                         .find().byDoubleWrapperColumn(match1)
-                        .or().byDoubleWrapperColumn(match2)
-                        .or().byDoubleWrapperColumn(match3)
-                        .or().byDoubleWrapperColumn(match4)
-                        .or().byDoubleWrapperColumn(match5)
+                            .or().byDoubleWrapperColumn(match2)
+                            .or().byDoubleWrapperColumn(match3)
+                            .or().byDoubleWrapperColumn(match4)
+                            .or().byDoubleWrapperColumn(match5)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3261,6 +3245,8 @@ public class RetrievalTests {
     // TODO: find by multiple parameters with an OR and AND
     // TODO: find by multiple parameters with an AND and OR
     // TODO: find by multiple parameters with multiple AND and ORs
+    //
+    //    // TODO: find with non-default projection
 
     private static AllTypesTable.Record randomSavedRecord() {
         return randomSavedRecordByIdx(randomSavedRecordIdx());
