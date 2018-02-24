@@ -16,7 +16,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.bytesFromHex;
@@ -60,9 +64,10 @@ public class DBCreateTest {
 
     @Test
     @DisplayName("all static data should be inserted as in all_types_static_data.xml")
-    public void verifyCorrectStaticDataInsertion() throws SQLException {
+    public void verifyCorrectStaticDataInsertion() throws Exception {
         final Retriever r = allTypesTable().order().byId(OrderBy.ORDER_ASC).then().get();
         assertTrue(r.moveToPosition(1));
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         verifyColumnsAtCurrentPosition(
                 r,
                 1L,
@@ -71,7 +76,7 @@ public class DBCreateTest {
                 true,
                 false,
                 bytesFromHex("7526ff726d95e170f09a14a1261110d4d3368cf8"),
-                new Date(1514015639999L), // <-- 2017-12-22 23:53:59.999
+                df.parse("2017-12-22 23:53:59.999"),
                 5325.3874D,
                 5.438439D,
                 1.1F,
@@ -91,7 +96,7 @@ public class DBCreateTest {
                 false,
                 true,
                 bytesFromHex("b906dd9a5570586bf38e58a97470d28fb872abdf"),
-                new Date(1514015939999L), // <-- Fri Dec 22 23:58:59 PST 2017
+                df.parse("2017-12-22 23:58:59.999"),
                 5325.3D,
                 5.6D,
                 2.2F,

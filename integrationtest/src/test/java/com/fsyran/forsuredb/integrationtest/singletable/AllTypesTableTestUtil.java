@@ -174,6 +174,7 @@ abstract class AllTypesTableTestUtil {
                     while (insertedStringColumns.contains(record.stringColumn())) {
                         record = AllTypesTable.Record.createRandom();
                     }
+                    insertedStringColumns.add(record.stringColumn());
                     return insertRecord(record);
                 })
                 .collect(toList());
