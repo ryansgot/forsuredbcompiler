@@ -1,6 +1,7 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.FSDBHelper;
+import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
@@ -60,7 +61,7 @@ public class DBCreateTest {
     @Test
     @DisplayName("all static data should be inserted as in all_types_static_data.xml")
     public void verifyCorrectStaticDataInsertion() throws SQLException {
-        final Retriever r = allTypesTable().get();
+        final Retriever r = allTypesTable().order().byId(OrderBy.ORDER_ASC).then().get();
         assertTrue(r.moveToPosition(1));
         verifyColumnsAtCurrentPosition(
                 r,
