@@ -50,8 +50,8 @@ public abstract class FinderMethodSpecGenerator {
                 return new DateFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "java.lang.String":
                 return new StringFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
-            case "java.math.BigDecimal":
-            case "java.math.BigInteger":
+//            case "java.math.BigDecimal":  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/128
+//            case "java.math.BigInteger":  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/127
             case "double":
             case "java.lang.Double":
             case "float":
@@ -62,9 +62,12 @@ public abstract class FinderMethodSpecGenerator {
             case "java.lang.Integer":
             case "byte[]":
                 return new NumberFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
+            case "java.math.BigDecimal":
+            case "java.math.BigInteger":
+                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, true);
             case "boolean":
             case "java.lang.Boolean":
-                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
+                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, false);
         }
 
         return new EmptyGenerator(column, conjunctionTypeName, betweenTypeName);
