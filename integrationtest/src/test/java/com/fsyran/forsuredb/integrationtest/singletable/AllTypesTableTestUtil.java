@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
+import com.fsyran.forsuredb.integrationtest.Pair;
 import com.fsyran.forsuredb.integrationtest.TestUtil;
 
 import java.math.BigDecimal;
@@ -184,6 +185,14 @@ abstract class AllTypesTableTestUtil {
 
     public static List<Long> retrieveListOfIdColumn(Retriever r) {
         return TestUtil.retrieveToList(r, allTypesApi::id);
+    }
+
+    public static List<Boolean> retrieveListOfBooleanColumn(Retriever r) {
+        return TestUtil.retrieveToList(r, allTypesApi::booleanColumn);
+    }
+
+    public static List<Pair<Boolean, Boolean>> retrieveListOfPairBooleanColumnBooleanWrapperColumn(Retriever r) {
+        return TestUtil.retrieveToList(r, retriever -> new Pair<>(allTypesApi.booleanColumn(retriever), allTypesApi.booleanWrapperColumn(retriever)));
     }
 
     public static AllTypesTable.Record recordWithId(long id) {

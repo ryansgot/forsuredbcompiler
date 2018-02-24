@@ -45,7 +45,7 @@ public abstract class MoreAssertions {
         }
     }
 
-    public static <T> void assertCallingMethodWithArgThrowsException(T arg, Function<T, ?> fThatThrows) {
+    public static <T> void assertCallThrowsException(T arg, Function<T, ?> fThatThrows) {
         try {
             fThatThrows.apply(arg);
         } catch (Exception e) {

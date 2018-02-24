@@ -3414,24 +3414,64 @@ public class RetrievalTests {
             assertEquals(savedRecord.longColumn(), api.longColumn(r));
             assertEquals(savedRecord.floatColumn(), api.floatColumn(r), 0.0000001F);
             assertEquals(savedRecord.doubleColumn(), api.doubleColumn(r), 0.0000000001D);
-            assertCallingMethodWithArgThrowsException(r, api::bigDecimalColumn);
-            assertCallingMethodWithArgThrowsException(r, api::bigIntegerColumn);
-            assertCallingMethodWithArgThrowsException(r, api::stringColumn);
-            assertCallingMethodWithArgThrowsException(r, api::dateColumn);
-            assertCallingMethodWithArgThrowsException(r, api::byteArrayColumn);
-            assertCallingMethodWithArgThrowsException(r, api::booleanWrapperColumn);
-            assertCallingMethodWithArgThrowsException(r, api::integerWrapperColumn);
-            assertCallingMethodWithArgThrowsException(r, api::longWrapperColumn);
-            assertCallingMethodWithArgThrowsException(r, api::floatWrapperColumn);
-            assertCallingMethodWithArgThrowsException(r, api::doubleWrapperColumn);
-            assertCallingMethodWithArgThrowsException(r, api::id);
-            assertCallingMethodWithArgThrowsException(r, api::created);
-            assertCallingMethodWithArgThrowsException(r, api::deleted);
-            assertCallingMethodWithArgThrowsException(r, api::modified);
+            assertCallThrowsException(r, api::bigDecimalColumn);
+            assertCallThrowsException(r, api::bigIntegerColumn);
+            assertCallThrowsException(r, api::stringColumn);
+            assertCallThrowsException(r, api::dateColumn);
+            assertCallThrowsException(r, api::byteArrayColumn);
+            assertCallThrowsException(r, api::booleanWrapperColumn);
+            assertCallThrowsException(r, api::integerWrapperColumn);
+            assertCallThrowsException(r, api::longWrapperColumn);
+            assertCallThrowsException(r, api::floatWrapperColumn);
+            assertCallThrowsException(r, api::doubleWrapperColumn);
+            assertCallThrowsException(r, api::id);
+            assertCallThrowsException(r, api::created);
+            assertCallThrowsException(r, api::deleted);
+            assertCallThrowsException(r, api::modified);
         } while (r.moveToNext());
     }
 
-    // TODO: test distinct projection
+    // test retrieval of distinct projection
+
+    @Test
+    @DisplayName("find with a one-column distinct projection")
+    public void shouldCorrectlyFindWithAOneColumnDistinctProjection() {
+        List<Boolean> actual = retrieveListOfBooleanColumn(
+                allTypesTable()
+                        .find().distinct("boolean_column")
+                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<Boolean> expected = savedRecords.stream()
+                .map(AllTypesTableTestUtil::booleanColOf)
+                .distinct()
+                .collect(toList());
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find with a two-column distinct projection")
+    public void shouldCorrectlyFindWithATwoColumnDistinctProjection() {
+        List<Pair<Boolean, Boolean>> actual = retrieveListOfPairBooleanColumnBooleanWrapperColumn(
+                allTypesTable()
+                        .find().distinct("boolean_column", "boolean_wrapper_column")
+                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<Pair<Boolean, Boolean>> expected = savedRecords.stream()
+                .map(asp -> new Pair<>(booleanColOf(asp), booleanWrapperColOf(asp)))
+                .distinct()
+                .collect(toList());
+
+        assertListEquals(expected, actual);
+    }
 
     private static AllTypesTable.Record randomSavedRecord() {
         return savedRecordByIdx(randomSavedRecordIdx());
