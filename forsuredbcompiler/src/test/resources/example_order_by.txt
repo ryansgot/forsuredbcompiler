@@ -23,19 +23,6 @@ public class TestTable3OrderBy<R extends TestTable3Resolver> extends OrderBy<R, 
 
     /**
      * <p>
-     *   Order the results of the query by competitor_app_rating
-     * </p>
-     * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or {@link #ORDER_DESC} (or -1 or less)
-     * @return a {@link com.fsryan.forsuredb.api.Conjunction.And} that allows for either adding to the orderBy or continue
-     * adding other query parameters
-     */
-    public Conjunction.And<R, TestTable3OrderBy<R>> byCompetitorAppRating(int order) {
-        appendOrder("competitor_app_rating", order);
-        return conjunction;
-    }
-
-    /**
-     * <p>
      *   Order the results of the query by login_count
      * </p>
      * @param order the direction to order the results {@link #ORDER_ASC} (or 0 or more) or {@link #ORDER_DESC} (or -1 or less)
