@@ -1,6 +1,10 @@
 package com.fsyran.forsuredb.integrationtest;
 
 import com.fsryan.forsuredb.FSDBHelper;
+import com.fsryan.forsuredb.ForSureJdbcInfoFactory;
+import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
+import com.fsryan.forsuredb.integrationtest.ForSure;
+import com.fsryan.forsuredb.integrationtest.TableGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -24,5 +28,15 @@ public class ForceMigrationsExtension implements BeforeAllCallback {
         } catch (IllegalStateException ise) {
             // do nothing
         }
+
+        log.debug("Creating in-memory database");
+        FSDBHelper.initDebugSQLite(
+                "jdbc:sqlite::memory:",
+                null,
+                TableGenerator.generate(),
+                new FSDbInfoGsonSerializer(),
+                new Log4JFSLogger("forsure")
+        );
+        ForSure.init(ForSureJdbcInfoFactory.inst());
     }
 }

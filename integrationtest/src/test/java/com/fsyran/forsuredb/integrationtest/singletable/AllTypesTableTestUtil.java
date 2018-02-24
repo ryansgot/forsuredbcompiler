@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.api.SaveResult;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsyran.forsuredb.integrationtest.AttemptedSavePair;
+import com.fsyran.forsuredb.integrationtest.TestUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -178,19 +179,11 @@ abstract class AllTypesTableTestUtil {
     }
 
     public static List<AllTypesTable.Record> retrieveToList(Retriever r) {
-        try {
-            if (!r.moveToFirst()) {
-                return Collections.emptyList();
-            }
-            List<AllTypesTable.Record> ret = new ArrayList<>();
-            do {
-                ret.add(extractRecordFrom(r));
-            } while (r.moveToNext());
+        return TestUtil.retrieveToList(r, AllTypesTableTestUtil::extractRecordFrom);
+    }
 
-            return ret;
-        } finally {
-            r.close();
-        }
+    public static List<Long> retrieveListOfIdColumn(Retriever r) {
+        return TestUtil.retrieveToList(r, allTypesApi::id);
     }
 
     public static AllTypesTable.Record recordWithId(long id) {
@@ -223,6 +216,10 @@ abstract class AllTypesTableTestUtil {
 
     public static Integer integerWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
         return asp.getAttemptedRecord().integerWrapperColumn();
+    }
+
+    public static long longColOf(AttemptedSavePair<AllTypesTable.Record> asp) {
+        return asp.getAttemptedRecord().longColumn();
     }
 
     public static Long longWrapperColOf(AttemptedSavePair<AllTypesTable.Record> asp) {

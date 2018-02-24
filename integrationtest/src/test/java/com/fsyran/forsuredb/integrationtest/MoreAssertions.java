@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +43,15 @@ public abstract class MoreAssertions {
             assertTrue(rs.next());
             assertEquals(count, rs.getInt(1));
         }
+    }
+
+    public static <T> void assertCallingMethodWithArgThrowsException(T arg, Function<T, ?> fThatThrows) {
+        try {
+            fThatThrows.apply(arg);
+        } catch (Exception e) {
+            return;
+        }
+        fail("Should have thrown exception but didn't: " + fThatThrows);
     }
 
     @SuppressWarnings("unchecked")

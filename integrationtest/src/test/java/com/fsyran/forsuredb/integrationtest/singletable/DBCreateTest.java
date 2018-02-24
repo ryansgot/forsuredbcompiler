@@ -23,7 +23,7 @@ import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTest
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyColumnsAtCurrentPosition;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith({ForceMigrationsExtension.class, DBSetup.class, ExecutionLog.class})
+@ExtendWith({ForceMigrationsExtension.class, ExecutionLog.class})
 public class DBCreateTest {
 
     private static Connection connection;

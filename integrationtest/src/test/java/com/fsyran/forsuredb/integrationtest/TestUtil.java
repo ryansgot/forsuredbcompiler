@@ -1,12 +1,12 @@
 package com.fsyran.forsuredb.integrationtest;
 
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -43,6 +43,22 @@ public abstract class TestUtil {
                     + Character.digit(hex.charAt(i+1), 16));
         }
         return data;
+    }
+
+    public static <T> List<T> retrieveToList(Retriever r, Function<Retriever, T> retrieverUnpacker) {
+        try {
+            if (!r.moveToFirst()) {
+                return Collections.emptyList();
+            }
+            List<T> ret = new ArrayList<>();
+            do {
+                ret.add(retrieverUnpacker.apply(r));
+            } while (r.moveToNext());
+
+            return ret;
+        } finally {
+            r.close();
+        }
     }
 
     public static int randomInt() {

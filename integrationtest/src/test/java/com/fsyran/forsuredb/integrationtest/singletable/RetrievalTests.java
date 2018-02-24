@@ -1,6 +1,7 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.api.OrderBy;
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.*;
 import org.junit.jupiter.api.*;
@@ -14,13 +15,12 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
-import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertAscending;
-import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertDescending;
-import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertListEquals;
+import static com.fsyran.forsuredb.integrationtest.MoreAssertions.*;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.*;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * <p>No tests in this class may modify the database. They can only retrieve from the 128 records
@@ -317,49 +317,49 @@ public class RetrievalTests {
         assertDescending(expectedDescending);
     }
 
-    @Test
-    @DisplayName("sort retrieval by BigInteger ASC")
-    @Disabled("Not working because stored as a string") // TODO: make sorting work properly or make them not sortable
-    public void shouldCorrectlySortByBigIntegerASC() {
-        List<BigInteger> expectedAscending = retrieveToList(allTypesTable().order().byBigIntegerColumn(OrderBy.ORDER_ASC).then().get())
-                .stream()
-                .map(AllTypesTable.Record::bigIntegerColumn)
-                .collect(toList());
-        assertAscending(expectedAscending);
-    }
+//    @Test
+//    @DisplayName("sort retrieval by BigInteger ASC")
+//    @Disabled("Not working because stored as a string") // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/127
+//    public void shouldCorrectlySortByBigIntegerASC() {
+//        List<BigInteger> expectedAscending = retrieveToList(allTypesTable().order().byBigIntegerColumn(OrderBy.ORDER_ASC).then().get())
+//                .stream()
+//                .map(AllTypesTable.Record::bigIntegerColumn)
+//                .collect(toList());
+//        assertAscending(expectedAscending);
+//    }
 
-    @Test
-    @DisplayName("sort retrieval by BigInteger DESC")
-    @Disabled("Not working because stored as a string") // TODO: make sorting work properly or make them not sortable
-    public void shouldCorrectlySortByBigIntegerDESC() {
-        List<BigInteger> expectedDescending = retrieveToList(allTypesTable().order().byBigIntegerColumn(OrderBy.ORDER_DESC).then().get())
-                .stream()
-                .map(AllTypesTable.Record::bigIntegerColumn)
-                .collect(toList());
-        assertDescending(expectedDescending);
-    }
+//    @Test
+//    @DisplayName("sort retrieval by BigInteger DESC")
+//    @Disabled("Not working because stored as a string") // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/127
+//    public void shouldCorrectlySortByBigIntegerDESC() {
+//        List<BigInteger> expectedDescending = retrieveToList(allTypesTable().order().byBigIntegerColumn(OrderBy.ORDER_DESC).then().get())
+//                .stream()
+//                .map(AllTypesTable.Record::bigIntegerColumn)
+//                .collect(toList());
+//        assertDescending(expectedDescending);
+//    }
 
-    @Test
-    @DisplayName("sort retrieval by BigDecimal ASC")
-    @Disabled("Not working because stored as a string")  // TODO: make sorting work properly or make them not sortable
-    public void shouldCorrectlySortByBigDecimalASC() {
-        List<BigDecimal> expectedAscending = retrieveToList(allTypesTable().order().byBigDecimalColumn(OrderBy.ORDER_ASC).then().get())
-                .stream()
-                .map(AllTypesTable.Record::bigDecimalColumn)
-                .collect(toList());
-        assertAscending(expectedAscending);
-    }
+//    @Test
+//    @DisplayName("sort retrieval by BigDecimal ASC")
+//    @Disabled("Not working because stored as a string")  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/128
+//    public void shouldCorrectlySortByBigDecimalASC() {
+//        List<BigDecimal> expectedAscending = retrieveToList(allTypesTable().order().byBigDecimalColumn(OrderBy.ORDER_ASC).then().get())
+//                .stream()
+//                .map(AllTypesTable.Record::bigDecimalColumn)
+//                .collect(toList());
+//        assertAscending(expectedAscending);
+//    }
 
-    @Test
-    @DisplayName("sort retrieval by BigDecimal DESC")
-    @Disabled("Not working because stored as a string")  // TODO: make sorting work properly or make them not sortable
-    public void shouldCorrectlySortByBigDecimalDESC() {
-        List<BigDecimal> expectedDescending = retrieveToList(allTypesTable().order().byBigDecimalColumn(OrderBy.ORDER_DESC).then().get())
-                .stream()
-                .map(AllTypesTable.Record::bigDecimalColumn)
-                .collect(toList());
-        assertDescending(expectedDescending);
-    }
+//    @Test
+//    @DisplayName("sort retrieval by BigDecimal DESC")
+//    @Disabled("Not working because stored as a string")  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/128
+//    public void shouldCorrectlySortByBigDecimalDESC() {
+//        List<BigDecimal> expectedDescending = retrieveToList(allTypesTable().order().byBigDecimalColumn(OrderBy.ORDER_DESC).then().get())
+//                .stream()
+//                .map(AllTypesTable.Record::bigDecimalColumn)
+//                .collect(toList());
+//        assertDescending(expectedDescending);
+//    }
 
     // TWO COLUMN SORTS: boolean column will have a fair number of duplicates, so it's ideal to use as the first sorting criteria for the tests
 
@@ -531,7 +531,7 @@ public class RetrievalTests {
     @DisplayName("finding by exact id")
     public void shouldFindRecordByExactId() {
         int idx = ThreadLocalRandom.current().nextInt(0, NUM_RECORDS);
-        assertEquals(randomSavedRecordByIdx(idx), recordWithId(idx + 1));
+        assertEquals(savedRecordByIdx(idx), recordWithId(idx + 1));
     }
 
     @Test
@@ -3238,21 +3238,206 @@ public class RetrievalTests {
         assertListEquals(expected, actual);
     }
 
-    // TODO: find by multiple parameters with a single AND
-    // TODO: find by multiple parameters with multiple ANDs
-    // TODO: find by multiple parameters with a single OR
-    // TODO: find by mutliple parameters with multiple ORs
+    // multiple parameters with a single AND
+
+    @Test
+    @DisplayName("find by LT id and boolean_column true")
+    public void shouldCorrectlyFindRecordsByLTIdAndBooleanColumn() {
+        final long exclusiveUpperBound = randomStoredRecordId();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byIdLessThan(exclusiveUpperBound)
+                            .and().byBooleanColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> booleanColOf(asp) && idOf(asp) < exclusiveUpperBound);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by GT int_column and boolean_wrapper_column false")
+    public void shouldCorrectlyFindRecordsByGTIntColumndAndNotBooleanWrapperColumn() {
+        final int exclusiveLowerBound = randomInt();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byIntColumnGreaterThan(exclusiveLowerBound)
+                            .and().byNotBooleanWrapperColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp -> !booleanWrapperColOf(asp) && intColOf(asp) > exclusiveLowerBound);
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by LE integer_wrapper_column and GE long_column")
+    public void shouldCorrectlyFindRecordsByLEIntegerWrapperColumnAndGELongColumn() {
+        final int inclusiveUpperBound = randomInt();
+        final long exclusiveLowerBound = randomLong();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byIntegerWrapperColumnLessThanInclusive(inclusiveUpperBound)
+                            .and().byLongColumnGreaterThanInclusive(exclusiveLowerBound)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                integerWrapperColOf(asp).compareTo(inclusiveUpperBound) <= 0 && longColOf(asp) >= exclusiveLowerBound
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by multiple parameters with multiple ands")
+    public void shouldCorrectlyFindByMultipleParametersWithMultipleAnds() {
+        final String aSavedString = randomSavedRecord().stringColumn();
+        final byte[] aSavedByteArray = randomSavedRecord().byteArrayColumn();
+        final long aSavedLongCol = randomSavedRecord().longColumn();
+        final Integer aSavedIntegerWrapperCol = randomSavedRecord().integerWrapperColumn();
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byStringColumnGreaterThan(aSavedString)
+                            .and().byByteArrayColumnLessThanInclusive(aSavedByteArray)
+                            .and().byLongColumnLessThan(aSavedLongCol)
+                            .and().byIntegerWrapperColumnGreaterThanInclusive(aSavedIntegerWrapperCol)
+                            .and().byNotBooleanColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                stringColOf(asp).compareTo(aSavedString) > 0
+                        && MEMCMP_COMPARATOR.compare(byteArrayColOf(asp), aSavedByteArray) <= 0
+                        && longColOf(asp) < aSavedLongCol
+                        && integerWrapperColOf(asp).compareTo(aSavedIntegerWrapperCol) >= 0
+                        && !booleanColOf(asp)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by multiple columns and a single OR")
+    public void shouldCorrectlyFindByMultipleColumnsSingleOR() {
+        final Date exclusiveLowerBound = randomSavedRecord().dateColumn();
+        final Pair<Double, Double> doubleRange = randomRange(TestUtil::randomDouble);
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDateColumnAfter(exclusiveLowerBound)
+                            .or().byDoubleColumnBetween(doubleRange.first).and(doubleRange.second)
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(
+                doubleColBetween(doubleRange, false, false)
+                        .or(asp -> dateColOf(asp).compareTo(exclusiveLowerBound) > 0));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by multiple parameters with a multiple ORs")
+    public void shouldCorrectlyFindByMultipleColumnsMultipleORs() {
+        final Double aSavedDoubleWrapper = randomSavedRecord().doubleWrapperColumn();
+        final BigInteger aSavedBigInteger = randomSavedRecord().bigIntegerColumn();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byDoubleWrapperColumnGreaterThan(aSavedDoubleWrapper)
+                        .or().byBigIntegerColumnNot(aSavedBigInteger)
+                        .or().byBooleanWrapperColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                doubleWrapperColOf(asp).compareTo(aSavedDoubleWrapper) > 0
+                        || !bigIntegerColOf(asp).equals(aSavedBigInteger)
+                        || booleanWrapperColOf(asp)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    // As of 0.13.0-beta, it is known that the below are not supported. So don't bother testing at the moment.
     // TODO: find by multiple parameters with an OR and AND
     // TODO: find by multiple parameters with an AND and OR
     // TODO: find by multiple parameters with multiple AND and ORs
-    //
-    //    // TODO: find with non-default projection
 
-    private static AllTypesTable.Record randomSavedRecord() {
-        return randomSavedRecordByIdx(randomSavedRecordIdx());
+    @Test
+    @DisplayName("find with a one-column projection")
+    public void shouldCorrectlyFindWithAOneColumnProjection() {
+        List<Long> actual = retrieveListOfIdColumn(
+                allTypesTable()
+                        .find().columns("_id")
+                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<Long> expected = savedRecords.stream().map(AllTypesTableTestUtil::idOf).collect(toList());
+
+        assertListEquals(expected, actual);
     }
 
-    private static AllTypesTable.Record randomSavedRecordByIdx(int idx) {
+    @Test
+    @DisplayName("find with a primitive-only column projection")
+    public void shouldCorrectlyFindWithANonDefaultProjection() {
+        AllTypesTable api = allTypesTable().getApi();
+        Retriever r = allTypesTable()
+                .find().columns("boolean_column", "int_column", "long_column", "float_column", "double_column")
+                    .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
+                .then()
+                .order().byId(OrderBy.ORDER_ASC)
+                .then()
+                .get();
+        assertTrue(r.moveToFirst());
+        do {
+            AllTypesTable.Record savedRecord = savedRecordByIdx(r.getPosition() - 1);
+            assertEquals(savedRecord.booleanColumn(), api.booleanColumn(r));
+            assertEquals(savedRecord.intColumn(), api.intColumn(r));
+            assertEquals(savedRecord.longColumn(), api.longColumn(r));
+            assertEquals(savedRecord.floatColumn(), api.floatColumn(r), 0.0000001F);
+            assertEquals(savedRecord.doubleColumn(), api.doubleColumn(r), 0.0000000001D);
+            assertCallingMethodWithArgThrowsException(r, api::bigDecimalColumn);
+            assertCallingMethodWithArgThrowsException(r, api::bigIntegerColumn);
+            assertCallingMethodWithArgThrowsException(r, api::stringColumn);
+            assertCallingMethodWithArgThrowsException(r, api::dateColumn);
+            assertCallingMethodWithArgThrowsException(r, api::byteArrayColumn);
+            assertCallingMethodWithArgThrowsException(r, api::booleanWrapperColumn);
+            assertCallingMethodWithArgThrowsException(r, api::integerWrapperColumn);
+            assertCallingMethodWithArgThrowsException(r, api::longWrapperColumn);
+            assertCallingMethodWithArgThrowsException(r, api::floatWrapperColumn);
+            assertCallingMethodWithArgThrowsException(r, api::doubleWrapperColumn);
+            assertCallingMethodWithArgThrowsException(r, api::id);
+            assertCallingMethodWithArgThrowsException(r, api::created);
+            assertCallingMethodWithArgThrowsException(r, api::deleted);
+            assertCallingMethodWithArgThrowsException(r, api::modified);
+        } while (r.moveToNext());
+    }
+
+    // TODO: test distinct projection
+
+    private static AllTypesTable.Record randomSavedRecord() {
+        return savedRecordByIdx(randomSavedRecordIdx());
+    }
+
+    private static AllTypesTable.Record savedRecordByIdx(int idx) {
         return savedRecords.get(idx).getAttemptedRecord();
     }
 
