@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  * <p>Contains an ordered set of {@link Migration} as well as a database version and
- * target schema (modeled as a map, table name -> {@link TableInfo})
+ * target schema (modeled as a map, table name -&gt; {@link TableInfo})
  *
  * Note: this class has a natural ordering that is inconsistent with equals.
  */
