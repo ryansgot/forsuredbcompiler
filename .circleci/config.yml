@@ -59,6 +59,9 @@ jobs:
       - store_artifacts:
           path: sqlitelib/build/reports
           destination: sqlitelib/reports
+      - store_artifacts:
+          path: integrationtest/build/reports
+          destination: integrationtest/reports
 
       - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
 

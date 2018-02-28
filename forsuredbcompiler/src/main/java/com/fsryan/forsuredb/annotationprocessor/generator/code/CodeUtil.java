@@ -205,7 +205,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
             case "byte":
                 return array ? byte[].class : byte.class;
             case "byte[]":
-                return byte[].class;
+                return array ? byte[][].class : byte[].class;
             case "boolean":
                 return array ? boolean[].class : boolean.class;
             case "short":

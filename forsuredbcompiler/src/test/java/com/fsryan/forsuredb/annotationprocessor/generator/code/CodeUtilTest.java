@@ -103,7 +103,7 @@ public class CodeUtilTest {
                     { "char", char.class, char[].class },
                     { "boolean", boolean.class, boolean[].class },
                     { "byte", byte.class, byte[].class },
-                    { "byte[]", byte[].class, byte[].class },
+                    { "byte[]", byte[].class, byte[][].class },
                     { "short", short.class, short[].class },
                     { "int", int.class, int[].class },
                     { "long", long.class, long[].class },

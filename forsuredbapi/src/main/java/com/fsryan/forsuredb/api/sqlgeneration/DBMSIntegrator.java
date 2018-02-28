@@ -111,9 +111,7 @@ public interface DBMSIntegrator {
     String whereOperation(String tableName, String column, int operator);
 
     /**
-     * <p>
-     *     Format the date in the way the DBMS cares to store it
-     * </p>
+     * <p>Format the date in the way the DBMS cares to store it
      * @param date the date to format
      * @return A string representation of the date
      */
@@ -136,6 +134,12 @@ public interface DBMSIntegrator {
      * @return The wildcard symbol/keyword
      */
     String wildcardKeyword();
+
+    /**
+     * @return a String containing the appropriate LIKE format. For many DBMS integrations, this will be
+     * '%' + like + '%'
+     */
+    String expressLike(String like);
 
     /**
      * @return the AND symbol/keyword

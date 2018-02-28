@@ -56,10 +56,13 @@ allprojects {
 
 subprojects { subproject ->
 
-    apply plugin: 'java'
-    if (subproject.name == 'forsuredbjdbc-example') {
+    group = rootProject.group
+
+    if (subproject.name == 'integrationtest' || subproject.name == 'forsuredbjdbc-example') {
         return
     }
+
+    apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
@@ -70,7 +73,6 @@ subprojects { subproject ->
         jcenter()
     }
 
-    group = rootProject.group
 
     jacoco {
         toolVersion = "0.7.6.+"

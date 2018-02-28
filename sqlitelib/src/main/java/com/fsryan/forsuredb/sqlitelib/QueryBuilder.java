@@ -26,6 +26,9 @@ class QueryBuilder {
         queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "
         queryBuf.append(") VALUES (");
         for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).isEmpty() || COLUMN_EXCLUSION_FILTER.contains(columns.get(i))) {
+                continue;   // <-- never insert _id, created, or modified columns
+            }
             queryBuf.append("?, ");
         }
         queryBuf.delete(queryBuf.length() - 2, queryBuf.length());  // <-- remove final ", "

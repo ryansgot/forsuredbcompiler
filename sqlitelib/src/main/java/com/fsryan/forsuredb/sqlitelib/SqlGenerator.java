@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
-import static com.fsryan.forsuredb.sqlitelib.QueryCorrector.LIMIT_NONE;
 
 public class SqlGenerator implements DBMSIntegrator {
 
@@ -94,10 +93,12 @@ public class SqlGenerator implements DBMSIntegrator {
 
     @Override
     public String newSingleRowInsertionSql(String tableName, List<String> columns) {
-        if (tableName == null || tableName.isEmpty() || columns == null || columns.isEmpty()) {
-            return QueryBuilder.EMPTY_SQL;
+        if (tableName == null || tableName.isEmpty()) {
+            throw new IllegalArgumentException("Cannot insert into null or empty table: '" + tableName + "'");
         }
-        return singleRecordInsertion(tableName, columns);
+        return columns == null || columns.isEmpty()
+                ? singleRecordInsertion(tableName, Collections.singletonList("deleted"))
+                : singleRecordInsertion(tableName, columns);
     }
 
     @Override
@@ -165,6 +166,11 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public String wildcardKeyword() {
         return "%";
+    }
+
+    @Override
+    public String expressLike(String like) {
+        return '%' + like + '%';
     }
 
     @Override

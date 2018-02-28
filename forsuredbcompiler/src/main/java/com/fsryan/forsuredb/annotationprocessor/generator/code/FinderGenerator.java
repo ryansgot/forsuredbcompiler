@@ -1,6 +1,7 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenerator.FinderMethodSpecGenerator;
+import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.DocStoreFinder;
 import com.fsryan.forsuredb.api.Finder;

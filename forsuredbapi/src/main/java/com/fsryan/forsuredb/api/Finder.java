@@ -19,6 +19,8 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +82,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     private final FSProjection defaultProjection;
     private final Set<String> possibleColumns;
     private final StringBuffer whereBuf = new StringBuffer();
-    private final List<String> replacementsList = new ArrayList<>();
+    private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
 
     private boolean incorporatedExternalFinder = false;
@@ -310,7 +312,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public final FSSelection selection() {
         return new FSSelection() {
             String where = whereBuf.toString();
-            String[] replacements = replacementsList.toArray(new String[replacementsList.size()]);
+            Object[] replacements = replacementsList.toArray(new Object[replacementsList.size()]);
 
             @Override
             public String where() {
@@ -318,7 +320,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             }
 
             @Override
-            public String[] replacements() {
+            public Object[] replacements() {
                 return replacements;
             }
 
@@ -702,13 +704,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
-        if (operator == OP_LIKE) {
-            whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
-        } else {
-            whereBuf.append("?");
-        }
+        whereBuf.append("?");
 
-        replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
+        addToReplacementsList(operator == OP_LIKE ? Sql.generator().expressLike(String.valueOf(value)) : value);
     }
 
     protected final void addEqualsOrChainToBuf(String column, List orValues) {
@@ -723,13 +721,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
         Object first = orValues.get(0);
         whereBuf.append("(").append(Sql.generator().whereOperation(tableName, column, OP_EQ)).append(" ? ");
-        replacementsList.add(Date.class.equals(first.getClass()) ? Sql.generator().formatDate((Date) first) : first.toString());
+        addToReplacementsList(first);
         for (int i = 1; i < orValues.size(); i++) {
             Object orValue = orValues.get(i);
             whereBuf.append(Sql.generator().orKeyword()).append(" ")
                     .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
                     .append(" ?");
-            replacementsList.add(Date.class.equals(orValue.getClass()) ? Sql.generator().formatDate((Date) orValue) : orValue.toString());
+            addToReplacementsList(orValue);
         }
         whereBuf.append(")");
     }
@@ -824,5 +822,16 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
         }
         return Math.max(num1, num2);
+    }
+
+    private void addToReplacementsList(Object orValue) {
+        Class<?> cls = orValue.getClass();
+        if (cls == Date.class) {
+            replacementsList.add(Sql.generator().formatDate((Date) orValue));
+        } else if (cls == BigInteger.class || cls == BigDecimal.class) {
+            replacementsList.add(String.valueOf(orValue));
+        } else {
+            replacementsList.add(orValue);
+        }
     }
 }

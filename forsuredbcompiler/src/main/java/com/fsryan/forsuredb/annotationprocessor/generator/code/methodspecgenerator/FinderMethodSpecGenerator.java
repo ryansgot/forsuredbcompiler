@@ -50,18 +50,24 @@ public abstract class FinderMethodSpecGenerator {
                 return new DateFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "java.lang.String":
                 return new StringFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
-            case "java.math.BigDecimal":
-                // intentionally fall through
+//            case "java.math.BigDecimal":  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/128
+//            case "java.math.BigInteger":  // TODO: https://github.com/ryansgot/forsuredbcompiler/issues/127
             case "double":
-                // intentionally fall through
+            case "java.lang.Double":
             case "float":
-                // intentionally fall through
+            case "java.lang.Float":
             case "long":
-                // intentionally fall through
+            case "java.lang.Long":
             case "int":
+            case "java.lang.Integer":
+            case "byte[]":
                 return new NumberFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
+            case "java.math.BigDecimal":
+            case "java.math.BigInteger":
+                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, true);
             case "boolean":
-                return new BooleanFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
+            case "java.lang.Boolean":
+                return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, false);
         }
 
         return new EmptyGenerator(column, conjunctionTypeName, betweenTypeName);
@@ -107,6 +113,7 @@ public abstract class FinderMethodSpecGenerator {
     protected abstract boolean hasOnNotOnGrammar();
     protected abstract boolean hasGreaterThanLessThanGrammar();
     protected abstract boolean hasLikeGrammar();
+    protected abstract boolean allowMultipleExactMatches();
 
     protected String translateParameter(String parameterName) {
         return parameterName;
@@ -132,7 +139,7 @@ public abstract class FinderMethodSpecGenerator {
         List<MethodSpec> retList = new ArrayList<>();
         retList.add(createSpec(conjunctionTypeName, "by" + methodNameInsertion, "exactMatch", Finder.OP_EQ));
         retList.add(createSpec(conjunctionTypeName,
-                column.getQualifiedType().equals("boolean") ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
+                isForBooleanType() ? "byNot" + methodNameInsertion : "by" + methodNameInsertion + "Not",
                 "exclusion",
                 OP_NE));
         return retList;
@@ -161,11 +168,11 @@ public abstract class FinderMethodSpecGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(returnType);
 
-        if (!column.getQualifiedType().equals("boolean")) {
+        if (!isForBooleanType()) {
             codeBuilder.addParameter(CodeUtil.typeFromName(column.getQualifiedType()), parameterName);
         }
 
-        if (op == OP_EQ && !column.getQualifiedType().equals("boolean")) {
+        if (op == OP_EQ && allowMultipleExactMatches()) {
             codeBuilder.varargs()
                     .addParameter(ParameterSpec.builder(ClassName.get(CodeUtil.arrayTypeFromName(column.getQualifiedType())), "orExactMatches")
                     .build())
@@ -214,6 +221,10 @@ public abstract class FinderMethodSpecGenerator {
         return jdBuilder.addLine().build();
     }
 
+    private boolean isForBooleanType() {
+        return column.getQualifiedType().equals("boolean") || column.getQualifiedType().equals("java.lang.Boolean");
+    }
+
     private static class EmptyGenerator extends FinderMethodSpecGenerator {
 
         protected EmptyGenerator(ColumnInfo column, ParameterizedTypeName conjunctionTypeName, ParameterizedTypeName betweenTypeName) {
@@ -247,6 +258,11 @@ public abstract class FinderMethodSpecGenerator {
 
         @Override
         protected boolean hasLikeGrammar() {
+            return false;
+        }
+
+        @Override
+        protected boolean allowMultipleExactMatches() {
             return false;
         }
     }

@@ -13,6 +13,8 @@ import com.squareup.javapoet.TypeVariableName;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 public class OrderByGenerator extends JavaSourceGenerator {
@@ -54,13 +56,14 @@ public class OrderByGenerator extends JavaSourceGenerator {
     }
 
     private void addOrderByMethods(TypeSpec.Builder codeBuilder) {
-        for (ColumnInfo column : columnsSortedByName) {
-            // Parent class OrderBy already contains the methods for the default columns
-            if (!column.orderable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {
-                continue;
-            }
-            codeBuilder.addMethod(methodSpecFor(column));
-        }
+        columnsSortedByName.stream()    // Parent class OrderBy already contains the methods for the default columns
+                .filter(c -> c.orderable() && !TableInfo.defaultColumns().containsKey(c.getColumnName()) && isOrderableType(c))
+                .forEach(c -> codeBuilder.addMethod(methodSpecFor(c)));
+    }
+
+    private boolean isOrderableType(ColumnInfo columnInfo) {
+        final String qType = columnInfo.qualifiedType();
+        return !qType.equals(BigDecimal.class.getName()) && !qType.equals(BigInteger.class.getName());
     }
 
     private MethodSpec methodSpecFor(ColumnInfo column) {

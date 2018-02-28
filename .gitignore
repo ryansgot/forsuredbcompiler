@@ -16,3 +16,4 @@ forsuredbmodels-gson/out/*
 forsuredbmodels-jackson/out/*
 forsuredbjdbc-example/*.db
 sqlitelib/out/*
+integrationtest/out/*

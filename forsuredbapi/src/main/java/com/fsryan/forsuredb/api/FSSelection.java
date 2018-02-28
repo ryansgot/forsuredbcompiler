@@ -34,8 +34,8 @@ public interface FSSelection {
         }
 
         @Override
-        public String[] replacements() {
-            return new String[0];
+        public Object[] replacements() {
+            return new Object[0];
         }
 
         @Override
@@ -51,10 +51,10 @@ public interface FSSelection {
     String where();
 
     /**
-     * @return the array of Strings that are to replace all '?' characters in String returned by
+     * @return the array of objects to bind
      * {@link #where() where()}.
      */
-    String[] replacements();
+    Object[] replacements();
 
     /**
      * Allows you to position the start/end position and number of records from which a retreiver
