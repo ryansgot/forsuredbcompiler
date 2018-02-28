@@ -2,8 +2,9 @@ package com.fsyran.forsuredb.integrationtest;
 
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
-
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
@@ -11,6 +12,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public abstract class TestUtil {
+
+    public static final ThreadLocal<DateFormat> DATE_FORMAT
+            = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
 
     public interface Unpacker<T> {
         T unpack(AttemptedSavePair<AllTypesTable.Record> asr);

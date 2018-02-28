@@ -1,9 +1,7 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
 import com.fsryan.forsuredb.FSDBHelper;
-import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.api.Retriever;
-import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
 import com.fsyran.forsuredb.integrationtest.ForceMigrationsExtension;
 import com.fsyran.forsuredb.integrationtest.SqlMasterAssertions;
@@ -16,13 +14,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
+import static com.fsyran.forsuredb.integrationtest.TestUtil.DATE_FORMAT;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.bytesFromHex;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyDefaultValuesAtCurrentPosition;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.verifyColumnsAtCurrentPosition;
@@ -65,9 +59,8 @@ public class DBCreateTest {
     @Test
     @DisplayName("all static data should be inserted as in all_types_static_data.xml")
     public void verifyCorrectStaticDataInsertion() throws Exception {
-        final Retriever r = allTypesTable().order().byId(OrderBy.ORDER_ASC).then().get();
+        final Retriever r = allTypesTable().get();
         assertTrue(r.moveToPosition(1));
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         verifyColumnsAtCurrentPosition(
                 r,
                 1L,
@@ -76,7 +69,7 @@ public class DBCreateTest {
                 true,
                 false,
                 bytesFromHex("7526ff726d95e170f09a14a1261110d4d3368cf8"),
-                df.parse("2017-12-22 23:53:59.999"),
+                DATE_FORMAT.get().parse("2017-12-22 23:53:59.999"),
                 5325.3874D,
                 5.438439D,
                 1.1F,
@@ -96,7 +89,7 @@ public class DBCreateTest {
                 false,
                 true,
                 bytesFromHex("b906dd9a5570586bf38e58a97470d28fb872abdf"),
-                df.parse("2017-12-22 23:58:59.999"),
+                DATE_FORMAT.get().parse("2017-12-22 23:58:59.999"),
                 5325.3D,
                 5.6D,
                 2.2F,
