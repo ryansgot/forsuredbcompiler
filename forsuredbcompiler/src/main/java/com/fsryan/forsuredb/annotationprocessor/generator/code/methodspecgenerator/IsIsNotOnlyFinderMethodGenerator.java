@@ -3,9 +3,17 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenera
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.squareup.javapoet.ParameterizedTypeName;
 
-/*package*/ class BooleanFinderMethodGenerator extends FinderMethodSpecGenerator {
-    public BooleanFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName) {
+class IsIsNotOnlyFinderMethodGenerator extends FinderMethodSpecGenerator {
+
+    private final boolean allowMultipleExactMatches;
+
+    public IsIsNotOnlyFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName) {
+        this(column, conjuntionTypeName, betweenTypeName, false);
+    }
+
+    public IsIsNotOnlyFinderMethodGenerator(ColumnInfo column, ParameterizedTypeName conjuntionTypeName, ParameterizedTypeName betweenTypeName, boolean allowMultipleExactMatches) {
         super(column, conjuntionTypeName, betweenTypeName);
+        this.allowMultipleExactMatches = allowMultipleExactMatches;
     }
 
     @Override
@@ -38,18 +46,13 @@ import com.squareup.javapoet.ParameterizedTypeName;
         return false;
     }
 
-    /**
-     * <p>
-     *     Because a boolean is either either an integer of value 0 (false) or 1 (true)
-     *     in our representation, the parameterName is ignored.
-     * </p>
-     * @param parameterName not used
-     * @return the literal code used to replace the '?' in the query will always be 1 because the
-     * query will be '... boolean_column = ?...' for isBooleanColumn() and '... boolean_column != ?...'
-     * for isNotBooleanColumn()
-     */
+    @Override
+    protected boolean allowMultipleExactMatches() {
+        return allowMultipleExactMatches;
+    }
+
     @Override
     protected String translateParameter(String parameterName) {
-        return "1";
+        return allowMultipleExactMatches ? parameterName : "1";
     }
 }

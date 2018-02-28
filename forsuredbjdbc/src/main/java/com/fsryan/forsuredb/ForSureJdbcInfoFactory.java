@@ -1,17 +1,17 @@
 package com.fsryan.forsuredb;
 
-import com.fsryan.forsuredb.api.FSJoin;
-import com.fsryan.forsuredb.api.FSQueryable;
-import com.fsryan.forsuredb.api.ForSureInfoFactory;
-import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.queryable.DirectLocator;
 import com.fsryan.forsuredb.queryable.JdbcQueryable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ForSureJdbcInfoFactory implements ForSureInfoFactory<DirectLocator, TypedRecordContainer> {
 
     private static final ForSureJdbcInfoFactory instance = new ForSureJdbcInfoFactory();
+
+    private FSLogger log;
 
     private ForSureJdbcInfoFactory() {}
 
@@ -21,7 +21,7 @@ public class ForSureJdbcInfoFactory implements ForSureInfoFactory<DirectLocator,
 
     @Override
     public FSQueryable<DirectLocator, TypedRecordContainer> createQueryable(DirectLocator resource) {
-        return new JdbcQueryable(resource);
+        return new JdbcQueryable(resource, log);
     }
 
     @Override
@@ -49,5 +49,9 @@ public class ForSureJdbcInfoFactory implements ForSureInfoFactory<DirectLocator,
     @Override
     public String tableName(DirectLocator locator) {
         return locator.table;
+    }
+
+    public void setLogger(@Nullable FSLogger log) {
+        this.log = log;
     }
 }

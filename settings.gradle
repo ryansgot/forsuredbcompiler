@@ -6,4 +6,5 @@ include 'forsuredbmodels-jackson'
 include 'sqlitelib'
 include 'forsuredbjdbc'
 include 'forsuredbjdbc-example'
+include 'integrationtest'
 

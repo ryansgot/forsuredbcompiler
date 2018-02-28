@@ -8,9 +8,9 @@ import java.util.Objects;
 public class SqlForPreparedStatement {
 
     private final String sql;
-    private final String[] replacements;
+    private final Object[] replacements;
 
-    public SqlForPreparedStatement(@Nonnull String sql, @Nullable String[] replacements) {
+    public SqlForPreparedStatement(@Nonnull String sql, @Nullable Object[] replacements) {
         this.sql = sql;
         this.replacements = replacements;
     }
@@ -21,7 +21,7 @@ public class SqlForPreparedStatement {
     }
 
     @Nullable
-    public String[] getReplacements() {
+    public Object[] getReplacements() {
         return replacements;
     }
 

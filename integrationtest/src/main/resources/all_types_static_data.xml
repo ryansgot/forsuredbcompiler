@@ -1,0 +1,37 @@
+<static_data>
+    <records db_version="2">
+        <record big_decimal_column="476583283.8932675346289"
+                big_integer_column="7984365438954389567894358943576349832"
+                byte_array_column="7526ff726d95e170f09a14a1261110d4d3368cf8"
+                date_column="2017-12-22 23:53:59.999"
+                double_column="5325.3874"
+                double_wrapper_column="5.438439"
+                float_column="1.1"
+                float_wrapper_column="8.7"
+                int_column="5"
+                integer_wrapper_column="8758503"
+                long_column="40585"
+                long_wrapper_column="74745094847459"
+                boolean_column="true"
+                boolean_wrapper_column="false"
+                string_column="Record 1" />
+        <record big_decimal_column="2.1"
+                big_integer_column="2"
+                byte_array_column="b906dd9a5570586bf38e58a97470d28fb872abdf"
+                date_column="2017-12-22 23:58:59.999"
+                double_column="5325.3"
+                double_wrapper_column="5.6"
+                float_column="2.2"
+                float_wrapper_column="8.7"
+                int_column="5"
+                integer_wrapper_column="65432"
+                long_column="9"
+                long_wrapper_column="4532"
+                boolean_column="false"
+                boolean_wrapper_column="true"
+                string_column="Record 2" />
+    </records>
+    <records db_version="3">
+        <record />  <!-- should use default 42 for int_column -->
+    </records>
+</static_data>

@@ -46,11 +46,9 @@ public abstract class Migration implements Comparable<Migration> {
         ALTER_TABLE_ADD_COLUMN(10),
         ALTER_TABLE_ADD_UNIQUE(10),
         /**
-         * <p>
-         *     Foreign keys may or may not be marked on columns. If you use this, I'm not sure what will happen.
-         *     It is only around for compatibility with previous versions
-         *     @deprecated since 0.11.0
-         * </p>
+         * <p>Foreign keys may or may not be marked on columns. If you use this, I'm not sure what will happen. It is
+         * only around for compatibility with previous versions.
+         * @deprecated since 0.11.0 and will be removed in 1.0.0
          */
         @Deprecated
         ADD_FOREIGN_KEY_REFERENCE(19),

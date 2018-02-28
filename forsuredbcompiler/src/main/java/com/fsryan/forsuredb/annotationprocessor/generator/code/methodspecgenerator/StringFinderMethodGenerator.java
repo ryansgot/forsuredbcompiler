@@ -37,4 +37,9 @@ import com.squareup.javapoet.ParameterizedTypeName;
     protected boolean hasLikeGrammar() {
         return true;
     }
+
+    @Override
+    protected boolean allowMultipleExactMatches() {
+        return true;
+    }
 }

@@ -376,6 +376,24 @@ public class FSResultSet implements ResultSet, Retriever {
 
     @Override
     public boolean absolute(int row) throws SQLException {
+        if (resultSet.getType() != TYPE_FORWARD_ONLY) {
+            return resultSet.absolute(row);
+        }
+
+        int current = resultSet.getRow();
+        if (current == row) {
+            return true;
+        }
+        if (current < row) {
+            while (current < row) {
+                if (!resultSet.next()) {
+                    return false;
+                }
+                current++;
+            }
+            return true;
+        }
+        // will throw unless you can move backwards, which you probably can't
         return resultSet.absolute(row);
     }
 
