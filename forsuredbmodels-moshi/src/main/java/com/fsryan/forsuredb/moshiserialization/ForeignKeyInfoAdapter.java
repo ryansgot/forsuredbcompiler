@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.JsonWriter;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 @Deprecated
@@ -56,7 +57,7 @@ final class ForeignKeyInfoAdapter extends JsonAdapter<ForeignKeyInfo> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, ForeignKeyInfo value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull ForeignKeyInfo value) throws IOException {
         writer.beginObject();
         writer.name("update_action");
         writer.value(value.updateAction());

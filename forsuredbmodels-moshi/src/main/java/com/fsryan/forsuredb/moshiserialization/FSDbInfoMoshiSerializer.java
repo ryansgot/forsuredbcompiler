@@ -1,6 +1,10 @@
 package com.fsryan.forsuredb.moshiserialization;
 
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.squareup.moshi.JsonAdapter;
@@ -9,8 +13,10 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import okio.Buffer;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
@@ -20,9 +26,9 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
             .add(new DbInfoAdapterFactory())
             .build();
     private static final JsonAdapter<Set<TableForeignKeyInfo>> tableForeignKeyInfoSetAdapter
-            = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableForeignKeyInfo.class));
+            = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableForeignKeyInfo.class)).nullSafe();
     private static final JsonAdapter<Set<String>> stringSetAdapter
-            = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class));
+            = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class)).nullSafe();
 
     @Override
     public MigrationSet deserializeMigrationSet(InputStream stream) {
@@ -66,8 +72,33 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
         }
     }
 
-
     static JsonAdapter adapterFrom(Moshi moshi, Type adapterType) {
         return moshi.adapter(adapterType);
+    }
+
+    private static class DbInfoAdapterFactory implements JsonAdapter.Factory {
+        @Nullable
+        @Override
+        public JsonAdapter<?> create(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
+            if (ColumnInfo.class.equals(type)) {
+                return new ColumnInfoAdapter(moshi).nullSafe();
+            }
+            if (TableInfo.class.equals(type)) {
+                return new TableInfoAdapter(moshi).nullSafe();
+            }
+            if (Migration.class.equals(type)) {
+                return new MigrationAdapter(moshi).nullSafe();
+            }
+            if (TableForeignKeyInfo.class.equals(type)) {
+                return new TableForeignKeyInfoAdapter(moshi).nullSafe();
+            }
+            if (MigrationSet.class.equals(type)) {
+                return new MigrationSetAdapter(moshi).nullSafe();
+            }
+            if (ForeignKeyInfo.class.equals(type)) {
+                return new ForeignKeyInfoAdapter().nullSafe();
+            }
+            return null;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.moshiserialization;
 import com.fsryan.forsuredb.migration.Migration;
 import com.squareup.moshi.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, Migration value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull Migration value) throws IOException {
         writer.beginObject();
 
         writer.name("table_name");

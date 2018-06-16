@@ -3,6 +3,7 @@ package com.fsryan.forsuredb.moshiserialization;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.squareup.moshi.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ final class TableForeignKeyInfoAdapter extends JsonAdapter<TableForeignKeyInfo> 
     private final JsonAdapter<Map<String, String>> string2StringMapAdapter;
 
     public TableForeignKeyInfoAdapter(Moshi moshi) {
-        string2StringMapAdapter = adapterFrom(moshi, Types.newParameterizedType(Map.class, String.class, String.class));
+        string2StringMapAdapter = adapterFrom(moshi, Types.newParameterizedType(Map.class, String.class, String.class)).nullSafe();
     }
 
     @Override
@@ -61,7 +62,7 @@ final class TableForeignKeyInfoAdapter extends JsonAdapter<TableForeignKeyInfo> 
     }
 
     @Override
-    public void toJson(JsonWriter writer, TableForeignKeyInfo value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull TableForeignKeyInfo value) throws IOException {
         writer.beginObject();
 
         writer.name("foreign_table_api_class_name");

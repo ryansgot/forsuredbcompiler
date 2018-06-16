@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.squareup.moshi.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +31,7 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
 
     public TableInfoAdapter(Moshi moshi) {
         this.columnMapAdapter = adapterFrom(moshi, Types.newParameterizedType(Map.class, String.class, ColumnInfo.class)).nullSafe();
-        this.primaryKeyAdapter = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class));
+        this.primaryKeyAdapter = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class)).nullSafe();
         this.foreignKeysAdapter = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableForeignKeyInfo.class)).nullSafe();
     }
     @Override
@@ -87,7 +88,7 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, TableInfo value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull TableInfo value) throws IOException {
         writer.beginObject();
 
         Map<String, ColumnInfo> columnMap = value.columnMap();

@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.ForeignKeyInfo;
 import com.squareup.moshi.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 import static com.fsryan.forsuredb.moshiserialization.FSDbInfoMoshiSerializer.adapterFrom;
@@ -87,7 +88,7 @@ final class ColumnInfoAdapter extends JsonAdapter<ColumnInfo> {
     }
 
     @Override
-    public void toJson(JsonWriter writer, ColumnInfo value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull ColumnInfo value) throws IOException {
         writer.beginObject();
 
         writer.name("method_name");

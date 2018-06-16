@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.squareup.moshi.*;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,8 @@ final class MigrationSetAdapter extends JsonAdapter<MigrationSet> {
     private final JsonAdapter<Map<String, TableInfo>> targetSchemaAdapter;
 
     public MigrationSetAdapter(Moshi moshi) {
-        this.orderedMigrationsAdapter = adapterFrom(moshi, Types.newParameterizedType(List.class, Migration.class));
-        this.targetSchemaAdapter = adapterFrom(moshi, Types.newParameterizedType(Map.class, String.class, TableInfo.class));
+        this.orderedMigrationsAdapter = adapterFrom(moshi, Types.newParameterizedType(List.class, Migration.class)).nullSafe();
+        this.targetSchemaAdapter = adapterFrom(moshi, Types.newParameterizedType(Map.class, String.class, TableInfo.class)).nullSafe();
     }
 
     @Override
@@ -58,7 +59,7 @@ final class MigrationSetAdapter extends JsonAdapter<MigrationSet> {
     }
 
     @Override
-    public void toJson(JsonWriter writer, MigrationSet value) throws IOException {
+    public void toJson(JsonWriter writer, @Nonnull MigrationSet value) throws IOException {
         writer.beginObject();
 
         writer.name("ordered_migrations");
