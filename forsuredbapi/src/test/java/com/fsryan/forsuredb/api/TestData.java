@@ -91,6 +91,18 @@ public class TestData {
         return ret;
     }
 
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+        Map<K, V> ret = mapOf(k1, v1);
+        ret.put(k2, v2);
+        return ret;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+        Map<K, V> ret = mapOf(k1, v1, k2, v2);
+        ret.put(k3, v3);
+        return ret;
+    }
+
     public static TableForeignKeyInfo.Builder foreignKeyTo(String foreignTableName) {
         return TableForeignKeyInfo.builder()
                 .foreignTableName(foreignTableName)
