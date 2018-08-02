@@ -74,8 +74,7 @@ public class ParseHandlerErrorTest {
         final String xml = String.format(xmlFormat, "non_existent_column", "non-existant");
         xmlStream = new ByteArrayInputStream(xml.getBytes());
         try {
-            StaticDataRetrieverFactory.createFor("table", errorMigrationSet, xmlStream)
-                    .retrieve(mock(OnRecordRetrievedListener.class));
+            createRetriever().retrieve(mock(OnRecordRetrievedListener.class));
             fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertEquals("java.lang.IllegalStateException: Table 'table' does not have column 'non_existent_column'; db_version: 1; columns: [_id, column, column2, created, date_column, deleted, modified]", e.getMessage());
@@ -87,8 +86,7 @@ public class ParseHandlerErrorTest {
         final String xml = String.format(xmlFormat, "column", "somevalue");
         xmlStream = new ByteArrayInputStream(xml.getBytes());
         try {
-            StaticDataRetrieverFactory.createFor("table", errorMigrationSet, xmlStream)
-                    .retrieve(mock(OnRecordRetrievedListener.class));
+            createRetriever().retrieve(mock(OnRecordRetrievedListener.class));
             fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertEquals("java.lang.IllegalStateException: Column 'column' exists without a qualified type; db_version: 1; table: table", e.getMessage());
@@ -100,8 +98,7 @@ public class ParseHandlerErrorTest {
         final String xml = String.format(xmlFormat, "column2", "unsupported type");
         xmlStream = new ByteArrayInputStream(xml.getBytes());
         try {
-            StaticDataRetrieverFactory.createFor("table", errorMigrationSet, xmlStream)
-                    .retrieve(mock(OnRecordRetrievedListener.class));
+            createRetriever().retrieve(mock(OnRecordRetrievedListener.class));
             fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertEquals("java.lang.IllegalStateException: Unsupported type: 'unsupported; table: table; column 'column2'", e.getMessage());
@@ -113,11 +110,14 @@ public class ParseHandlerErrorTest {
         final String xml = String.format(xmlFormat, "date_column", "Not a Date");
         xmlStream = new ByteArrayInputStream(xml.getBytes());
         try {
-            StaticDataRetrieverFactory.createFor("table", errorMigrationSet, xmlStream)
-                    .retrieve(mock(OnRecordRetrievedListener.class));
+            createRetriever().retrieve(mock(OnRecordRetrievedListener.class));
             fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertEquals("java.lang.IllegalStateException: could not parse date 'Not a Date'; db_version: 1; table: table; column: date_column", e.getMessage());
         }
+    }
+
+    private StaticDataRetriever createRetriever() {
+        return StaticDataRetrieverFactory.createFor("table", errorMigrationSet, xmlStream);
     }
 }
