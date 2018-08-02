@@ -19,6 +19,7 @@ package com.fsryan.forsuredb.api.staticdata;
 
 import com.fsryan.forsuredb.api.RecordContainer;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
+import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import org.xml.sax.Attributes;
@@ -105,7 +106,14 @@ class ParseHandler extends DefaultHandler {
             String value = attributes.getValue(idx);
 
             TableInfo table = currentMigrationSet.targetSchema().get(tableName);
+            if (!table.hasColumn(column)) {
+                Map<String, ColumnInfo> columnMap = table.columnMap();
+                throw new IllegalStateException("Table '" + tableName + "' does not have column '" + column + "'; columns: " + (columnMap == null ? "none" : columnMap.keySet()) + "; db_version: " + currentMigrationSet.dbVersion());
+            }
             String qualifiedTypeString = table.getColumn(column).qualifiedType();
+            if (qualifiedTypeString == null) {
+                throw new IllegalStateException("Column '" + column + "' exists without a qualified type; db_version: " + currentMigrationSet.dbVersion());
+            }
 
             try {
                 switch (qualifiedTypeString) {
