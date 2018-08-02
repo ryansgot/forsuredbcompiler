@@ -26,14 +26,14 @@ import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.SupportedOptions;
+
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -49,6 +49,16 @@ import static com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever.pr
  */
 @SupportedAnnotationTypes("com.fsryan.forsuredb.annotations.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedOptions({
+        "forsuredb.applicationPackageName",
+        "forsuredb.resourcesDirectory",
+        "forsuredb.resultParameter",
+        "forsuredb.recordContainer",
+        "forsuredb.migrationDirectory",
+        "forsuredb.appProjectDirectory",
+        "forsuredb.addGeneratedAnnotation",
+        "forsuredb.createMigrations"
+})
 public class FSAnnotationProcessor extends AbstractProcessor {
 
     private static final String LOG_TAG = FSAnnotationProcessor.class.getSimpleName();
