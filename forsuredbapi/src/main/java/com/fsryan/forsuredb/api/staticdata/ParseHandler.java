@@ -29,6 +29,7 @@ import javax.xml.parsers.SAXParser;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -108,58 +109,60 @@ class ParseHandler extends DefaultHandler {
             TableInfo table = currentMigrationSet.targetSchema().get(tableName);
             if (!table.hasColumn(column)) {
                 Map<String, ColumnInfo> columnMap = table.columnMap();
-                throw new IllegalStateException("Table '" + tableName + "' does not have column '" + column + "'; columns: " + (columnMap == null ? "none" : columnMap.keySet()) + "; db_version: " + currentMigrationSet.dbVersion());
+                List<String> columns = columnMap == null ? Collections.<String>emptyList() : new ArrayList<>(columnMap.keySet());
+                Collections.sort(columns);
+                throw new IllegalStateException("Table '" + tableName + "' does not have column '" + column + "'; db_version: " + currentMigrationSet.dbVersion() + "; columns: " + columns);
             }
             String qualifiedTypeString = table.getColumn(column).qualifiedType();
             if (qualifiedTypeString == null) {
-                throw new IllegalStateException("Column '" + column + "' exists without a qualified type; db_version: " + currentMigrationSet.dbVersion());
+                throw new IllegalStateException("Column '" + column + "' exists without a qualified type; db_version: " + currentMigrationSet.dbVersion() + "; table: " + tableName);
             }
 
-            try {
-                switch (qualifiedTypeString) {
-                    case "java.lang.String":
-                        ret.put(column, value);
-                        break;
-                    case "boolean":
-                    case "java.lang.Boolean":
-                        ret.put(column, Boolean.parseBoolean(value) ? 1 : 0);
-                        break;
-                    case "int":
-                    case "java.lang.Integer":
-                        ret.put(column, Integer.parseInt(value));
-                        break;
-                    case "long":
-                    case "java.lang.Long":
-                        ret.put(column, Long.parseLong(value));
-                        break;
-                    case "float":
-                    case "java.lang.Float":
-                        ret.put(column, Float.parseFloat(value));
-                        break;
-                    case "double":
-                    case "java.lang.Double":
-                        ret.put(column, Double.parseDouble(value));
-                        break;
-                    case "java.util.Date":
+            switch (qualifiedTypeString) {
+                case "java.lang.String":
+                    ret.put(column, value);
+                    break;
+                case "boolean":
+                case "java.lang.Boolean":
+                    ret.put(column, Boolean.parseBoolean(value) ? 1 : 0);
+                    break;
+                case "int":
+                case "java.lang.Integer":
+                    ret.put(column, Integer.parseInt(value));
+                    break;
+                case "long":
+                case "java.lang.Long":
+                    ret.put(column, Long.parseLong(value));
+                    break;
+                case "float":
+                case "java.lang.Float":
+                    ret.put(column, Float.parseFloat(value));
+                    break;
+                case "double":
+                case "java.lang.Double":
+                    ret.put(column, Double.parseDouble(value));
+                    break;
+                case "java.util.Date":
+                    try {
                         dateFormat.parse(value);
-                        ret.put(column, value);
-                        break;
-                    case "java.math.BigDecimal":
-                        ret.put(column, new BigDecimal(value).toPlainString());
-                        break;
-                    case "BigInteger":
-                    case "java.math.BigInteger":
-                        ret.put(column, new BigInteger(value).toString(10));
-                        break;
-                    case "byte[]":
-                    case "Byte[]":
-                        ret.put(column, hexStringToByteArray(value));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Cannot insert static data of type: " + qualifiedTypeString);
-                }
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Static data insertion failed for column: " + column + "; version: " + currentMigrationSet.dbVersion() + "; target schema = " + currentMigrationSet.targetSchema(), e);
+                    } catch (ParseException pe) {
+                        throw new IllegalStateException("could not parse date '" + value + "'; db_version: " + currentMigrationSet.dbVersion() + "; table: " + tableName + "; column: " + column, pe);
+                    }
+                    ret.put(column, value);
+                    break;
+                case "java.math.BigDecimal":
+                    ret.put(column, new BigDecimal(value).toPlainString());
+                    break;
+                case "BigInteger":
+                case "java.math.BigInteger":
+                    ret.put(column, new BigInteger(value).toString(10));
+                    break;
+                case "byte[]":
+                case "Byte[]":
+                    ret.put(column, hexStringToByteArray(value));
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported type: '" + qualifiedTypeString + "; table: " + tableName + "; column '" + column + "'");
             }
         }
         return ret;
