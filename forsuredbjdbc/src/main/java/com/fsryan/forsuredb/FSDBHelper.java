@@ -348,7 +348,7 @@ public class FSDBHelper extends AbstractDBOpener {
             URL url = null;
             try {
                 // TODO: this is bound to fail. Change.
-                url = Resources.getResourceURLs(resourceUrl -> resourceUrl.toString().endsWith(staticDataAsset)).get(0);
+                url = Resources.getResourceURLs(resourceUrl -> resourceUrl.toString().endsWith("/" + staticDataAsset)).get(0);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
