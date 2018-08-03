@@ -24,8 +24,8 @@
                 int_column="5"
                 integer_wrapper_column="23456"
                 long_column="9"
-                long_wrapper_column="2354"
-                string_column="This is the second record that should be inserted in the db_version 1 static data insertions" />
+                long_wrapper_column="2354" />
+                <!-- the lack of a string_column here verifies that a default value can have a ' in it -->
     </records>
 
     <!-- Versions two and three intentionally skipped to show that not all versions need to have static data -->

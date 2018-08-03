@@ -4,6 +4,9 @@
 **/*.iml
 local.properties
 
+# OSX
+**/.DS_Store
+
 # Java
 classes/*
 **/*.class
