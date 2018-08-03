@@ -249,6 +249,7 @@ public class SqlGenerator implements DBMSIntegrator {
             case ADD_UNIQUE_INDEX:
                 // intentionally falling through
             case ADD_FOREIGN_KEY_REFERENCE:
+            case ALTER_TABLE_ADD_UNIQUE:
                 return true;
             case ALTER_TABLE_ADD_COLUMN:
                 TableInfo table = targetSchema.get(m.tableName());

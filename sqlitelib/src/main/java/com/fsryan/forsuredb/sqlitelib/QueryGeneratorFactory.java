@@ -37,7 +37,7 @@ import static com.fsryan.forsuredb.sqlitelib.ApiInfo.DEFAULT_COLUMN_MAP;
  *     argument to the constructor.
  * </p>
  */
-public class QueryGeneratorFactory {
+class QueryGeneratorFactory {
 
     private static final QueryGenerator emptyGenerator = new QueryGenerator("empty", Migration.Type.DROP_TABLE) {
         @Override
@@ -74,8 +74,6 @@ public class QueryGeneratorFactory {
                 }
                 return new AddForeignKeyGenerator(table, listOfColumnInfo(table, allForeignKeys), targetSchema);
             // TODO: figure out whether you will do anything with this or just always put the unique columns in the table create queries
-//            case ALTER_TABLE_ADD_UNIQUE:
-//                return new AddUniqueColumnGenerator(table.tableName(), table.getColumn(migration.columnName()));
             case MAKE_COLUMN_UNIQUE:
                 // Intentionally falling through
             case ADD_UNIQUE_INDEX:
@@ -83,6 +81,7 @@ public class QueryGeneratorFactory {
             case ADD_INDEX:
                 return new AddIndexGenerator(table.tableName(), table.getColumn(migration.columnName()));
             case ALTER_TABLE_ADD_COLUMN:
+            case ALTER_TABLE_ADD_UNIQUE:
                 return new AddColumnGenerator(table.tableName(), table.getColumn(migration.columnName()));
             case DROP_TABLE:
                 return new DropTableGenerator(migration.tableName());
