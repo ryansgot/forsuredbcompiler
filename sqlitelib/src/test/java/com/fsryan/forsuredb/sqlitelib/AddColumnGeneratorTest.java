@@ -79,6 +79,12 @@ public class AddColumnGeneratorTest extends BaseSQLiteGeneratorTest {
                                 "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_column INTEGER DEFAULT '10';",
                                 "CREATE INDEX IF NOT EXISTS " + TABLE_NAME + "_int_column ON " + TABLE_NAME + "(int_column);"
                         }
+                },
+                {   // 06: add column that has a default value with a string that has a single quote in it
+                        stringCol().defaultValue("a ' single quote ' ' something else").build(),
+                        new String[] {
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN string_column TEXT DEFAULT 'a '' single quote '' '' something else';"
+                        }
                 }
         });
     }

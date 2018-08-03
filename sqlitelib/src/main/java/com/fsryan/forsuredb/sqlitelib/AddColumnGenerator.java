@@ -49,7 +49,7 @@ public class AddColumnGenerator extends QueryGenerator {
     private String getDefaultValueFrom(ColumnInfo column) {
         TypeTranslator tt = TypeTranslator.from(column.getQualifiedType());
         if (tt != TypeTranslator.DATE || !"CURRENT_TIMESTAMP".equals(column.defaultValue())) {
-            return " '" + column.defaultValue() + "'";
+            return " '" + column.defaultValue().replaceAll("'", "''") + "'";
         }
         return "(" + SqlGenerator.CURRENT_UTC_TIME + ")";
     }
