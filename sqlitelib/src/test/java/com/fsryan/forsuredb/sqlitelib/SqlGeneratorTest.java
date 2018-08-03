@@ -11,7 +11,6 @@ import org.junit.runners.Parameterized;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.CollectionUtil.stringMapOf;
-import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.EMPTY_SQL;
 import static com.fsryan.forsuredb.sqlitelib.TestData.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

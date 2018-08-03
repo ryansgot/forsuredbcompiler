@@ -24,8 +24,13 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.5.0'
+        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.6.2'
     }
+}
+
+plugins {
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
 }
 
 apply plugin: 'java'
@@ -34,27 +39,6 @@ apply plugin: 'application'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
-
-configurations {
-    apt
-}
-
-def generatedSources = new File(project.buildDir, "generated-src")
-
-compileJava {
-    if (project.hasProperty('intellijHack')) {
-        dependsOn clean
-    }
-    doFirst {
-        (generatedSources.exists() && generatedSources.isDirectory()) || generatedSources.mkdirs()
-    }
-    options.annotationProcessorPath = configurations.apt
-    options.compilerArgs = ['-s', "${generatedSources}"]
-}
-
-if (project.hasProperty('intellijHack')) {
-    sourceSets.main.java.srcDirs += generatedSources
-}
 
 dependencies {
     compile project(':forsuredbapi')
