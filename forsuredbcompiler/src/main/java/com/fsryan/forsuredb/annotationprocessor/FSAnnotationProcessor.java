@@ -26,8 +26,6 @@ import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
