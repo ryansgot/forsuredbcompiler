@@ -1,5 +1,6 @@
 plugins {
-    id 'org.inferred.processors' version '1.2.1'
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
 }
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
@@ -8,8 +9,11 @@ dependencies {
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     compile project(':dbinfo')
 
-    processor 'org.projectlombok:lombok:1.16.6'
+    compileOnly 'org.projectlombok:lombok:1.16.6'
+    apt 'org.projectlombok:lombok:1.16.6'
 
+    testCompileOnly 'org.projectlombok:lombok:1.16.6'
+    testApt 'org.projectlombok:lombok:1.16.6'
     testCompile project(':forsuredbmodels-gson')
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.code.gson:gson:2.8.2'
