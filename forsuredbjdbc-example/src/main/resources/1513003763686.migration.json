@@ -97,6 +97,7 @@
           "method_name": "stringColumn",
           "column_name": "string_column",
           "column_type": "java.lang.String",
+          "default_value": "Some String with a '",
           "index": false,
           "unique": false,
           "primary_key": false,
