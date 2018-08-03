@@ -30,6 +30,11 @@ buildscript {
     }
 }
 
+plugins {
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
+}
+
 apply plugin: 'java'
 apply plugin: 'org.junit.platform.gradle.plugin'
 apply plugin: 'com.kncept.junit5.reporter'
@@ -37,27 +42,6 @@ apply plugin: 'jacoco'
 apply plugin: 'com.fsryan.gradle.forsuredb'
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-
-configurations {
-    apt
-}
-
-def generatedSources = new File(project.buildDir, "generated-src")
-
-compileJava {
-    if (project.hasProperty('intellijHack')) {
-        dependsOn clean
-    }
-    doFirst {
-        (generatedSources.exists() && generatedSources.isDirectory()) || generatedSources.mkdirs()
-    }
-    options.annotationProcessorPath = configurations.apt
-    options.compilerArgs = ['-s', "${generatedSources}"]
-}
-
-if (project.hasProperty('intellijHack')) {
-    sourceSets.main.java.srcDirs += generatedSources
-}
 
 dependencies {
 
