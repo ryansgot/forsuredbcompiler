@@ -138,6 +138,9 @@ public class MigrationContext implements TableContext {
             case ALTER_TABLE_ADD_COLUMN:
                 columnBuilderMap.put(columnKey(m), table.getColumn(m.columnName()).toBuilder());
                 break;
+            case ADD_INDEX:
+                columnBuilderMap.put(columnKey(m), table.getColumn(m.columnName()).toBuilder().index(true));
+                break;
             default:
                 APLog.w(LOG_TAG, "Not handling update of type " + m.type() + "; this could cause the migration context to misrepresent the existing schema.");
         }
