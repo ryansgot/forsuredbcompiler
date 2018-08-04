@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb.api.adapter;
 
+import com.google.auto.value.AutoValue;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -31,7 +32,8 @@ public abstract class BuiltInSerializerTest {
     public static class FSDefaultSerializerSerialization extends BuiltInSerializerTest {
 
         public FSDefaultSerializerSerialization() {
-            super(TestSerializable.builder().stringField("This is a String")
+            super(TestSerializable.builder()
+                    .stringField("This is a String")
                     .intField(56)
                     .longField(84573875L)
                     .floatField(457.67F)
@@ -47,16 +49,29 @@ public abstract class BuiltInSerializerTest {
         }
     }
 
-    @lombok.Data
-    @lombok.Builder(builderClassName = "Builder")
-    private static class TestSerializable implements Serializable {
+    @AutoValue
+    static abstract class TestSerializable implements Serializable {
+
+        @AutoValue.Builder
+        static abstract class Builder {
+            abstract Builder stringField(String stringField);
+            abstract Builder intField(int intField);
+            abstract Builder longField(long longField);
+            abstract Builder doubleField(double doubleField);
+            abstract Builder floatField(float floatField);
+            abstract TestSerializable build();
+        }
 
         private static final long serialVersionUID = 9247L;
 
-        private String stringField;
-        private int intField;
-        private long longField;
-        private double doubleField;
-        private float floatField;
+        static Builder builder() {
+            return new AutoValue_BuiltInSerializerTest_TestSerializable.Builder();
+        }
+
+        abstract String stringField();
+        abstract int intField();
+        abstract long longField();
+        abstract double doubleField();
+        abstract float floatField();
     }
 }

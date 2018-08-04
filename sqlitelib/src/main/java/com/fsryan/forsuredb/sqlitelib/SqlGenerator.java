@@ -119,9 +119,9 @@ public class SqlGenerator implements DBMSIntegrator {
 
         StringBuilder buf = new StringBuilder();
         for (FSOrdering ordering : orderings) {
-            buf.append(unambiguousColumn(ordering.table, ordering.column))
+            buf.append(unambiguousColumn(ordering.table(), ordering.column()))
                     .append(" ")
-                    .append(ordering.direction < OrderBy.ORDER_ASC ? "DESC" : "ASC")    // <-- 0 or positive treated as ASC
+                    .append(ordering.direction() < OrderBy.ORDER_ASC ? "DESC" : "ASC")    // <-- 0 or positive treated as ASC
                     .append(", ");
         }
 

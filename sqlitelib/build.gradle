@@ -1,12 +1,13 @@
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-    compile project(':forsuredbapi')
-    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation project(':dbinfo')
+    implementation project(':forsuredbapi')
+    compileOnly deps.jsr305
 
-    testCompile project(':forsuredbmodels-gson')
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    testImplementation project(':forsuredbmodels-gson')
+    testImplementation deps.test.junit
+    testImplementation 'org.mockito:mockito-core:1.10.19'
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

@@ -1,7 +1,5 @@
 package com.fsryan.forsuredb.api;
 
-import lombok.AccessLevel;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +16,7 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
     public static final int ORDER_ASC = 0;
     public static final int ORDER_DESC = -1;
 
-    @lombok.Getter(AccessLevel.PROTECTED) private final List<FSOrdering> orderings = new ArrayList<>();
+    private final List<FSOrdering> orderings = new ArrayList<>();
     protected final String tableName;
     protected final Conjunction.And<R, O> conjunction;
 
@@ -96,10 +94,14 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
         return conjunction;
     }
 
+    protected List<FSOrdering> getOrderings() {
+        return orderings;
+    }
+
     protected void appendOrder(String columnName, int order) {
         // Since we allow app developer to set the order, assume >= 0 means "ascending" and
         // < 0 means "descending"
-        orderings.add(new FSOrdering(tableName, columnName, order < 0 ? ORDER_DESC : ORDER_ASC));
+        orderings.add(FSOrdering.create(tableName, columnName, order < 0 ? ORDER_DESC : ORDER_ASC));
     }
 
     /*package*/ void appendOrderings(List<FSOrdering> orderingsToAdd) {

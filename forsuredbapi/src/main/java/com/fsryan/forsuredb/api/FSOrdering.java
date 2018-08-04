@@ -1,26 +1,30 @@
 package com.fsryan.forsuredb.api;
 
-import lombok.AllArgsConstructor;
-import lombok.ToString;
+import com.google.auto.value.AutoValue;
+
+import javax.annotation.Nonnull;
 
 /**
  * A description of the ordering of a query--either in part or in whole
  */
-@ToString
-@AllArgsConstructor
-public class FSOrdering {
+@AutoValue
+public abstract class FSOrdering {
+
+    public static FSOrdering create(@Nonnull String table, @Nonnull String column, int direction) {
+        return new AutoValue_FSOrdering(table, column, direction);
+    }
 
     /**
      * For column-disambiguation purposes, this is the table name of the column
      */
-    public final String table;
+    public abstract String table();
 
     /**
      * The column to order by
      */
-    public final String column;
+    public abstract String column();
     /**
      * The direction of the ordering (either {@link OrderBy#ORDER_ASC} or {@link OrderBy#ORDER_DESC}
      */
-    public final int direction;
+    public abstract int direction();
 }
