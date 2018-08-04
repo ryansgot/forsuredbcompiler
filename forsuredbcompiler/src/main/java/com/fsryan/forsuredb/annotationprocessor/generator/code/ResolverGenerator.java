@@ -15,8 +15,6 @@ import java.util.*;
 
 public class ResolverGenerator extends JavaSourceGenerator {
 
-    private static final String methodNameToColumnNameMapName = "methodNameToColumnNameMap";
-
     private final TableInfo table;
     private final TableContext targetContext;
     private final List<Pair<TableInfo, TableForeignKeyInfo>> parentJoins;
@@ -65,10 +63,21 @@ public class ResolverGenerator extends JavaSourceGenerator {
         addJoinResolverClasses(codeBuilder);
         addFields(codeBuilder);
         addConstructor(codeBuilder);
-        addMethodNameToColumnNameMapMethod(codeBuilder);
         addJoinMethods(codeBuilder);
+        addColumnsMethod(codeBuilder);
         addAbstractMethodImplementations(codeBuilder);
         return JavaFile.builder(getOutputPackageName(), codeBuilder.build()).indent(JAVA_INDENT).build().toString();
+    }
+
+    private void addColumnsMethod(TypeSpec.Builder codeBuilder) {
+        codeBuilder.addMethod(MethodSpec.methodBuilder("columns")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(String[].class)
+                .addStatement("$T[] $N = new $T[$N.length]", TypeName.get(String.class), "ret", TypeName.get(String.class), "columns")
+                .addStatement("$T.$N($N, $L, $N, $L, $N.length)", TypeName.get(System.class), "arraycopy", "columns", 0, "ret", 0, "columns")
+                .addStatement("return $N", "ret")
+                .build());
     }
 
     private MethodSpec getApiMethod() {
@@ -176,15 +185,6 @@ public class ResolverGenerator extends JavaSourceGenerator {
         return table.referencesOtherTable() || !parentJoins.isEmpty();
     }
 
-    private void addMethodNameToColumnNameMapMethod(TypeSpec.Builder codeBuilder) {
-        codeBuilder.addMethod(MethodSpec.methodBuilder("methodNameToColumnNameMap")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(ParameterizedTypeName.get(Map.class, String.class, String.class))
-                .addStatement("return $N", methodNameToColumnNameMapName)
-                .build());
-    }
-
     private JavadocInfo classJavadoc() {
         return JavadocInfo.builder()
                 .startParagraph()
@@ -213,17 +213,16 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .initializer("$S", table.tableName())
                         .build());
         String[] columnNames = orderedColumnNames();
-        codeBuilder.addField(FieldSpec.builder(String[].class, "columns")
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .initializer("{" + Strings.repeat("$S,", columnNames.length) + "}", columnNames)
+        codeBuilder.addField(FieldSpec.builder(FSProjection.class, "PROJECTION")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer(CodeBlock.builder()
+                        .add("$L", anonymousFSProjection())
                         .build())
-                .addField(FieldSpec.builder(FSProjection.class, "PROJECTION")
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .initializer(CodeBlock.builder()
-                                .add("$L", anonymousFSProjection())
-                                .build())
+                .build())
+                .addField(FieldSpec.builder(String[].class, "columns")
+                        .addModifiers(Modifier.STATIC, Modifier.FINAL)
+                        .initializer("{" + Strings.repeat("$S,", columnNames.length) + "}", columnNames)
                         .build());
-        columnNameToMethodNameMapField(codeBuilder);
     }
 
     private String[] orderedColumnNames() {
@@ -256,19 +255,6 @@ public class ResolverGenerator extends JavaSourceGenerator {
                         .addStatement("return false")
                         .build())
                 .build();
-    }
-
-    private void columnNameToMethodNameMapField(TypeSpec.Builder codeBuilder) {
-        codeBuilder.addField(FieldSpec.builder(ParameterizedTypeName.get(Map.class, String.class, String.class), methodNameToColumnNameMapName)
-                .initializer("new $T()", ParameterizedTypeName.get(HashMap.class, String.class, String.class))
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
-                .build());
-
-        CodeBlock.Builder mapBlockBuilder = CodeBlock.builder();
-        for (ColumnInfo column : columnsSortedByName) {
-            mapBlockBuilder.addStatement("$N.put($S, $S)", methodNameToColumnNameMapName, column.methodName(), column.getColumnName());
-        }
-        codeBuilder.addStaticBlock(mapBlockBuilder.build());
     }
 
     private void addConstructor(TypeSpec.Builder codeBuilder) {
@@ -331,8 +317,9 @@ public class ResolverGenerator extends JavaSourceGenerator {
         for (Map.Entry<String, String> entry : foreignKey.localToForeignColumnMap().entrySet()) {
             builder.addStatement("$N.put($S, $S)", "localToForeignColumnMap", entry.getKey(), entry.getValue());
         }
-        return builder.addStatement("addJoin(new $T($N, $S, $S, $N))",
+        return builder.addStatement("addJoin($T.$L($N, $S, $S, $N))",
                         FSJoin.class,
+                        "create",
                         "type",
                         foreignKey.foreignTableName(),
                         childTableName,
