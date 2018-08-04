@@ -36,34 +36,59 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew clean jacocoReport findbugs bumpVersion
+      - run:
+          name: Run Coverage Report
+          command: ./gradlew clean jacocoReport findbugs bumpVersion
 
       - store_artifacts:
           path: dbinfo/build/reports
           destination: dbinfo/reports
+      - store_test_results:
+          path: dbinfo/build/test-results/test
       - store_artifacts:
           path: forsuredbapi/build/reports
           destination: forsuredbapi/reports
+      - store_test_results:
+          path: forsuredbapi/build/test-results/test
       - store_artifacts:
           path: forsuredbcompiler/build/reports
           destination: forsuredbcompiler/reports
+      - store_test_results:
+          path: forsuredbcompiler/build/test-results/test
       - store_artifacts:
           path: forsuredbjdbc/build/reports
           destination: forsuredbjdbc/reports
+      - store_test_results:
+          path: forsuredbjdbc/build/test-results/test
       - store_artifacts:
           path: forsuredbmodels-gson/build/reports
           destination: forsuredbmodels-gson/reports
+      - store_test_results:
+          path: forsuredbmodels-gson/build/test-results/test
       - store_artifacts:
           path: forsuredbmodels-jackson/build/reports
           destination: forsuredbmodels-jackson/reports
+      - store_test_results:
+          path: forsuredbmodels-jackson/build/test-results/test
+      - store_artifacts:
+          path: forsuredbmodels-moshi/build/reports
+          destination: forsuredbmodels-moshi/reports
+      - store_test_results:
+          path: forsuredbmodels-moshi/build/test-results/test
       - store_artifacts:
           path: sqlitelib/build/reports
           destination: sqlitelib/reports
+      - store_test_results:
+          path: sqlitelib/build/test-results/test
       - store_artifacts:
           path: integrationtest/build/reports
           destination: integrationtest/reports
+      - store_test_results:
+          path: integrationtest/build/test-results/junit-platform
 
-      - run: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
+      - run:
+          name: Upload Coverage
+          command: bash <(curl -s https://codecov.io/bash) -Z -t $CODECOV_TOKEN
 
       - deploy:
           name: deploy to bintray
