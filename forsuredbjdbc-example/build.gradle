@@ -52,7 +52,7 @@ dependencies {
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
-    apt project(':forsuredbcompiler')
+    annotationProcessor project(':forsuredbcompiler')
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.13.0'

@@ -10,10 +10,10 @@ dependencies {
     compile project(':dbinfo')
 
     compileOnly 'org.projectlombok:lombok:1.16.6'
-    apt 'org.projectlombok:lombok:1.16.6'
+    annotationProcessor 'org.projectlombok:lombok:1.16.6'
 
     testCompileOnly 'org.projectlombok:lombok:1.16.6'
-    testApt 'org.projectlombok:lombok:1.16.6'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.16.6'
     testCompile project(':forsuredbmodels-gson')
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.code.gson:gson:2.8.2'
