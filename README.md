@@ -57,14 +57,11 @@ apply plugin: 'com.fsryan.forsuredb'    // <-- provides the dbmigrate task
 ```groovy
 dependencies {
     /*...*/
-    // common API for your code and the supporting libraries
-    compile 'com.fsryan.forsuredb:forsuredbapi:0.12.0'
-    // the SQLite DBMS integration
-    compile 'com.fsryan.forsuredb:sqlitelib:0.6.0'
-
-    // you can use compileOnly configuration instead of provided
-    provided 'com.fsryan.forsuredb:forsuredbcompiler:0.12.0'// these classes are not needed at runtime--they do code generation
-    annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.12.0'         // runs the forsuredb annotation processor at compile time
+    annotationProcessor 'com.fsryan.forsuredb:forsuredbcompiler:0.13.0'
+    implementation 'com.fsryan.forsuredb:forsuredbapi:0.13.0'
+    implementation 'com.fsryan.forsuredb:sqlitelib:0.13.0'
+    implementation 'com.fsryan.forsuredb:forsuredbandroid-contentprovider:0.13.0'
+    implementation 'com.fsryan.forsuredb:forsuredbmodels-gson:0.13.0' // forsuredbmodels-jackson and forsuredbmodels-moshi are other options
 }
 ```
 5. Define an interface that extends FSGetApi, for example:
@@ -228,6 +225,28 @@ Introduced in forsuredbapi-0.8.0, the doc store feature allows for a doc store i
 - Removal of Gson dependency
 
 ## Revisions
+
+### 0.13.0
+- Float and float datatype support
+- BigInteger datatype support
+- Removed transitive dependency in forsuredbapi on Gson
+- dbinfo models split into separate library . . . pulled in transitively--you don't have to worry about it unless you're writing a plugin for forsuredb
+- gson adapters for dbinfo models (forsuredbmodels-gson library): depend upon this library if you use Gson
+- jackson serializer/deserializers for dbinfo models (forsuredbmodels-jackson library): depend upon this library if you use Jackson
+- moshi adapters for dbinfo models (forsuredbmodels-moshi library): depend upon this library if you use Moshi
+- Completely non-reflective Getter classes (note that reflection is still used to instantiate objects in document store tables--so do not obfuscate those class names)
+- Completely non-reflective Setter classes (note that the class name of the serialized object is still stored as a string in the database--so do not obfuscate those class names)
+- Non-Android Java integration via JDBC (forsuredbjdbc)
+- forsuredbjdbc example application for manual testing
+- arbitrary-depth document store indices
+  * You can index any document store table by an arbitrarily deeply nested field using the `documentValueAccess` property of the `@FSColumn` annotation. See the javadocs for more info.
+- Version and type-awareness for static data
+  * For each version of the database, you can set static data to get inserted with the schema at that version
+- Fixed SQL generation for limit/offset queries
+- Started a documentation website: http://forsuredb.org
+- Fixed bug where adding a unique column after adding the column for the first time kept generating new, equivalent migration json files
+- Fixed bug where `@FSDefault` containing a single-quote character failed to generate the database
+- Added annotation processor options prefixed with `forsuredb.`--you don't have to worry about this if you use the forsuredb gradle plugin
 
 ### 0.12.0
 - Pagination of records via first/last method on the `Finder` class
