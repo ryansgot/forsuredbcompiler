@@ -28,22 +28,22 @@ import java.util.Set;
 import java.util.Date;
 
 /**
- * <p>
- *     Finder provides a rich, type-safe, custom querying API for querying
- *     your database. It is rich in that you can create many different kinds
- *     of queries using the fluent API it provides. It is custom in that all
- *     concrete extensions of the Finder class have custom methods generated
- *     specifically for querying a table you have defined your extension of
- *     {@link FSGetApi}.
- * </p>
- * <p>
- *     Think of this class as a means of narrowing the amount of records
- *     returned by a query and the width of each record returned. The
- *     {@link #columns(String...)} and {@link #distinct(String...)} methods
- *     serve to narrow the width of each record returned (that is--the number
- *     of columns), and the various by... methods such as {@link #byId(long, long...)}
- *     serve to filter the returned records by the values of the columns.
- * </p>
+ * <p>You should not implement your own version of {@link Finder}. A version
+ * of {@link Finder} will be generated for each interface extension of
+ * {@link FSGetApi} annotated with
+ * {@link com.fsryan.forsuredb.annotations.FSTable FSTable}
+ * <p>Finder provides a rich, type-safe, custom querying API for querying your
+ * database. It is rich in that you can create many different kinds of queries
+ * using the fluent API it provides. It is custom in that all concrete
+ * extensions of the Finder class have custom methods generated specifically
+ * for querying a table you have defined your extension of {@link FSGetApi}.
+ *
+ * <p>Think of this class as a means of narrowing the amount of records
+ * returned by a query and the width of each record returned. The
+ * {@link #columns(String...)} and {@link #distinct(String...)} methods serve
+ * to narrow the width of each record returned (that is--the number of
+ * columns), and the various by... methods such as {@link #byId(long, long...)}
+ * serve to filter the returned records by the values of the columns.
  * @param <R> The type of {@link Resolver} to return when leaving the Finder context
  * @param <F> The Finder type to appropriately continue modifying the query when the
  *           API requires a {@link Between} or a {@link Conjunction.And} or
