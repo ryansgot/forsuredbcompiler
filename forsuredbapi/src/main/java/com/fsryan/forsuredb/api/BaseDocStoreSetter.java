@@ -33,7 +33,7 @@ public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extend
     public FSDocStoreSaveApi<U, T> object(T obj) {
         enrichRecordContainerFromPropertiesOf(obj);
         recordContainer.put("class_name", obj.getClass().getName());
-        if (serializer.storeAsBlob()) {
+        if (serializer.storeAsBlob(obj.getClass())) {
             recordContainer.put("blob_doc", serializer.createBlobDoc(obj.getClass(), obj));
         } else {
             recordContainer.put("doc", serializer.createStringDoc(obj.getClass(), obj));

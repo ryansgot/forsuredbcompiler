@@ -23,7 +23,7 @@ public abstract class BaseDocStoreGetter<T> extends BaseGetter implements FSDocS
     @Override
     public <C extends T> C getAs(Class<C> cls, Retriever retriever) {
         try {
-            return (C) (serializer.storeAsBlob()
+            return (C) (serializer.storeAsBlob(cls)
                     ? serializer.fromStorage(cls, blobDoc(retriever))
                     : serializer.fromStorage(cls, doc(retriever)));
         } catch (Exception e) {
