@@ -158,8 +158,8 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
 
     public abstract G getApi();
     public abstract S set();
-    public abstract Map<String, String> methodNameToColumnNameMap();
     public abstract FSProjection projection();
+    public abstract String[] columns();
     public abstract String tableName();
     protected abstract F newFinderInstance();
     protected abstract O newOrderByInstance();

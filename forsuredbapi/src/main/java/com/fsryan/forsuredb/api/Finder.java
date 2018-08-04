@@ -21,11 +21,7 @@ import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Date;
+import java.util.*;
 
 /**
  * <p>You should not implement your own version of {@link Finder}. A version
@@ -76,11 +72,10 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public static final int OP_GT = 2;
     public static final int OP_LIKE = 3;
 
-    protected final String tableName;
     protected final Conjunction.AndOr<R, F> conjunction;
+    final R resolver;
     private final Set<String> columns = new HashSet<>();
     private final FSProjection defaultProjection;
-    private final Set<String> possibleColumns;
     private final StringBuffer whereBuf = new StringBuffer();
     private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
@@ -98,9 +93,8 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @param resolver The resolver to return when you leave the Finder context of the method call chain
      */
     public Finder(final R resolver) {
-        this.tableName = resolver.tableName();
+        this.resolver = resolver;
         defaultProjection = resolver.projection();
-        possibleColumns = new HashSet<String>(resolver.methodNameToColumnNameMap().values());
         conjunction = new Conjunction.AndOr<R, F>() {
             @Override
             public R then() {
@@ -291,7 +285,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         return !containsNonDefaultProjection() ? defaultProjection : new FSProjection() {
             @Override
             public String tableName() {
-                return tableName;
+                return resolver.tableName();
             }
 
             @Override
@@ -703,7 +697,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             incorporatedExternalFinder = false;
         }
 
-        whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
+        whereBuf.append(Sql.generator().whereOperation(resolver.tableName(), column, operator)).append(" ");
         whereBuf.append("?");
 
         addToReplacementsList(operator == OP_LIKE ? Sql.generator().expressLike(String.valueOf(value)) : value);
@@ -720,12 +714,12 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         Object first = orValues.get(0);
-        whereBuf.append("(").append(Sql.generator().whereOperation(tableName, column, OP_EQ)).append(" ? ");
+        whereBuf.append("(").append(Sql.generator().whereOperation(resolver.tableName(), column, OP_EQ)).append(" ? ");
         addToReplacementsList(first);
         for (int i = 1; i < orValues.size(); i++) {
             Object orValue = orValues.get(i);
             whereBuf.append(Sql.generator().orKeyword()).append(" ")
-                    .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
+                    .append(Sql.generator().whereOperation(resolver.tableName(), column, OP_EQ))
                     .append(" ?");
             addToReplacementsList(orValue);
         }
@@ -799,6 +793,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             return;
         }
         columns.clear();
+        Set<String> possibleColumns = new HashSet<>(Arrays.asList(resolver.columns()));
         for (int i = 0; i < projection.length; i++) {
             final String column = projection[i];
             if (column == null || !possibleColumns.contains(column)) {
