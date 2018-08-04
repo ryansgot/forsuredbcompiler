@@ -8,7 +8,7 @@ dependencies {
 
     testImplementation 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
     testImplementation deps.test.junit
-    testImplementation 'org.mockito:mockito-core:2.13.0'
+    testImplementation deps.test.mockito
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {
