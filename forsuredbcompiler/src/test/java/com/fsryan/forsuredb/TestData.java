@@ -113,6 +113,10 @@ public class TestData {
         return migration(Migration.Type.ALTER_TABLE_ADD_COLUMN).tableName(tableName);
     }
 
+    public static ProgressiveMigrationBuilder addIndexMigration(String tableName) {
+        return migration(Migration.Type.ADD_INDEX).tableName(tableName);
+    }
+
     public static ProgressiveMigrationBuilder addForeignKeyReferenceMigration(String tableName) {
         return migration(Migration.Type.ADD_FOREIGN_KEY_REFERENCE).tableName(tableName);
     }

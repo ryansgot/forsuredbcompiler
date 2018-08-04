@@ -74,6 +74,19 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                         .build())
                                 .build()
                                 .tableMap()
+                },
+                {   // 04: one table with a column that has an index
+                        Arrays.asList(
+                                createTableMigration("table1"),
+                                addColumnMigration("table1").columnName("table_1_index").build(),
+                                addIndexMigration("table1").columnName("table_1_index").build()
+                        ),
+                        newTableContext()
+                                .addTable(table("table1")
+                                        .addToColumns(longCol().columnName("table_1_index").index(true).build())
+                                        .build())
+                                .build()
+                                .tableMap()
                 }
         });
     }
