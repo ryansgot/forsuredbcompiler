@@ -1,0 +1,65 @@
+{
+  "ordered_migrations": [
+    {
+      "table_name": "all_types",
+      "migration_type": "CREATE_TABLE"
+    }
+  ],
+  "target_schema": {
+    "all_types": {
+      "column_info_map": {
+        "modified": {
+          "method_name": "modified",
+          "column_name": "modified",
+          "column_type": "java.util.Date",
+          "index": false,
+          "default_value": "CURRENT_TIMESTAMP",
+          "unique": false,
+          "primary_key": false,
+          "searchable": true,
+          "orderable": true
+        },
+        "deleted": {
+          "method_name": "deleted",
+          "column_name": "deleted",
+          "column_type": "boolean",
+          "index": false,
+          "default_value": "0",
+          "unique": false,
+          "primary_key": false,
+          "searchable": true,
+          "orderable": true
+        },
+        "_id": {
+          "method_name": "id",
+          "column_name": "_id",
+          "column_type": "long",
+          "index": false,
+          "unique": false,
+          "primary_key": true,
+          "searchable": true,
+          "orderable": true
+        },
+        "created": {
+          "method_name": "created",
+          "column_name": "created",
+          "column_type": "java.util.Date",
+          "index": false,
+          "default_value": "CURRENT_TIMESTAMP",
+          "unique": false,
+          "primary_key": false,
+          "searchable": true,
+          "orderable": true
+        }
+      },
+      "table_name": "all_types",
+      "qualified_class_name": "com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable",
+      "primary_key": [
+        "_id"
+      ],
+      "primary_key_on_conflict": "",
+      "foreign_keys": []
+    }
+  },
+  "db_version": 1
+}

@@ -1,6 +1,5 @@
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import lombok.AccessLevel;
 
 import java.util.ArrayList;
@@ -19,13 +18,12 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
     public static final int ORDER_ASC = 0;
     public static final int ORDER_DESC = -1;
 
-    @lombok.Getter(AccessLevel.PROTECTED) private final List<String> orderByList;
-    private final String tableName;
+    @lombok.Getter(AccessLevel.PROTECTED) private final List<FSOrdering> orderings = new ArrayList<>();
+    protected final String tableName;
     protected final Conjunction.And<R, O> conjunction;
 
     public OrderBy(final R resolver) {
-        this.tableName = resolver.tableName();
-        orderByList = new ArrayList<>();
+        tableName = resolver.tableName();
         conjunction = new Conjunction.And<R, O>() {
             @Override
             public R then() {
@@ -37,13 +35,6 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
                 return (O) OrderBy.this;
             }
         };
-    }
-
-    /**
-     * @return the SQL string for the order by portion of the query
-     */
-    public String getOrderByString() {
-        return Sql.generator().combineOrderByExpressions(orderByList);
     }
 
     /**
@@ -108,14 +99,13 @@ public abstract class OrderBy<R extends Resolver, O extends OrderBy<R, O>> {
     protected void appendOrder(String columnName, int order) {
         // Since we allow app developer to set the order, assume >= 0 means "ascending" and
         // < 0 means "descending"
-        orderByList.add(order >= ORDER_ASC ? Sql.generator().orderByAsc(tableName, columnName)
-                : Sql.generator().orderByDesc(tableName, columnName));
+        orderings.add(new FSOrdering(tableName, columnName, order < 0 ? ORDER_DESC : ORDER_ASC));
     }
 
-    protected void appendOrderByList(List<String> orderByList) {
-        if (orderByList == null || orderByList.isEmpty()) {
+    /*package*/ void appendOrderings(List<FSOrdering> orderingsToAdd) {
+        if (orderingsToAdd == null || orderingsToAdd.isEmpty()) {
             return;
         }
-        this.orderByList.addAll(orderByList);
+        this.orderings.addAll(orderingsToAdd);
     }
 }

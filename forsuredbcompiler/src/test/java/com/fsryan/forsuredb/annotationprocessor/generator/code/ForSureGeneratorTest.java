@@ -20,10 +20,13 @@ public class ForSureGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableContext inputTargetContext;
 
     public ForSureGeneratorTest(String classCode, String packageName, TableContext inputTargetContext) {
-        super(classCode);
+        super(
+                classCode,
+                ForSureGeneratorTest.class.getName(),
+                true
+        );
         this.packageName = packageName;
         this.inputTargetContext = inputTargetContext;
-        System.setProperty("resultParameter", ForSureGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters

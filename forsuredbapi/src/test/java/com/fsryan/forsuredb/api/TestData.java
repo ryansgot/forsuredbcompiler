@@ -18,16 +18,13 @@
 package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.api.info.ColumnInfo;
-import com.fsryan.forsuredb.api.info.ForeignKeyInfo;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class TestData {
 
@@ -54,10 +51,18 @@ public class TestData {
         return out.toString();
     }
 
+    public static InputStream resourceStream(String resource) {
+        return TestData.class.getClassLoader().getResourceAsStream(resource);
+    }
+
     // Convenience methods for making data to go into the tests
-    public static TableInfo.Builder table() {
+    public static TableInfo.BuilderCompat table() {
         return TableInfo.builder().tableName(TABLE_NAME)
                 .qualifiedClassName(TABLE_CLASS_NAME);
+    }
+
+    public static TableInfo.BuilderCompat table(String name) {
+        return table().tableName(name);
     }
 
     public static Map<String, ColumnInfo> columnMapOf(ColumnInfo... columns) {
@@ -71,9 +76,40 @@ public class TestData {
     public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
         Map<String, TableInfo> retMap = new HashMap<>();
         for (TableInfo table : tables) {
-            retMap.put(table.getTableName(), table);
+            retMap.put(table.tableName(), table);
         }
         return retMap;
+    }
+
+    public static <K, V> Map<K, V> mapOf() {
+        return new HashMap<>();
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1) {
+        Map<K, V> ret = mapOf();
+        ret.put(k1, v1);
+        return ret;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+        Map<K, V> ret = mapOf(k1, v1);
+        ret.put(k2, v2);
+        return ret;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+        Map<K, V> ret = mapOf(k1, v1, k2, v2);
+        ret.put(k3, v3);
+        return ret;
+    }
+
+    public static TableForeignKeyInfo.Builder foreignKeyTo(String foreignTableName) {
+        return TableForeignKeyInfo.builder()
+                .foreignTableName(foreignTableName)
+                .deleteChangeAction("CASCADE")
+                .updateChangeAction("CASCADE")
+                .localToForeignColumnMap(mapOf("local", "foreign"))
+                .foreignTableApiClassName(TestData.class.getName());
     }
 
     public static ColumnInfo idCol() {
@@ -137,38 +173,42 @@ public class TestData {
     }
 
     public static ForeignKeyInfo.Builder cascadeFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.CASCADE)
-                .deleteAction(ForeignKey.ChangeAction.CASCADE)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.CASCADE.name())
+                .deleteAction(ForeignKey.ChangeAction.CASCADE.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder noActionFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION)
-                .deleteAction(ForeignKey.ChangeAction.NO_ACTION)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.NO_ACTION.name())
+                .deleteAction(ForeignKey.ChangeAction.NO_ACTION.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder setNullFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_NULL)
-                .deleteAction(ForeignKey.ChangeAction.SET_NULL)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_NULL.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_NULL.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder setDefaultFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT)
-                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
+                .deleteAction(ForeignKey.ChangeAction.SET_DEFAULT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
     }
 
     public static ForeignKeyInfo.Builder restrictFKI(String foreignKeyTableName) {
-        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.RESTRICT)
-                .deleteAction(ForeignKey.ChangeAction.RESTRICT)
+        return ForeignKeyInfo.builder().updateAction(ForeignKey.ChangeAction.RESTRICT.name())
+                .deleteAction(ForeignKey.ChangeAction.RESTRICT.name())
                 .columnName("_id")
                 .tableName(foreignKeyTableName);
+    }
+
+    public static <T> Set<T> setOf(T... ts) {
+        return new HashSet<>(Arrays.asList(ts));
     }
 
     // Helpers for covenience methods

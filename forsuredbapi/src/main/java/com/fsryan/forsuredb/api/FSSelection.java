@@ -26,7 +26,7 @@ package com.fsryan.forsuredb.api;
  */
 public interface FSSelection {
 
-    class SelectAll implements FSSelection {
+    FSSelection ALL = new FSSelection() {
 
         @Override
         public String where() {
@@ -34,10 +34,15 @@ public interface FSSelection {
         }
 
         @Override
-        public String[] replacements() {
-            return new String[0];
+        public Object[] replacements() {
+            return new Object[0];
         }
-    }
+
+        @Override
+        public Limits limits() {
+            return Limits.NONE;
+        }
+    };
 
     /**
      * @return the String where clause, possibly including '?' characters to be replaced by Strings
@@ -46,8 +51,15 @@ public interface FSSelection {
     String where();
 
     /**
-     * @return the array of Strings that are to replace all '?' characters in String returned by
+     * @return the array of objects to bind
      * {@link #where() where()}.
      */
-    String[] replacements();
+    Object[] replacements();
+
+    /**
+     * Allows you to position the start/end position and number of records from which a retreiver
+     * can retrieve values
+     * @return a {@link Limits} describing any limits to put on the returned records
+     */
+    Limits limits();
 }

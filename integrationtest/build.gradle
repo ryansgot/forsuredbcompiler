@@ -1,0 +1,139 @@
+buildscript {
+    repositories {
+        def awsAccessKeyId = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : ""
+        def awsSecretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : ""
+        jcenter()
+        maven {
+            url  "https://dl.bintray.com/ryansgot/maven"
+        }
+        maven {
+            name 'release'
+            url "s3://repo.fsryan.com/release"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
+        maven {
+            name 'snapshot'
+            url "s3://repo.fsryan.com/snapshot"
+            credentials(AwsCredentials) {
+                accessKey = awsAccessKeyId
+                secretKey = awsSecretKey
+            }
+        }
+    }
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.3'
+        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.5.1'
+        classpath 'com.kncept.junit5.reporter:junit-reporter:1.1.0'
+    }
+}
+
+plugins {
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
+}
+
+apply plugin: 'java'
+apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'com.kncept.junit5.reporter'
+apply plugin: 'jacoco'
+apply plugin: 'com.fsryan.gradle.forsuredb'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+
+    compile project(':forsuredbapi')
+    compile project(':forsuredbjdbc')
+    compile project(':sqlitelib')
+    compile project(':forsuredbmodels-gson')
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    compileOnly "com.google.auto.value:auto-value:1.5"
+    apt "com.google.auto.value:auto-value:1.5"
+
+    compile 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+
+    compile 'org.beryx:text-io:3.0.0'   // <-- a library I found for making interactive command line apps
+
+    apt project(':forsuredbcompiler')
+
+    testCompile 'org.apache.logging.log4j:log4j-api:2.10.0'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.10.0'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.3'
+
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.0.3'
+    testRuntime 'org.apache.logging.log4j:log4j-jul:2.10.0'
+}
+
+forsuredb {
+    // should be the same as the applicationId from the android extension
+    applicationPackageName = 'com.fsryan.forsuredb.integrationtest'
+    // the fully-qualified class name of the parameterization of the SaveResult.
+    resultParameter = "com.fsryan.forsuredb.queryable.DirectLocator"
+    // The fully-qualified class name of the parameterization of the generated
+    // ForSure class. It is the class that stores a record before it is
+    // deleted/inserted/updated etc.
+    recordContainer = "com.fsryan.forsuredb.api.TypedRecordContainer"
+    // the assets directory of your app starting at your project's base directory
+    migrationDirectory = 'integrationtest/src/main/resources'
+    // Your application module's base directory
+    appProjectDirectory = 'integrationtest'
+    // (optional) this is the directory in which your META-INF/services files will go for your custom plugins
+    resourcesDirectory = 'integrationtest/src/main/resources'
+    // (optional) fully-qualified class name of an implementation of FSSerializerFactory. You must define both resourcesDirectory and fsSerializerFactoryClass in order for your doc store to perorm custom serialization
+    fsSerializerFactoryClass = 'com.fsryan.forsuredb.integrationtest.JsonAdapterFactory'
+    // (required) This is the glue that ties in your chosen DBMS. forsuresqlitelib 0.4.0 contains a version for SQLite,
+    // however, for Android projects, this must be used in conjunction with forsuredbandroid 0.9.+ because there are
+    // additional Android platform considerations here to allow for smooth integration with android.database.sqlite
+    dbmsIntegratorClass = 'com.fsryan.forsuredb.sqlitelib.SqlGenerator'
+}
+
+junitPlatform {
+    logManager 'org.apache.logging.log4j.jul.LogManager'
+}
+
+junitPlatformTest.finalizedBy 'junitHtmlReport'
+
+afterEvaluate {
+
+    jacoco {
+        toolVersion = "0.7.6.+"
+        applyTo junitPlatformTest
+    }
+
+    task jacocoReport(type: JacocoReport, dependsOn: 'junitPlatformTest') {
+
+        group = 'Reporting'
+        description = 'Generate Jacoco coverage reports after running tests.'
+
+        executionData = files('build/jacoco/junitPlatformTest.exec')
+        sourceDirectories = files(
+                'build/generated-src',
+                '../forsuredbapi/src/main/java',
+                '../forsuredbjdbc/src/main/java',
+                '../forsuredbmodels-gson/src/main/java',
+                '../sqlitelib/src/main/java'
+        )
+        classDirectories = fileTree(
+                dir: '..',
+                includes: [
+                        '**/build/classes/java/main/**'
+                ],
+                excludes: [
+                        '**/forsuredbcompiler/**',
+                        '**/forsuredbjdbc-example/**',
+                        '**/forsuredbmodels-jackson/**',
+                        '**/dbinfo/**'
+                ]
+        )
+
+        reports {
+            xml.enabled true
+            csv.enabled false
+            html.enabled = true
+        }
+    }
+}

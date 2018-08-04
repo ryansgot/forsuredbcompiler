@@ -1,8 +1,11 @@
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
+import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,12 +23,12 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Override
-    public List<String> generateMigrationSql(MigrationSet migrationSet) {
+    public List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer dbInfoSerializer) {
         return new ArrayList<>();
     }
 
     @Override
-    public String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap) {
+    public String newSingleRowInsertionSql(String tableName, List<String> columns) {
         return "";
     }
 
@@ -40,17 +43,7 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String orderByAsc(String tableName, String columnName) {
-        return "";
-    }
-
-    @Override
-    public String orderByDesc(String tableName, String columnName) {
-        return "";
-    }
-
-    @Override
-    public String combineOrderByExpressions(List<String> orderByList) {
+    public String expressOrdering(List<FSOrdering> ordering) {
         return "";
     }
 
@@ -75,8 +68,18 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
+    public DateFormat getDateFormat() {
+        return DATE_FORMAT;
+    }
+
+    @Override
     public String wildcardKeyword() {
         return "";
+    }
+
+    @Override
+    public String expressLike(String like) {
+        return null;
     }
 
     @Override
@@ -87,5 +90,30 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     @Override
     public String orKeyword() {
         return "";
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
+    public SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings) {
+        return new SqlForPreparedStatement("", new String[0]);
+    }
+
+    @Override
+    public boolean alwaysUnambiguouslyAliasColumns() {
+        return false;
+    }
+
+    @Override
+    public SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
+    }
+
+    @Override
+    public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
     }
 }

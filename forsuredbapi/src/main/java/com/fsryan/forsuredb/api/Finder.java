@@ -19,6 +19,8 @@ package com.fsryan.forsuredb.api;
 
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -80,10 +82,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     private final FSProjection defaultProjection;
     private final Set<String> possibleColumns;
     private final StringBuffer whereBuf = new StringBuffer();
-    private final List<String> replacementsList = new ArrayList<>();
+    private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
 
     private boolean incorporatedExternalFinder = false;
+    private int offset = 0;
+    private int top = 0;
+    private int bottom = 0;
 
     /**
      * <p>
@@ -167,10 +172,107 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     }
 
     /**
+     * Select the first record only.
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
+     */
+    public F first() {
+        return first(1);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int, int)
+     * @see #last(int)
+     * @see #last(int, int)
+     */
+    public F first(int numRecords) {
+        return first(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the first.
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #last(int)} or
+     * {@link #last(int, int)} with a positive number or {@link #last()}
+     * @see #first(int)
+     * @see #last(int)
+     * @see #last(int, int)
+     */
+    public F first(int numRecords, int offset) {
+        if (numRecords > 0) {
+            top = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
+     * Select the last record (the last record returned)
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
+     */
+    public F last() {
+        return last(1);
+    }
+
+    /**
+     * Select the number of records from the first you want to have returned. Will have no effect if you pass in a
+     * negative number or zero.
+     * @param numRecords the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number
+     * @see #last(int, int)
+     * @see #first(int)
+     * @see #first(int, int)
+     */
+    public F last(int numRecords) {
+        return last(numRecords, 0);
+    }
+
+    /**
+     * Select the number of records from the last you want to have returned. Will have no effect if you pass in a
+     * negative number or zero. This also allows you to set an offset from the last.
+     * @param numRecords the count on the number of records to return
+     * @param offset the count on the number of records to return
+     * @return this {@link Finder}
+     * @throws IllegalStateException if you have already called {@link #first(int)} or
+     * {@link #first(int, int)} with a positive number or {@link #first()}
+     * @see #last(int)
+     * @see #first(int)
+     * @see #first(int, int)
+     */
+    public F last(int numRecords, int offset) {
+        if (numRecords > 0) {
+            bottom = numRecords;
+            this.offset = Math.max(0, offset);
+        }
+        throwIfPagingFromTopAndBottom();
+        return (F) this;
+    }
+
+    /**
      * @return true if this {@link Finder} is filtering any results--false otherwise
      */
     public boolean isFilteringResultSet() {
-        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0);
+        return !(replacementsList == null || replacementsList.isEmpty() || whereBuf == null || whereBuf.length() == 0)
+                || top > 0
+                || bottom > 0
+                || offset > 0;
     }
 
     /**
@@ -210,7 +312,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public final FSSelection selection() {
         return new FSSelection() {
             String where = whereBuf.toString();
-            String[] replacements = replacementsList.toArray(new String[replacementsList.size()]);
+            Object[] replacements = replacementsList.toArray(new Object[replacementsList.size()]);
 
             @Override
             public String where() {
@@ -218,8 +320,29 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             }
 
             @Override
-            public String[] replacements() {
+            public Object[] replacements() {
                 return replacements;
+            }
+
+            @Override
+            public Limits limits() {
+                return new Limits() {
+                    @Override
+                    public int count() {
+                        // we're guaranteed to have a positive number
+                        return Math.max(top, bottom);
+                    }
+
+                    @Override
+                    public int offset() {
+                        return offset;
+                    }
+
+                    @Override
+                    public boolean isBottom() {
+                        return bottom > 0;
+                    }
+                };
             }
         };
     }
@@ -581,13 +704,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         whereBuf.append(Sql.generator().whereOperation(tableName, column, operator)).append(" ");
-        if (operator == OP_LIKE) {
-            whereBuf.append(Sql.generator().wildcardKeyword()).append("?").append(Sql.generator().wildcardKeyword());
-        } else {
-            whereBuf.append("?");
-        }
+        whereBuf.append("?");
 
-        replacementsList.add(Date.class.equals(value.getClass()) ? Sql.generator().formatDate((Date) value) : value.toString());
+        addToReplacementsList(operator == OP_LIKE ? Sql.generator().expressLike(String.valueOf(value)) : value);
     }
 
     protected final void addEqualsOrChainToBuf(String column, List orValues) {
@@ -602,13 +721,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
         Object first = orValues.get(0);
         whereBuf.append("(").append(Sql.generator().whereOperation(tableName, column, OP_EQ)).append(" ? ");
-        replacementsList.add(Date.class.equals(first.getClass()) ? Sql.generator().formatDate((Date) first) : first.toString());
+        addToReplacementsList(first);
         for (int i = 1; i < orValues.size(); i++) {
             Object orValue = orValues.get(i);
             whereBuf.append(Sql.generator().orKeyword()).append(" ")
                     .append(Sql.generator().whereOperation(tableName, column, OP_EQ))
                     .append(" ?");
-            replacementsList.add(Date.class.equals(orValue.getClass()) ? Sql.generator().formatDate((Date) orValue) : orValue.toString());
+            addToReplacementsList(orValue);
         }
         whereBuf.append(")");
     }
@@ -624,6 +743,12 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         if (finder == null || !finder.isFilteringResultSet()) {
             return;
         }
+
+        // handle the incorporation of the Limits parts
+        offset = throwWhenUnequalAndBothPositiveOrReturnMax("to offset", offset, finder.offset);
+        top = throwWhenUnequalAndBothPositiveOrReturnMax("the first", top, finder.top);
+        bottom = throwWhenUnequalAndBothPositiveOrReturnMax("the last", bottom, finder.bottom);
+        throwIfPagingFromTopAndBottom();
 
         if (whereBuf.length() == 0) {
             whereBuf.append(finder.whereBuf);
@@ -684,5 +809,29 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         // It is possible that none of the columns could be valid for this table. In that case, we want to revert to
         // the default projection
         queryDistinct = distinct && !columns.isEmpty();
+    }
+
+    private void throwIfPagingFromTopAndBottom() {
+        if (top > 0 && bottom > 0) {
+            throw new IllegalStateException("Cannot page from both first and last at same time");
+        }
+    }
+
+    private static int throwWhenUnequalAndBothPositiveOrReturnMax(String toDo, int num1, int num2) {
+        if (num1 > 0 && num2 > 0 && num1 != num2) {
+            throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
+        }
+        return Math.max(num1, num2);
+    }
+
+    private void addToReplacementsList(Object orValue) {
+        Class<?> cls = orValue.getClass();
+        if (cls == Date.class) {
+            replacementsList.add(Sql.generator().formatDate((Date) orValue));
+        } else if (cls == BigInteger.class || cls == BigDecimal.class) {
+            replacementsList.add(String.valueOf(orValue));
+        } else {
+            replacementsList.add(orValue);
+        }
     }
 }

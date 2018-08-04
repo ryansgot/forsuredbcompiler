@@ -18,8 +18,10 @@
 package com.fsryan.forsuredb.api;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>
@@ -56,14 +58,20 @@ public final class TypedRecordContainer implements RecordContainer {
 
     @Override
     public void put(String column, int value) {
-        columnToValueMap.put(column, Integer.toString(value));
+        columnToValueMap.put(column, value);
         columnToTypeMap.put(column, int.class);
     }
 
     @Override
     public void put(String column, double value) {
-        columnToValueMap.put(column, Double.toString(value));
+        columnToValueMap.put(column, value);
         columnToTypeMap.put(column, double.class);
+    }
+
+    @Override
+    public void put(String column, float value) {
+        columnToValueMap.put(column, value);
+        columnToTypeMap.put(column, float.class);
     }
 
     @Override
@@ -76,6 +84,11 @@ public final class TypedRecordContainer implements RecordContainer {
     public void clear() {
         columnToValueMap.clear();
         columnToTypeMap.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return columnToValueMap.keySet();
     }
 
     public Type getType(String column) {
@@ -94,15 +107,26 @@ public final class TypedRecordContainer implements RecordContainer {
         if (!columnToValueMap.containsKey(column)) {
             return null;
         }
-
-        Object value = columnToValueMap.get(column);
-        Type type = columnToTypeMap.get(column);
-        if (type.equals(int.class)) {
-            return (T) new Integer(value.toString());
-        }
-        if (type.equals(double.class)) {
-            return (T) new Double(value.toString());
-        }
         return (T) get(column);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder(TypedRecordContainer.class.getSimpleName())
+                .append("{columnToValueMap={");
+        for (String key : keySet()) {
+            buf.append(key).append('=');
+            if (byte[].class == columnToTypeMap.get(key)) {
+                byte[] ba = typedGet(key);
+                buf.append(Arrays.toString(ba));
+            } else {
+                buf.append(String.valueOf(columnToValueMap.get(key)));
+            }
+            buf.append(", ");
+        }
+        return buf.delete(buf.length() - 2, buf.length())
+                .append("}, columnToTypeMap=")
+                .append(columnToTypeMap)
+                .append('}').toString();
     }
 }

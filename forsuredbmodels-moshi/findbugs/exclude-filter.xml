@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- All necessary cases seem to be handled. -->
+    <Match>
+        <Class name="~.*Adapter" />
+        <Method name="fromJson" />
+        <Bug pattern="SF_SWITCH_NO_DEFAULT" />
+    </Match>
+</FindBugsFilter>

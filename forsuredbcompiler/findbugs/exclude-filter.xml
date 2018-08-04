@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- These are okay. Fix them if you can, but don't worry about them too much. -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.JavadocInfo" />
+        <Method name="replacements" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor" />
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />   <!-- Blocks multiple rounds of generating same classes -->
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil" />
+        <Bug pattern="DM_CONVERT_CASE" />   <!-- used for converting case of java identifiers -->
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.generator.code.GetterGenerator" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <!-- It's fine to lazy init this way in this case -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever" />
+        <Bug pattern="LI_LAZY_INIT_STATIC" />
+    </Match>
+</FindBugsFilter>

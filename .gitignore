@@ -2,10 +2,23 @@
 **/build/*
 .gradle/*
 **/*.iml
-out/*
 local.properties
+
+# OSX
+**/.DS_Store
 
 # Java
 classes/*
 **/*.class
 classes/*
+forsuredbcompiler/out/*
+forsuredbapi/out/*
+dbinfo/out/*
+forsuredbjdbc/out/*
+forsuredbmodels-gson/out/*
+forsuredbmodels-jackson/out/*
+forsuredbmodels-moshi/out/*
+forsuredbjdbc-example/*.db
+forsuredbjdbc-example/out/*
+sqlitelib/out/*
+integrationtest/out/*

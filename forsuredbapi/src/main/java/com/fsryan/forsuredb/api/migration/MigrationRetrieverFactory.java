@@ -18,16 +18,12 @@
 package com.fsryan.forsuredb.api.migration;
 
 import com.fsryan.forsuredb.api.FSLogger;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
+import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -36,57 +32,20 @@ import java.util.PriorityQueue;
 
 public class MigrationRetrieverFactory {
 
-    private static final Gson gson = new Gson();
+    final FSDbInfoSerializer migrationSerializer;
+    final FSLogger log;
 
-    private final FSLogger log;
-
-    public MigrationRetrieverFactory() {
-        this(null);
+    public MigrationRetrieverFactory(@Nonnull FSDbInfoSerializer migrationSerializer) {
+        this(migrationSerializer, null);
     }
 
-    public MigrationRetrieverFactory(FSLogger log) {
-        this.log = log == null ? new FSLogger.SilentLog() : log;
+    public MigrationRetrieverFactory(@Nonnull FSDbInfoSerializer migrationSerializer, @Nullable FSLogger log) {
+        this.migrationSerializer = migrationSerializer;
+        this.log = log == null ? FSLogger.SILENT : log;
     }
 
-    public MigrationRetriever fromStream(final InputStream inputStream) {
-        return new MigrationRetriever() {
-
-            private MigrationSet migrationSet;
-
-            @Override
-            public List<MigrationSet> getMigrationSets() {
-                List<MigrationSet> ret = new ArrayList<>(1);
-                if (migrationSet == null) {
-                    migrationSet = createMigrationSet();
-                }
-                ret.add(migrationSet);
-                return ret;
-            }
-
-            @Override
-            public int latestDbVersion() {
-                if (migrationSet == null) {
-                    migrationSet = createMigrationSet();
-                }
-                return migrationSet.getDbVersion();
-            }
-
-            private MigrationSet createMigrationSet() {
-                JsonReader reader = new JsonReader(new InputStreamReader(inputStream));
-                try {
-                    return gson.fromJson(reader, new TypeToken<MigrationSet>() {}.getType());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {}
-                }
-
-                // return a dummy MigrationSet if the error was found
-                return MigrationSet.builder().dbVersion(-1).build();
-            }
-        };
+    public MigrationRetriever fromStream(@Nonnull final InputStream inputStream) {
+        return new RetrieverFromStream(migrationSerializer, inputStream);
     }
 
     private int latestDbVersionFrom(List<MigrationSet> migrationSets) {
@@ -95,13 +54,44 @@ public class MigrationRetrieverFactory {
         }
         int latest = 0;
         for (MigrationSet migrationSet : migrationSets) {
-            latest = migrationSet.getDbVersion() > latest ? migrationSet.getDbVersion() : latest;
+            latest = migrationSet.dbVersion() > latest ? migrationSet.dbVersion() : latest;
         }
         return latest;
     }
 
     public MigrationRetriever fromDirectory(final String directoryName) {
         return new DirectoryMigrationsRetriever(directoryName);
+    }
+
+    private static class RetrieverFromStream implements MigrationRetriever {
+
+        private FSDbInfoSerializer migrationSerializer;
+        private InputStream inputStream;
+
+        public RetrieverFromStream(FSDbInfoSerializer migrationSerializer, final InputStream inputStream) {
+            this.migrationSerializer = migrationSerializer;
+            this.inputStream = inputStream;
+        }
+
+        private MigrationSet migrationSet;
+
+        @Override
+        public List<MigrationSet> getMigrationSets() {
+            final List<MigrationSet> ret = new ArrayList<>(1);
+            if (migrationSet == null) {
+                migrationSet = migrationSerializer.deserializeMigrationSet(inputStream);
+            }
+            ret.add(migrationSet);
+            return ret;
+        }
+
+        @Override
+        public int latestDbVersion() {
+            if (migrationSet == null) {
+                migrationSet = migrationSerializer.deserializeMigrationSet(inputStream);
+            }
+            return migrationSet.dbVersion();
+        }
     }
 
     private class DirectoryMigrationsRetriever implements MigrationRetriever {
@@ -132,7 +122,7 @@ public class MigrationRetrieverFactory {
         private List<MigrationSet> createMigrationSets() {
             if (!validDirectory()) {
                 log.w("directory " + directory + " either doesn't exist or isn't a directory");
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             log.i("Looking for migrations in " + directory.getPath());
@@ -159,7 +149,7 @@ public class MigrationRetrieverFactory {
 
         private List<File> filterMigrationFiles(File[] files) {
             if (files == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             List<File> retList = new LinkedList<>();

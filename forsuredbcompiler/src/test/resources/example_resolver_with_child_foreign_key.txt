@@ -7,7 +7,6 @@ import com.fsryan.forsuredb.api.ForSureInfoFactory;
 import com.fsryan.forsuredb.api.Resolver;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.api.TypedRecordContainer;
-import java.lang.Class;
 import java.lang.Override;
 import java.lang.String;
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import java.util.Map;
  * @author <a href="https://github.com/ryansgot/forsuredbcompiler">forsuredbcompiler</a>
  * @see Resolver
  */
-public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends Resolver<T, ResolverGeneratorTest, TypedRecordContainer, TestTable3, TestTable3Setter, TestTable3Finder<T>, TestTable3OrderBy<T>> {
+public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends Resolver<T, ResolverGeneratorTest, TypedRecordContainer, TestTable3Getter, TestTable3Setter, TestTable3Finder<T>, TestTable3OrderBy<T>> {
     public static final String TABLE_NAME = "test_table_3";
 
     public static final String[] columns = {"_id","app_rating","competitor_app_rating","created","deleted","global_id","login_count","modified",};
@@ -73,6 +72,21 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
     }
 
     @Override
+    public final TestTable3Getter getApi() {
+        return TestTable3Getter.inst();
+    }
+
+    @Override
+    public final TestTable3Setter set() {
+        return new TestTable3Setter(
+                infoFactory.createQueryable(lookupResource),
+                determineSelection(false),
+                determineOrderings(false),
+                infoFactory.createRecordContainer()
+                );
+    }
+
+    @Override
     public Map<String, String> methodNameToColumnNameMap() {
         return methodNameToColumnNameMap;
     }
@@ -88,16 +102,6 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
         localToForeignColumnMap.put("test_table_3_id", "_id");
         addJoin(new FSJoin(type, "test_table_3", "test_table_2", localToForeignColumnMap));
         return new JoinTestTable2(infoFactory, this);
-    }
-
-    @Override
-    public Class<TestTable3> getApiClass() {
-        return TestTable3.class;
-    }
-
-    @Override
-    public Class<TestTable3Setter> setApiClass() {
-        return TestTable3Setter.class;
     }
 
     @Override
@@ -135,7 +139,8 @@ public abstract class TestTable3Resolver<T extends TestTable3Resolver> extends R
     public static class JoinTestTable2<T extends TestTable3Resolver> extends TestTable2Resolver<JoinTestTable2<T>> {
         private final T parent;
 
-        JoinTestTable2(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory, T parent) {
+        JoinTestTable2(ForSureInfoFactory<ResolverGeneratorTest, TypedRecordContainer> infoFactory,
+                T parent) {
             super(infoFactory);
             this.parent = parent;
         }

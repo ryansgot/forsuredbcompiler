@@ -17,7 +17,7 @@
  */
 package com.fsryan.forsuredb.annotations;
 
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

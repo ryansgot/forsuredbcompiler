@@ -1,0 +1,42 @@
+<static_data>
+    <records db_version="3">
+        <record string_column="string value3"
+                long_column="543"
+                int_column="343"
+                boolean_column="true"
+                float_column="4.53"
+                double_column="6438.55643"
+                byte_array_column="0123456789ABCDEF03"
+                boolean_wrapper_column="true"
+                integer_wrapper_column="845763"
+                long_wrapper_column="487237643"
+                float_wrapper_column="457.34583"
+                double_wrapper_column="85830457.16348953"
+                big_decimal_column="834098345865473409834674567849034908456765.2387243565432892437864356"
+                big_integer_column="9834095437345956498346893489349084389564378348975634986458965348973659708"
+                date_column="2017-12-21 21:31:45.837" />
+    </records>
+    <records db_version="2">
+        <record string_column="string value2"
+                long_column="542"
+                int_column="342"
+                boolean_column="true"
+                float_column="4.52"
+                double_column="6438.55642"
+                byte_array_column="0123456789ABCDEF02"
+                boolean_wrapper_column="false"
+                integer_wrapper_column="84576"
+                long_wrapper_column="48723764"
+                float_wrapper_column="457.3458"
+                double_wrapper_column="85830457.1634895"/>
+    </records>
+    <records db_version="1">
+        <record string_column="string value"
+                long_column="54"
+                int_column="34"
+                boolean_column="false"
+                float_column="4.5"
+                double_column="6438.5564"
+                byte_array_column="0123456789ABCDEF" />
+    </records>
+</static_data>

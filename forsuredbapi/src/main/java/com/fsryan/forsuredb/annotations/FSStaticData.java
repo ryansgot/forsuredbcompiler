@@ -25,10 +25,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <p>
- *     Use the FSStaticData annotation on an {@link FSGetApi FSGetApi} extension
- *     to direct the forsuredb to the static data XML asset you have prepared for this table. For an
- *     example, {@link #asset() asset()}
+ * <p>Use the FSStaticData annotation on an {@link FSGetApi FSGetApi} extension to direct
+ * the forsuredb to the static data XML asset you have prepared for this table. For an
+ * example, {@link #value()} () asset()}
  * </p>
  * @author Ryan Scott
  */
@@ -37,26 +36,24 @@ import java.lang.annotation.Target;
 public @interface FSStaticData {
 
     /**
-     * <p>
-     *     <i>This string must define the asset relative to your project's assets directory, and the
-     *     asset must be an XML file as below:</i>
-     * </p>
+     * <p><i>This string must define the asset relative to your project's assets directory, and the
+     * asset must be an XML file as below:</i>
      * <pre>{@code
-     * <resources>
-     *     <recordName column1="column1_value" column2="column2_value" column3="column3_value" />
-     *     <recordName column1="column1_value" column2="column2_value" column3="column3_value" />
-     * </resources>
+     * <static_data>
+     *   <records db_version="1" /><!-- will be inserted after running migration from db_version 0 to 1-->
+     *     <record column1="column1_value" column2="column2_value" column3="column3_value" />
+     *     <record column1="column1_value" column2="column2_value" column3="column3_value" />
+     *   </records>
+     *   <records db_version="3" /><!-- will be inserted after running migration from db_version 2 to 3-->
+     *     <record column1="column1_value" column2="column2_value" column3="column3_value" column4="column4_value" />
+     *     <record column1="column1_value" column2="column2_value" column3="column3_value" column4="column4_value" />
+     *   </records>
+     * </static_data>
      * }</pre>
+     * <p>Note that the above schema is relevant since version 0.13.0.
      * @return The filename of the XML asset that defines static data for the table defined in the
      * {@link FSGetApi FSGetApi} extension that this FSStaticData annotation
      * annotates.
      */
-    String asset();
-
-    /**
-     * @return The XML detail name whose attributes define the static data records for the table
-     * defined in the {@link FSGetApi FSGetApi} extension that this FSStaticData
-     * annotation annotates. See {@link #asset() asset()} for an example.
-     */
-    String recordName();
+    String value();
 }

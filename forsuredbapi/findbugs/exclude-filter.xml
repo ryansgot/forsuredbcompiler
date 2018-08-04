@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- TODO: remove these in 0.13.0 -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
+        <Method name="createStringDoc" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
+        <Method name="fromStorage" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.PluginHelper" />
+        <Method name="getImplementationClassName" />
+        <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.StaticDataRetrieverFactory$1" />
+        <Method name="retrieve" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match><!-- Exception rethrown -->
+        <Class name="com.fsryan.forsuredb.api.staticdata.ParseHandler" />
+        <Method name="createRecord" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+
+    <!-- TODO: Remove these when you are able to write a robust set of tests -->
+    <Match>
+        <Or>
+            <Class name="com.fsryan.forsuredb.api.FSTableCreator" />
+            <Class name="com.fsryan.forsuredb.api.migration.QueryGenerator" />
+        </Or>
+        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
+    </Match>
+
+    <!-- These are okay. There is no need to remove this at present. But keep them on your radar. -->
+    <!-- Partly may be solved by delegating the serialization/deserialization to the consumer. -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory\$1" />
+        <Method name="createMigrationSet" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory$RetrieverFromStream" />
+        <Bug pattern="DM_DEFAULT_ENCODING" /> <!-- Using JSON parsing -->
+    </Match>
+</FindBugsFilter>

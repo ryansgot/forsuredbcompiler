@@ -2,17 +2,22 @@ package com.fsryan.forsuredb.api.adapter;
 
 import lombok.AccessLevel;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 @lombok.Data
 @lombok.AllArgsConstructor(access = AccessLevel.PRIVATE)
 @lombok.Builder(builderClassName = "Builder")
-/*package*/ class DocStoreTestBase {
+/*package*/ class DocStoreTestBase implements Serializable {
+    private BigInteger bigIntegerColumn;
     private BigDecimal bigDecimalColumn;
     private boolean booleanColumn;
     private Boolean booleanWrapperColumn;
     private byte[] byteArrayColumn;
+    private float floatColumn;
+    private Float floatWrapperColumn;
     private double doubleColumn;
     private Double doubleWrapperColumn;
     private Date dateColumn;
@@ -29,10 +34,14 @@ import java.util.Date;
         private String extraStringColumn;
 
         public Extension(DocStoreTestBase base, String extraStringColumn) {
-            this(base.getBigDecimalColumn(),
+            this(
+                    base.getBigIntegerColumn(),
+                    base.getBigDecimalColumn(),
                     base.isBooleanColumn(),
                     base.getBooleanWrapperColumn(),
                     base.getByteArrayColumn(),
+                    base.getFloatColumn(),
+                    base.getFloatWrapperColumn(),
                     base.getDoubleColumn(),
                     base.getDoubleWrapperColumn(),
                     base.getDateColumn(),
@@ -44,8 +53,24 @@ import java.util.Date;
                     extraStringColumn);
         }
 
-        public Extension(BigDecimal bigDecimalColumn, boolean booleanColumn, Boolean booleanWrapperColumn, byte[] byteArrayColumn, double doubleColumn, Double doubleWrapperColumn, Date dateColumn, int intColumn, Integer integerWrapperColumn, long longColumn, Long longWrapperColumn, String stringColumn, String extraStringColumn) {
-            super(bigDecimalColumn, booleanColumn, booleanWrapperColumn, byteArrayColumn, doubleColumn, doubleWrapperColumn, dateColumn, intColumn, integerWrapperColumn, longColumn, longWrapperColumn, stringColumn);
+        public Extension(BigInteger bigIntegerColumn, BigDecimal bigDecimalColumn, boolean booleanColumn, Boolean booleanWrapperColumn, byte[] byteArrayColumn, float floatColumn, Float floatWrapperColumn, double doubleColumn, Double doubleWrapperColumn, Date dateColumn, int intColumn, Integer integerWrapperColumn, long longColumn, Long longWrapperColumn, String stringColumn, String extraStringColumn) {
+            super(
+                    bigIntegerColumn,
+                    bigDecimalColumn,
+                    booleanColumn,
+                    booleanWrapperColumn,
+                    byteArrayColumn,
+                    floatColumn,
+                    floatWrapperColumn,
+                    doubleColumn,
+                    doubleWrapperColumn,
+                    dateColumn,
+                    intColumn,
+                    integerWrapperColumn,
+                    longColumn,
+                    longWrapperColumn,
+                    stringColumn
+            );
             this.extraStringColumn = extraStringColumn;
         }
     }

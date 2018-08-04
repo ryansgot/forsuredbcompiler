@@ -1,6 +1,6 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenerator;
 
-import com.fsryan.forsuredb.api.info.ColumnInfo;
+import com.fsryan.forsuredb.info.ColumnInfo;
 import com.squareup.javapoet.ParameterizedTypeName;
 
 /*package*/ class StringFinderMethodGenerator extends FinderMethodSpecGenerator {
@@ -35,6 +35,11 @@ import com.squareup.javapoet.ParameterizedTypeName;
 
     @Override
     protected boolean hasLikeGrammar() {
+        return true;
+    }
+
+    @Override
+    protected boolean allowMultipleExactMatches() {
         return true;
     }
 }

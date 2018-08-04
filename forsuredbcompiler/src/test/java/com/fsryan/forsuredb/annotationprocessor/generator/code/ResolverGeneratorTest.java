@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.api.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -22,10 +22,9 @@ public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {
     private TableContext inputTargetContext;
 
     public ResolverGeneratorTest(String classCode, TableInfo inputTable, TableContext inputTargetContext) {
-        super(classCode);
+        super(classCode, ResolverGeneratorTest.class.getName(), true);
         this.inputTable = inputTable;
         this.inputTargetContext = inputTargetContext;
-        System.setProperty("resultParameter", ResolverGeneratorTest.class.getName());
     }
 
     @Parameterized.Parameters

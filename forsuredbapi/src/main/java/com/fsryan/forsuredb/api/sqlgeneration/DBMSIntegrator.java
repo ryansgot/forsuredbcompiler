@@ -1,10 +1,13 @@
 package com.fsryan.forsuredb.api.sqlgeneration;
 
-import com.fsryan.forsuredb.api.migration.MigrationSet;
+import com.fsryan.forsuredb.api.*;
+import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
+import javax.annotation.Nonnull;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -15,14 +18,16 @@ import java.util.Map;
 public interface DBMSIntegrator {
 
     /**
-     * <p>
-     *     Given a {@link MigrationSet}, this method should return a list of raw SQL queries that migrate
-     *     the database accordingly.
-     * </p>
+     * <p>Given a {@link MigrationSet}, this method should return a list of raw SQL queries that migrate
+     * the database accordingly.
+     * <p>Note that this method signature may remove the need for an {@link FSDbInfoSerializer} to simplify the API.
+     * It's purpose is to deserialize the nested data within any migration's extra information.
      * @param migrationSet the {@link MigrationSet} for which SQL should be generated.
+     * @param dbInfoSerializer the {@link FSDbInfoSerializer} capable of deserializing extra information within
+     *                         migrations
      * @return An ordered List of raw SQL to run to migrate the database
      */
-    List<String> generateMigrationSql(MigrationSet migrationSet);
+    List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer dbInfoSerializer);
 
     /**
      * <p>
@@ -36,10 +41,10 @@ public interface DBMSIntegrator {
      *     a command to do nothing.
      * </p>
      * @param tableName the name of the table to which the row should be inserted
-     * @param columnValueMap map of columns to the values to be inserted
+     * @param columns map of columns to the values to be inserted
      * @return the raw SQL query for insertion of a record in the table.
      */
-    String newSingleRowInsertionSql(String tableName, Map<String, String> columnValueMap);
+    String newSingleRowInsertionSql(String tableName, List<String> columns);
 
     /**
      * <p>
@@ -71,38 +76,12 @@ public interface DBMSIntegrator {
     String unambiguousRetrievalColumn(String tableName, String columnName);
 
     /**
-     * <p>
-     *     Creates an ascending ORDER BY expression. This should use the unambiguous column name because it
-     *     could be used in a join wherein there are columns with the same name.
-     * </p>
-     * @param tableName the name of the table
-     * @param columnName the name of the column of the table
-     * @return the unambiguous ORDER BY expression
-     * @see #orderByDesc(String, String)
-     */
-    String orderByAsc(String tableName, String columnName);
-
-    /**
-     * <p>
-     *     Creates a descending ORDER BY expression. This should use the unambiguous column name because it
-     *     could be used in a join wherein there are columns with the same name.
-     * </p>
-     * @param tableName the name of the table
-     * @param columnName the name of the column of the table
-     * @return the unambiguous ORDER BY expression
-     * @see #orderByAsc(String, String)
-     */
-    String orderByDesc(String tableName, String columnName);
-
-    /**
-     * <p>
-     *     Formats zero or more ORDER BY expressions into one correctly formatted string for the ORDER BY
-     *     clause of a query
-     * </p>
-     * @param orderByList a possibly-empty list of ORDER BY expressions
+     * Formats zero or more {@link FSOrdering} into one correctly formatted string for the ORDER BY
+     * clause of a query
+     * @param orderings a possibly-empty list of {@link FSOrdering}
      * @return A string that correctly combines the ORDER BY expressions
      */
-    String combineOrderByExpressions(List<String> orderByList);
+    String expressOrdering(List<FSOrdering> orderings);
 
     /**
      * <p>
@@ -132,9 +111,7 @@ public interface DBMSIntegrator {
     String whereOperation(String tableName, String column, int operator);
 
     /**
-     * <p>
-     *     Format the date in the way the DBMS cares to store it
-     * </p>
+     * <p>Format the date in the way the DBMS cares to store it
      * @param date the date to format
      * @return A string representation of the date
      */
@@ -150,10 +127,19 @@ public interface DBMSIntegrator {
      */
     Date parseDate(String dateStr);
 
+    @Nonnull
+    DateFormat getDateFormat();
+
     /**
      * @return The wildcard symbol/keyword
      */
     String wildcardKeyword();
+
+    /**
+     * @return a String containing the appropriate LIKE format. For many DBMS integrations, this will be
+     * '%' + like + '%'
+     */
+    String expressLike(String like);
 
     /**
      * @return the AND symbol/keyword
@@ -164,4 +150,14 @@ public interface DBMSIntegrator {
      * @return the OR symbol/keyword
      */
     String orKeyword();
+
+    SqlForPreparedStatement createQuerySql(String table, FSProjection projection, FSSelection selection, List<FSOrdering> orderings);
+
+    SqlForPreparedStatement createQuerySql(String table, List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> orderings);
+
+    boolean alwaysUnambiguouslyAliasColumns();
+
+    SqlForPreparedStatement createUpdateSql(String table, List<String> updateColumns, FSSelection selection, List<FSOrdering> orderings);
+
+    SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings);
 }
