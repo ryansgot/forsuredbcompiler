@@ -1,4 +1,20 @@
 buildscript {
+    ext.versions = [
+            'auto': [
+                    'value': '1.6.2'
+            ]
+    ]
+    ext.deps = [
+            'auto': [
+                    'value': "com.google.auto.value:auto-value:${versions.auto.value}",
+                    'valueAnnotations': "com.google.auto.value:auto-value-annotations:${versions.auto.value}"
+            ],
+            'jsr305': 'com.google.code.findbugs:jsr305:3.0.2',
+            'test': [
+                    'junit': 'junit:junit:4.12'
+            ],
+            'gson': 'com.google.code.gson:gson:2.8.5'
+    ]
     repositories {
         jcenter()
         maven { url "https://plugins.gradle.org/m2/" }

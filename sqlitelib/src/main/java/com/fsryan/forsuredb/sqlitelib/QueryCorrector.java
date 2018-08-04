@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 class QueryCorrector {
 
     static final int LIMIT_NONE = -1;
@@ -168,19 +167,19 @@ class QueryCorrector {
 
         StringBuilder buf = new StringBuilder(baseTableName);
         for (FSJoin join : joins) {
-            final String tableToJoin = joinedTables.contains(join.getChildTable()) ? join.getParentTable() : join.getChildTable();
+            final String tableToJoin = joinedTables.contains(join.childTable()) ? join.parentTable() : join.childTable();
             joinedTables.add(tableToJoin);
 
-            buf.append(' ').append(join.getType().toString()).append(" JOIN ").append(tableToJoin);
-            if (join.getType() == FSJoin.Type.NATURAL) {
+            buf.append(' ').append(join.type().toString()).append(" JOIN ").append(tableToJoin);
+            if (join.type() == FSJoin.Type.NATURAL) {
                 continue;
             }
 
             buf.append(" ON ");
-            for (Map.Entry<String, String> colEntry : join.getChildToParentColumnMap().entrySet()) {
-                buf.append(join.getChildTable()).append('.').append(colEntry.getKey())
+            for (Map.Entry<String, String> colEntry : join.childToParentColumnMap().entrySet()) {
+                buf.append(join.childTable()).append('.').append(colEntry.getKey())
                         .append('=')
-                        .append(join.getParentTable()).append('.').append(colEntry.getValue())
+                        .append(join.parentTable()).append('.').append(colEntry.getValue())
                         .append(" AND ");
             }
 

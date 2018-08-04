@@ -162,53 +162,53 @@ public abstract class SqlGeneratorTest {
             return Arrays.asList(new Object[][] {
                     {   // 00: number greater than OrderBy.ORDER_ASC treated as ascending
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_ASC + 1)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_ASC + 1)
                             ),
                             "table.column1 ASC"
                     },
                     {   // 01: number lower than OrderBy.ORDER_DESC treated as descending
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_DESC - 1)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_DESC - 1)
                             ),
                             "table.column1 DESC"
                     },
                     {   // 02: OrderBy.ORDER_ASC treated as ASC
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_ASC)
                             ),
                             "table.column1 ASC"
                     },
                     {   // 03: OrderBy.ORDER_DESC treated as DESC
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_DESC)
                             ),
                             "table.column1 DESC"
                     },
                     {   // 04: Two different ascending on same table
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table", "column2", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table", "column2", OrderBy.ORDER_ASC)
                             ),
                             "table.column1 ASC, table.column2 ASC"
                     },
                     {   // 05: Two different descending on same table
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table", "column2", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table", "column2", OrderBy.ORDER_DESC)
                             ),
                             "table.column1 DESC, table.column2 DESC"
                     },
                     {   // 06: ASC, then DESC for different columns
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table", "column2", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table", "column2", OrderBy.ORDER_DESC)
                             ),
                             "table.column1 ASC, table.column2 DESC"
                     },
                     {   // 07: ASC, then DESC for different columns of different tables same column name
                             Arrays.asList(
-                                    new FSOrdering("table", "column1", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table2", "column1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table", "column1", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table2", "column1", OrderBy.ORDER_DESC)
                             ),
                             "table.column1 ASC, table2.column1 DESC"
                     },
@@ -312,7 +312,7 @@ public abstract class SqlGeneratorTest {
                             "table05",
                             createProjection("table05", "col01", "col02"),
                             createSelection("table05.col01 < ? AND table05.col01 > ?", "5", "0"),
-                            Arrays.asList(new FSOrdering("table05", "_id", OrderBy.ORDER_DESC)),
+                            Arrays.asList(FSOrdering.create("table05", "_id", OrderBy.ORDER_DESC)),
                             new SqlForPreparedStatement(
                                     "SELECT table05.col01 AS table05_col01, table05.col02 AS table05_col02 FROM table05 WHERE table05.col01 < ? AND table05.col01 > ? ORDER BY table05._id DESC;",
                                     new String[] {"5", "0"}
@@ -325,8 +325,8 @@ public abstract class SqlGeneratorTest {
                             createProjection("table06", "col01", "col02"),
                             createSelection("table06.col01 < ? AND table06.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table06", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table06", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table06", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table06", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT table06.col01 AS table06_col01, table06.col02 AS table06_col02 FROM table06 WHERE table06.col01 < ? AND table06.col01 > ? ORDER BY table06._id DESC, table06.modified ASC;",
@@ -340,8 +340,8 @@ public abstract class SqlGeneratorTest {
                             createDistinctProjection("table07", "col01", "col02"),
                             createSelection("table07.col01 < ? AND table07.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table07", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table07", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table07", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table07", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT DISTINCT table07.col01 AS table07_col01, table07.col02 AS table07_col02 FROM table07 WHERE table07.col01 < ? AND table07.col01 > ? ORDER BY table07._id DESC, table07.modified ASC;",
@@ -355,8 +355,8 @@ public abstract class SqlGeneratorTest {
                             createDistinctProjection("table08", "col01", "col02"),
                             createSelection(createLimits(3), "table08.col01 < ? AND table08.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table08", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table08", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table08", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table08", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT DISTINCT table08.col01 AS table08_col01, table08.col02 AS table08_col02 FROM table08 WHERE table08.col01 < ? AND table08.col01 > ? ORDER BY table08._id DESC, table08.modified ASC LIMIT 3;",
@@ -370,8 +370,8 @@ public abstract class SqlGeneratorTest {
                             createDistinctProjection("table09", "col01", "col02"),
                             createSelection(createLimits(3, 10), "table09.col01 < ? AND table09.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table09", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table09", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table09", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table09", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT DISTINCT table09.col01 AS table09_col01, table09.col02 AS table09_col02 FROM table09 WHERE table09.col01 < ? AND table09.col01 > ? ORDER BY table09._id DESC, table09.modified ASC LIMIT 3 OFFSET 10;",
@@ -385,8 +385,8 @@ public abstract class SqlGeneratorTest {
                             createDistinctProjection("table10", "col01", "col02"),
                             createSelection(createLimits(3, true), "table10.col01 < ? AND table10.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table10", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table10", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table10", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table10", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     // from the spec: In a compound SELECT, only the last or right-most simple SELECT may contain a LIMIT clause
@@ -401,8 +401,8 @@ public abstract class SqlGeneratorTest {
                             createDistinctProjection("table11", "col01", "col02"),
                             createSelection(createLimits(3, 4, true), "table11.col01 < ? AND table11.col01 > ?", "5", "0"),
                             Arrays.asList(
-                                    new FSOrdering("table11", "_id", OrderBy.ORDER_DESC),
-                                    new FSOrdering("table11", "modified", OrderBy.ORDER_ASC)
+                                    FSOrdering.create("table11", "_id", OrderBy.ORDER_DESC),
+                                    FSOrdering.create("table11", "modified", OrderBy.ORDER_ASC)
                             ),
                             new SqlForPreparedStatement(
                                     // from the spec: In a compound SELECT, only the last or right-most simple SELECT may contain a LIMIT clause
@@ -415,8 +415,8 @@ public abstract class SqlGeneratorTest {
                             createProjection("table12", "col01", "col02"),
                             createSelection(createLimits(0, 9), "table12.col1=? AND table12.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table12", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table12", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table12", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table12", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT table12.col01 AS table12_col01, table12.col02 AS table12_col02 FROM table12 WHERE table12.col1=? AND table12.col2<? ORDER BY table12.col2 ASC, table12.col1 DESC LIMIT -1 OFFSET 9;",
@@ -428,8 +428,8 @@ public abstract class SqlGeneratorTest {
                             createProjection("table13", "col01", "col02"),
                             createSelection(createLimits(0, 9, true), "table13.col1=? AND table13.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table13", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table13", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table13", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table13", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT table13.col01 AS table13_col01, table13.col02 AS table13_col02 FROM table13 WHERE table13.rowid IN (SELECT table13.rowid FROM table13 WHERE table13.col1=? AND table13.col2<? ORDER BY table13.col2 DESC, table13.col1 ASC LIMIT -1 OFFSET 9) ORDER BY table13.col2 ASC, table13.col1 DESC;",
@@ -488,7 +488,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child01",
                             Arrays.asList(
-                                    new FSJoin(Type.NATURAL, "parent01", "child01", stringMapOf())
+                                    FSJoin.create(Type.NATURAL, "parent01", "child01", stringMapOf())
                             ),
                             null,
                             null,
@@ -504,7 +504,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child02",
                             Arrays.asList(
-                                    new FSJoin(Type.LEFT, "parent02", "child02", stringMapOf("parent02_id", "_id"))
+                                    FSJoin.create(Type.LEFT, "parent02", "child02", stringMapOf("parent02_id", "_id"))
                             ),
                             null,
                             null,
@@ -520,7 +520,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child03",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent03", "child03", stringMapOf("parent03_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent03", "child03", stringMapOf("parent03_id", "_id"))
                             ),
                             null,
                             null,
@@ -536,7 +536,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child04",
                             Arrays.asList(
-                                    new FSJoin(Type.OUTER, "parent04", "child04", stringMapOf("parent04_id", "_id"))
+                                    FSJoin.create(Type.OUTER, "parent04", "child04", stringMapOf("parent04_id", "_id"))
                             ),
                             null,
                             null,
@@ -552,7 +552,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child05",
                             Arrays.asList(
-                                    new FSJoin(Type.LEFT_OUTER, "parent05", "child05", stringMapOf("parent05_id", "_id"))
+                                    FSJoin.create(Type.LEFT_OUTER, "parent05", "child05", stringMapOf("parent05_id", "_id"))
                             ),
                             null,
                             null,
@@ -568,7 +568,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child06",
                             Arrays.asList(
-                                    new FSJoin(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                                    FSJoin.create(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
                             ),
                             null,
                             null,
@@ -584,7 +584,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child06",
                             Arrays.asList(
-                                    new FSJoin(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                                    FSJoin.create(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
                             ),
                             null,
                             null,
@@ -600,8 +600,8 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child07",
                             Arrays.asList(
-                                    new FSJoin(Type.LEFT, "parent07", "child07", stringMapOf("parent07_id", "_id")),
-                                    new FSJoin(Type.INNER, "child07", "grandchild07", stringMapOf("child07_id", "_id"))
+                                    FSJoin.create(Type.LEFT, "parent07", "child07", stringMapOf("parent07_id", "_id")),
+                                    FSJoin.create(Type.INNER, "child07", "grandchild07", stringMapOf("child07_id", "_id"))
                             ),
                             null,
                             null,
@@ -617,7 +617,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child08",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent08", "child08", stringMapOf(
+                                    FSJoin.create(Type.INNER, "parent08", "child08", stringMapOf(
                                             "parent08_first_name", "first_name",
                                             "parent08_last_name", "last_name"
                                     ))
@@ -639,7 +639,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child09",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent09", "child09", stringMapOf("parent09_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent09", "child09", stringMapOf("parent09_id", "_id"))
                             ),
                             Arrays.asList(
                                     createProjection("child09", "col1", "col2")
@@ -657,7 +657,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child10",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent10", "child10", stringMapOf("parent10_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent10", "child10", stringMapOf("parent10_id", "_id"))
                             ),
                             Arrays.asList(
                                     createProjection("child10", "col1", "col2"),
@@ -676,7 +676,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child11",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent11", "child11", stringMapOf("parent11_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent11", "child11", stringMapOf("parent11_id", "_id"))
                             ),
                             Arrays.asList(
                                     createDistinctProjection("child11", "col1", "col2")
@@ -697,7 +697,7 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child12",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent12", "child12", stringMapOf("parent12_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent12", "child12", stringMapOf("parent12_id", "_id"))
                             ),
                             Arrays.asList(
                                     createDistinctProjection("child12", "col1", "col2")
@@ -715,7 +715,7 @@ public abstract class SqlGeneratorTest {
                             // order by with columns from both tables
                             "child13",
                             Arrays.asList(
-                                    new FSJoin(Type.INNER, "parent13", "child13", stringMapOf("parent13_id", "_id"))
+                                    FSJoin.create(Type.INNER, "parent13", "child13", stringMapOf("parent13_id", "_id"))
                             ),
                             Arrays.asList(
                                     createProjection("child13", "col1", "col2"),
@@ -723,8 +723,8 @@ public abstract class SqlGeneratorTest {
                             ),
                             createSelection(createLimits(5, 20), null, null),
                             Arrays.asList(
-                                    new FSOrdering("table13", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("child13", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table13", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("child13", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "SELECT child13.col1 AS child13_col1, child13.col2 AS child13_col2, table13.col1 AS table13_col1, table13.col2 AS table13_col2 FROM child13 INNER JOIN parent13 ON child13.parent13_id=parent13._id ORDER BY table13.col2 ASC, child13.col1 DESC LIMIT 5 OFFSET 20;",
@@ -810,8 +810,8 @@ public abstract class SqlGeneratorTest {
                             "table05",
                             createSelection(createLimits(5, 9), "table05.col1=? AND table05.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table05", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table05", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table05", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table05", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "DELETE FROM table05 WHERE table05.rowid IN (SELECT table05.rowid FROM table05 WHERE table05.col1=? AND table05.col2<? ORDER BY table05.col2 ASC, table05.col1 DESC LIMIT 5 OFFSET 9);",
@@ -823,8 +823,8 @@ public abstract class SqlGeneratorTest {
                             "table06",
                             createSelection(createLimits(5, 9, true), "table06.col1=? AND table06.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table06", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table06", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table06", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table06", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "DELETE FROM table06 WHERE table06.rowid IN (SELECT table06.rowid FROM table06 WHERE table06.col1=? AND table06.col2<? ORDER BY table06.col2 DESC, table06.col1 ASC LIMIT 5 OFFSET 9);",
@@ -835,8 +835,8 @@ public abstract class SqlGeneratorTest {
                             "table07",
                             createSelection(createLimits(0, 9), "table07.col1=? AND table07.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table07", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table07", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table07", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table07", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "DELETE FROM table07 WHERE table07.rowid IN (SELECT table07.rowid FROM table07 WHERE table07.col1=? AND table07.col2<? ORDER BY table07.col2 ASC, table07.col1 DESC LIMIT -1 OFFSET 9);",
@@ -847,8 +847,8 @@ public abstract class SqlGeneratorTest {
                             "table08",
                             createSelection(createLimits(0, 9, true), "table08.col1=? AND table08.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table08", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table08", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table08", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table08", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "DELETE FROM table08 WHERE table08.rowid IN (SELECT table08.rowid FROM table08 WHERE table08.col1=? AND table08.col2<? ORDER BY table08.col2 DESC, table08.col1 ASC LIMIT -1 OFFSET 9);",
@@ -942,8 +942,8 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList("col1", "col2"),
                             createSelection(createLimits(5, 9), "table05.col1=? AND table05.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table05", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table05", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table05", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table05", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "UPDATE table05 SET col1=?,col2=? WHERE table05.rowid IN (SELECT table05.rowid FROM table05 WHERE table05.col1=? AND table05.col2<? ORDER BY table05.col2 ASC, table05.col1 DESC LIMIT 5 OFFSET 9);",
@@ -956,8 +956,8 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList("col1", "col2"),
                             createSelection(createLimits(5, 9, true), "table06.col1=? AND table06.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table06", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table06", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table06", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table06", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "UPDATE table06 SET col1=?,col2=? WHERE table06.rowid IN (SELECT table06.rowid FROM table06 WHERE table06.col1=? AND table06.col2<? ORDER BY table06.col2 DESC, table06.col1 ASC LIMIT 5 OFFSET 9);",
@@ -969,8 +969,8 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList("col1", "col2"),
                             createSelection(createLimits(0, 9), "table07.col1=? AND table07.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table07", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table07", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table07", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table07", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "UPDATE table07 SET col1=?,col2=? WHERE table07.rowid IN (SELECT table07.rowid FROM table07 WHERE table07.col1=? AND table07.col2<? ORDER BY table07.col2 ASC, table07.col1 DESC LIMIT -1 OFFSET 9);",
@@ -982,8 +982,8 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList("col1", "col2"),
                             createSelection(createLimits(0, 9, true), "table08.col1=? AND table08.col2<?", new String[] {"hello", "5"}),
                             Arrays.asList(
-                                    new FSOrdering("table08", "col2", OrderBy.ORDER_ASC),
-                                    new FSOrdering("table08", "col1", OrderBy.ORDER_DESC)
+                                    FSOrdering.create("table08", "col2", OrderBy.ORDER_ASC),
+                                    FSOrdering.create("table08", "col1", OrderBy.ORDER_DESC)
                             ),
                             new SqlForPreparedStatement(
                                     "UPDATE table08 SET col1=?,col2=? WHERE table08.rowid IN (SELECT table08.rowid FROM table08 WHERE table08.col1=? AND table08.col2<? ORDER BY table08.col2 DESC, table08.col1 ASC LIMIT -1 OFFSET 9);",

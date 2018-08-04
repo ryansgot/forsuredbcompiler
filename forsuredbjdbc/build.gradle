@@ -1,14 +1,14 @@
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    compile project(':forsuredbapi')
+    implementation project(':dbinfo')
+    implementation project(':forsuredbapi')
 
-    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    compileOnly deps.jsr305
 
-
-    testCompile 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.13.0'
+    testImplementation 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+    testImplementation deps.test.junit
+    testImplementation 'org.mockito:mockito-core:2.13.0'
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

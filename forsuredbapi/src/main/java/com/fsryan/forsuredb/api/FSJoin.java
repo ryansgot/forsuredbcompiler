@@ -17,10 +17,13 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.google.auto.value.AutoValue;
+
+import javax.annotation.Nonnull;
 import java.util.Map;
 
-@lombok.AllArgsConstructor
-public class FSJoin {
+@AutoValue
+public abstract class FSJoin {
 
     /**
      * <p>
@@ -55,8 +58,12 @@ public class FSJoin {
         }
     }
 
-    @lombok.Getter private Type type;
-    @lombok.Getter private String parentTable;
-    @lombok.Getter private String childTable;
-    @lombok.Getter private Map<String, String> childToParentColumnMap;
+    public static FSJoin create(@Nonnull Type type, @Nonnull String parent, @Nonnull String child, @Nonnull Map<String, String> childToParentColumnMap) {
+        return new AutoValue_FSJoin(type, parent, child, childToParentColumnMap);
+    }
+
+    public abstract Type type();
+    public abstract String parentTable();
+    public abstract String childTable();
+    public abstract Map<String, String> childToParentColumnMap();
 }
