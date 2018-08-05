@@ -7,17 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Type;
 
-public class FSDefaultSerializer implements FSSerializer {
-
-    @Override
-    public boolean storeAsBlob() {
-        return true;
-    }
-
-    @Override
-    public final String createStringDoc(Type type, Object val) {
-        return new String(createBlobDoc(type, val));
-    }
+public class FSDefaultSerializer extends FSByteArraySerializer {
 
     @Override
     public byte[] createBlobDoc(Type type, Object val) {
@@ -26,10 +16,9 @@ public class FSDefaultSerializer implements FSSerializer {
         try {
             objectOut = new ObjectOutputStream(bytesOut);
             objectOut.writeObject(val);
-
             return bytesOut.toByteArray();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             if (objectOut != null) {
                 try {
@@ -37,8 +26,6 @@ public class FSDefaultSerializer implements FSSerializer {
                 } catch (IOException ioe2) {}
             }
         }
-
-        return new byte[0];
     }
 
     @Override
@@ -48,7 +35,7 @@ public class FSDefaultSerializer implements FSSerializer {
             objectIn = new ObjectInputStream(new ByteArrayInputStream(objectBytes));
             return (T) objectIn.readObject();
         } catch (Exception e) {
-            e.printStackTrace();
+           throw new RuntimeException(e);
         } finally {
             if (objectIn != null) {
                 try {
@@ -56,11 +43,5 @@ public class FSDefaultSerializer implements FSSerializer {
                 } catch (IOException ioe) {}
             }
         }
-
-        return null;
-    }
-    @Override
-    public final <T> T fromStorage(Type typeOfT, String stringRepresentation) {
-        return fromStorage(typeOfT, stringRepresentation.getBytes());
     }
 }

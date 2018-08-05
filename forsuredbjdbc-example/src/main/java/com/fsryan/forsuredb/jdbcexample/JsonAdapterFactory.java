@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.jdbcexample;
 
 import com.fsryan.forsuredb.api.adapter.FSSerializer;
 import com.fsryan.forsuredb.api.adapter.FSSerializerFactory;
+import com.fsryan.forsuredb.api.adapter.FSStringSerializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -13,33 +14,16 @@ public class JsonAdapterFactory implements FSSerializerFactory {
 
     @Override
     public FSSerializer create() {
-        return new Serializer();
+        return new FSStringSerializer() {
+            @Override
+            public String createStringDoc(Type type, Object val) {
+                return gson.toJson(val, type);
+            }
+
+            @Override
+            public <T> T fromStorage(Type typeOfT, String stringRepresentation) {
+                return gson.fromJson(stringRepresentation, typeOfT);
+            }
+        };
     }
-
-    private static class Serializer implements FSSerializer {
-        @Override
-        public boolean storeAsBlob() {
-            return false;
-        }
-
-        @Override
-        public String createStringDoc(Type type, Object val) {
-            return gson.toJson(val, type);
-        }
-
-        @Override
-        public byte[] createBlobDoc(Type type, Object val) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T fromStorage(Type typeOfT, byte[] objectBytes) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T fromStorage(Type typeOfT, String stringRepresentation) {
-            return gson.fromJson(stringRepresentation, typeOfT);
-        }
-    };
 }

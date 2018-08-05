@@ -68,28 +68,13 @@ public abstract class FSSerializerFactoryHelperTest {
 
     public static class FSGsonSerializerFactoryImpl implements FSSerializerFactory {
 
-        /*package*/ static FSSerializer gsonSerializer = new FSSerializer() {
+        /*package*/ static FSSerializer gsonSerializer = new FSStringSerializer() {
 
             private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             @Override
-            public boolean storeAsBlob() {
-                return false;
-            }
-
-            @Override
             public String createStringDoc(Type type, Object val) {
                 return gson.toJson(val, type);
-            }
-
-            @Override
-            public byte[] createBlobDoc(Type type, Object val) {
-                return createStringDoc(type, val).getBytes();
-            }
-
-            @Override
-            public <T> T fromStorage(Type typeOfT, byte[] objectBytes) {
-                return gson.fromJson(new JsonReader(new InputStreamReader(new ByteArrayInputStream(objectBytes))), typeOfT);
             }
 
             @Override

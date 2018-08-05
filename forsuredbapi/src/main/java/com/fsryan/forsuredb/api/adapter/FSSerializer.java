@@ -6,7 +6,7 @@ public interface FSSerializer {
     /**
      * @return true if your serializer serializes best to a byte array. Otherwise, return false
      */
-    boolean storeAsBlob();
+    boolean storeAsBlob(Type type);
     String createStringDoc(Type type, Object val);
     byte[] createBlobDoc(Type type, Object val);
     <T> T fromStorage(Type typeOfT, byte[] objectBytes);
