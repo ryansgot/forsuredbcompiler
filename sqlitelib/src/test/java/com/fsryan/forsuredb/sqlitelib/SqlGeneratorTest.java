@@ -8,12 +8,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.CollectionUtil.stringMapOf;
 import static com.fsryan.forsuredb.sqlitelib.TestData.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class SqlGeneratorTest {
 
@@ -999,11 +1003,191 @@ public abstract class SqlGeneratorTest {
         }
     }
 
-    public static class Expressions extends SqlGeneratorTest {
+    @RunWith(Parameterized.class)
+    public static class ObjectForReplacements extends SqlGeneratorTest {
+
+        private static final Date dateTest = new Date();
+
+        private final int op;
+        private final Object input;
+        private final Object expectedOutput;
+
+        public ObjectForReplacements(int op, Object input, Object expectedOutput) {
+            this.op = op;
+            this.input = input;
+            this.expectedOutput = expectedOutput;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {   // 00: = with string argument should return the same object
+                            Finder.OP_EQ,
+                            "str",
+                            "str"
+                    },
+                    {   // 01: = with date argument should format the date
+                            Finder.OP_EQ,
+                            dateTest,
+                            SqlGenerator.DATE_FORMAT.get().format(dateTest)
+                    },
+                    {   // 02: = with BigInteger should convert to string
+                            Finder.OP_EQ,
+                            BigInteger.TEN,
+                            BigInteger.TEN.toString()
+                    },
+                    {   // 03: = with BigDecimal should convert to string
+                            Finder.OP_EQ,
+                            BigDecimal.TEN,
+                            BigDecimal.TEN.toString()
+                    },
+                    {   // 04: LIKE with String should surround string with %
+                            Finder.OP_LIKE,
+                            "a string",
+                            "%a string%"
+                    },
+                    {   // 05: null input should create null output
+                            Finder.OP_EQ,
+                            null,
+                            null
+                    }
+            });
+        }
 
         @Test
-        public void shouldCorrectlyExpressLike() {
-            assertEquals("%hello%", generatorUnderTest.expressLike("hello"));
+        public void shouldCorrectlyTranslateObjectForReplacement() {
+            assertEquals(expectedOutput, generatorUnderTest.objectForReplacement(op, input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class CreateWhere extends SqlGeneratorTest {
+
+        private final String inputTableName;
+        private final List<Finder.WhereElement> inputElements;
+        private final String expectedOutputString;
+
+        public CreateWhere(String inputTableName, List<Finder.WhereElement> inputElements, String expectedOutputString) {
+            this.inputTableName = inputTableName;
+            this.inputElements = inputElements;
+            this.expectedOutputString = expectedOutputString;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {   // 00: a single condition
+                            "table",
+                            Arrays.asList(mockCondition("column", Finder.OP_EQ)),
+                            "table.column = ?"
+                    },
+                    {   // 01: two conditions on the same column anded together
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_NE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column", Finder.OP_GT)
+                            ),
+                            "table.column != ? AND table.column > ?"
+                    },
+                    {   // 02: two conditions on the same column ored together
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_LE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockCondition("column", Finder.OP_GE)
+                            ),
+                            "table.column <= ? OR table.column >= ?"
+                    },
+                    {   // 03: three conditions anded together
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_LT),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column3", Finder.OP_GE)
+                            ),
+                            "table.column < ? AND table.column2 LIKE ? AND table.column3 >= ?"
+                    },
+                    {   // 04: three conditions ored together
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_LT),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockCondition("column3", Finder.OP_GE)
+                            ),
+                            "table.column < ? OR table.column2 LIKE ? OR table.column3 >= ?"
+                    },
+                    {   // 05: Group around first two conditions anded with next condition
+                            "table",
+                            Arrays.asList(
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
+                                    mockCondition("column", Finder.OP_LT),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_END),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column3", Finder.OP_GE)
+                            ),
+                            "(table.column < ? OR table.column2 LIKE ?) AND table.column3 >= ?"
+                    },
+                    {   // 06: Group around first condition ored with grouped conditions
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_LT),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
+                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column3", Finder.OP_GE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_END)
+                            ),
+                            "table.column < ? OR (table.column2 LIKE ? AND table.column3 >= ?)"
+                    },
+                    {   // 07: Nested group
+                            "table",
+                            Arrays.asList(
+                                    mockCondition("column", Finder.OP_LT),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
+                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
+                                    mockCondition("column3", Finder.OP_GE),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_END),
+                                    mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
+                                    mockCondition("column4", Finder.OP_EQ),
+                                    mockNonCondition(Finder.WhereElement.TYPE_GROUP_END)
+                            ),
+                            "table.column < ? OR ((table.column2 LIKE ? AND table.column3 >= ?) OR table.column4 = ?)"
+                    },
+                    {   // 08: Empty where
+                            "table",
+                            Collections.<Finder.WhereElement>emptyList(),
+                            null
+                    }
+            });
+        }
+        @Test
+        public void shouldCorrectlyGenerateWhere() {
+            assertEquals(expectedOutputString, generatorUnderTest.createWhere(inputTableName, inputElements));
+        }
+
+        private static Finder.WhereElement mockNonCondition(int type) {
+            Finder.WhereElement ret = mock(Finder.WhereElement.class);
+            when(ret.type()).thenReturn(type);
+            return ret;
+        }
+
+        private static Finder.WhereElement mockCondition(String column, int op) {
+            Finder.WhereElement ret = mock(Finder.WhereElement.class);
+            when(ret.type()).thenReturn(Finder.WhereElement.TYPE_CONDITION);
+            when(ret.column()).thenReturn(column);
+            when(ret.op()).thenReturn(op);
+            return ret;
         }
     }
 }

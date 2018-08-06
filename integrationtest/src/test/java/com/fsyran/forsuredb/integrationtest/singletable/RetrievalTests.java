@@ -12,7 +12,9 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.*;
@@ -679,7 +681,7 @@ public class RetrievalTests {
     }
 
     @Test
-    @DisplayName("finding by id from several match criteria")
+    @DisplayName("finding by id from multiple exact match criteria")
     public void shouldFindRecordWithIdInExactMatchCriteria() {
         long id1 = randomStoredRecordId();
         long id2 = randomStoredRecordId();
@@ -712,10 +714,10 @@ public class RetrievalTests {
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
                         .find().byId(id1)
-                            .or().byId(id2)
-                            .or().byId(id3)
-                            .or().byId(id4)
-                            .or().byId(id5)
+                        .or().byId(id2)
+                        .or().byId(id3)
+                        .or().byId(id4)
+                        .or().byId(id5)
                         .then()
                         .get()
         );
@@ -3373,10 +3375,140 @@ public class RetrievalTests {
         assertListEquals(expected, actual);
     }
 
-    // As of 0.13.0-beta, it is known that the below are not supported. So don't bother testing at the moment.
-    // TODO: find by multiple parameters with an OR and AND
-    // TODO: find by multiple parameters with an AND and OR
-    // TODO: find by multiple parameters with multiple AND and ORs
+    @Test
+    @DisplayName("find by (long_column < some_long or long_column > some other id) AND boolean_column true")
+    public void shouldCorrectlyFindWithParensAroundOrConditionAndAndOutsideOfParens() {
+        final Pair<Long, Long> exclusionRange = randomRange(() -> randomLong());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find()
+                            .startGroup()
+                                .byLongColumnLessThan(exclusionRange.first)
+                                .or().byLongColumnGreaterThan(exclusionRange.second)
+                            .endGroup()
+                            .and().byBooleanColumn()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                booleanColOf(asp) && (longColOf(asp) < exclusionRange.first || longColOf(asp) > exclusionRange.second)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by boolean_column true AND (long_column < some_long or long_column > some other id)")
+    public void shouldCorrectlyFindWithConditionAndParensAroundOrCondition() {
+        final Pair<Long, Long> exclusionRange = randomRange(() -> randomLong());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().byBooleanColumn()
+                            .and().startGroup()
+                                .byLongColumnLessThan(exclusionRange.first)
+                                .or().byLongColumnGreaterThan(exclusionRange.second)
+                            .endGroup()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                booleanColOf(asp) && (longColOf(asp) < exclusionRange.first || longColOf(asp) > exclusionRange.second)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by (boolean_column true OR boolean_wrapper_column true) AND (long_column < some_long or long_column > some other id)")
+    public void shouldCorrectlyFindWithMultipleConditionGroupsAndedTogether() {
+        final Pair<Long, Long> exclusionRange = randomRange(() -> randomLong());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find()
+                            .startGroup()
+                                .byBooleanColumn()
+                                .or().byBooleanWrapperColumn()
+                            .endGroup()
+                            .and().startGroup()
+                                .byLongColumnLessThan(exclusionRange.first)
+                                .or().byLongColumnGreaterThan(exclusionRange.second)
+                            .endGroup()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                (booleanColOf(asp) || booleanWrapperColOf(asp))
+                        && (longColOf(asp) < exclusionRange.first || longColOf(asp) > exclusionRange.second)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by (boolean_column true OR boolean_wrapper_column true) AND (long_column < some_long or long_column > some other id)")
+    public void shouldCorrectlyFindWithMultipleConditionGroupsOredTogether() {
+        final Pair<Long, Long> exclusionRange = randomRange(() -> randomLong());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find()
+                            .startGroup()
+                                .byBooleanColumn()
+                                .or().byBooleanWrapperColumn()
+                            .endGroup()
+                        .and().startGroup()
+                                .byLongColumnLessThan(exclusionRange.first)
+                                .or().byLongColumnGreaterThan(exclusionRange.second)
+                            .endGroup()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                (booleanColOf(asp) || booleanWrapperColOf(asp))
+                        && (longColOf(asp) < exclusionRange.first || longColOf(asp) > exclusionRange.second)
+        );
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("find by (boolean_column true OR (boolean_wrapper_column true AND int_column > someInt)) AND (long_column < some_long or long_column > some other id)")
+    public void shouldCorrectlyFindWithNestedGroups() {
+        final Pair<Long, Long> exclusionRange = randomRange(() -> randomLong());
+        final int lowerNonInclusiveIntColumnBound = randomInt();
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find()
+                            .startGroup()
+                                .byBooleanColumn()
+                                .or().startGroup()
+                                    .byBooleanWrapperColumn()
+                                    .and().byIntColumnGreaterThan(lowerNonInclusiveIntColumnBound)
+                                .endGroup()
+                            .endGroup()
+                        .and().startGroup()
+                                .byLongColumnLessThan(exclusionRange.first)
+                                .or().byLongColumnGreaterThan(exclusionRange.second)
+                            .endGroup()
+                        .then()
+                        .order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asp ->
+                (booleanColOf(asp) || (booleanWrapperColOf(asp) && intColOf(asp) > lowerNonInclusiveIntColumnBound))
+                        && (longColOf(asp) < exclusionRange.first || longColOf(asp) > exclusionRange.second)
+        );
+
+        assertListEquals(expected, actual);
+    }
 
     @Test
     @DisplayName("find with a one-column projection")
@@ -3384,7 +3516,6 @@ public class RetrievalTests {
         List<Long> actual = retrieveListOfIdColumn(
                 allTypesTable()
                         .find().columns("_id")
-                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3401,7 +3532,6 @@ public class RetrievalTests {
         AllTypesTable api = allTypesTable().getApi();
         Retriever r = allTypesTable()
                 .find().columns("boolean_column", "int_column", "long_column", "float_column", "double_column")
-                    .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
                 .then()
                 .order().byId(OrderBy.ORDER_ASC)
                 .then()
@@ -3439,7 +3569,6 @@ public class RetrievalTests {
         List<Boolean> actual = retrieveListOfBooleanColumn(
                 allTypesTable()
                         .find().distinct("boolean_column")
-                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3459,7 +3588,6 @@ public class RetrievalTests {
         List<Pair<Boolean, Boolean>> actual = retrieveListOfPairBooleanColumnBooleanWrapperColumn(
                 allTypesTable()
                         .find().distinct("boolean_column", "boolean_wrapper_column")
-                            .byNotDeleted() // <-- TODO: currently, API kind of sucks because it forces you to add some searching criteria before calling .then()
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3471,6 +3599,174 @@ public class RetrievalTests {
                 .collect(toList());
 
         assertListEquals(expected, actual);
+    }
+
+    // limit and offset tests
+
+    @Test
+    @DisplayName("find first record with no offset")
+    public void shouldCorrectlyFindFirstRecordWithOffset() {
+        AllTypesTable.Record expected = savedRecords.stream().findFirst().get().getAttemptedRecord() ;
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().first().then().get());
+        assertEquals(expected, actual.get(0));
+        assertEquals(1, actual.size());
+    }
+
+    @Test
+    @DisplayName("find last record with no offset")
+    public void shouldCorrectlyFindLastRecord() {
+        AllTypesTable.Record expected = savedRecords.stream()
+                .skip(NUM_RECORDS - 1)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .findFirst()
+                .orElse(null);
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().last().then().get());
+        assertEquals(expected, actual.get(0));
+        assertEquals(1, actual.size());
+    }
+
+    @Test
+    @DisplayName("find first n records with no offset")
+    public void shouldCorrectlyFindFirstNRecords() {
+        int numRecords = Math.max(randomSavedRecordIdx(), 1);
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .limit(numRecords)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().first(numRecords).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(numRecords, actual.size());
+    }
+
+    @Test
+    @DisplayName("find last n records with no offset")
+    public void shouldCorrectlyFindLastNRecords() {
+        int numRecords = Math.max(randomSavedRecordIdx(), 1);
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .skip(NUM_RECORDS - numRecords)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().last(numRecords).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(numRecords, actual.size());
+    }
+
+    @Test
+    @DisplayName("find first n records with no offset and limit greater than number of records")
+    public void shouldCorrectlyFindFirstNRecordsWhereNGreaterThanNumberOfRecords() {
+        int numRecords = Math.max(NUM_RECORDS + 1, randomInt());
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().first(numRecords).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(NUM_RECORDS, actual.size());
+    }
+
+    @Test
+    @DisplayName("find last n records with no offset and limit greater than number of records")
+    public void shouldCorrectlyFindLastNRecordsWhereNGreaterThanNumberOfRecords() {
+        int numRecords = Math.max(NUM_RECORDS + 1, randomInt());
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().last(numRecords).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(NUM_RECORDS, actual.size());
+    }
+
+    @Test
+    @DisplayName("find nth record")
+    public void shouldCorrectlyFindNthRecord() {
+        int offset = Math.max(randomSavedRecordIdx(), 1);
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .skip(offset)
+                .limit(1)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().nth(offset).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(1, actual.size());
+    }
+
+    @Test
+    @DisplayName("find nth record from last")
+    public void shouldCorrectlyFindNthRecordFromLast() {
+        int offset = Math.max(randomSavedRecordIdx(), 1);
+        List<AllTypesTable.Record> expected = savedRecords.stream()
+                .skip(NUM_RECORDS - offset - 1)
+                .limit(1)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().nthFromLast(offset).then().get());
+        assertListEquals(expected, actual);
+        assertEquals(1, actual.size());
+    }
+
+    @Test
+    @DisplayName("find nth record when offset greater than number of records")
+    public void shouldCorrectlyFindNthRecordWhenOffsetGreaterThanNumberOfRecords() {
+        int offset = Math.max(NUM_RECORDS, randomInt());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().nth(offset).then().get());
+        assertListEquals(Collections.emptyList(), actual);
+    }
+
+    @Test
+    @DisplayName("find nth record from last when offset greater than number of records")
+    public void shouldCorrectlyFindNthRecordFromLastWhenOffsetGreaterThanNumberOfRecords() {
+        int offset = Math.max(NUM_RECORDS, randomInt());
+        List<AllTypesTable.Record> actual = retrieveToList(allTypesTable().find().nthFromLast(offset).then().get());
+        assertListEquals(Collections.emptyList(), actual);
+    }
+
+    @Test
+    @DisplayName("find with limit and offset from first with finding criteria")
+    public void shouldCorrectlyFindWithLimitAndOffsetFromFirstWithFindingCriteria() {
+        List<AllTypesTable.Record> matching = savedRecords.stream()
+                .filter(AllTypesTableTestUtil::booleanColOf)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        int offset = randomInt(matching.size());
+        int limit = randomInt(matching.size() - offset);
+        List<AllTypesTable.Record> expected = matching.stream()
+                .skip(offset)
+                .limit(limit)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().first(limit, offset)
+                        .byBooleanColumn()
+                        .then().order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        assertListEquals(expected, actual);
+        assertEquals(limit, actual.size());
+    }
+
+    @Test
+    @DisplayName("find with limit and offset from last with finding criteria")
+    public void shouldCorrectlyFindWithLimitAndOffsetFromLastWithFindingCriteria() {
+        List<AllTypesTable.Record> matching = savedRecords.stream()
+                .filter(AllTypesTableTestUtil::booleanColOf)
+                .map(AttemptedSavePair::getAttemptedRecord)
+                .collect(toList());
+        int offset = randomInt(matching.size());
+        int limit = randomInt(matching.size() - offset);
+        List<AllTypesTable.Record> expected = matching.stream()
+                .skip(matching.size() - offset - limit)
+                .limit(limit)
+                .collect(toList());
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable()
+                        .find().last(limit, offset)
+                        .byBooleanColumn()
+                        .then().order().byId(OrderBy.ORDER_ASC)
+                        .then()
+                        .get()
+        );
+        assertListEquals(expected, actual);
+        assertEquals(limit, actual.size());
     }
 
     private static AllTypesTable.Record randomSavedRecord() {
