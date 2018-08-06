@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.methodspecgenerator.FinderMethodSpecGenerator;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.DocStoreFinder;
 import com.fsryan.forsuredb.api.Finder;
@@ -85,7 +84,7 @@ public class FinderGenerator extends JavaSourceGenerator {
     }
 
     private void addQueryBuilderMethods(TypeSpec.Builder codeBuilder) {
-        ParameterizedTypeName conjunctionTypeName = ParameterizedTypeName.get(ClassName.get(Conjunction.AndOr.class), TypeVariableName.get("R"), paramaterizedFinderType);
+        ParameterizedTypeName conjunctionTypeName = ParameterizedTypeName.get(ClassName.get(Conjunction.GroupableAndOr.class), TypeVariableName.get("R"), paramaterizedFinderType);
         ParameterizedTypeName betweenTypeName = ParameterizedTypeName.get(ClassName.get(Finder.Between.class), TypeVariableName.get("R"), paramaterizedFinderType);
         for (ColumnInfo column : columnsSortedByName) {
             if (!column.searchable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {

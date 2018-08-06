@@ -1,7 +1,6 @@
 package com.fsryan.forsuredb.api;
 
 public interface Conjunction<R extends Resolver> {
-    R then();
 
     interface And<R extends Resolver, T> extends Conjunction<R> {
         T and();
@@ -11,5 +10,10 @@ public interface Conjunction<R extends Resolver> {
         T or();
     }
 
-    interface AndOr<R extends Resolver, T> extends And<R, T>, Or<R, T> {}
+    interface GroupableAndOr<R extends Resolver, T> extends And<R, T>, Or<R, T> {
+        T startGroup();
+        GroupableAndOr<R, T> endGroup();
+    }
+
+    R then();
 }
