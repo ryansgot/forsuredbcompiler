@@ -20,39 +20,33 @@ package com.fsryan.forsuredb.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
- * <p>
- *     Resolver is the entry point for all querying of a specific table.
- *     Typical usage is to call {@link #find()}, followed by chained method
- *     calls that narrow down the records that will be affected/returned by the
- *     query. Retrieval queries are terminated by one of the following calls:
- *     <ul>
- *         <li>
- *             {@link #get()}
- *         </li>
- *         <li>
- *             {@link #preserveQueryStateAndGet()}
- *         </li>
- *     </ul>
- *     Delete/Create/Update queries have the preceding stage of narrowing down
- *     the affected records, followed by an additional set of method calls
- *     that determine how to change any affected records. The transition to
- *     this stage is triggered by a the {@link #set()} call.
- * </p>
- * <p>
- *     An extension of Resolver will be automatically generated for you at
- *     compile time for each of your extensions of {@link FSGetApi} that are
- *     annotated with the {@link com.fsryan.forsuredb.annotations.FSTable} annotation.
- *     If the table you defined has {@link com.fsryan.forsuredb.annotations.ForeignKey}
- *     annotated methods, then additional public methods will be created that
- *     allow you to create a query that joins to a foreign table. Access to
- *     instances of this resolver is made available through the generated
- *     ForSure class that will be specific to each project.
- * </p>
- * @param <T> The class of resolver that gets passed back when context is reverted
- *           to Resolver context from Finder or OrderBy context
+ * <p>Resolver is the entry point for all querying of a specific table.
+ * Typical usage is to call {@link #find()}, followed by chained method calls
+ * that narrow down the records that will be affected/returned by the query.
+ * Retrieval queries are terminated by one of the following methods:
+ * <ul>
+ *   <li>{@link #get()}</li>
+ *   <li>{@link #preserveQueryStateAndGet()}</li>
+ * </ul>
+ * <p>Delete/Create/Update queries have the preceding stage of narrowing down
+ * the affected records followed by an additional set of method calls
+ * determining how to change any affected records. The transition to this stage
+ * is triggered by a the {@link #set()} method.
+ * <p>An extension of Resolver will be automatically generated for you at
+ * compile time for each of your extensions of {@link FSGetApi} that are
+ * annotated with the {@link com.fsryan.forsuredb.annotations.FSTable}\
+ * annotation. If the table you defined has
+ * {@link com.fsryan.forsuredb.annotations.ForeignKey} or
+ * {@link com.fsryan.forsuredb.annotations.FSForeignKey} annotated methods,
+ * then additional public methods will be created that allow you to joins to a
+ * the foreign table in the same querying chain.
+ * <p>Access to instances of this resolver is made available through the
+ * generated ForSure class that will be specific to each project.
+ * @param <T> The class of resolver that gets passed back when context is
+ *           reverted to Resolver context from Finder, OrderBy, or joining
+ *           context
  * @param <U> The uniform locator for records
  *           You set the "resultParameter" property of the fsryan
  *           gradle extension with the fully-qualified class name of this
@@ -64,13 +58,13 @@ import java.util.Map;
  *           {@link TypedRecordContainer} class
  * @param <G> The extension of {@link FSGetApi} that defines the interface for
  *           retrieving fields of a record
- * @param <S> The extension of {@link FSSaveApi} that is able to perform
+ * @param <S> The extension of {@link BaseSetter} that is able to perform
  *           delete/insert/update actions
  * @param <F> The extension of {@link Finder} that is able to form queries
  * @see RecordContainer
  * @see TypedRecordContainer
  * @see FSGetApi
- * @see FSSaveApi
+ * @see BaseSetter
  * @see Finder
  * @author Ryan Scott
  */

@@ -16,10 +16,10 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * </p>
      * @param exactClassMatch the exact class you want
      * @param orExactClassMatches the other possible class matches
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      * @see #byClassName(String, String...)
      */
-    public Conjunction.AndOr<R, F> byClass(Class exactClassMatch, Class... orExactClassMatches) {
+    public Conjunction.GroupableAndOr<R, F> byClass(Class exactClassMatch, Class... orExactClassMatches) {
         String[] otherClassNames = new String[orExactClassMatches.length];
         for (int i = 0; i < orExactClassMatches.length; i++) {
             otherClassNames[i] = orExactClassMatches[i].getName();
@@ -33,10 +33,10 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *     {@link Class} object instead of the fully qualified class name.
      * </p>
      * @param exclusion
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      * @see #byClassNameNot(String)
      */
-    public Conjunction.AndOr<R, F> byClassNot(Class exclusion) {
+    public Conjunction.GroupableAndOr<R, F> byClassNot(Class exclusion) {
         return byClassNameNot(exclusion == null ? "" : exclusion.getName());
     }
 
@@ -46,9 +46,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * </p>
      * @param exactMatch the exact class name of the class you want
      * @param orExactMatches the other possible matches
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassName(String exactMatch, String... orExactMatches) {
+    public Conjunction.GroupableAndOr<R, F> byClassName(String exactMatch, String... orExactMatches) {
         if (orExactMatches.length == 0) {
             addToBuf("class_name", OP_EQ, exactMatch);
         } else {
@@ -67,9 +67,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires exclusion for class_name
      * </p>
      * @param exclusion
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameNot(String exclusion) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameNot(String exclusion) {
         addToBuf("class_name", OP_NE, exclusion);
         return conjunction;
     }
@@ -79,9 +79,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires nonInclusiveUpperBound for class_name
      * </p>
      * @param nonInclusiveUpperBound
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameLessThan(String nonInclusiveUpperBound) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameLessThan(String nonInclusiveUpperBound) {
         addToBuf("class_name", OP_LT, nonInclusiveUpperBound);
         return conjunction;
     }
@@ -91,9 +91,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires nonInclusiveLowerBound for class_name
      * </p>
      * @param nonInclusiveLowerBound
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameGreaterThan(String nonInclusiveLowerBound) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameGreaterThan(String nonInclusiveLowerBound) {
         addToBuf("class_name", OP_GT, nonInclusiveLowerBound);
         return conjunction;
     }
@@ -103,9 +103,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires inclusiveUpperBound for class_name
      * </p>
      * @param inclusiveUpperBound
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameLessThanInclusive(String inclusiveUpperBound) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameLessThanInclusive(String inclusiveUpperBound) {
         addToBuf("class_name", OP_LE, inclusiveUpperBound);
         return conjunction;
     }
@@ -115,9 +115,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires inclusiveLowerBound for class_name
      * </p>
      * @param inclusiveLowerBound
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameGreaterThanInclusive(String inclusiveLowerBound) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameGreaterThanInclusive(String inclusiveLowerBound) {
         addToBuf("class_name", OP_GE, inclusiveLowerBound);
         return conjunction;
     }
@@ -151,9 +151,9 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      *   add criteria to a query that requires like for class_name
      * </p>
      * @param like
-     * @return a {@link Conjunction.AndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.AndOr<R, F> byClassNameLike(String like) {
+    public Conjunction.GroupableAndOr<R, F> byClassNameLike(String like) {
         addToBuf("class_name", OP_LIKE, like);
         return conjunction;
     }

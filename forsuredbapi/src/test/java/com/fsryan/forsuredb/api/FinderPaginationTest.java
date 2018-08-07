@@ -19,8 +19,6 @@ public abstract class FinderPaginationTest extends FinderTest {
     private final int expectedOffset;
     private final boolean expectedFromBottom;
 
-    protected Finder finderUnderTest;
-
     public FinderPaginationTest(int fromTop, int offsetFromTop, int fromBottom, int offsetFromBottom, int expectedLimit, int expectedOffset, boolean expectedFromBottom) {
         this.fromTop = fromTop;
         this.offsetFromTop = offsetFromTop;
@@ -33,9 +31,7 @@ public abstract class FinderPaginationTest extends FinderTest {
 
     @Before
     public void setUpFinder() {
-        finderUnderTest = new Finder(mockResolver) {}
-                .first(fromTop, offsetFromTop)
-                .last(fromBottom, offsetFromBottom);
+        finderUnderTest.first(fromTop, offsetFromTop).last(fromBottom, offsetFromBottom);
     }
 
     @Test

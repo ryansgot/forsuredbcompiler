@@ -216,7 +216,7 @@ public abstract class FinderMethodSpecGenerator {
         if (returnType.rawType.simpleName().equals("Between")) {
             jdBuilder.returns("a $L that allows you to provide an upper bound for this criteria", JavadocInfo.inlineClassLink(Finder.Between.class));
         } else {
-            jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(Conjunction.AndOr.class));
+            jdBuilder.returns("a $L that allows you to continue adding more query criteria", JavadocInfo.inlineClassLink(Conjunction.GroupableAndOr.class));
         }
         return jdBuilder.addLine().build();
     }

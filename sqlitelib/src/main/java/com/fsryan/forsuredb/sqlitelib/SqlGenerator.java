@@ -27,6 +27,8 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -129,25 +131,6 @@ public class SqlGenerator implements DBMSIntegrator {
     }
 
     @Override
-    public String whereOperation(String tableName, String column, int operation) {
-        switch (operation) {
-            case Finder.OP_EQ: return unambiguousColumn(tableName, column) + " =";
-            case Finder.OP_GE: return unambiguousColumn(tableName, column) + " >=";
-            case Finder.OP_GT: return unambiguousColumn(tableName, column) + " >";
-            case Finder.OP_LE: return unambiguousColumn(tableName, column) + " <=";
-            case Finder.OP_LIKE: return unambiguousColumn(tableName, column) + " LIKE";
-            case Finder.OP_LT: return unambiguousColumn(tableName, column) + " <";
-            case Finder.OP_NE: return unambiguousColumn(tableName, column) + " !=";
-        }
-        return "";
-    }
-
-    @Override
-    public String formatDate(Date date) {
-        return DATE_FORMAT.get().format(date);
-    }
-
-    @Override
     public Date parseDate(String dateStr) {
         try {
             return DATE_FORMAT.get().parse(dateStr);
@@ -161,26 +144,6 @@ public class SqlGenerator implements DBMSIntegrator {
     @Override
     public DateFormat getDateFormat() {
         return DATE_FORMAT.get();
-    }
-
-    @Override
-    public String wildcardKeyword() {
-        return "%";
-    }
-
-    @Override
-    public String expressLike(String like) {
-        return '%' + like + '%';
-    }
-
-    @Override
-    public String andKeyword() {
-        return "AND";
-    }
-
-    @Override
-    public String orKeyword() {
-        return "OR";
     }
 
     @Override
@@ -244,6 +207,58 @@ public class SqlGenerator implements DBMSIntegrator {
         );
     }
 
+    @Override
+    public String createWhere(@Nonnull String tableName, @Nonnull List<Finder.WhereElement> whereElements) {
+        if (whereElements.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        for (Finder.WhereElement element : whereElements) {
+            switch (element.type()) {
+                case Finder.WhereElement.TYPE_GROUP_START:
+                    buf.append('(');
+                    break;
+                case Finder.WhereElement.TYPE_GROUP_END:
+                    buf.append(')');
+                    break;
+                case Finder.WhereElement.TYPE_OR_CONJUNCTION:
+                    buf.append(" OR ");
+                    break;
+                case Finder.WhereElement.TYPE_AND_CONJUNCTION:
+                    buf.append(" AND ");
+                    break;
+                case Finder.WhereElement.TYPE_CONDITION:
+                    buf.append(unambiguousColumn(tableName, element.column())).append(' ')
+                            .append(operationStr(element.op())).append(" ?");
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown WhereElement type: " + element.type());
+            }
+        }
+        return buf.toString();
+    }
+
+    @Override
+    public Object objectForReplacement(int op, Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        if (op == Finder.OP_LIKE) {
+            return expressLike(String.valueOf(obj));
+        }
+
+        Class<?> cls = obj.getClass();
+        return cls == Date.class ? DATE_FORMAT.get().format((Date) obj)
+                : cls == BigInteger.class || cls == BigDecimal.class ? String.valueOf(obj)
+                : obj;
+    }
+
+    private static String expressLike(String like) {
+        return '%' + like + '%';
+    }
+
     private static boolean isMigrationHandledOnCreate(Migration m, Map<String, TableInfo> targetSchema) {
         switch (m.type()) {
             case ADD_UNIQUE_INDEX:
@@ -258,5 +273,19 @@ public class SqlGenerator implements DBMSIntegrator {
                         || table.getColumn(m.columnName()).unique();
         }
         return false;
+    }
+
+    private String operationStr(int op) {
+        switch (op) {
+            case Finder.OP_EQ: return "=";
+            case Finder.OP_GE: return ">=";
+            case Finder.OP_GT: return ">";
+            case Finder.OP_LE: return "<=";
+            case Finder.OP_LIKE: return "LIKE";
+            case Finder.OP_LT: return "<";
+            case Finder.OP_NE: return "!=";
+            case Finder.OP_NONE: throw new IllegalArgumentException("OP_NONE is unresolvable to an operator");
+            default: throw new IllegalArgumentException("Unrecognized operation: " + op);
+        }
     }
 }

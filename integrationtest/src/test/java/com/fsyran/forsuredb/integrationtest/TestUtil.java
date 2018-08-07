@@ -69,6 +69,10 @@ public abstract class TestUtil {
         return ThreadLocalRandom.current().nextInt();
     }
 
+    public static int randomInt(int bound) {
+        return ThreadLocalRandom.current().nextInt(bound);
+    }
+
     public static long randomLong() {
         return ThreadLocalRandom.current().nextLong();
     }

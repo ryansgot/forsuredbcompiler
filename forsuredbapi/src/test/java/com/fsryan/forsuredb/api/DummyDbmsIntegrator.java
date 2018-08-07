@@ -48,16 +48,6 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     }
 
     @Override
-    public String whereOperation(String tableName, String column, int operator) {
-        return "";
-    }
-
-    @Override
-    public String formatDate(Date date) {
-        return DATE_FORMAT.format(date);
-    }
-
-    @Override
     public Date parseDate(String dateStr) {
         try {
             return DATE_FORMAT.parse(dateStr);
@@ -70,26 +60,6 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
     @Override
     public DateFormat getDateFormat() {
         return DATE_FORMAT;
-    }
-
-    @Override
-    public String wildcardKeyword() {
-        return "";
-    }
-
-    @Override
-    public String expressLike(String like) {
-        return null;
-    }
-
-    @Override
-    public String andKeyword() {
-        return "";
-    }
-
-    @Override
-    public String orKeyword() {
-        return "";
     }
 
     @Override
@@ -114,6 +84,16 @@ public class DummyDbmsIntegrator implements DBMSIntegrator {
 
     @Override
     public SqlForPreparedStatement createDeleteSql(String table, FSSelection selection, List<FSOrdering> orderings) {
+        return null;
+    }
+
+    @Override
+    public String createWhere(String tableName, List<Finder.WhereElement> whereElements) {
+        return null;
+    }
+
+    @Override
+    public Object objectForReplacement(int op, Object obj) {
         return null;
     }
 }
