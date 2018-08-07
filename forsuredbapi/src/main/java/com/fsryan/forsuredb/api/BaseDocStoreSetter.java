@@ -9,7 +9,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extends BaseSetter<U, R> implements FSDocStoreSaveApi<U, T> {
+public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T, S extends BaseDocStoreSetter<U, R, T, S>> extends BaseSetter<U, R, S> {
 
     private static FSSerializer serializer = new FSSerializerFactoryPluginHelper().getNew().create();
 
@@ -29,8 +29,15 @@ public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extend
         super(dateFormat, queryable, selection, orderings, recordContainer);
     }
 
-    @Override
-    public FSDocStoreSaveApi<U, T> object(T obj) {
+
+    /**
+     * <p>Set the object to persist. The fully-qualified class name of the
+     * object as well as a serialized version of the object will be persisted
+     * when you call {@link #save()}
+     * @param obj The object to persist
+     * @return this same {@link BaseDocStoreSetter} object
+     */
+    public S obj(T obj) {
         enrichRecordContainerFromPropertiesOf(obj);
         recordContainer.put("class_name", obj.getClass().getName());
         if (serializer.storeAsBlob(obj.getClass())) {
@@ -38,7 +45,7 @@ public abstract class BaseDocStoreSetter<U, R extends RecordContainer, T> extend
         } else {
             recordContainer.put("doc", serializer.createStringDoc(obj.getClass(), obj));
         }
-        return this;
+        return (S) this;
     }
 
     protected abstract void enrichRecordContainerFromPropertiesOf(T obj);
