@@ -136,7 +136,7 @@ public class ExampleApp {
                     .then()
                     .set();
 
-            summarizeSave(textIO, setter.object(myPojo).save());
+            summarizeSave(textIO, setter.obj(myPojo).save());
         }
 
         private void printRecords(TextIO textIO) {

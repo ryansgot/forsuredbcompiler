@@ -74,7 +74,7 @@ import java.util.Map;
  * @see Finder
  * @author Ryan Scott
  */
-public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends FSSaveApi<U>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
+public abstract class Resolver<T extends Resolver, U, R extends RecordContainer, G extends FSGetApi, S extends BaseSetter<U, R, S>, F extends Finder<T, F>, O extends OrderBy<T, O>> {
 
     protected final ForSureInfoFactory<U, R> infoFactory;
     protected U lookupResource;

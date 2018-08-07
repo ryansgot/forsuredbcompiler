@@ -17,7 +17,7 @@ import javax.annotation.Generated;
  * </p>
  */
 @Generated("com.fsryan.forsuredb.annotationprocessor.FSAnnotationProcessor")
-public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest, TypedRecordContainer> implements TestTable3SaveApi {
+public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest, TypedRecordContainer, TestTable3Setter> {
     public TestTable3Setter(FSQueryable<SetterGeneratorTest, TypedRecordContainer> queryable,
             FSSelection selection, List<FSOrdering> orderings,
             TypedRecordContainer recordContainer) {
@@ -28,16 +28,6 @@ public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest, Type
             FSQueryable<SetterGeneratorTest, TypedRecordContainer> queryable, FSSelection selection,
             List<FSOrdering> orderings, TypedRecordContainer recordContainer) {
         super(dateFormat, queryable, selection, orderings, recordContainer);
-    }
-
-    /**
-     * <p>
-     *   Set the value of column _id on the record to store
-     * </p>
-     */
-    public final TestTable3Setter id(long id) {
-        recordContainer.put("_id", id);
-        return this;
     }
 
     /**
@@ -57,16 +47,6 @@ public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest, Type
      */
     public final TestTable3Setter competitorAppRating(BigDecimal competitorAppRating) {
         recordContainer.put("competitor_app_rating", competitorAppRating.toPlainString());
-        return this;
-    }
-
-    /**
-     * <p>
-     *   Set the value of column deleted on the record to store
-     * </p>
-     */
-    public final TestTable3Setter deleted(boolean deleted) {
-        recordContainer.put("deleted", deleted ? 1 : 0);
         return this;
     }
 

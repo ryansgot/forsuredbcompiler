@@ -18,7 +18,6 @@
 package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.generator.code.*;
-import com.fsryan.forsuredb.annotationprocessor.generator.code.SaveApiGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.resource.MigrationGenerator;
 import com.fsryan.forsuredb.annotationprocessor.util.PropertyRetriever;
 import com.fsryan.forsuredb.annotations.FSTable;
@@ -64,8 +63,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     private static final String LOG_TAG = FSAnnotationProcessor.class.getSimpleName();
 
     private static boolean getterImplementationsCreated = false;
-    private static boolean saveApisCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
-    private static boolean setterImplementationsCreated = false;
+    private static boolean settersCreated = false;          // <-- maintain state so saveapi APIs don't have to be created more than once
     private static boolean migrationsCreated = false;          // <-- maintain state so migrations don't have to be created more than once
     private static boolean tableCreatorClassCreated = false;   // <-- maintain state so TableCreator class does not have to be created more than once
     private static boolean finderClassesCreated = false;       // <-- maintain state so finder classes don't have to be created more than once
@@ -102,8 +100,8 @@ public class FSAnnotationProcessor extends AbstractProcessor {
             createGetterApis(pc);
         }
 
-        if (!saveApisCreated) {
-            createSetterApis(pc);
+        if (!settersCreated) {
+            createSetters(pc);
         }
         if (!migrationsCreated && properties().createMigrations()) {
             createMigrations(pc);
@@ -134,7 +132,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
     }
 
     private static boolean shouldProcessAnything() {
-        return !saveApisCreated
+        return !settersCreated
                 || !migrationsCreated
                 || !tableCreatorClassCreated
                 || !orderByClassesCreated
@@ -143,12 +141,11 @@ public class FSAnnotationProcessor extends AbstractProcessor {
                 || !forSureClassCreated;
     }
 
-    private void createSetterApis(ProcessingContext pc) {
+    private void createSetters(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            SaveApiGenerator.getFor(processingEnv, tableInfo).generate();
             SetterGenerator.getFor(processingEnv, tableInfo).generate();
         }
-        saveApisCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
+        settersCreated = true;   // <-- maintain state so saveapi APIs don't have to be created more than once
     }
 
     private void createMigrations(ProcessingContext pc) {

@@ -53,7 +53,6 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 .addAnnotations(getClassAnnotations())
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(superClassType())
-                .addSuperinterface(ClassName.bestGuess(table.qualifiedClassName() + "SaveApi"))
                 .addMethod(constructorMethod())
                 .addMethods(createSetterMethods())
                 .addMethods(addExtraMethods());
@@ -147,7 +146,8 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
             return ParameterizedTypeName.get(
                     ClassName.get(BaseSetter.class),
                     ClassName.bestGuess(getResultParameter()),
-                    recordContainerType
+                    recordContainerType,
+                    ClassName.bestGuess(getOutputClassName(true))
             );
         }
 
@@ -165,9 +165,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
 
         @Override
         protected ColumnInfo[] columnExclusions() {
-            return TableInfo.defaultColumns().values().stream()
-                    .filter(c -> c.columnName().equals("modified") || c.columnName().equals("created"))
-                    .toArray(ColumnInfo[]::new);
+            return TableInfo.defaultColumns().values().toArray(new ColumnInfo[0]);
         }
 
         @Override
@@ -198,7 +196,8 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                     ClassName.get(BaseDocStoreSetter.class),
                     ClassName.bestGuess(getResultParameter()),
                     recordContainerType,
-                    baseClass
+                    baseClass,
+                    ClassName.bestGuess(getOutputClassName(true))
             );
         }
 
@@ -247,22 +246,13 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
 
             return Arrays.asList(
                     enrichingMethodBuilder.build(),
-                    testingConstructorBuilder.build(),
-                    MethodSpec.methodBuilder("object")
-                            .addAnnotation(Override.class)
-                            .addModifiers(Modifier.PUBLIC)
-                            .returns(setterClassName())
-                            .addParameter(baseClass, "obj")
-                            .addStatement("return ($T) super.object(obj)", setterClassName())
-                            .build()
+                    testingConstructorBuilder.build()
             );
         }
 
         @Override
         protected ColumnInfo[] columnExclusions() {
-            return Streams.concat(defaultColumns().values().stream()
-                    .filter(c -> c.columnName().equals("modified") || c.columnName().equals("created")),
-                    docStoreColumns().values().stream())
+            return Streams.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
                     .toArray(ColumnInfo[]::new);
         }
 

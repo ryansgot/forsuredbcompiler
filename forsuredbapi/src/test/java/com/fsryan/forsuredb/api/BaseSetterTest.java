@@ -1,6 +1,5 @@
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.api.adapter.FSSerializer;
 import com.fsryan.forsuredb.api.adapter.SaveResultFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -22,16 +21,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public abstract class BaseSetterTest<U, R extends RecordContainer, S extends BaseSetter<U, R>> {
+public abstract class BaseSetterTest<S extends BaseSetter<String, RecordContainer, S>> {
 
     @Mock
-    protected FSQueryable<U, R> mockQueryable;
+    protected FSQueryable<String, RecordContainer> mockQueryable;
     @Mock
     protected FSSelection mockSelection;
     @Mock
     protected List<FSOrdering> mockOrderings;
     @Mock
-    protected R mockRecordContainer;
+    protected RecordContainer mockRecordContainer;
 
     protected final DateFormat dateFormat;
 
@@ -54,7 +53,7 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
 
     protected abstract S createSetterUnderTest();
 
-    public static class Insert extends BaseSetterTest<String, RecordContainer, BaseSetter<String, RecordContainer>> {
+    public static class Insert extends BaseSetterTest<ConcreteSetter> {
 
         private InOrder inOrder;
 
@@ -112,12 +111,12 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
 
         @Override
-        protected BaseSetter<String, RecordContainer> createSetterUnderTest() {
-            return new BaseSetter<String, RecordContainer>(dateFormat, mockQueryable, null, mockOrderings, mockRecordContainer) {};
+        protected ConcreteSetter createSetterUnderTest() {
+            return new ConcreteSetter(dateFormat, mockQueryable, null, mockOrderings, mockRecordContainer);
         }
     }
 
-    public static class Upsert extends BaseSetterTest<String, RecordContainer, BaseSetter<String, RecordContainer>> {
+    public static class Upsert extends BaseSetterTest<ConcreteSetter> {
 
         @Test
         public void shouldUpsertWhenFSSelectionNotNull() {
@@ -138,12 +137,12 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
 
         @Override
-        protected BaseSetter<String, RecordContainer> createSetterUnderTest() {
-            return new BaseSetter<String, RecordContainer>(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer) {};
+        protected ConcreteSetter createSetterUnderTest() {
+            return new ConcreteSetter(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer);
         }
     }
 
-    public static class SoftDelete extends BaseSetterTest<String, RecordContainer, BaseSetter<String, RecordContainer>> {
+    public static class SoftDelete extends BaseSetterTest<ConcreteSetter> {
 
         @Test
         public void shouldClearRecordContainerAndPutDeleted1PriorToUpdatingAndClearAfter() {
@@ -183,12 +182,12 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
 
         @Override
-        protected BaseSetter<String, RecordContainer> createSetterUnderTest() {
-            return new BaseSetter<String, RecordContainer>(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer) {};
+        protected ConcreteSetter createSetterUnderTest() {
+            return new ConcreteSetter(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer);
         }
     }
 
-    public static class HardDelete extends BaseSetterTest<String, RecordContainer, BaseSetter<String, RecordContainer>> {
+    public static class HardDelete extends BaseSetterTest<ConcreteSetter> {
 
         @Test
         public void shouldClearRecordContainerAfterDeletion() {
@@ -217,12 +216,12 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
 
         @Override
-        protected BaseSetter<String, RecordContainer> createSetterUnderTest() {
-            return new BaseSetter<String, RecordContainer>(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer) {};
+        protected ConcreteSetter createSetterUnderTest() {
+            return new ConcreteSetter(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer);
         }
     }
 
-    public static abstract class DocStore<U, R extends RecordContainer> extends BaseSetterTest<U, R, BaseDocStoreSetter<U, R, Object>> {
+    public static abstract class DocStore extends BaseSetterTest<NamedDocStoreSetter> {
 
         protected int enrichRecordContainerFromPropertiesOfCallCount;
 
@@ -232,8 +231,8 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
 
         @Override
-        protected BaseDocStoreSetter<U, R, Object> createSetterUnderTest() {
-            return new BaseDocStoreSetter<U, R, Object>(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer) {
+        protected NamedDocStoreSetter createSetterUnderTest() {
+            return new NamedDocStoreSetter(dateFormat, mockQueryable, mockSelection, mockOrderings, mockRecordContainer) {
                 @Override
                 protected void enrichRecordContainerFromPropertiesOf(Object obj) {
                     enrichRecordContainerFromPropertiesOfCallCount++;
@@ -242,19 +241,19 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         }
     }
 
-    public static class DocStoreObject extends DocStore<String, RecordContainer> {
+    public static class DocStoreObject extends DocStore {
 
         // currently,tests do not override FSSerializerFactory plugin
         @Test
         public void shouldSetClassNameAndDocumentOnRecordContainerAndEntrichFromPropertiesOfObject() {
-            setterUnderTest.object(1);
+            setterUnderTest.obj(1);
             verify(mockRecordContainer).put(eq("class_name"), eq(Integer.class.getName()));
             verify(mockRecordContainer).put(eq("blob_doc"), any(byte[].class));
             assertEquals(1, enrichRecordContainerFromPropertiesOfCallCount);
         }
     }
 
-    public static class DocStorePerformPropertyEnrichment extends DocStore<String, RecordContainer> {
+    public static class DocStorePerformPropertyEnrichment extends DocStore {
 
         private static final String columnName = "column_name";
 
@@ -362,6 +361,19 @@ public abstract class BaseSetterTest<U, R extends RecordContainer, S extends Bas
         public void shouldExitEarlyWhenObjectNull() {
             setterUnderTest.performPropertyEnrichment(columnName, null);
             verifyNoMoreInteractions(mockRecordContainer);
+        }
+    }
+
+    static class ConcreteSetter extends BaseSetter<String, RecordContainer, ConcreteSetter> {
+        protected ConcreteSetter(DateFormat dateFormat, FSQueryable<String, RecordContainer> queryable, FSSelection selection, List<FSOrdering> orderings, RecordContainer recordContainer) {
+            super(dateFormat, queryable, selection, orderings, recordContainer);
+        }
+    }
+
+    static abstract class NamedDocStoreSetter extends BaseDocStoreSetter<String, RecordContainer, Object, NamedDocStoreSetter> {
+
+        protected NamedDocStoreSetter(DateFormat dateFormat, FSQueryable<String, RecordContainer> queryable, FSSelection selection, List<FSOrdering> orderings, RecordContainer recordContainer) {
+            super(dateFormat, queryable, selection, orderings, recordContainer);
         }
     }
 }

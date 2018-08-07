@@ -6,7 +6,7 @@ import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import java.text.DateFormat;
 import java.util.List;
 
-public abstract class BaseSetter<U, R extends RecordContainer> implements FSSaveApi<U> {
+public abstract class BaseSetter<U, R extends RecordContainer, S extends BaseSetter<U, R, S>> {
 
     protected DateFormat dateFormat;
     private final FSQueryable<U, R> queryable;
@@ -35,7 +35,31 @@ public abstract class BaseSetter<U, R extends RecordContainer> implements FSSave
         this.recordContainer.clear();
     }
 
-    @Override
+    public S id(long id) {
+        recordContainer.put("_id", id);
+        return (S) this;
+    }
+
+    public S deleted(boolean deleted) {
+        recordContainer.put("deleted", deleted ? 1 : 0);
+        return (S) this;
+    }
+
+    /**
+     * <p>Performs either an insertion or an update of the fields you have set.
+     * The operation will be an . . .
+     * <ul>
+     *   <li>
+     *     Insertion if you either did not set any selection criteria or the
+     *     search criteria you specified matches no records.
+     *   </li>
+     *   <li>
+     *     Update if you both set selection criteria and that criteria matches
+     *     at least one record.
+     *   </li>
+     * </ul>
+     * @return A descriptor of the result of the save operation
+     */
     public SaveResult<U> save() {
         try {
             if (selection == null) {
@@ -50,10 +74,14 @@ public abstract class BaseSetter<U, R extends RecordContainer> implements FSSave
         }
     }
 
-    @Override
+    /**
+     * <p>Attempts an update to the database. However, any fields that you've
+     * set prior to calling this method will not be saved.
+     * @return A descriptor of the result of the softDelete operation
+     */
     public SaveResult<U> softDelete() {
         recordContainer.clear();
-        recordContainer.put("deleted", 1);
+        deleted(true);
         try {
             int rowsAffected = queryable.update(recordContainer, selection, orderings);
             return SaveResultFactory.create(null, rowsAffected, null);
@@ -64,7 +92,13 @@ public abstract class BaseSetter<U, R extends RecordContainer> implements FSSave
         }
     }
 
-    @Override
+    /**
+     * <p>A hard delete actually deletes the record(s) from the database. If
+     * there is a foreign key pointing to any of the matching records, then the
+     * {@link com.fsryan.forsuredb.annotations.ForeignKey.ChangeAction} will be
+     * executed.
+     * @return the number of rows deleted
+     */
     public int hardDelete() {
         try {
             return queryable.delete(selection, orderings);
