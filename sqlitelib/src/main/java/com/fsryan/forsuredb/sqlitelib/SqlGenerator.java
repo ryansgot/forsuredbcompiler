@@ -233,6 +233,8 @@ public class SqlGenerator implements DBMSIntegrator {
                     buf.append(unambiguousColumn(tableName, element.column())).append(' ')
                             .append(operationStr(element.op())).append(" ?");
                     break;
+                default:
+                    throw new IllegalArgumentException("Unknown WhereElement type: " + element.type());
             }
         }
         return buf.toString();
