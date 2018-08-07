@@ -34,7 +34,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.fsryan.forsuredb.api.Finder.OP_LIKE;
 import static com.fsryan.forsuredb.sqlitelib.QueryBuilder.*;
 
 public class SqlGenerator implements DBMSIntegrator {
@@ -246,7 +245,7 @@ public class SqlGenerator implements DBMSIntegrator {
             return null;
         }
 
-        if (op == OP_LIKE) {
+        if (op == Finder.OP_LIKE) {
             return expressLike(String.valueOf(obj));
         }
 
@@ -282,10 +281,11 @@ public class SqlGenerator implements DBMSIntegrator {
             case Finder.OP_GE: return ">=";
             case Finder.OP_GT: return ">";
             case Finder.OP_LE: return "<=";
-            case OP_LIKE: return "LIKE";
+            case Finder.OP_LIKE: return "LIKE";
             case Finder.OP_LT: return "<";
             case Finder.OP_NE: return "!=";
+            case Finder.OP_NONE: throw new IllegalArgumentException("OP_NONE is unresolvable to an operator");
+            default: throw new IllegalArgumentException("Unrecognized operation: " + op);
         }
-        throw new IllegalArgumentException("Unrecognized operation: " + op);
     }
 }
