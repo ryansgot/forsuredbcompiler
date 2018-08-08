@@ -161,6 +161,7 @@ public abstract class FinderMethodSpecGenerator {
         return retList;
     }
 
+    // TODO: generate more-appropriate javadocs (missing @param for varargs argument)
     private MethodSpec createSpec(ParameterizedTypeName returnType, String methodName, String parameterName, int op) {
         JavadocInfo jd = javadocInfoFor(returnType, parameterName);
         MethodSpec.Builder codeBuilder = MethodSpec.methodBuilder(methodName)
@@ -176,7 +177,12 @@ public abstract class FinderMethodSpecGenerator {
             codeBuilder.varargs()
                     .addParameter(ParameterSpec.builder(ClassName.get(CodeUtil.arrayTypeFromName(column.getQualifiedType())), "orExactMatches")
                     .build())
-                    .addCode(inclusionFilterCodeBlock(parameterName, op));
+                    .addCode(multivaluedFilterCodeBlock(parameterName, op, "orExactMatches"));
+        } else if (op == OP_NE && allowMultipleExactMatches()) {
+            codeBuilder.varargs()
+                    .addParameter(ParameterSpec.builder(ClassName.get(CodeUtil.arrayTypeFromName(column.getQualifiedType())), "furtherExclusions")
+                    .build())
+                    .addCode(multivaluedFilterCodeBlock(parameterName, op, "furtherExclusions"));
         } else {
             codeBuilder.addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName));
         }
@@ -190,20 +196,15 @@ public abstract class FinderMethodSpecGenerator {
         return codeBuilder.build();
     }
 
-    private CodeBlock inclusionFilterCodeBlock(String parameterName, int op) {
-        String listParameterization = CodeUtil.primitiveToWrapperName(column.getQualifiedType());
+    private CodeBlock multivaluedFilterCodeBlock(String parameterName, int op, String varargsName) {
         return CodeBlock.builder()
-                .beginControlFlow("if ($N.length == 0)", "orExactMatches")
+                .addStatement("$N.$N($T.$N())", "whereElements", "add", ClassName.get(WhereElement.class), "createGroupStart")
                 .addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName))
+                .beginControlFlow("for(int i = 0; i < ($N == null ? 0 : $N.length); i++)", varargsName, varargsName)
+                .addStatement("$N.add($T.$N())", "whereElements", ClassName.get(WhereElement.class), op == OP_EQ ? "createOr" : "createAnd")
+                .addStatement("addToBuf($S, $L, $N[$N])", column.getColumnName(), opToOpNameMap.get(op), varargsName, "i")
                 .endControlFlow()
-                .beginControlFlow("else")
-                .addStatement("$T<$L> $N = new $T<$L>(1 + $N.length)", ClassName.get(List.class), listParameterization, "inclusionFilter", ClassName.get(ArrayList.class), listParameterization, "orExactMatches")
-                .addStatement("$N.add($N)", "inclusionFilter", "exactMatch")
-                .beginControlFlow("for ($L $N : $N)", CodeUtil.simpleClassNameFrom(column.getQualifiedType()), "toInclude", "orExactMatches")
-                .addStatement("$N.add($N)", "inclusionFilter", "toInclude")
-                .endControlFlow()
-                .addStatement("addEqualsOrChainToBuf($S, $N)", column.getColumnName(), "inclusionFilter")
-                .endControlFlow()
+                .addStatement("$N.$N($T.$N())", "whereElements", "add", ClassName.get(WhereElement.class), "createGroupEnd")
                 .build();
     }
 
