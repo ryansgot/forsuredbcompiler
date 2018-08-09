@@ -702,6 +702,71 @@ public class RetrievalTests {
     }
 
     @Test
+    @DisplayName("finding by id from multiple exact match criteria and some other criteria")
+    public void shouldFindRecordWithIdInExactMatchCriteriaAndSomeOtherCriteria() {
+        long id1 = randomStoredRecordId();
+        long id2 = randomStoredRecordId();
+        long id3 = randomStoredRecordId();
+        long id4 = randomStoredRecordId();
+        long id5 = randomStoredRecordId();
+        Set<Long> allowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byId(id1, id2, id3, id4, id5)
+                        .and().byBooleanColumn()
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> booleanColOf(asr) && allowedIds.contains(idOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by id NOT from multiple exact match criteria")
+    public void shouldFindRecordWithIdNotInExactMatchCriteria() {
+        long id1 = randomStoredRecordId();
+        long id2 = randomStoredRecordId();
+        long id3 = randomStoredRecordId();
+        long id4 = randomStoredRecordId();
+        long id5 = randomStoredRecordId();
+        Set<Long> disallowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byIdNot(id1, id2, id3, id4, id5)
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !disallowedIds.contains(idOf(asr)));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("finding by id NOT from multiple exact match criteria OR some other criteria")
+    public void shouldFindRecordWithIdNotInExactMatchCriteriaOrSomeOtherCriteria() {
+        long id1 = randomStoredRecordId();
+        long id2 = randomStoredRecordId();
+        long id3 = randomStoredRecordId();
+        long id4 = randomStoredRecordId();
+        long id5 = randomStoredRecordId();
+        Set<Long> disallowedIds = new HashSet<>(Arrays.asList(id1, id2, id3, id4, id5));
+
+        List<AllTypesTable.Record> actual = retrieveToList(
+                allTypesTable().find()
+                        .byIdNot(id1, id2, id3, id4, id5)
+                        .or().byBooleanColumn()
+                        .then()
+                        .get()
+        );
+        List<AllTypesTable.Record> expected = savedRecordsWhere(asr -> !disallowedIds.contains(idOf(asr)) || booleanColOf(asr));
+
+        assertListEquals(expected, actual);
+    }
+
+    @Test
     @DisplayName("finding by id from several match criteria using OR")
     public void shouldFindRecordWithIdInExactMatchCriteriaUsingOR() {
         long id1 = randomStoredRecordId();

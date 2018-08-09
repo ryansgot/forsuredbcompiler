@@ -17,6 +17,7 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.auto.value.AutoValue;
 
@@ -58,25 +59,25 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         public static final int TYPE_AND_CONJUNCTION = TYPE_GROUP_END << 1;
         public static final int TYPE_OR_CONJUNCTION = TYPE_AND_CONJUNCTION << 1;
 
-        // TODO: allow for NOT NULL and IS NULL queries
-        static WhereElement createCondition(@Nonnull String column, int op, @Nonnull Object value) {
-            return new AutoValue_Finder_WhereElement(TYPE_CONDITION, column, op, value);
-        }
-
-        static WhereElement createGroupStart() {
-            return createNonCondition(TYPE_GROUP_START);
-        }
-
-        static WhereElement createGroupEnd() {
-            return createNonCondition(TYPE_GROUP_END);
-        }
-
-        static WhereElement createAnd() {
+        public static WhereElement createAnd() {
             return createNonCondition(TYPE_AND_CONJUNCTION);
         }
 
-        static WhereElement createOr() {
+        public static WhereElement createOr() {
             return createNonCondition(TYPE_OR_CONJUNCTION);
+        }
+
+        public static WhereElement createGroupStart() {
+            return createNonCondition(TYPE_GROUP_START);
+        }
+
+        public static WhereElement createGroupEnd() {
+            return createNonCondition(TYPE_GROUP_END);
+        }
+
+        // TODO: allow for NOT NULL and IS NULL queries
+        static WhereElement createCondition(@Nonnull String column, int op, @Nonnull Object value) {
+            return new AutoValue_Finder_WhereElement(TYPE_CONDITION, column, op, value);
         }
 
         static String typeName(int type) {
@@ -125,8 +126,9 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     public static final int OP_LIKE = 3;
 
     protected final Conjunction.GroupableAndOr<R, F> conjunction;
+    protected final List<WhereElement> whereElements;
     final R resolver;
-    final List<WhereElement> whereElements;
+    private final DBMSIntegrator sqlGenerator;
     private final Set<String> columns = new HashSet<>();
     private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
@@ -144,6 +146,11 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      *                 context of the method call chain
      */
     public Finder(final R resolver) {
+        this(Sql.generator(), resolver);
+    }
+
+    public Finder(final DBMSIntegrator sqlGenerator, final R resolver) {
+        this.sqlGenerator = sqlGenerator;
         this.resolver = resolver;
         whereElements = new ArrayList<>();
         conjunction = new Conjunction.GroupableAndOr<R, F>() {
@@ -418,7 +425,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      */
     public final FSSelection selection() {
         return new FSSelection() {
-            String where = whereElements.isEmpty() ? null : Sql.generator().createWhere(resolver.tableName(), whereElements);
+            String where = whereElements.isEmpty() ? null : sqlGenerator.createWhere(resolver.tableName(), whereElements);
             Object[] replacements = replacementsList.toArray(new Object[0]);
 
             @Override
@@ -461,16 +468,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byId(long exactMatch, long... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("_id", OP_EQ, exactMatch);
-        } else {
-            List<Long> inclusionFilter = new ArrayList<Long>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (long toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("_id", inclusionFilter);
+        whereElements.add(WhereElement.createGroupStart());
+        addToBuf("_id", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(WhereElement.createOr());
+            addToBuf("_id", OP_EQ, orExactMatches[i]);
         }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -478,11 +482,18 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     /**
      * <p>add criteria to a query that requires exclusion for _id
      * @param exclusion the id of the record to not return
+     * @param furtherExclusions further ids to exclude
      * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
      * adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, F> byIdNot(long exclusion) {
+    public Conjunction.GroupableAndOr<R, F> byIdNot(long exclusion, long... furtherExclusions) {
+        whereElements.add(WhereElement.createGroupStart());
         addToBuf("_id", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(WhereElement.createAnd());
+            addToBuf("_id", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -632,28 +643,30 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byCreatedOn(Date exactMatch, Date... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("created", OP_EQ, exactMatch);
-        } else {
-            List<Date> inclusionFilter = new ArrayList<Date>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (Date toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("created", inclusionFilter);
+        whereElements.add(WhereElement.createGroupStart());
+        addToBuf("created", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(WhereElement.createOr());
+            addToBuf("created", OP_EQ, orExactMatches[i]);
         }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
-    // TODO: add varargs array of Date to exclude more
     /**
      * <p>add criteria to a query that requires exclusion for created
      * @param exclusion the created date of the records to not return
      * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
      * adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, F> byNotCreatedOn(Date exclusion) {
+    public Conjunction.GroupableAndOr<R, F> byNotCreatedOn(Date exclusion, Date... furtherExclusions) {
+        whereElements.add(WhereElement.createGroupStart());
         addToBuf("created", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(WhereElement.createAnd());
+            addToBuf("created", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -766,16 +779,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byModifiedOn(Date exactMatch, Date... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("modified", OP_EQ, exactMatch);
-        } else {
-            List<Date> inclusionFilter = new ArrayList<Date>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (Date toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("created", inclusionFilter);
+        whereElements.add(WhereElement.createGroupStart());
+        addToBuf("modified", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(WhereElement.createOr());
+            addToBuf("modified", OP_EQ, orExactMatches[i]);
         }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -785,55 +795,15 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
      * adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, F> byNotModifiedOn(Date exclusion) {
+    public Conjunction.GroupableAndOr<R, F> byNotModifiedOn(Date exclusion, Date... furtherExclusions) {
+        whereElements.add(WhereElement.createGroupStart());
         addToBuf("modified", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(WhereElement.createAnd());
+            addToBuf("modified", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
-    }
-
-    protected final void addToBuf(String column, int operator, Object value) {
-        if (!canAddClause(column, value)) {
-            return;
-        }
-
-        if (incorporatedExternalFinder) {
-            // TODO: figure out whether this preserved behavior makes sense
-            // This is synthesizing an AND and injecting it into the WHERE part of the query for use when
-            // incorporating an external Finder object
-            // It seems to me that this would make it impossible to write some combinations of queries like
-            // table1.a = 'a' OR table2.a = 'b'
-            whereElements.add(WhereElement.createAnd());
-            incorporatedExternalFinder = false;
-        }
-
-        whereElements.add(WhereElement.createCondition(column, operator, value));
-        replacementsList.add(Sql.generator().objectForReplacement(operator, value));
-    }
-
-    protected final void addEqualsOrChainToBuf(String column, List orValues) {
-        // TODO: check this logic because the last section does not look correct
-        if (orValues == null || orValues.isEmpty() || !canAddClause(column, orValues.get(0))) {
-            return;
-        }
-
-        if (incorporatedExternalFinder) {
-            // TODO: figure out whether this preserved behavior makes sense
-            // This is synthesizing an AND and injecting it into the WHERE part of the query for use when
-            // incorporating an external Finder object
-            // It seems to me that this would make it impossible to write some combinations of queries like
-            // table1.a = 'a' OR table2.a = 'b'
-            whereElements.add(WhereElement.createAnd());
-            incorporatedExternalFinder = false;
-        }
-
-        Object first = orValues.get(0);
-        whereElements.add(WhereElement.createCondition(column, OP_EQ, first));
-        replacementsList.add(Sql.generator().objectForReplacement(OP_EQ, first));
-        for (int i = 1; i < orValues.size(); i++) {
-            Object next = orValues.get(i);
-            whereElements.add(WhereElement.createOr());
-            whereElements.add(WhereElement.createCondition(column, OP_EQ, next));
-            replacementsList.add(Sql.generator().objectForReplacement(OP_EQ, next));
-        }
     }
 
     /**
@@ -842,7 +812,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * about this.
      * @param finder the child {@link Finder} to subsume within this one
      */
-    /*package*/ final void incorporate(Finder finder) {
+    final void incorporate(Finder finder) {
         if (finder == null || !finder.isFilteringResultSet()) {
             return;
         }
@@ -864,6 +834,25 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         whereElements.addAll(finder.whereElements);
         replacementsList.addAll(finder.replacementsList);
         incorporatedExternalFinder = true;
+    }
+
+    protected final void addToBuf(String column, int operator, Object value) {
+        if (!canAddClause(column, value)) {
+            return;
+        }
+
+        if (incorporatedExternalFinder) {
+            // TODO: figure out whether this preserved behavior makes sense
+            // This is synthesizing an AND and injecting it into the WHERE part of the query for use when
+            // incorporating an external Finder object
+            // It seems to me that this would make it impossible to write some combinations of queries like
+            // table1.a = 'a' OR table2.a = 'b'
+            whereElements.add(WhereElement.createAnd());
+            incorporatedExternalFinder = false;
+        }
+
+        whereElements.add(WhereElement.createCondition(column, operator, value));
+        replacementsList.add(sqlGenerator.objectForReplacement(operator, value));
     }
 
     protected final <T> Between<R, F> createBetween(Class<T> qualifiedType, final String column) {

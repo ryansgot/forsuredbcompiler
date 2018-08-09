@@ -2,8 +2,6 @@ package com.fsryan.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.Finder;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>
@@ -43,17 +41,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byAppRating(double exactMatch,
             double... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("app_rating", OP_EQ, exactMatch);
+        whereElements.add(Finder.WhereElement.createGroupStart());
+        addToBuf("app_rating", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(Finder.WhereElement.createOr());
+            addToBuf("app_rating", OP_EQ, orExactMatches[i]);
         }
-        else {
-            List<Double> inclusionFilter = new ArrayList<Double>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (double toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("app_rating", inclusionFilter);
-        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -64,8 +58,15 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byAppRatingNot(double exclusion) {
+    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byAppRatingNot(double exclusion,
+            double... furtherExclusions) {
+        whereElements.add(Finder.WhereElement.createGroupStart());
         addToBuf("app_rating", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(Finder.WhereElement.createAnd());
+            addToBuf("app_rating", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -150,17 +151,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byGlobalId(long exactMatch,
             long... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("global_id", OP_EQ, exactMatch);
+        whereElements.add(Finder.WhereElement.createGroupStart());
+        addToBuf("global_id", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(Finder.WhereElement.createOr());
+            addToBuf("global_id", OP_EQ, orExactMatches[i]);
         }
-        else {
-            List<Long> inclusionFilter = new ArrayList<Long>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (long toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("global_id", inclusionFilter);
-        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -171,8 +168,15 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byGlobalIdNot(long exclusion) {
+    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byGlobalIdNot(long exclusion,
+            long... furtherExclusions) {
+        whereElements.add(Finder.WhereElement.createGroupStart());
         addToBuf("global_id", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(Finder.WhereElement.createAnd());
+            addToBuf("global_id", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -257,17 +261,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byLoginCount(int exactMatch,
             int... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("login_count", OP_EQ, exactMatch);
+        whereElements.add(Finder.WhereElement.createGroupStart());
+        addToBuf("login_count", OP_EQ, exactMatch);
+        for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(Finder.WhereElement.createOr());
+            addToBuf("login_count", OP_EQ, orExactMatches[i]);
         }
-        else {
-            List<Integer> inclusionFilter = new ArrayList<Integer>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (int toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("login_count", inclusionFilter);
-        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 
@@ -278,8 +278,15 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      * @param exclusion
      * @return a {@link com.fsryan.forsuredb.api.Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byLoginCountNot(int exclusion) {
+    public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byLoginCountNot(int exclusion,
+            int... furtherExclusions) {
+        whereElements.add(Finder.WhereElement.createGroupStart());
         addToBuf("login_count", OP_NE, exclusion);
+        for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(Finder.WhereElement.createAnd());
+            addToBuf("login_count", OP_NE, furtherExclusions[i]);
+        }
+        whereElements.add(Finder.WhereElement.createGroupEnd());
         return conjunction;
     }
 

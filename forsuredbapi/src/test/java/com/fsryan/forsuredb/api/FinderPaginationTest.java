@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class FinderPaginationTest extends FinderTest {
+public abstract class FinderPaginationTest extends FinderTest.ForFinder {
 
     private final int fromTop;
     private final int offsetFromTop;
@@ -133,7 +133,7 @@ public abstract class FinderPaginationTest extends FinderTest {
         }
     }
 
-    public static class ExceptionCases extends FinderTest {
+    public static class ExceptionCases extends FinderTest.ForFinder {
 
         @Test(expected = IllegalStateException.class)
         public void shouldThrowWhenCallingFromTopThenFromBottomWithPositiveIntegers() {

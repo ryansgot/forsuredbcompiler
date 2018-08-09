@@ -7,7 +7,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
-public class FinderGroupTest extends FinderTest {
+public class FinderGroupTest extends FinderTest.ForFinder {
 
     @Test
     public void shouldAddStartGroupWhenStartingGroupAnd() {

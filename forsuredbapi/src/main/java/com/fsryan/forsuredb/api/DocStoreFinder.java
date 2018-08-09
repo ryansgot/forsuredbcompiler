@@ -1,85 +1,104 @@
 package com.fsryan.forsuredb.api;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 
 public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder<R, F>> extends Finder<R, F> {
-    
+
     public DocStoreFinder(R resolver) {
-        super(resolver);
+        this(Sql.generator(), resolver);
+    }
+
+    DocStoreFinder(DBMSIntegrator dbmsIntegrator, R resolver) {
+        super(dbmsIntegrator, resolver);
     }
 
     /**
-     * <p>
-     *     add criteria to a query that is a convenience for calling {@link #byClassName(String, String...)} with the
-     *     {@link Class} object instead of the fully qualified class name.
-     * </p>
+     * <p>add criteria to a query that is a convenience for calling
+     * {@link #byClassName(String, String...)} with the @link Class} object
+     * instead of the fully qualified class name.
      * @param exactClassMatch the exact class you want
      * @param orExactClassMatches the other possible class matches
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      * @see #byClassName(String, String...)
      */
     public Conjunction.GroupableAndOr<R, F> byClass(Class exactClassMatch, Class... orExactClassMatches) {
-        String[] otherClassNames = new String[orExactClassMatches.length];
-        for (int i = 0; i < orExactClassMatches.length; i++) {
-            otherClassNames[i] = orExactClassMatches[i].getName();
+        whereElements.add(WhereElement.createGroupStart());
+        addClassToBuf(exactClassMatch, OP_EQ);
+        for (int i = 0; i < (orExactClassMatches == null ? 0 : orExactClassMatches.length); i++) {
+            whereElements.add(WhereElement.createOr());
+            addClassToBuf(orExactClassMatches[i], OP_EQ);
         }
-        return byClassName(exactClassMatch == null ? "" : exactClassMatch.getName(), otherClassNames);
+        whereElements.add(WhereElement.createGroupEnd());
+        return conjunction;
     }
 
     /**
-     * <p>
-     *     add criteria to a query that is a convenience for calling {@link #byClassNameNot(String)} with the
-     *     {@link Class} object instead of the fully qualified class name.
-     * </p>
-     * @param exclusion
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
-     * @see #byClassNameNot(String)
+     * <p>add criteria to a query that is a convenience for calling
+     * {@link #byClassNameNot(String, String...)} with the {@link Class} object
+     *  instead of the fully qualified class name.
+     * @param exclusion the {@link Class} to exclude (by its name)
+     * @param furtherExclusions further classes to exclude (by their names)
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
+     * @see #byClassNameNot(String, String...)
      */
-    public Conjunction.GroupableAndOr<R, F> byClassNot(Class exclusion) {
-        return byClassNameNot(exclusion == null ? "" : exclusion.getName());
+    public Conjunction.GroupableAndOr<R, F> byClassNot(Class exclusion, Class... furtherExclusions) {
+        whereElements.add(WhereElement.createGroupStart());
+        addClassToBuf(exclusion, OP_NE);
+        for (int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(WhereElement.createAnd());
+            addClassToBuf(furtherExclusions[i], OP_NE);
+        }
+        whereElements.add(WhereElement.createGroupEnd());
+        return conjunction;
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires exact match for class_name
-     * </p>
+     * <p>add criteria to a query that requires exact match for class_name or a
+     * match for any of the other strings passed in the varargs argument
      * @param exactMatch the exact class name of the class you want
      * @param orExactMatches the other possible matches
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassName(String exactMatch, String... orExactMatches) {
-        if (orExactMatches.length == 0) {
-            addToBuf("class_name", OP_EQ, exactMatch);
-        } else {
-            List<String> inclusionFilter = new ArrayList<String>(1 + orExactMatches.length);
-            inclusionFilter.add(exactMatch);
-            for (String toInclude : orExactMatches) {
-                inclusionFilter.add(toInclude);
-            }
-            addEqualsOrChainToBuf("class_name", inclusionFilter);
+        whereElements.add(WhereElement.createGroupStart());
+        addClassToBuf(exactMatch, OP_EQ);
+        for (int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
+            whereElements.add(WhereElement.createOr());
+            addClassToBuf(orExactMatches[i], OP_EQ);
         }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires exclusion for class_name
-     * </p>
-     * @param exclusion
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * <p>add criteria to a query that requires exclusion for class_name and
+     * any other class_name passed in
+     * @param exclusion a class name to exclude
+     * @param furtherExclusions further class names to exclude
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
-    public Conjunction.GroupableAndOr<R, F> byClassNameNot(String exclusion) {
-        addToBuf("class_name", OP_NE, exclusion);
+    public Conjunction.GroupableAndOr<R, F> byClassNameNot(String exclusion, String... furtherExclusions) {
+        whereElements.add(WhereElement.createGroupStart());
+        addClassToBuf(exclusion, OP_NE);
+        for (int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
+            whereElements.add(WhereElement.createAnd());
+            addClassToBuf(furtherExclusions[i], OP_NE);
+        }
+        whereElements.add(WhereElement.createGroupEnd());
         return conjunction;
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveUpperBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires nonInclusiveUpperBound for
+     * class_name
      * @param nonInclusiveUpperBound
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameLessThan(String nonInclusiveUpperBound) {
         addToBuf("class_name", OP_LT, nonInclusiveUpperBound);
@@ -87,11 +106,11 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires nonInclusiveLowerBound for
+     * class_name
      * @param nonInclusiveLowerBound
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameGreaterThan(String nonInclusiveLowerBound) {
         addToBuf("class_name", OP_GT, nonInclusiveLowerBound);
@@ -99,11 +118,11 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires inclusiveUpperBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires inclusiveUpperBound for
+     * class_name
      * @param inclusiveUpperBound
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameLessThanInclusive(String inclusiveUpperBound) {
         addToBuf("class_name", OP_LE, inclusiveUpperBound);
@@ -111,11 +130,11 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires inclusiveLowerBound for
+     * class_name
      * @param inclusiveLowerBound
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameGreaterThanInclusive(String inclusiveLowerBound) {
         addToBuf("class_name", OP_GE, inclusiveLowerBound);
@@ -123,11 +142,11 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires nonInclusiveLowerBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires nonInclusiveLowerBound for
+     * class_name
      * @param nonInclusiveLowerBound
-     * @return a {@link Between} that allows you to provide an upper bound for this criteria
+     * @return a {@link Between} that allows you to provide an upper bound for
+     * this criteria
      */
     public Between<R, F> byClassNameBetween(String nonInclusiveLowerBound) {
         addToBuf("class_name", OP_GT, nonInclusiveLowerBound);
@@ -135,11 +154,11 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires inclusiveLowerBound for class_name
-     * </p>
+     * <p>add criteria to a query that requires inclusiveLowerBound for
+     * class_name
      * @param inclusiveLowerBound
-     * @return a {@link Between} that allows you to provide an upper bound for this criteria
+     * @return a {@link Between} that allows you to provide an upper bound for
+     * this criteria
      */
     public Between<R, F> byClassNameBetweenInclusive(String inclusiveLowerBound) {
         addToBuf("class_name", OP_GE, inclusiveLowerBound);
@@ -147,14 +166,27 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
     }
 
     /**
-     * <p>
-     *   add criteria to a query that requires like for class_name
-     * </p>
+     * <p>add criteria to a query that requires like for class_name
      * @param like
-     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
+     * @return a {@link Conjunction.GroupableAndOr} that allows you to continue
+     * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameLike(String like) {
         addToBuf("class_name", OP_LIKE, like);
         return conjunction;
+    }
+
+    private void addClassToBuf(Class cls, int op) {
+        if (cls == null) {
+            throw new IllegalArgumentException("cannot search for null class");
+        }
+        addClassToBuf(cls.getName(), op);
+    }
+
+    private void addClassToBuf(String clsName, int op) {
+        if (clsName == null) {
+            throw new IllegalArgumentException("cannot search for null class name");
+        }
+        addToBuf("class_name", op, clsName);
     }
 }
