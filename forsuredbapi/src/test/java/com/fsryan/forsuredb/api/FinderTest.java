@@ -1,24 +1,49 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
-public abstract class FinderTest {
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
-    @Mock
-    protected Resolver mockResolver;
+public abstract class FinderTest<F extends Finder, R extends Resolver> {
 
-    protected Finder finderUnderTest;
+    protected DBMSIntegrator mockDbmsIntegrator;
+    protected R mockResolver;
+
+    protected F finderUnderTest;
+
+    private final Class<R> resolverClass;
+
+    FinderTest(Class<R> resolverClass) {
+        this.resolverClass = resolverClass;
+    }
 
     @Before
     public void setUpResolver() {
-        MockitoAnnotations.initMocks(this);
-        finderUnderTest = new Finder(mockResolver) {};
+        mockDbmsIntegrator = mock(DBMSIntegrator.class);
+        mockResolver = mock(resolverClass);
+        finderUnderTest = createFinder(mockDbmsIntegrator, mockResolver);
+
+        // returns the object input to test replacements added in correct order
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                return invocation.getArgument(1);
+            }
+        }).when(mockDbmsIntegrator).objectForReplacement(anyInt(), any(Object.class));
     }
+
+    protected abstract <T> T createFinder(DBMSIntegrator mockDbmsIntegrator, R mockResolver);
 
     protected List<Finder.WhereElement> accessWhereElements() {
         try {
@@ -44,6 +69,18 @@ public abstract class FinderTest {
         accessWhereElements().add(element);
         if (element.type() == Finder.WhereElement.TYPE_CONDITION) {
             accessReplacementsList().add(element.value());
+        }
+    }
+
+    protected static abstract class ForFinder extends FinderTest<Finder, Resolver> {
+
+        protected ForFinder() {
+            super(Resolver.class);
+        }
+
+        @Override
+        protected Finder createFinder(DBMSIntegrator mockDbmsIntegrator, Resolver mockResolver) {
+            return new Finder(mockDbmsIntegrator, mockResolver) {};
         }
     }
 }

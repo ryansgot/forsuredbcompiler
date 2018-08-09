@@ -1,9 +1,16 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
+import com.fsryan.forsuredb.api.sqlgeneration.Sql;
+
 public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder<R, F>> extends Finder<R, F> {
-    
+
     public DocStoreFinder(R resolver) {
-        super(resolver);
+        this(Sql.generator(), resolver);
+    }
+
+    DocStoreFinder(DBMSIntegrator dbmsIntegrator, R resolver) {
+        super(dbmsIntegrator, resolver);
     }
 
     /**

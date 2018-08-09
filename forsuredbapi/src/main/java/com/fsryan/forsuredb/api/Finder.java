@@ -17,6 +17,7 @@
  */
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.Sql;
 import com.google.auto.value.AutoValue;
 
@@ -127,6 +128,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
     protected final Conjunction.GroupableAndOr<R, F> conjunction;
     protected final List<WhereElement> whereElements;
     final R resolver;
+    private final DBMSIntegrator sqlGenerator;
     private final Set<String> columns = new HashSet<>();
     private final List<Object> replacementsList = new ArrayList<>();
     private boolean queryDistinct = false;
@@ -144,6 +146,11 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      *                 context of the method call chain
      */
     public Finder(final R resolver) {
+        this(Sql.generator(), resolver);
+    }
+
+    public Finder(final DBMSIntegrator sqlGenerator, final R resolver) {
+        this.sqlGenerator = sqlGenerator;
         this.resolver = resolver;
         whereElements = new ArrayList<>();
         conjunction = new Conjunction.GroupableAndOr<R, F>() {
@@ -418,7 +425,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      */
     public final FSSelection selection() {
         return new FSSelection() {
-            String where = whereElements.isEmpty() ? null : Sql.generator().createWhere(resolver.tableName(), whereElements);
+            String where = whereElements.isEmpty() ? null : sqlGenerator.createWhere(resolver.tableName(), whereElements);
             Object[] replacements = replacementsList.toArray(new Object[0]);
 
             @Override
@@ -799,32 +806,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         return conjunction;
     }
 
-    protected final void addToBuf(String column, int operator, Object value) {
-        if (!canAddClause(column, value)) {
-            return;
-        }
-
-        if (incorporatedExternalFinder) {
-            // TODO: figure out whether this preserved behavior makes sense
-            // This is synthesizing an AND and injecting it into the WHERE part of the query for use when
-            // incorporating an external Finder object
-            // It seems to me that this would make it impossible to write some combinations of queries like
-            // table1.a = 'a' OR table2.a = 'b'
-            whereElements.add(WhereElement.createAnd());
-            incorporatedExternalFinder = false;
-        }
-
-        whereElements.add(WhereElement.createCondition(column, operator, value));
-        replacementsList.add(Sql.generator().objectForReplacement(operator, value));
-    }
-
     /**
      * <p>Binds the {@link Finder} class and {@link Resolver} class together
      * so that they must be in the same package. I'm a little disappointed
      * about this.
      * @param finder the child {@link Finder} to subsume within this one
      */
-    /*package*/ final void incorporate(Finder finder) {
+    final void incorporate(Finder finder) {
         if (finder == null || !finder.isFilteringResultSet()) {
             return;
         }
@@ -846,6 +834,25 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         whereElements.addAll(finder.whereElements);
         replacementsList.addAll(finder.replacementsList);
         incorporatedExternalFinder = true;
+    }
+
+    protected final void addToBuf(String column, int operator, Object value) {
+        if (!canAddClause(column, value)) {
+            return;
+        }
+
+        if (incorporatedExternalFinder) {
+            // TODO: figure out whether this preserved behavior makes sense
+            // This is synthesizing an AND and injecting it into the WHERE part of the query for use when
+            // incorporating an external Finder object
+            // It seems to me that this would make it impossible to write some combinations of queries like
+            // table1.a = 'a' OR table2.a = 'b'
+            whereElements.add(WhereElement.createAnd());
+            incorporatedExternalFinder = false;
+        }
+
+        whereElements.add(WhereElement.createCondition(column, operator, value));
+        replacementsList.add(sqlGenerator.objectForReplacement(operator, value));
     }
 
     protected final <T> Between<R, F> createBetween(Class<T> qualifiedType, final String column) {
