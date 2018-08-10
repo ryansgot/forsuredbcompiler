@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.api.Conjunction;
 import com.fsryan.forsuredb.api.OrderBy;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
+import com.google.common.collect.Sets;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -15,7 +16,9 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class OrderByGenerator extends JavaSourceGenerator {
 
@@ -24,14 +27,23 @@ public class OrderByGenerator extends JavaSourceGenerator {
     private final ClassName generatedClassName;
     private final TypeVariableName resolverTypeVariableName;
     private final ParameterizedTypeName orderByParameterizedTypeName;
+    private final Set<String> additionalUnorderableColumns;
 
-    public OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table) {
+    private OrderByGenerator(ProcessingEnvironment processingEnv, TableInfo table, Set<String> additionalUnordableColumns) {
         super(processingEnv, table.qualifiedClassName() + "OrderBy");
+        this.additionalUnorderableColumns = additionalUnordableColumns;
         columnsSortedByName = TableDataUtil.columnsSortedByName(table);
         resolverClassName = ClassName.bestGuess(table.qualifiedClassName() + "Resolver");
         generatedClassName = ClassName.bestGuess(table.qualifiedClassName() + "OrderBy");
         resolverTypeVariableName = TypeVariableName.get("R", resolverClassName);
         orderByParameterizedTypeName = ParameterizedTypeName.get(generatedClassName, TypeVariableName.get("R"));
+    }
+
+    public static OrderByGenerator create(ProcessingEnvironment processingEnv, TableInfo table) {
+        Set<String> unorderableColumns = table.isDocStore()
+                ? Sets.newHashSet("doc", "blob_doc")
+                : Collections.emptySet();
+        return new OrderByGenerator(processingEnv, table, unorderableColumns);
     }
 
     @Override
@@ -57,11 +69,18 @@ public class OrderByGenerator extends JavaSourceGenerator {
 
     private void addOrderByMethods(TypeSpec.Builder codeBuilder) {
         columnsSortedByName.stream()    // Parent class OrderBy already contains the methods for the default columns
-                .filter(c -> c.orderable() && !TableInfo.defaultColumns().containsKey(c.getColumnName()) && isOrderableType(c))
+                .filter(this::filterUnorderableColumns)
                 .forEach(c -> codeBuilder.addMethod(methodSpecFor(c)));
     }
 
-    private boolean isOrderableType(ColumnInfo columnInfo) {
+    private boolean filterUnorderableColumns(ColumnInfo c) {
+        return c.orderable()
+                && !TableInfo.defaultColumns().containsKey(c.getColumnName())
+                && isOrderableType(c)
+                && !additionalUnorderableColumns.contains(c.columnName());
+    }
+
+    private static boolean isOrderableType(ColumnInfo columnInfo) {
         final String qType = columnInfo.qualifiedType();
         return !qType.equals(BigDecimal.class.getName()) && !qType.equals(BigInteger.class.getName());
     }

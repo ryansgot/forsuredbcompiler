@@ -30,13 +30,13 @@ public class OrderByGeneratorTest extends GeneratorTest<JavaFileObject> {
                         TestData.resourceText("example_order_by.txt"),
                         TestData.targetTableWithChildForeignKey()
                 },
-                // TODO: test DocStoreOrderByGenerator
+                // TODO: tests for doc store generation
         });
     }
 
     @Before
     public void setUp() {
-        gut = new OrderByGenerator(mockProcessingEnv, inputTable);
+        gut = OrderByGenerator.create(mockProcessingEnv, inputTable);
     }
 
     @Override
