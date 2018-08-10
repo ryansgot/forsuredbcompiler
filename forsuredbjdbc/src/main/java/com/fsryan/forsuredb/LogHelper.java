@@ -79,6 +79,10 @@ public abstract class LogHelper {
     }
 
     private static String stringify(Object o) {
+        if (o == null) {
+            return "NULL";
+        }
+
         if (!o.getClass().isArray() || o.getClass().getComponentType() != byte.class) {
             return String.valueOf(o);
         }

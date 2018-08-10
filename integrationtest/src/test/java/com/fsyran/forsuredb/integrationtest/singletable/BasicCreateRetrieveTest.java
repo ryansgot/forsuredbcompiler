@@ -1,5 +1,6 @@
 package com.fsyran.forsuredb.integrationtest.singletable;
 
+import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.integrationtest.singletable.AllTypesTable;
 import com.fsyran.forsuredb.integrationtest.DBSetup;
 import com.fsyran.forsuredb.integrationtest.ExecutionLog;
@@ -11,10 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
 import static com.fsyran.forsuredb.integrationtest.MoreAssertions.assertCount;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({DBSetup.class, EnsureAllTypesTableEmptyBeforeTest.class, ExecutionLog.class})
 public class BasicCreateRetrieveTest {
@@ -44,5 +45,31 @@ public class BasicCreateRetrieveTest {
     public void shouldCorrectlyInsertMultipleRecords() {
         List<AttemptedSavePair<AllTypesTable.Record>> insertedPairs = insertRandomRecords(10);
         verifyConsecutiveRecords(insertedPairs, 1L);
+    }
+
+    @Test
+    @DisplayName("Insert and retrieve records that have null values")
+    public void shouldCorrectlyInsertAndRetrieveRecordsWithNullValues() throws Exception {
+        AllTypesTable.Record record = AllTypesTable.Record.createRandomWithNullableElementsNull();
+        AttemptedSavePair<AllTypesTable.Record> savePair = insertRecord(record);
+        if (savePair.getResult().exception() != null) {
+            throw savePair.getResult().exception();
+        }
+
+        Retriever r = allTypesTable()
+                .find().byBigDecimalColumn(null)
+                    .and().byBigIntegerColumn(null)
+                    .and().byBooleanWrapperColumn(null)
+                    .and().byDateColumnOn(null)
+                    .and().byDoubleWrapperColumn(null)
+                    .and().byFloatWrapperColumn(null)
+                    .and().byIntegerWrapperColumn(null)
+                    .and().byLongWrapperColumn(null)
+                    .and().byStringColumn(null)
+                    .and().byByteArrayColumn(null)
+                .then()
+                .get();
+        // TODO: call Resolver.getCount() when https://github.com/ryansgot/forsuredbcompiler/issues/162 is done
+        assertTrue(r.moveToFirst());
     }
 }

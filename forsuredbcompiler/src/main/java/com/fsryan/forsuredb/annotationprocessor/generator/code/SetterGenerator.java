@@ -98,6 +98,11 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
 
     private static CodeBlock recordContainerUpdateBlockFor(ColumnInfo column) {
         CodeBlock.Builder builder = CodeBlock.builder();
+        if (!column.hasPrimitiveType()) {
+            builder.beginControlFlow("if ($N == null)", column.methodName())
+                    .addStatement("$N.putNull($S)", RECORD_CONTAINER_FIELD, column.columnName())
+                    .nextControlFlow("else");
+        }
         switch (column.qualifiedType()) {
             case "int": // intentionally fall through
             case "java.lang.Integer": // intentionally fall through
@@ -126,6 +131,9 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
                 break;
             default:
                 throw new IllegalStateException("Cannot set value of type: " + column.qualifiedType());
+        }
+        if (!column.hasPrimitiveType()) {
+            builder.endControlFlow();
         }
 
         return builder.build();

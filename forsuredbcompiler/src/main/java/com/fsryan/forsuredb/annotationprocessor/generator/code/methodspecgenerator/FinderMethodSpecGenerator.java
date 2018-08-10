@@ -64,9 +64,9 @@ public abstract class FinderMethodSpecGenerator {
                 return new NumberFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName);
             case "java.math.BigDecimal":
             case "java.math.BigInteger":
+            case "java.lang.Boolean":   // <-- that is because Boolean has three states, null, true, or false, and thus, a variable number of arguments is preferred
                 return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, true);
             case "boolean":
-            case "java.lang.Boolean":
                 return new IsIsNotOnlyFinderMethodGenerator(column, conjunctionTypeName, betweenTypeName, false);
         }
 
@@ -197,14 +197,27 @@ public abstract class FinderMethodSpecGenerator {
     }
 
     private CodeBlock multivaluedFilterCodeBlock(String parameterName, int op, String varargsName) {
-        return CodeBlock.builder()
-                .addStatement("$N.$N($T.$N())", "whereElements", "add", ClassName.get(WhereElement.class), "createGroupStart")
-                .addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName))
-                .beginControlFlow("for(int i = 0; i < ($N == null ? 0 : $N.length); i++)", varargsName, varargsName)
-                .addStatement("$N.add($T.$N())", "whereElements", ClassName.get(WhereElement.class), op == OP_EQ ? "createOr" : "createAnd")
-                .addStatement("addToBuf($S, $L, $N[$N])", column.getColumnName(), opToOpNameMap.get(op), varargsName, "i")
-                .endControlFlow()
-                .addStatement("$N.$N($T.$N())", "whereElements", "add", ClassName.get(WhereElement.class), "createGroupEnd")
+        boolean isBooleanWrapper = column.getQualifiedType().equals(Boolean.class.getName());
+        CodeBlock.Builder builder = CodeBlock.builder()
+                .addStatement("$N.$N($T.$N)", "whereElements", "add", ClassName.get(WhereElement.class), "START_GROUP");
+
+        if (isBooleanWrapper) {
+            builder.addStatement("addToBuf($S, $L, $N == null ? null : $N ? 1 : 0)", column.getColumnName(), opToOpNameMap.get(op), parameterName, parameterName);
+        } else {
+            builder.addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName));
+        }
+
+        builder.beginControlFlow("for(int i = 0; i < ($N == null ? 0 : $N.length); i++)", varargsName, varargsName)
+                .addStatement("$N.add($T.$N)", "whereElements", ClassName.get(WhereElement.class), op == OP_EQ ? "OR" : "AND");
+
+        if (isBooleanWrapper) {
+            builder.addStatement("addToBuf($S, $L, $N[$N] == null ? null : $N[$N] ? 1 : 0)", column.getColumnName(), opToOpNameMap.get(op), varargsName, "i", varargsName, "i");
+        } else {
+            builder.addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName));
+        }
+
+        return builder.endControlFlow()
+                .addStatement("$N.$N($T.$N)", "whereElements", "add", ClassName.get(WhereElement.class), "END_GROUP")
                 .build();
     }
 
@@ -223,7 +236,7 @@ public abstract class FinderMethodSpecGenerator {
     }
 
     private boolean isForBooleanType() {
-        return column.getQualifiedType().equals("boolean") || column.getQualifiedType().equals("java.lang.Boolean");
+        return column.getQualifiedType().equals("boolean");
     }
 
     private static class EmptyGenerator extends FinderMethodSpecGenerator {

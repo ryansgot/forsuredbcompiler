@@ -42,6 +42,7 @@ public interface RecordContainer {
     void put(String column, double value);
     void put(String column, float value);
     void put(String column, byte[] value);
+    void putNull(String column);
     Set<String> keySet();
 
     /**

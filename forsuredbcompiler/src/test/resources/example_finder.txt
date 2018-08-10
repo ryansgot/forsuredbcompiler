@@ -41,13 +41,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byAppRating(double exactMatch,
             double... orExactMatches) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("app_rating", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(Finder.WhereElement.createOr());
+            whereElements.add(Finder.WhereElement.OR);
             addToBuf("app_rating", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -60,13 +60,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byAppRatingNot(double exclusion,
             double... furtherExclusions) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("app_rating", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(Finder.WhereElement.createAnd());
+            whereElements.add(Finder.WhereElement.AND);
             addToBuf("app_rating", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -151,13 +151,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byGlobalId(long exactMatch,
             long... orExactMatches) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("global_id", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(Finder.WhereElement.createOr());
+            whereElements.add(Finder.WhereElement.OR);
             addToBuf("global_id", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -170,13 +170,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byGlobalIdNot(long exclusion,
             long... furtherExclusions) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("global_id", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(Finder.WhereElement.createAnd());
+            whereElements.add(Finder.WhereElement.AND);
             addToBuf("global_id", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -261,13 +261,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byLoginCount(int exactMatch,
             int... orExactMatches) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("login_count", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(Finder.WhereElement.createOr());
+            whereElements.add(Finder.WhereElement.OR);
             addToBuf("login_count", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -280,13 +280,13 @@ public class TestTable3Finder<R extends TestTable3Resolver> extends Finder<R, Te
      */
     public Conjunction.GroupableAndOr<R, TestTable3Finder<R>> byLoginCountNot(int exclusion,
             int... furtherExclusions) {
-        whereElements.add(Finder.WhereElement.createGroupStart());
+        whereElements.add(Finder.WhereElement.START_GROUP);
         addToBuf("login_count", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(Finder.WhereElement.createAnd());
+            whereElements.add(Finder.WhereElement.AND);
             addToBuf("login_count", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(Finder.WhereElement.createGroupEnd());
+        whereElements.add(Finder.WhereElement.END_GROUP);
         return conjunction;
     }
 

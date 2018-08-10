@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.api.RecordContainer;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 public abstract class StatementBinder {
@@ -15,6 +16,11 @@ public abstract class StatementBinder {
     }
 
     public static void bindObject(int idx, PreparedStatement pStatement, Object obj) throws SQLException {
+        if (obj == null) {
+            pStatement.setNull(idx, Types.NULL);
+            return;
+        }
+
         Class<?> cls = obj.getClass();
         if (cls == Long.class) {
             pStatement.setLong(idx, (long) obj);

@@ -81,6 +81,12 @@ public final class TypedRecordContainer implements RecordContainer {
     }
 
     @Override
+    public void putNull(String column) {
+        columnToValueMap.put(column, null);
+        columnToTypeMap.put(column, null);
+    }
+
+    @Override
     public void clear() {
         columnToValueMap.clear();
         columnToTypeMap.clear();

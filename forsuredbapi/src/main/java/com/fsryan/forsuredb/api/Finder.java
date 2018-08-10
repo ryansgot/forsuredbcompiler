@@ -53,30 +53,20 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
     @AutoValue
     public static abstract class WhereElement {
+
         public static final int TYPE_CONDITION = 1;
         public static final int TYPE_GROUP_START = TYPE_CONDITION << 1;
         public static final int TYPE_GROUP_END = TYPE_GROUP_START << 1;
         public static final int TYPE_AND_CONJUNCTION = TYPE_GROUP_END << 1;
         public static final int TYPE_OR_CONJUNCTION = TYPE_AND_CONJUNCTION << 1;
 
-        public static WhereElement createAnd() {
-            return createNonCondition(TYPE_AND_CONJUNCTION);
-        }
-
-        public static WhereElement createOr() {
-            return createNonCondition(TYPE_OR_CONJUNCTION);
-        }
-
-        public static WhereElement createGroupStart() {
-            return createNonCondition(TYPE_GROUP_START);
-        }
-
-        public static WhereElement createGroupEnd() {
-            return createNonCondition(TYPE_GROUP_END);
-        }
+        public static final WhereElement AND = new AutoValue_Finder_WhereElement(TYPE_AND_CONJUNCTION, null, OP_NONE, null);
+        public static final WhereElement OR = new AutoValue_Finder_WhereElement(TYPE_OR_CONJUNCTION, null, OP_NONE, null);
+        public static final WhereElement START_GROUP = new AutoValue_Finder_WhereElement(TYPE_GROUP_START, null, OP_NONE, null);
+        public static final WhereElement END_GROUP = new AutoValue_Finder_WhereElement(TYPE_GROUP_END, null, OP_NONE, null);
 
         // TODO: allow for NOT NULL and IS NULL queries
-        static WhereElement createCondition(@Nonnull String column, int op, @Nonnull Object value) {
+        static WhereElement createCondition(@Nonnull String column, int op, @Nullable Object value) {
             return new AutoValue_Finder_WhereElement(TYPE_CONDITION, column, op, value);
         }
 
@@ -89,10 +79,6 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
                 case TYPE_OR_CONJUNCTION: return "TYPE_OR_CONJUNCTION";
             }
             throw new IllegalArgumentException("Unknown type: " + type);
-        }
-
-        private static WhereElement createNonCondition(int type) {
-            return new AutoValue_Finder_WhereElement(type, null, OP_NONE, null);
         }
 
         public abstract int type();
@@ -157,13 +143,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
 
             @Override
             public F or() {
-                whereElements.add(WhereElement.createOr());
+                whereElements.add(WhereElement.OR);
                 return (F) Finder.this;
             }
 
             @Override
             public F and() {
-                whereElements.add(WhereElement.createAnd());
+                whereElements.add(WhereElement.AND);
                 return (F) Finder.this;
             }
 
@@ -192,7 +178,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
                 throw new IllegalStateException(WhereElement.typeName(WhereElement.TYPE_GROUP_START) + " must not follow type " + WhereElement.typeName(last.type()));
             }
         }
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         return (F) this;
     }
 
@@ -205,7 +191,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         if ((last.type() & (WhereElement.TYPE_AND_CONJUNCTION | WhereElement.TYPE_OR_CONJUNCTION | WhereElement.TYPE_GROUP_START)) != 0) {
             throw new IllegalStateException(WhereElement.typeName(WhereElement.TYPE_GROUP_END) + " must not follow type " + WhereElement.typeName(last.type()));
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return (F) this;
     }
 
@@ -468,13 +454,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * @return a {@link Conjunction.GroupableAndOr} that allows you to continue adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byId(long exactMatch, long... orExactMatches) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("_id", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(WhereElement.createOr());
+            whereElements.add(WhereElement.OR);
             addToBuf("_id", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -487,13 +473,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byIdNot(long exclusion, long... furtherExclusions) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("_id", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             addToBuf("_id", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -643,13 +629,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byCreatedOn(Date exactMatch, Date... orExactMatches) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("created", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(WhereElement.createOr());
+            whereElements.add(WhereElement.OR);
             addToBuf("created", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -660,13 +646,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byNotCreatedOn(Date exclusion, Date... furtherExclusions) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("created", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             addToBuf("created", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -779,13 +765,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byModifiedOn(Date exactMatch, Date... orExactMatches) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("modified", OP_EQ, exactMatch);
         for(int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(WhereElement.createOr());
+            whereElements.add(WhereElement.OR);
             addToBuf("modified", OP_EQ, orExactMatches[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -796,13 +782,13 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byNotModifiedOn(Date exclusion, Date... furtherExclusions) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addToBuf("modified", OP_NE, exclusion);
         for(int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             addToBuf("modified", OP_NE, furtherExclusions[i]);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -830,15 +816,15 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
         }
 
         // TODO: check the logic for using AND here. AND should limit the kind of queries you could run
-        whereElements.add(WhereElement.createAnd());
+        whereElements.add(WhereElement.AND);
         whereElements.addAll(finder.whereElements);
         replacementsList.addAll(finder.replacementsList);
         incorporatedExternalFinder = true;
     }
 
-    protected final void addToBuf(String column, int operator, Object value) {
-        if (!canAddClause(column, value)) {
-            return;
+    protected final void addToBuf(String column, int op, @Nullable Object value) {
+        if (column == null || column.isEmpty()) {
+            throw new IllegalArgumentException("null or empty column not allowed");
         }
 
         if (incorporatedExternalFinder) {
@@ -847,12 +833,15 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             // incorporating an external Finder object
             // It seems to me that this would make it impossible to write some combinations of queries like
             // table1.a = 'a' OR table2.a = 'b'
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             incorporatedExternalFinder = false;
         }
 
-        whereElements.add(WhereElement.createCondition(column, operator, value));
-        replacementsList.add(sqlGenerator.objectForReplacement(operator, value));
+        whereElements.add(WhereElement.createCondition(column, op, value));
+        Object forReplacement = sqlGenerator.objectForReplacement(op, value);
+        if (forReplacement != null) {
+            replacementsList.add(forReplacement);
+        }
     }
 
     protected final <T> Between<R, F> createBetween(Class<T> qualifiedType, final String column) {
@@ -868,7 +857,7 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             }
 
             private <T> Conjunction.GroupableAndOr<R, F> conjoin(int operator, T high) {
-                whereElements.add(WhereElement.createAnd());
+                whereElements.add(WhereElement.AND);
                 addToBuf(column, operator, high);
                 return conjunction;
             }
@@ -880,10 +869,6 @@ public abstract class Finder<R extends Resolver, F extends Finder<R, F>> {
             throw new IllegalStateException(String.format("It's ambiguous whether you want %s %d records or %d records", toDo, num1, num2));
         }
         return Math.max(num1, num2);
-    }
-
-    private boolean canAddClause(String column, Object value) {
-        return column != null && !column.isEmpty() && value != null && !value.toString().isEmpty();
     }
 
     private void project(boolean distinct, String... projection) {
