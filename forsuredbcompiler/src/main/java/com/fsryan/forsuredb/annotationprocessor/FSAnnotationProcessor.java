@@ -162,7 +162,7 @@ public class FSAnnotationProcessor extends AbstractProcessor {
 
     private void createOrderByClasses(ProcessingContext pc) {
         for (TableInfo tableInfo : pc.allTables()) {
-            new OrderByGenerator(processingEnv, tableInfo).generate();
+            OrderByGenerator.create(processingEnv, tableInfo).generate();
         }
         orderByClassesCreated = true;    // <-- maintain state so orderby classes don't have to be created more than once
     }
