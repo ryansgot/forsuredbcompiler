@@ -19,6 +19,40 @@ package com.fsryan.forsuredb.api;
 
 public interface FSProjection {
 
+    FSProjection COUNT = new FSProjection() {
+        @Override
+        public String tableName() {
+            return null;
+        }
+
+        @Override
+        public String[] columns() {
+            return new String[] {"count(*) AS cnt"};
+        }
+
+        @Override
+        public boolean isDistinct() {
+            return false;
+        }
+    };
+
+    FSProjection COUNT_DISTINCT = new FSProjection() {
+        @Override
+        public String tableName() {
+            return null;
+        }
+
+        @Override
+        public String[] columns() {
+            return new String[] {"count(*) AS cnt"};
+        }
+
+        @Override
+        public boolean isDistinct() {
+            return true;
+        }
+    };
+
     /**
      * @return The name of the table to which the column corresponds
      */

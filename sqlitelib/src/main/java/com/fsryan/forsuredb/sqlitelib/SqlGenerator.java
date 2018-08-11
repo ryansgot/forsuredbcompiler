@@ -156,7 +156,9 @@ public class SqlGenerator implements DBMSIntegrator {
                                                   @Nullable FSProjection projection,
                                                   @Nullable FSSelection selection,
                                                   @Nullable List<FSOrdering> orderings) {
-        final String[] p = projectionHelper.formatProjection(projection);
+        final String[] p = projection == FSProjection.COUNT || projection == FSProjection.COUNT_DISTINCT
+                ? projection.columns()
+                : projectionHelper.formatProjection(projection);
         final String orderBy = expressOrdering(orderings);
         final QueryCorrector qc = new QueryCorrector(table, null, selection, orderBy);
         final String where = qc.getSelection(true);

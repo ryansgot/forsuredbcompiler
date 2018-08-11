@@ -138,6 +138,17 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         return finder;
     }
 
+    public int getCount() {
+        projections.clear();
+        projections.add(FSProjection.COUNT);
+        Retriever r = get();
+        try {
+            return r.getInt("cnt");
+        } finally {
+            r.close();
+        }
+    }
+
     public final U tableLocator() {
         return infoFactory.tableResource(tableName());
     }
