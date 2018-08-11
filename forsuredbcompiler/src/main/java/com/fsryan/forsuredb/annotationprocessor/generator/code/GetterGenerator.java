@@ -57,6 +57,26 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
                     Retriever.class.getDeclaredMethod("getInt", String.class).getName()
             );
             columnQualifiedTypeToRetrieverMethodNameMap.put(
+                    boolean.class.getName(),
+                    Retriever.class.getDeclaredMethod("getInt", String.class).getName()
+            );
+            columnQualifiedTypeToRetrieverMethodNameMap.put(
+                    Boolean.class.getName(),
+                    Retriever.class.getDeclaredMethod("getInt", String.class).getName()
+            );
+            columnQualifiedTypeToRetrieverMethodNameMap.put(
+                    BigInteger.class.getName(),
+                    Retriever.class.getDeclaredMethod("getString", String.class).getName()
+            );
+            columnQualifiedTypeToRetrieverMethodNameMap.put(
+                    BigDecimal.class.getName(),
+                    Retriever.class.getDeclaredMethod("getString", String.class).getName()
+            );
+            columnQualifiedTypeToRetrieverMethodNameMap.put(
+                    Date.class.getName(),
+                    Retriever.class.getDeclaredMethod("getString", String.class).getName()
+            );
+            columnQualifiedTypeToRetrieverMethodNameMap.put(
                     long.class.getName(),
                     Retriever.class.getDeclaredMethod("getLong", String.class).getName()
             );
@@ -168,31 +188,49 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
     }
 
     private static CodeBlock getterMethodCode(ColumnInfo columnInfo) {
-        CodeBlock.Builder builder = CodeBlock.builder();
         final String columnName = columnInfo.columnName();
+        final String retrieverMethodName = columnQualifiedTypeToRetrieverMethodNameMap.get(columnInfo.qualifiedType());
+        CodeBlock.Builder builder = CodeBlock.builder()
+                .addStatement("$N($N)", "throwIfNullRetriever", getterMethodArgName)
+                .addStatement("String $N = $N($S)", "disambiguatedColumn", "disambiguateColumn", columnName);
+        if (!columnInfo.hasPrimitiveType()) {
+            builder.beginControlFlow("if ($N.isNull($N))", getterMethodArgName, "disambiguatedColumn")
+                    .addStatement("return null")
+                    .endControlFlow();
+        }
         switch (columnInfo.qualifiedType()) {
             case "boolean": // falling through intentionally
             case "java.lang.Boolean":
-                builder.addStatement("return $N($N, $S)", "parseBooleanColumn", getterMethodArgName, columnName);
+                builder.addStatement("int $N = $N.$L($N)", "ret", getterMethodArgName, retrieverMethodName, "disambiguatedColumn")
+                        .addStatement("return $N == $L", "ret", 1);
                 break;
             case "java.math.BigInteger":
-                builder.addStatement("return $N($N, $S)", "parseBigIntegerColumn", getterMethodArgName, columnName);
+                addNumberTypeRetrieverExtraction(builder, columnName, retrieverMethodName, BigInteger.class);
                 break;
             case "java.math.BigDecimal":
-                builder.addStatement("return $N($N, $S)", "parseBigDecimalColumn", getterMethodArgName, columnName);
+                addNumberTypeRetrieverExtraction(builder, columnName, retrieverMethodName, BigDecimal.class);
                 break;
             case "java.util.Date":
-                builder.addStatement("return $N($N, $S)", "parseDateColumn", getterMethodArgName, columnName);
-                break;
-            case "java.lang.String":
-                builder.addStatement("return $N($N, $S)", "retrieveString", getterMethodArgName, columnName);
+                builder.addStatement("String $N = $N.$L($N)", "ret", getterMethodArgName, retrieverMethodName, "disambiguatedColumn")
+                        .addStatement("return $N.$N($N)", "sqlGenerator", "parseDate", "ret");
                 break;
             default:
-                final String retrieverMethodName = columnQualifiedTypeToRetrieverMethodNameMap.get(columnInfo.qualifiedType());
-                builder.addStatement("$N($N)", "throwIfNullRetriever", getterMethodArgName)
-                        .addStatement("return $N.$L($N($S))", getterMethodArgName, retrieverMethodName, "disambiguateColumn", columnName);
+                builder.addStatement("return $N.$L($N)", getterMethodArgName, retrieverMethodName, "disambiguatedColumn");
         }
         return builder.build();
+    }
+
+    private static void addNumberTypeRetrieverExtraction(CodeBlock.Builder builder, String columnName, String retrieverMethodName, Class<? extends Number> cls) {
+        builder.addStatement("String $N = $N.$L($N)", "val", getterMethodArgName, retrieverMethodName, "disambiguatedColumn")
+                .beginControlFlow("try")
+                .addStatement("return new $T($N)", ClassName.get(cls), "val")
+                .nextControlFlow("catch ($T $N)", ClassName.get(NumberFormatException.class), "nfe")
+                .addStatement(
+                        "throw new $T($S + $N, $N)",
+                        ClassName.get(IllegalArgumentException.class), "Looks like " + columnName + " was not a " +cls + "; actual value = ",
+                        "val",
+                        "nfe"
+                ).endControlFlow();
     }
 
     private static JavadocInfo createMethodJavadoc(ColumnInfo columnInfo) {

@@ -3609,6 +3609,7 @@ public class RetrievalTests {
             assertEquals(savedRecord.longColumn(), api.longColumn(r));
             assertEquals(savedRecord.floatColumn(), api.floatColumn(r), 0.0000001F);
             assertEquals(savedRecord.doubleColumn(), api.doubleColumn(r), 0.0000000001D);
+            assertCallThrowsException(r, api::id);
             assertCallThrowsException(r, api::bigDecimalColumn);
             assertCallThrowsException(r, api::bigIntegerColumn);
             assertCallThrowsException(r, api::stringColumn);
@@ -3619,7 +3620,6 @@ public class RetrievalTests {
             assertCallThrowsException(r, api::longWrapperColumn);
             assertCallThrowsException(r, api::floatWrapperColumn);
             assertCallThrowsException(r, api::doubleWrapperColumn);
-            assertCallThrowsException(r, api::id);
             assertCallThrowsException(r, api::created);
             assertCallThrowsException(r, api::deleted);
             assertCallThrowsException(r, api::modified);

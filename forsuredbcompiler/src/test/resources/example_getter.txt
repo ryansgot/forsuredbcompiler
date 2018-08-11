@@ -2,6 +2,8 @@ package com.fsryan.annotationprocessor.generator.code;
 
 import com.fsryan.forsuredb.api.BaseGetter;
 import com.fsryan.forsuredb.api.Retriever;
+import java.lang.IllegalArgumentException;
+import java.lang.NumberFormatException;
 import java.lang.String;
 import java.math.BigDecimal;
 import javax.annotation.Generated;
@@ -29,11 +31,12 @@ public class TestTable3Getter extends BaseGetter implements TestTable3 {
      * </p>
      * @param retriever The {@link Retriever} that can pull column values from the current record
      * @return the value of column app_rating for the current record
-     * @throws java.lang.IllegalArgumentException when input retriever is null
+     * @throws IllegalArgumentException when input retriever is null
      */
     public double appRating(Retriever retriever) {
         throwIfNullRetriever(retriever);
-        return retriever.getDouble(disambiguateColumn("app_rating"));
+        String disambiguatedColumn = disambiguateColumn("app_rating");
+        return retriever.getDouble(disambiguatedColumn);
     }
 
     /**
@@ -42,10 +45,20 @@ public class TestTable3Getter extends BaseGetter implements TestTable3 {
      * </p>
      * @param retriever The {@link Retriever} that can pull column values from the current record
      * @return the value of column competitor_app_rating for the current record
-     * @throws java.lang.IllegalArgumentException when input retriever is null
+     * @throws IllegalArgumentException when input retriever is null
      */
     public BigDecimal competitorAppRating(Retriever retriever) {
-        return parseBigDecimalColumn(retriever, "competitor_app_rating");
+        throwIfNullRetriever(retriever);
+        String disambiguatedColumn = disambiguateColumn("competitor_app_rating");
+        if (retriever.isNull(disambiguatedColumn)) {
+            return null;
+        }
+        String val = retriever.getString(disambiguatedColumn);
+        try {
+            return new BigDecimal(val);
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException("Looks like competitor_app_rating was not a class java.math.BigDecimal; actual value = " + val, nfe);
+        }
     }
 
     /**
@@ -54,11 +67,12 @@ public class TestTable3Getter extends BaseGetter implements TestTable3 {
      * </p>
      * @param retriever The {@link Retriever} that can pull column values from the current record
      * @return the value of column global_id for the current record
-     * @throws java.lang.IllegalArgumentException when input retriever is null
+     * @throws IllegalArgumentException when input retriever is null
      */
     public long globalId(Retriever retriever) {
         throwIfNullRetriever(retriever);
-        return retriever.getLong(disambiguateColumn("global_id"));
+        String disambiguatedColumn = disambiguateColumn("global_id");
+        return retriever.getLong(disambiguatedColumn);
     }
 
     /**
@@ -67,10 +81,11 @@ public class TestTable3Getter extends BaseGetter implements TestTable3 {
      * </p>
      * @param retriever The {@link Retriever} that can pull column values from the current record
      * @return the value of column login_count for the current record
-     * @throws java.lang.IllegalArgumentException when input retriever is null
+     * @throws IllegalArgumentException when input retriever is null
      */
     public int loginCount(Retriever retriever) {
         throwIfNullRetriever(retriever);
-        return retriever.getInt(disambiguateColumn("login_count"));
+        String disambiguatedColumn = disambiguateColumn("login_count");
+        return retriever.getInt(disambiguatedColumn);
     }
 }

@@ -43,7 +43,8 @@ public abstract class BaseDocStoreGetter<T> extends BaseGetter implements FSDocS
 
     @Override
     public String doc(Retriever retriever) {
-        return retrieveString(retriever, "doc");
+        throwIfNullRetriever(retriever);
+        return retriever.getString(disambiguateColumn("doc"));
     }
 
     @Override
@@ -54,7 +55,8 @@ public abstract class BaseDocStoreGetter<T> extends BaseGetter implements FSDocS
 
     @Override
     public String className(Retriever retriever) {
-        return retrieveString(retriever, "class_name");
+        throwIfNullRetriever(retriever);
+        return retriever.getString(disambiguateColumn("class_name"));
     }
 
     @Override

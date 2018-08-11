@@ -50,8 +50,8 @@ public class BasicCreateRetrieveTest {
     @Test
     @DisplayName("Insert and retrieve records that have null values")
     public void shouldCorrectlyInsertAndRetrieveRecordsWithNullValues() throws Exception {
-        AllTypesTable.Record record = AllTypesTable.Record.createRandomWithNullableElementsNull();
-        AttemptedSavePair<AllTypesTable.Record> savePair = insertRecord(record);
+        AllTypesTable.Record inserted = AllTypesTable.Record.createRandomWithNullableElementsNull();
+        AttemptedSavePair<AllTypesTable.Record> savePair = insertRecord(inserted);
         if (savePair.getResult().exception() != null) {
             throw savePair.getResult().exception();
         }
@@ -69,7 +69,8 @@ public class BasicCreateRetrieveTest {
                     .and().byByteArrayColumn(null)
                 .then()
                 .get();
-        // TODO: call Resolver.getCount() when https://github.com/ryansgot/forsuredbcompiler/issues/162 is done
-        assertTrue(r.moveToFirst());
+        AllTypesTable.Record retrieved = extractRecordFrom(r);
+        r.close();
+        assertEquals(inserted, retrieved);
     }
 }

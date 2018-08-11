@@ -272,7 +272,7 @@ abstract class AllTypesTableTestUtil {
         return asr.getAttemptedRecord().bigIntegerColumn();
     }
 
-    private static AllTypesTable.Record extractRecordFrom(Retriever r) {
+    public static AllTypesTable.Record extractRecordFrom(Retriever r) {
         return AllTypesTable.Record.builder()
                 .bigDecimalColumn(allTypesApi.bigDecimalColumn(r))
                 .bigIntegerColumn(allTypesApi.bigIntegerColumn(r))

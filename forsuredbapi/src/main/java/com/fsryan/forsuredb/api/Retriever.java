@@ -33,6 +33,7 @@ public interface Retriever extends Closeable {
     float getFloat(String column);
     byte[] getBytes(String column);
     int getCount();
+    boolean isNull(String column);
 
     boolean isClosed();
     void close();
