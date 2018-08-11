@@ -213,7 +213,7 @@ public abstract class FinderMethodSpecGenerator {
         if (isBooleanWrapper) {
             builder.addStatement("addToBuf($S, $L, $N[$N] == null ? null : $N[$N] ? 1 : 0)", column.getColumnName(), opToOpNameMap.get(op), varargsName, "i", varargsName, "i");
         } else {
-            builder.addStatement("addToBuf($S, $L, $L)", column.getColumnName(), opToOpNameMap.get(op), translateParameter(parameterName));
+            builder.addStatement("addToBuf($S, $L, $N[$N])", column.getColumnName(), opToOpNameMap.get(op), varargsName, "i");
         }
 
         return builder.endControlFlow()
