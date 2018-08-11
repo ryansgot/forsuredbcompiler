@@ -1,10 +1,8 @@
 package com.fsryan.forsuredb.resultset;
 
-import com.fsryan.forsuredb.api.Retriever;
 import org.junit.*;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +13,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class FSResultSetTest {
@@ -1334,5 +1333,19 @@ public class FSResultSetTest {
     public void shouldPassThroughGetPositionToGetRow() throws SQLException {
         fsResultSetUnderTest.getPosition();
         verify(mockResultSet).getRow();
+    }
+
+    @Test
+    public void shouldCorrectlyEvaluateColumnNull() throws SQLException {
+        when(mockResultSet.wasNull()).thenReturn(true);
+        assertTrue(fsResultSetUnderTest.isNull(columnLabel));
+        verify(mockResultSet).getObject(eq(columnLabel));
+    }
+
+    @Test
+    public void shouldCorrectlyEvaluateColumnNotNull() throws SQLException {
+        when(mockResultSet.wasNull()).thenReturn(false);
+        assertFalse(fsResultSetUnderTest.isNull(columnLabel));
+        verify(mockResultSet).getObject(eq(columnLabel));
     }
 }

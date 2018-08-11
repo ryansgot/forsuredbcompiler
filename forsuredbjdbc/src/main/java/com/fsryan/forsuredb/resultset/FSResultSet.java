@@ -1140,6 +1140,16 @@ public class FSResultSet implements ResultSet, Retriever {
         }
     }
 
+    @Override
+    public boolean isNull(String column) {
+        try {
+            getObject(column);
+            return resultSet.wasNull();
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
+    }
+
     /**
      * @return true if the operation succeeded--false otherwise
      */
