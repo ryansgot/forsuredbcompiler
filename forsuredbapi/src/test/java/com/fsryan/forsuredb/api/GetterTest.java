@@ -107,48 +107,6 @@ public abstract class GetterTest<T extends BaseGetter> {
             inOrder.verify(mockRetriever).getInt(eq(unambiguousColumn));
             assertTrue(actual);
         }
-
-        @Test
-        public void shouldCallRetrieverGetStringMethodWhenGettingStringValue() {
-            final String expected = "expected";
-            final String unambiguousColumn = tableName + "_some_string_column";
-            when(mockDBMSIntegrator.unambiguousRetrievalColumn(eq(tableName), eq("some_string_column"))).thenReturn(unambiguousColumn);
-            when(mockRetriever.getString(eq(unambiguousColumn))).thenReturn(expected);
-
-            String actual = getterUnderTest.retrieveString(mockRetriever, "some_string_column");
-
-            inOrder.verify(mockDBMSIntegrator).unambiguousRetrievalColumn(eq(tableName), eq("some_string_column"));
-            inOrder.verify(mockRetriever).getString(eq(unambiguousColumn));
-            assertEquals(expected, actual);
-        }
-
-        @Test
-        public void shouldCallRetrieverGetStringMethodWhenGettingBigIntegerValue() {
-            final BigInteger expected = new BigInteger("2974756327356");
-            final String unambiguousColumn = tableName + "_some_big_integer_column";
-            when(mockDBMSIntegrator.unambiguousRetrievalColumn(eq(tableName), eq("some_big_integer_column"))).thenReturn(unambiguousColumn);
-            when(mockRetriever.getString(eq(unambiguousColumn))).thenReturn(expected.toString());
-
-            BigInteger actual = getterUnderTest.parseBigIntegerColumn(mockRetriever, "some_big_integer_column");
-
-            inOrder.verify(mockDBMSIntegrator).unambiguousRetrievalColumn(eq(tableName), eq("some_big_integer_column"));
-            inOrder.verify(mockRetriever).getString(eq(unambiguousColumn));
-            assertEquals(expected, actual);
-        }
-
-        @Test
-        public void shouldCallRetrieverGetStringMethodWhenGettingBigDecimalValue() {
-            final BigDecimal expected = new BigDecimal("2973464564.7563273567857856");
-            final String unambiguousColumn = tableName + "_some_big_decimal_column";
-            when(mockDBMSIntegrator.unambiguousRetrievalColumn(eq(tableName), eq("some_big_decimal_column"))).thenReturn(unambiguousColumn);
-            when(mockRetriever.getString(eq(unambiguousColumn))).thenReturn(expected.toString());
-
-            BigDecimal actual = getterUnderTest.parseBigDecimalColumn(mockRetriever, "some_big_decimal_column");
-
-            inOrder.verify(mockDBMSIntegrator).unambiguousRetrievalColumn(eq(tableName), eq("some_big_decimal_column"));
-            inOrder.verify(mockRetriever).getString(eq(unambiguousColumn));
-            assertEquals(expected, actual);
-        }
     }
 
     public static class BaseGetterErrorCaseTests extends BaseGetterTest {
@@ -171,45 +129,6 @@ public abstract class GetterTest<T extends BaseGetter> {
         @Test(expected = IllegalArgumentException.class)
         public void shouldThrowWhenRetrieverNullAndGettingDeletedColumn() {
             getterUnderTest.deleted(null);
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenRetrieverNullAndGettingStringColumn() {
-            getterUnderTest.retrieveString(null, "a_column");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenRetrieverNullAndParsingDateColumn() {
-            getterUnderTest.parseDateColumn(null, "a_column");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenRetrieverNullAndParsingBooleanColumn() {
-            getterUnderTest.parseBooleanColumn(null, "a_column");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenRetrieverNullAndGettingBigIntegerColumn() {
-            getterUnderTest.parseBigIntegerColumn(null, "a_column");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenRetrieverNullAndGettingBigDecimalColumn() {
-            getterUnderTest.parseBigIntegerColumn(null, "a_column");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenNFEInParsingBigDecimal() {
-            when(mockDBMSIntegrator.unambiguousRetrievalColumn(anyString(), eq("col"))).thenReturn("col");
-            when(mockRetriever.getString(eq("col"))).thenReturn("Not a BigDecimal");
-            getterUnderTest.parseBigDecimalColumn(mockRetriever, "col");
-        }
-
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldThrowWhenNFEInParsingBigInteger() {
-            when(mockDBMSIntegrator.unambiguousRetrievalColumn(anyString(), eq("col"))).thenReturn("col");
-            when(mockRetriever.getString(eq("col"))).thenReturn("Not a BigInteger");
-            getterUnderTest.parseBigIntegerColumn(mockRetriever, "col");
         }
     }
 }

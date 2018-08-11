@@ -30,58 +30,27 @@ public abstract class BaseGetter implements FSGetApi {
 
     @Override
     public Date created(@Nonnull Retriever retriever) {
-        return parseDateColumn(retriever, "created");
+        throwIfNullRetriever(retriever);
+        final String dateString = retriever.getString(disambiguateColumn("created"));
+        return dateString == null ? null : sqlGenerator.parseDate(dateString);
     }
 
     @Override
     public Date modified(@Nonnull Retriever retriever) {
-        return parseDateColumn(retriever, "modified");
+        throwIfNullRetriever(retriever);
+        final String dateString = retriever.getString(disambiguateColumn("modified"));
+        return dateString == null ? null : sqlGenerator.parseDate(dateString);
     }
 
     @Override
     public boolean deleted(@Nonnull Retriever retriever) {
-        return parseBooleanColumn(retriever, "deleted");
+        throwIfNullRetriever(retriever);
+        final int val = retriever.getInt(disambiguateColumn("deleted"));
+        return val == 1;
     }
 
     protected String disambiguateColumn(String columnName) {
         return sqlGenerator.unambiguousRetrievalColumn(tableName, columnName);
-    }
-
-    protected Date parseDateColumn(@Nonnull Retriever retriever, @Nonnull String columnName) {
-        throwIfNullRetriever(retriever);
-        final String dateString = retriever.getString(disambiguateColumn(columnName));
-        return dateString == null ? null : sqlGenerator.parseDate(dateString);
-    }
-
-    protected boolean parseBooleanColumn(@Nonnull Retriever retriever, @Nonnull String columnName) {
-        throwIfNullRetriever(retriever);
-        final int val = retriever.getInt(disambiguateColumn(columnName));
-        return val == 1;
-    }
-
-    protected BigInteger parseBigIntegerColumn(@Nonnull Retriever retriever, @Nonnull String columnName) {
-        throwIfNullRetriever(retriever);
-        final String val = retriever.getString(disambiguateColumn(columnName));
-        try {
-            return val == null ? null : new BigInteger(val);
-        } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Looks like column " + columnName + " was not a " + BigInteger.class + "; actual value: " + val, nfe);
-        }
-    }
-
-    protected BigDecimal parseBigDecimalColumn(@Nonnull Retriever retriever, @Nonnull String columnName) {
-        throwIfNullRetriever(retriever);
-        final String val = retriever.getString(disambiguateColumn(columnName));
-        try {
-            return val == null ? null : new BigDecimal(val);
-        } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Looks like column " + columnName + " was not a " + BigDecimal.class + "; actual value: " + val, nfe);
-        }
-    }
-
-    protected String retrieveString(Retriever retriever, String columnName) {
-        throwIfNullRetriever(retriever);
-        return retriever.getString(disambiguateColumn(columnName));
     }
 
     protected void throwIfNullRetriever(Retriever retriever) {
