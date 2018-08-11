@@ -106,6 +106,21 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
         return defaultValue() != null && !defaultValue().isEmpty();
     }
 
+    public boolean hasPrimitiveType() {
+        switch (getQualifiedType()) {
+            case "boolean":
+            case "byte":
+            case "char":
+            case "short":
+            case "int":
+            case "long":
+            case "float":
+            case "double":
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public int compareTo(ColumnInfo other) {
         // handle null cases

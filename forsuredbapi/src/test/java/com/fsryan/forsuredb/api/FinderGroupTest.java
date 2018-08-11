@@ -12,7 +12,7 @@ public class FinderGroupTest extends FinderTest.ForFinder {
     @Test
     public void shouldAddStartGroupWhenStartingGroupAnd() {
         finderUnderTest.startGroup();
-        assertEquals(Collections.singletonList(Finder.WhereElement.createGroupStart()), accessWhereElements());
+        assertEquals(Collections.singletonList(Finder.WhereElement.START_GROUP), accessWhereElements());
     }
 
     // this may change because it allows you to end a group before starting a group.
@@ -23,7 +23,7 @@ public class FinderGroupTest extends FinderTest.ForFinder {
         Finder.WhereElement added = Finder.WhereElement.createCondition("column", Finder.OP_EQ, new Object());
         addWhereElement(added);
         finderUnderTest.endGroup();
-        assertEquals(Arrays.asList(added, Finder.WhereElement.createGroupEnd()), accessWhereElements());
+        assertEquals(Arrays.asList(added, Finder.WhereElement.END_GROUP), accessWhereElements());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -34,7 +34,7 @@ public class FinderGroupTest extends FinderTest.ForFinder {
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowWhenStartingGroupAndLastElementIsGroupEnd() {
-        addWhereElement(Finder.WhereElement.createGroupEnd());
+        addWhereElement(Finder.WhereElement.END_GROUP);
         finderUnderTest.startGroup();
     }
 
@@ -45,19 +45,19 @@ public class FinderGroupTest extends FinderTest.ForFinder {
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowWhenEndingGroupAndLastElementIsGroupStart() {
-        addWhereElement(Finder.WhereElement.createGroupStart());
+        addWhereElement(Finder.WhereElement.START_GROUP);
         finderUnderTest.endGroup();
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowWhenEndingGroupAndLastElementIsAndConjunction() {
-        addWhereElement(Finder.WhereElement.createAnd());
+        addWhereElement(Finder.WhereElement.AND);
         finderUnderTest.endGroup();
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowWhenEndingGroupAndLastElementIsOrConjunction() {
-        addWhereElement(Finder.WhereElement.createOr());
+        addWhereElement(Finder.WhereElement.OR);
         finderUnderTest.endGroup();
     }
 }

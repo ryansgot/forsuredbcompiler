@@ -46,7 +46,11 @@ public final class TestTable3Setter extends BaseSetter<SetterGeneratorTest, Type
      * </p>
      */
     public final TestTable3Setter competitorAppRating(BigDecimal competitorAppRating) {
-        recordContainer.put("competitor_app_rating", competitorAppRating.toPlainString());
+        if (competitorAppRating == null) {
+            recordContainer.putNull("competitor_app_rating");
+        } else {
+            recordContainer.put("competitor_app_rating", competitorAppRating.toPlainString());
+        }
         return this;
     }
 

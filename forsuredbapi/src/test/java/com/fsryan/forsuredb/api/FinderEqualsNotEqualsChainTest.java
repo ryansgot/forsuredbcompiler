@@ -249,18 +249,18 @@ public abstract class FinderEqualsNotEqualsChainTest<F extends Finder, R extends
     static Iterable<Object[]> testInput(String column, Object first, Object... subsequent) {
         List<Finder.WhereElement> expectedEqualsOrElements = new ArrayList<>(3 + (subsequent == null ? 0 : subsequent.length) * 2);
         List<Finder.WhereElement> expectedNotEqualsAndElements = new ArrayList<>(3 + (subsequent == null ? 0 : subsequent.length) * 2);
-        expectedEqualsOrElements.add(Finder.WhereElement.createGroupStart());
-        expectedNotEqualsAndElements.add(Finder.WhereElement.createGroupStart());
+        expectedEqualsOrElements.add(Finder.WhereElement.START_GROUP);
+        expectedNotEqualsAndElements.add(Finder.WhereElement.START_GROUP);
         expectedEqualsOrElements.add(Finder.WhereElement.createCondition(column, Finder.OP_EQ, first));
         expectedNotEqualsAndElements.add(Finder.WhereElement.createCondition(column, Finder.OP_NE, first));
         for (Object o : subsequent) {
-            expectedEqualsOrElements.add(Finder.WhereElement.createOr());
+            expectedEqualsOrElements.add(Finder.WhereElement.OR);
             expectedEqualsOrElements.add(Finder.WhereElement.createCondition(column, Finder.OP_EQ, o));
-            expectedNotEqualsAndElements.add(Finder.WhereElement.createAnd());
+            expectedNotEqualsAndElements.add(Finder.WhereElement.AND);
             expectedNotEqualsAndElements.add(Finder.WhereElement.createCondition(column, Finder.OP_NE, o));
         }
-        expectedEqualsOrElements.add(Finder.WhereElement.createGroupEnd());
-        expectedNotEqualsAndElements.add(Finder.WhereElement.createGroupEnd());
+        expectedEqualsOrElements.add(Finder.WhereElement.END_GROUP);
+        expectedNotEqualsAndElements.add(Finder.WhereElement.END_GROUP);
 
         List<Object> expectedReplacements = new ArrayList<>(1 + (subsequent == null ? 0 : subsequent.length));
         expectedReplacements.add(first);
@@ -271,14 +271,14 @@ public abstract class FinderEqualsNotEqualsChainTest<F extends Finder, R extends
                         first,
                         null,
                         Arrays.asList(
-                                Finder.WhereElement.createGroupStart(),
+                                Finder.WhereElement.START_GROUP,
                                 Finder.WhereElement.createCondition(column, Finder.OP_EQ, first),
-                                Finder.WhereElement.createGroupEnd()
+                                Finder.WhereElement.END_GROUP
                         ),
                         Arrays.asList(
-                                Finder.WhereElement.createGroupStart(),
+                                Finder.WhereElement.START_GROUP,
                                 Finder.WhereElement.createCondition(column, Finder.OP_NE, first),
-                                Finder.WhereElement.createGroupEnd()
+                                Finder.WhereElement.END_GROUP
                         ),
                         Collections.singletonList(first)
                 },

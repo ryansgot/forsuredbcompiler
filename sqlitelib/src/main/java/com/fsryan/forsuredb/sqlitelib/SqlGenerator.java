@@ -215,6 +215,7 @@ public class SqlGenerator implements DBMSIntegrator {
 
         StringBuilder buf = new StringBuilder();
         for (Finder.WhereElement element : whereElements) {
+            throwIfInvalid(element);
             switch (element.type()) {
                 case Finder.WhereElement.TYPE_GROUP_START:
                     buf.append('(');
@@ -229,8 +230,12 @@ public class SqlGenerator implements DBMSIntegrator {
                     buf.append(" AND ");
                     break;
                 case Finder.WhereElement.TYPE_CONDITION:
-                    buf.append(unambiguousColumn(tableName, element.column())).append(' ')
-                            .append(operationStr(element.op())).append(" ?");
+                    buf.append(unambiguousColumn(tableName, element.column())).append(' ');
+                    if (element.value() == null) {
+                        buf.append(element.op() == Finder.OP_EQ ? "IS NULL" : "IS NOT NULL");
+                    } else {
+                        buf.append(operationStr(element.op())).append(" ?");
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown WhereElement type: " + element.type());
@@ -246,17 +251,13 @@ public class SqlGenerator implements DBMSIntegrator {
         }
 
         if (op == Finder.OP_LIKE) {
-            return expressLike(String.valueOf(obj));
+            return '%' + String.valueOf(obj) + '%';
         }
 
         Class<?> cls = obj.getClass();
         return cls == Date.class ? DATE_FORMAT.get().format((Date) obj)
                 : cls == BigInteger.class || cls == BigDecimal.class ? String.valueOf(obj)
                 : obj;
-    }
-
-    private static String expressLike(String like) {
-        return '%' + like + '%';
     }
 
     private static boolean isMigrationHandledOnCreate(Migration m, Map<String, TableInfo> targetSchema) {
@@ -275,7 +276,23 @@ public class SqlGenerator implements DBMSIntegrator {
         return false;
     }
 
-    private String operationStr(int op) {
+    private static void throwIfInvalid(Finder.WhereElement element) {
+        if (element.type() != Finder.WhereElement.TYPE_CONDITION) {
+            return;
+        }
+
+        if (element.op() == Finder.OP_NONE) {
+           throw new IllegalArgumentException(("Invalid condition: OP_NONE"));
+        }
+        if (element.column() == null || element.column().isEmpty()) {
+            throw new IllegalArgumentException("element condition may not include null or empty column");
+        }
+        if (element.op() != Finder.OP_EQ && element.op() != Finder.OP_NE && element.value() == null) {
+            throw new IllegalArgumentException("null not allowed for operator: " + operationStr(element.op()));
+        }
+    }
+
+    private static String operationStr(int op) {
         switch (op) {
             case Finder.OP_EQ: return "=";
             case Finder.OP_GE: return ">=";

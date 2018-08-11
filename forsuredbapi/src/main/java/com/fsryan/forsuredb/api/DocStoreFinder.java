@@ -24,13 +24,13 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * @see #byClassName(String, String...)
      */
     public Conjunction.GroupableAndOr<R, F> byClass(Class exactClassMatch, Class... orExactClassMatches) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addClassToBuf(exactClassMatch, OP_EQ);
         for (int i = 0; i < (orExactClassMatches == null ? 0 : orExactClassMatches.length); i++) {
-            whereElements.add(WhereElement.createOr());
+            whereElements.add(WhereElement.OR);
             addClassToBuf(orExactClassMatches[i], OP_EQ);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -45,13 +45,13 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * @see #byClassNameNot(String, String...)
      */
     public Conjunction.GroupableAndOr<R, F> byClassNot(Class exclusion, Class... furtherExclusions) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addClassToBuf(exclusion, OP_NE);
         for (int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             addClassToBuf(furtherExclusions[i], OP_NE);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -64,13 +64,13 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassName(String exactMatch, String... orExactMatches) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addClassToBuf(exactMatch, OP_EQ);
         for (int i = 0; i < (orExactMatches == null ? 0 : orExactMatches.length); i++) {
-            whereElements.add(WhereElement.createOr());
+            whereElements.add(WhereElement.OR);
             addClassToBuf(orExactMatches[i], OP_EQ);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 
@@ -83,13 +83,13 @@ public class DocStoreFinder<R extends DocStoreResolver, F extends DocStoreFinder
      * adding more query criteria
      */
     public Conjunction.GroupableAndOr<R, F> byClassNameNot(String exclusion, String... furtherExclusions) {
-        whereElements.add(WhereElement.createGroupStart());
+        whereElements.add(WhereElement.START_GROUP);
         addClassToBuf(exclusion, OP_NE);
         for (int i = 0; i < (furtherExclusions == null ? 0 : furtherExclusions.length); i++) {
-            whereElements.add(WhereElement.createAnd());
+            whereElements.add(WhereElement.AND);
             addClassToBuf(furtherExclusions[i], OP_NE);
         }
-        whereElements.add(WhereElement.createGroupEnd());
+        whereElements.add(WhereElement.END_GROUP);
         return conjunction;
     }
 

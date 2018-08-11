@@ -1078,13 +1078,13 @@ public abstract class SqlGeneratorTest {
             return Arrays.asList(new Object[][] {
                     {   // 00: a single condition
                             "table",
-                            Arrays.asList(mockCondition("column", Finder.OP_EQ)),
+                            Arrays.asList(mockCondition("column", Finder.OP_EQ, "value")),
                             "table.column = ?"
                     },
                     {   // 01: two conditions on the same column anded together
                             "table",
                             Arrays.asList(
-                                    mockCondition("column", Finder.OP_NE),
+                                    mockCondition("column", Finder.OP_NE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
                                     mockCondition("column", Finder.OP_GT)
                             ),
@@ -1104,7 +1104,7 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList(
                                     mockCondition("column", Finder.OP_LT),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
-                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockCondition("column2", Finder.OP_LIKE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
                                     mockCondition("column3", Finder.OP_GE)
                             ),
@@ -1115,7 +1115,7 @@ public abstract class SqlGeneratorTest {
                             Arrays.asList(
                                     mockCondition("column", Finder.OP_LT),
                                     mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
-                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockCondition("column2", Finder.OP_LIKE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
                                     mockCondition("column3", Finder.OP_GE)
                             ),
@@ -1127,7 +1127,7 @@ public abstract class SqlGeneratorTest {
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
                                     mockCondition("column", Finder.OP_LT),
                                     mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
-                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockCondition("column2", Finder.OP_LIKE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_END),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
                                     mockCondition("column3", Finder.OP_GE)
@@ -1140,7 +1140,7 @@ public abstract class SqlGeneratorTest {
                                     mockCondition("column", Finder.OP_LT),
                                     mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
-                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockCondition("column2", Finder.OP_LIKE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
                                     mockCondition("column3", Finder.OP_GE),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_END)
@@ -1154,7 +1154,7 @@ public abstract class SqlGeneratorTest {
                                     mockNonCondition(Finder.WhereElement.TYPE_OR_CONJUNCTION),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_START),
-                                    mockCondition("column2", Finder.OP_LIKE),
+                                    mockCondition("column2", Finder.OP_LIKE, "value"),
                                     mockNonCondition(Finder.WhereElement.TYPE_AND_CONJUNCTION),
                                     mockCondition("column3", Finder.OP_GE),
                                     mockNonCondition(Finder.WhereElement.TYPE_GROUP_END),
@@ -1168,6 +1168,16 @@ public abstract class SqlGeneratorTest {
                             "table",
                             Collections.<Finder.WhereElement>emptyList(),
                             null
+                    },
+                    {   // 09: equals a null value
+                            "table",
+                            Arrays.asList(mockCondition("column", Finder.OP_EQ, null)),
+                            "table.column IS NULL"
+                    },
+                    {   // 09: not equals a null value
+                            "table",
+                            Arrays.asList(mockCondition("column", Finder.OP_NE, null)),
+                            "table.column IS NOT NULL"
                     }
             });
         }
@@ -1175,19 +1185,52 @@ public abstract class SqlGeneratorTest {
         public void shouldCorrectlyGenerateWhere() {
             assertEquals(expectedOutputString, generatorUnderTest.createWhere(inputTableName, inputElements));
         }
+    }
 
-        private static Finder.WhereElement mockNonCondition(int type) {
-            Finder.WhereElement ret = mock(Finder.WhereElement.class);
-            when(ret.type()).thenReturn(type);
-            return ret;
+    @RunWith(Parameterized.class)
+    public static class CreateWhereExceptions extends SqlGeneratorTest {
+
+        private final Finder.WhereElement inputElement;
+
+        public CreateWhereExceptions(Finder.WhereElement inputElement) {
+            this.inputElement = inputElement;
         }
 
-        private static Finder.WhereElement mockCondition(String column, int op) {
-            Finder.WhereElement ret = mock(Finder.WhereElement.class);
-            when(ret.type()).thenReturn(Finder.WhereElement.TYPE_CONDITION);
-            when(ret.column()).thenReturn(column);
-            when(ret.op()).thenReturn(op);
-            return ret;
+        @Parameterized.Parameters
+        public static Iterable<? extends Object> data() {
+            return Arrays.asList(
+                    mockCondition(null, Finder.OP_EQ, "value"),
+                    mockCondition("column", Finder.OP_LIKE, null),
+                    mockCondition("column", Finder.OP_GE, null),
+                    mockCondition("column", Finder.OP_GT, null),
+                    mockCondition("column", Finder.OP_LT, null),
+                    mockCondition("column", Finder.OP_LE, null),
+                    mockCondition("column", Finder.OP_NONE, "anything")
+            );
         }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void should() {
+            generatorUnderTest.createWhere("table", Collections.singletonList(inputElement));
+        }
+    }
+
+    static Finder.WhereElement mockNonCondition(int type) {
+        Finder.WhereElement ret = mock(Finder.WhereElement.class);
+        when(ret.type()).thenReturn(type);
+        return ret;
+    }
+
+    static Finder.WhereElement mockCondition(String column, int op) {
+        return mockCondition(column, op, 0);
+    }
+
+    static Finder.WhereElement mockCondition(String column, int op, Object value) {
+        Finder.WhereElement ret = mock(Finder.WhereElement.class);
+        when(ret.type()).thenReturn(Finder.WhereElement.TYPE_CONDITION);
+        when(ret.column()).thenReturn(column);
+        when(ret.op()).thenReturn(op);
+        when(ret.value()).thenReturn(value);
+        return ret;
     }
 }

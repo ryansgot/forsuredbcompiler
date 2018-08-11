@@ -40,6 +40,22 @@ public interface AllTypesTable extends FSGetApi {
     @AutoValue
     abstract class Record {
 
+        public static Record createRandomWithNullableElementsNull() {
+            return createRandom()
+                    .toBuilder()
+                    .bigDecimalColumn(null)
+                    .bigIntegerColumn(null)
+                    .booleanWrapperColumn(null)
+                    .dateColumn(null)
+                    .doubleWrapperColumn(null)
+                    .floatWrapperColumn(null)
+                    .integerWrapperColumn(null)
+                    .longWrapperColumn(null)
+                    .stringColumn(null)
+                    .byteArrayColumn(null)
+                    .build();
+        }
+
         @AutoValue.Builder
         public static abstract class Builder {
             public abstract Builder bigDecimalColumn(@Nullable BigDecimal bigDecimalColumn);

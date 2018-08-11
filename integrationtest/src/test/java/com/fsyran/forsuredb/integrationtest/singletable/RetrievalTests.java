@@ -2708,7 +2708,7 @@ public class RetrievalTests {
     public void shouldFindRecordsByBooleanWrapperColumnTrue() {
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
-                        .find().byBooleanWrapperColumn()
+                        .find().byBooleanWrapperColumn(true)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -2724,7 +2724,7 @@ public class RetrievalTests {
     public void shouldFindRecordsByBooleanWrapperColumnFalse() {
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
-                        .find().byNotBooleanWrapperColumn()
+                        .find().byBooleanWrapperColumnNot(true)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3332,7 +3332,7 @@ public class RetrievalTests {
         List<AllTypesTable.Record> actual = retrieveToList(
                 allTypesTable()
                         .find().byIntColumnGreaterThan(exclusiveLowerBound)
-                            .and().byNotBooleanWrapperColumn()
+                            .and().byBooleanWrapperColumnNot(true)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3425,7 +3425,7 @@ public class RetrievalTests {
                 allTypesTable()
                         .find().byDoubleWrapperColumnGreaterThan(aSavedDoubleWrapper)
                         .or().byBigIntegerColumnNot(aSavedBigInteger)
-                        .or().byBooleanWrapperColumn()
+                        .or().byBooleanWrapperColumn(true)
                         .then()
                         .order().byId(OrderBy.ORDER_ASC)
                         .then()
@@ -3496,7 +3496,7 @@ public class RetrievalTests {
                         .find()
                             .startGroup()
                                 .byBooleanColumn()
-                                .or().byBooleanWrapperColumn()
+                                .or().byBooleanWrapperColumn(true)
                             .endGroup()
                             .and().startGroup()
                                 .byLongColumnLessThan(exclusionRange.first)
@@ -3524,7 +3524,7 @@ public class RetrievalTests {
                         .find()
                             .startGroup()
                                 .byBooleanColumn()
-                                .or().byBooleanWrapperColumn()
+                                .or().byBooleanWrapperColumn(true)
                             .endGroup()
                         .and().startGroup()
                                 .byLongColumnLessThan(exclusionRange.first)
@@ -3554,7 +3554,7 @@ public class RetrievalTests {
                             .startGroup()
                                 .byBooleanColumn()
                                 .or().startGroup()
-                                    .byBooleanWrapperColumn()
+                                    .byBooleanWrapperColumn(true)
                                     .and().byIntColumnGreaterThan(lowerNonInclusiveIntColumnBound)
                                 .endGroup()
                             .endGroup()
