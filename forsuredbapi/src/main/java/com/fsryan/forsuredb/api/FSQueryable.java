@@ -17,6 +17,8 @@
  */
 package com.fsryan.forsuredb.api;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -98,4 +100,6 @@ public interface FSQueryable<U, R extends RecordContainer> {
      * @return A Retriever that will be able to retrieve records returned by this join query
      */
     Retriever query(List<FSJoin> joins, List<FSProjection> projections, FSSelection selection, List<FSOrdering> sortOrder);
+
+    int countRecords(@Nullable List<FSJoin> joins, @Nullable FSSelection selection);
 }

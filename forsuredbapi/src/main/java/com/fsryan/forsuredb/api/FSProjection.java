@@ -27,29 +27,12 @@ public interface FSProjection {
 
         @Override
         public String[] columns() {
-            return new String[] {"count(*) AS cnt"};
+            return new String[0];
         }
 
         @Override
         public boolean isDistinct() {
             return false;
-        }
-    };
-
-    FSProjection COUNT_DISTINCT = new FSProjection() {
-        @Override
-        public String tableName() {
-            return null;
-        }
-
-        @Override
-        public String[] columns() {
-            return new String[] {"count(*) AS cnt"};
-        }
-
-        @Override
-        public boolean isDistinct() {
-            return true;
         }
     };
 

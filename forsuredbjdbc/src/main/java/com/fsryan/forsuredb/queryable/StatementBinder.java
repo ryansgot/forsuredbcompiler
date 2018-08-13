@@ -2,6 +2,8 @@ package com.fsryan.forsuredb.queryable;
 
 import com.fsryan.forsuredb.api.RecordContainer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -9,13 +11,27 @@ import java.util.List;
 
 public abstract class StatementBinder {
 
-    public static void bindObjects(PreparedStatement pStatement, List<String> columns, RecordContainer recordContainer) throws SQLException {
+    public static void bindRecordContainerObjects(@Nonnull PreparedStatement pStatement,
+                                                  @Nonnull List<String> columns,
+                                                  @Nonnull RecordContainer recordContainer) throws SQLException {
         for (int pos = 0; pos < columns.size(); pos ++) {
             bindObject(pos + 1, pStatement, recordContainer.get(columns.get(pos)));
         }
     }
 
-    public static void bindObject(int idx, PreparedStatement pStatement, Object obj) throws SQLException {
+    public static void bindObjects(@Nonnull PreparedStatement pStatement,
+                                   @Nullable Object... objects) throws SQLException {
+        if (objects == null) {
+            return;
+        }
+        for (int pos = 0; pos < objects.length; pos ++) {
+            bindObject(pos + 1, pStatement, objects[pos]);
+        }
+    }
+
+    public static void bindObject(int idx,
+                                  @Nonnull PreparedStatement pStatement,
+                                  @Nullable Object obj) throws SQLException {
         if (obj == null) {
             pStatement.setNull(idx, Types.NULL);
             return;

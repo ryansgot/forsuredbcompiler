@@ -102,12 +102,7 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
         try {
             return preserveQueryStateAndGet();
         } finally {
-            orderBy = null;             // <-- When a finder's get method is called, avoid leaking into the next query
-            finder = null;              // <-- When a finder's get method is called, avoid leaking into the next query
-            joins.clear();              // <-- the state of the joins must be empty at the start of each query
-            projections.clear();        // <-- the state of the projections must be empty at the start of each query
-            lookupResource = tableLocator();
-            addedThisProjection = false;
+            cleanQueryState();
         }
     }
 
@@ -139,13 +134,12 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     }
 
     public int getCount() {
-        projections.clear();
-        projections.add(FSProjection.COUNT);
-        Retriever r = get();
+        final FSSelection selection = finder == null ? FSSelection.ALL : finder.selection();
+        final FSQueryable<U, R> queryable = infoFactory.createQueryable(lookupResource);
         try {
-            return r.getInt("cnt");
+            return queryable.countRecords(joins, selection);
         } finally {
-            r.close();
+            cleanQueryState();
         }
     }
 
@@ -188,5 +182,14 @@ public abstract class Resolver<T extends Resolver, U, R extends RecordContainer,
     protected void addJoin(FSJoin join) {
         joins.add(join);
         lookupResource = infoFactory.locatorWithJoins(lookupResource, joins);
+    }
+
+    private void cleanQueryState() {
+        orderBy = null;             // <-- When a finder's get method is called, avoid leaking into the next query
+        finder = null;              // <-- When a finder's get method is called, avoid leaking into the next query
+        joins.clear();              // <-- the state of the joins must be empty at the start of each query
+        projections.clear();        // <-- the state of the projections must be empty at the start of each query
+        lookupResource = tableLocator();
+        addedThisProjection = false;
     }
 }

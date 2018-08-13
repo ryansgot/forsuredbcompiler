@@ -23,6 +23,7 @@ import java.util.*;
 
 import static com.fsryan.forsuredb.queryable.ApiCorrections.correctColumnsForInsert;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
+import static com.fsryan.forsuredb.queryable.StatementBinder.bindRecordContainerObjects;
 
 public class FSDBHelper extends AbstractDBOpener {
 
@@ -382,7 +383,7 @@ public class FSDBHelper extends AbstractDBOpener {
 
             LogHelper.logInsertion(log, insertionSql, columns, record);
             try (PreparedStatement statement = db.prepareStatement(insertionSql)) {
-                bindObjects(statement, columns, record);
+                bindRecordContainerObjects(statement, columns, record);
                 statement.executeUpdate();  // TODO: figure out what to do with the return
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);

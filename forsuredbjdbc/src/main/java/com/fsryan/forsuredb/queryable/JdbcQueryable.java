@@ -14,11 +14,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.fsryan.forsuredb.queryable.ApiCorrections.correctColumnsForInsert;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObject;
 import static com.fsryan.forsuredb.queryable.StatementBinder.bindObjects;
+import static com.fsryan.forsuredb.queryable.StatementBinder.bindRecordContainerObjects;
 
 public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordContainer> {
 
@@ -86,7 +88,7 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         LogHelper.logInsertion(log, sql, columns, recordContainer);
 
         try (PreparedStatement pStatement = dbProvider.writeableDb().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            bindObjects(pStatement, columns, recordContainer);
+            bindRecordContainerObjects(pStatement, columns, recordContainer);
             if (pStatement.executeUpdate() < 1) {
                 return null;
             }
@@ -201,6 +203,28 @@ public class JdbcQueryable implements FSQueryable<DirectLocator, TypedRecordCont
         SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(locator.table, joins, projections, selection, orderings);
         LogHelper.logQuery(log, pssql);
         return query(pssql, dbProvider);
+    }
+
+    @Override
+    public int countRecords(@Nullable List<FSJoin> joins, @Nullable FSSelection selection) {
+        SqlForPreparedStatement pssql = sqlGenerator.createQuerySql(
+                locator.table,
+                joins,
+                Collections.singletonList(FSProjection.COUNT),
+                selection,
+                Collections.emptyList()
+        );
+        try (PreparedStatement statement = dbProvider.readableDb().prepareStatement(pssql.getSql())) {
+            bindObjects(statement, pssql.getReplacements());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return 0;
+                }
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException sqle) {
+            throw new RuntimeException(sqle);
+        }
     }
 
     private static Retriever query(SqlForPreparedStatement pssql, DBProvider dbProvider) {
