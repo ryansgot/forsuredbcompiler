@@ -19,6 +19,23 @@ package com.fsryan.forsuredb.api;
 
 public interface FSProjection {
 
+    FSProjection COUNT = new FSProjection() {
+        @Override
+        public String tableName() {
+            return null;
+        }
+
+        @Override
+        public String[] columns() {
+            return new String[0];
+        }
+
+        @Override
+        public boolean isDistinct() {
+            return false;
+        }
+    };
+
     /**
      * @return The name of the table to which the column corresponds
      */

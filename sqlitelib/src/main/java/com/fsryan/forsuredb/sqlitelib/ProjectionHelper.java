@@ -56,10 +56,15 @@ import java.util.List;
         for (FSProjection projection : projections) {
             appendProjectionToList(formattedProjectionList, projection);
         }
-        return formattedProjectionList.toArray(new String[formattedProjectionList.size()]);
+        return formattedProjectionList.toArray(new String[0]);
     }
 
     private void appendProjectionToList(List<String> listToAddTo, FSProjection projection) {
+        if (projection == FSProjection.COUNT) {
+            listToAddTo.add("COUNT(*)");
+            return;
+        }
+
         if (projection == null || projection.columns() == null || projection.columns().length == 0) {
             return;
         }

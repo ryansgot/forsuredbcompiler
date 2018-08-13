@@ -29,7 +29,8 @@ public class ExampleApp {
     private static class AllTypesTableData implements BiConsumer<TextIO, String> {
 
         private static final int PRINT_RECORDS = 1;
-        private static final int INSERT_RECORD = PRINT_RECORDS + 1;
+        private static final int PRINT_RECORD_COUNT = PRINT_RECORDS + 1;
+        private static final int INSERT_RECORD = PRINT_RECORD_COUNT + 1;
         private static final int UPSERT_RECORD = INSERT_RECORD + 1;
         private static final int DELETE_RECORD = UPSERT_RECORD + 1;
         private static final int QUIT = DELETE_RECORD + 1;
@@ -41,6 +42,10 @@ public class ExampleApp {
         private static final int PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID = PRINT_SPECIFIC_RECORD_ALL_TYPES_BY_ID + 1;
         private static final int PRINT_SPECIFIC_JOINED_RECORD_BY_ALL_TYPES_ID = PRINT_SPECIFIC_RECORD_DOC_STORE_BY_ID + 1;
 
+        private static final int PRINT_RECORD_COUNT_ALL_TYPES = PRINT_ALL_RECORDS_ALL_TYPES;
+        private static final int PRINT_RECORD_COUNT_DOC_STORE = PRINT_ALL_RECORDS_DOC_STORE;
+        private static final int PRINT_RECORD_COUNT_JOINED = PRINT_ALL_RECORDS_JOINED;
+
         @Override
         public void accept(TextIO textIO, String initialData) {
             TextTerminal<?> terminal = textIO.getTextTerminal();
@@ -51,6 +56,9 @@ public class ExampleApp {
                 switch (selection) {
                     case PRINT_RECORDS:
                         printRecords(textIO);
+                        break;
+                    case PRINT_RECORD_COUNT:
+                        printRecordCount(textIO);
                         break;
                     case INSERT_RECORD:
                         upsert(textIO, true);
@@ -76,11 +84,12 @@ public class ExampleApp {
 
         private int prompt(TextIO textIO) {
             return textIO.newIntInputReader()
-                    .withPossibleValues(PRINT_RECORDS, INSERT_RECORD, UPSERT_RECORD, DELETE_RECORD, QUIT)
+                    .withPossibleValues(PRINT_RECORDS, PRINT_RECORD_COUNT, INSERT_RECORD, UPSERT_RECORD, DELETE_RECORD, QUIT)
                     .withDefaultValue(QUIT)
                     .read(
                             "Choose from the following options",
                             PRINT_RECORDS + ". print records",
+                            PRINT_RECORD_COUNT + ". print record count",
                             INSERT_RECORD + ". insert record",
                             UPSERT_RECORD + ". upsert record",
                             DELETE_RECORD + ". delete record",
@@ -179,6 +188,51 @@ public class ExampleApp {
                     printRecordWithId(textIO.getTextTerminal(), textIO.newLongInputReader().read("id"), true, true);
                     break;
             }
+        }
+
+        private void printRecordCount(TextIO textIO) {
+            int selection = textIO.newIntInputReader()
+                    .withDefaultValue(PRINT_RECORD_COUNT_ALL_TYPES)
+                    .withPossibleValues(
+                            PRINT_RECORD_COUNT_ALL_TYPES,
+                            PRINT_RECORD_COUNT_DOC_STORE,
+                            PRINT_RECORD_COUNT_JOINED
+                    ).read(
+                            "Which record count would you like to print?",
+                            PRINT_RECORD_COUNT_ALL_TYPES + ". Print all record count of all_types table",
+                            PRINT_RECORD_COUNT_DOC_STORE + ". Print all record count of doc store table",
+                            PRINT_RECORD_COUNT_JOINED + ". Print the count of joined records (the doc store table references the all_types table)"
+                    );
+
+            switch (selection) {
+                case PRINT_RECORD_COUNT_ALL_TYPES:
+                    printCountOfRecords(textIO.getTextTerminal(), true, false);
+                    break;
+                case PRINT_RECORD_COUNT_DOC_STORE:
+                    printCountOfRecords(textIO.getTextTerminal(), false, false);
+                    break;
+                case PRINT_RECORD_COUNT_JOINED:
+                    printCountOfRecords(textIO.getTextTerminal(), true, true);
+                    break;
+            }
+        }
+
+        private void printCountOfRecords(TextTerminal<?> textTerminal, boolean allTypes, boolean joined) {
+            textTerminal.println("Fetching count...");
+            if (joined) {
+                int count = referencesAllTypesTable().joinAllTypesTable(FSJoin.Type.INNER).then().getCount();
+                textTerminal.println(count + " Records");
+                return;
+            }
+
+            if (allTypes) {
+                int count = allTypesTable().getCount();
+                textTerminal.println(count + " Records");
+                return;
+            }
+
+            int count = referencesAllTypesTable().getCount();
+            textTerminal.println(count + " Records");
         }
 
         private void printAllRecords(TextTerminal<?> textTerminal, boolean allTypes, boolean joined) {

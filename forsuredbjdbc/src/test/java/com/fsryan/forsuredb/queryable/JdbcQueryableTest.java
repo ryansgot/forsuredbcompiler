@@ -5,6 +5,8 @@ import com.fsryan.forsuredb.api.sqlgeneration.DBMSIntegrator;
 import com.fsryan.forsuredb.api.sqlgeneration.SqlForPreparedStatement;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.*;
 
 import java.sql.*;
@@ -380,4 +382,65 @@ public abstract class JdbcQueryableTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class CountRecords extends JdbcQueryableTest {
+
+        private static final int intAtFirstPosition = 10;
+
+        private final String[] replacements;
+        private final boolean resultSetNextReturn;
+        private final int expectedTimesToCallResultSetGetInt;
+        private final int expectedCount;
+
+        public CountRecords(String[] replacements, boolean resultSetNextReturn) {
+            this.replacements = replacements;
+            this.resultSetNextReturn = resultSetNextReturn;
+            expectedTimesToCallResultSetGetInt = resultSetNextReturn ? 1 : 0;
+            expectedCount = resultSetNextReturn ? intAtFirstPosition : 0;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    { null, false },
+                    { new String[0], true },
+                    { new String[] { "b1", "b2", "b3", "b4" }, true }
+            });
+        }
+
+        @Before
+        public void setUpSqlGenerator() throws Exception {
+            when(mockResultSet.next()).thenReturn(resultSetNextReturn);
+            when(mockResultSet.getInt(1)).thenReturn(intAtFirstPosition);
+            when(mockSqlGenerator.createQuerySql(
+                    eq(tableName),
+                    anyList(),
+                    eq(Collections.singletonList(FSProjection.COUNT)),
+                    eq(mockSelection),
+                    eq(Collections.emptyList()))).thenReturn(new SqlForPreparedStatement("", replacements));
+            when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        }
+
+        @Test
+        public void shouldProperlyQueryAndCleanUp() throws SQLException {
+            assertEquals(expectedCount, queryableUnderTest.countRecords(Collections.emptyList(), mockSelection));
+
+            InOrder inOrder = inOrder(mockSqlGenerator, mockPreparedStatement, mockResultSet);
+            inOrder.verify(mockSqlGenerator).createQuerySql(
+                    eq(tableName),
+                    eq(Collections.emptyList()),
+                    eq(Collections.singletonList(FSProjection.COUNT)),
+                    any(FSSelection.class),
+                    eq(Collections.emptyList())
+            );
+            for (int pos = 0; pos < (replacements == null ? 0 : replacements.length); pos++ ) {
+                inOrder.verify(mockPreparedStatement).setString(eq( pos + 1), eq(replacements[pos]));
+            }
+            inOrder.verify(mockPreparedStatement).executeQuery();
+            inOrder.verify(mockResultSet).next();
+            inOrder.verify(mockResultSet, times(expectedTimesToCallResultSetGetInt)).getInt(eq(1));
+            inOrder.verify(mockResultSet).close();
+            inOrder.verify(mockPreparedStatement).close();
+        }
+    }
 }

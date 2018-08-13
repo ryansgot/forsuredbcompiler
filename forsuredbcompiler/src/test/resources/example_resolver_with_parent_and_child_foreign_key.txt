@@ -164,6 +164,11 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
         }
 
         @Override
+        public int getCount() {
+            return then().getCount();
+        }
+
+        @Override
         protected void addJoin(FSJoin join) {
             parent.addJoin(join);
         }
@@ -197,6 +202,11 @@ public abstract class TestTable2Resolver<T extends TestTable2Resolver> extends R
         public T then() {
             joinResolvers(parent, this);
             return parent;
+        }
+
+        @Override
+        public int getCount() {
+            return then().getCount();
         }
 
         @Override

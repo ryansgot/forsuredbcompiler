@@ -73,4 +73,18 @@ public class BasicCreateRetrieveTest {
         r.close();
         assertEquals(inserted, retrieved);
     }
+
+    @Test
+    @DisplayName("Get the count of records")
+    public void shouldCorrectlyRetrieveRecordCount() {
+        insertRandomRecords(10);
+        assertEquals(10, allTypesTable().getCount());
+    }
+
+    @Test
+    @DisplayName("Get the count of records with selection")
+    public void shouldCorrectlyRetrieveRecordCountWithSelection() {
+        insertRandomRecords(10);
+        assertEquals(4, allTypesTable().find().byIdGreaterThan(6).then().getCount());
+    }
 }
