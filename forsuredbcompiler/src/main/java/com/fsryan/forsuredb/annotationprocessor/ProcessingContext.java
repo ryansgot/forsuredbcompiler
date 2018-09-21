@@ -26,6 +26,7 @@ import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.google.common.collect.Sets;
+import com.squareup.javapoet.TypeName;
 
 import java.util.*;
 
@@ -144,7 +145,7 @@ public class ProcessingContext implements TableContext {
                 .staticDataAsset(createStaticDataAsset(intf)));
 
         methodsIn(intf.getEnclosedElements()).forEach(ee -> {
-            builder.addColumn(tableName, columnNameOf(ee), columnBuilderOf(ee));
+            builder.addColumn(tableName, columnNameOf(ee), InfoTransformer.transform(ee));
             if (containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
                 builder.addForeignKeyInfo(tableName, p.first, p.second);
@@ -219,42 +220,6 @@ public class ProcessingContext implements TableContext {
             }
         }
         return ee.getSimpleName().toString();
-    }
-
-    private static ColumnInfo.Builder columnBuilderOf(ExecutableElement ee) {
-        ColumnInfo.Builder builder = ColumnInfo.builder();
-        ee.getAnnotationMirrors().forEach(am -> appendAnnotationInfo(builder, am));
-        return builder.methodName(ee.getSimpleName().toString())
-                .qualifiedType(ee.getReturnType().toString());
-    }
-
-    private static void appendAnnotationInfo(ColumnInfo.Builder builder, AnnotationMirror am) {
-        AnnotationTranslator at = AnnotationTranslatorFactory.inst().create(am);
-        String annotationClass = am.getAnnotationType().toString();
-
-        if (annotationClass.equals(FSColumn.class.getName())) {
-            builder.columnName(at.property("value").as(String.class))
-                    .searchable(at.property("searchable").castSafe(true))
-                    .orderable(at.property("orderable").castSafe(true))
-                    // TODO: error check and return appropriate exception instead of NPE
-                    .valueAccess(at.property("documentValueAccess").asListOf(String.class));
-        } else if (annotationClass.equals(ForeignKey.class.getName())) {
-            APLog.w(ProcessingContext.class.getSimpleName(), "Ignoring legacy " + ForeignKey.class.getSimpleName() + "; this info will be picked up at the table level.");
-        } else if (annotationClass.equals(FSPrimaryKey.class.getName())) {
-            builder.primaryKey(true);
-        } else if (annotationClass.equals(Unique.class.getName())) {
-            builder.unique(true);
-            if (at.property("index").as(boolean.class)) {
-                builder.index(true);
-            }
-        } else if (annotationClass.equals(Index.class.getName())) {
-            builder.index(true);
-            if (at.property("unique").as(boolean.class)) {
-                builder.unique(true);
-            }
-        } else if (annotationClass.equals(FSDefault.class.getName())) {
-            builder.defaultValue(at.property("value").asString());
-        }
     }
 
     private static Set<String> primaryKeyFrom(TypeElement intf) {

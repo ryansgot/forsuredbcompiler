@@ -19,8 +19,12 @@ dependencies {
     compileOnly deps.auto.valueAnnotations
     annotationProcessor deps.auto.value
 
+    testCompileOnly deps.jsr305
     testImplementation deps.test.junit
     testImplementation deps.test.mockito
+    testCompileOnly deps.auto.valueAnnotations
+    testAnnotationProcessor deps.auto.value
+
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

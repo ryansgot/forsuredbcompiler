@@ -24,7 +24,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.6.2'
+        classpath 'com.fsryan.gradle.forsuredb:forsuredbplugin:0.6.3'
     }
 }
 
