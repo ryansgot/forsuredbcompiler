@@ -80,7 +80,7 @@ class InfoTransformer {
                 throw new IllegalArgumentException("Array type not supported: " + returnType);
             }
             if (!Pattern.compile("([0-9a-fA-f]{2})+").matcher(fsDefault.value()).matches()) {
-                throw new RuntimeException("invalid byte array hexadecimal: " + fsDefault.value());
+                throw new RuntimeException("invalid byte array hexadecimal (must be even number of hex digits): " + fsDefault.value());
             }
         }
     }
