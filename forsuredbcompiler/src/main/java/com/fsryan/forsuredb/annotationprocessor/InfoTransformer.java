@@ -74,10 +74,15 @@ class InfoTransformer {
                     throw new IllegalArgumentException("type Character not supported");
             }
         }
-        // TODO: validate byte[]--String is not necessary to validate because that is how it comes in
-//        } else if (returnType.getKind() == TypeKind.DECLARED) {
-//            if (returnType.toString)
-//        }
+
+        if (returnType.getKind() == TypeKind.ARRAY) {
+            if (!returnType.toString().equals(byte[].class.getCanonicalName())) {
+                throw new IllegalArgumentException("Array type not supported: " + returnType);
+            }
+            if (!Pattern.compile("([0-9a-fA-f]{2})+").matcher(fsDefault.value()).matches()) {
+                throw new RuntimeException("invalid byte array hexadecimal: " + fsDefault.value());
+            }
+        }
     }
 
     static ColumnInfo.Builder defaultsFromElement(ExecutableElement ee) {

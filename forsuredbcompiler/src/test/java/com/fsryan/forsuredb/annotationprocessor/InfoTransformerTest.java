@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -445,6 +446,16 @@ public abstract class InfoTransformerTest<I extends Element, E> {
                                     .methodName("bigDecimalColumn")
                                     .defaultValue("1984349683434984.289334857843754")
                                     .qualifiedType(BigDecimal.class.getTypeName())
+                                    .build()
+                    },
+                    {   // 26: byte[] with 7526ff726d95e170f09a14a1261110d4d3368cf8 default
+                            TestTypeMirror.byteArray(),
+                            TestNameUtil.createReal("blobColumn"),
+                            "7526ff726d95e170f09a14a1261110d4d3368cf8",
+                            ColumnInfo.builder()
+                                    .methodName("blobColumn")
+                                    .defaultValue("7526ff726d95e170f09a14a1261110d4d3368cf8")
+                                    .qualifiedType(byte[].class.getCanonicalName())
                                     .build()
                     }
             });
