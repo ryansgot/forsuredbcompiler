@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.annotationprocessor;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 import com.fsryan.forsuredb.annotations.FSDefault;
 import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.util.*;
+import com.fsryan.forsuredb.testutil.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -143,7 +143,7 @@ public abstract class InfoTransformerTest<I extends Element, E> {
                                     .qualifiedType(Boolean.class.getName())
                                     .build()
                     },
-                    {   // 09: Minimal with boolean array type
+                    {   // 09: Minimal with byte array type
                             TestExecutableElement.builder()
                                     .setReturnType(TestTypeMirror.byteArray())
                                     .setSimpleName(TestNameUtil.createReal("blobColumn"))
