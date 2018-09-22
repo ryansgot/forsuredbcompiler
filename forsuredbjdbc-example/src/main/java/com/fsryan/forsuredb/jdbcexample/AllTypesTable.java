@@ -23,7 +23,7 @@ public interface AllTypesTable extends FSGetApi {
     @FSColumn("float_wrapper_column") Float floatWrapperColumn(Retriever retriever);
     @FSColumn("double_column") double doubleColumn(Retriever retriever);
     @FSColumn("double_wrapper_column") Double doubleWrapperColumn(Retriever retriever);
-    @FSColumn("byte_array_column") byte[] byteArrayColumn(Retriever retriever);
+    @FSColumn("byte_array_column") @FSDefault("abcd1234") byte[] byteArrayColumn(Retriever retriever);
     @FSColumn("string_column") @FSDefault("Some String with a '") String stringColumn(Retriever retriever);
     @FSColumn("big_integer_column") BigInteger bigIntegerColumn(Retriever retriever);
     @FSColumn("big_decimal_column") BigDecimal bigDecimalColumn(Retriever retriever);

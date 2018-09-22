@@ -19,8 +19,12 @@ dependencies {
     compileOnly deps.auto.valueAnnotations
     annotationProcessor deps.auto.value
 
+    testCompileOnly deps.jsr305
     testImplementation deps.test.junit
     testImplementation deps.test.mockito
+    testCompileOnly deps.auto.valueAnnotations
+    testAnnotationProcessor deps.auto.value
+
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {
@@ -33,7 +37,9 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
     classDirectories = fileTree(
             dir: 'build/classes',
             excludes: [
+                    '**/testutil/*.class',
                     '**/*Test.class',
+                    '**/*Test$*.class',
                     '**/TestData.class',
                     '**/TestData$*.class',
             ]
