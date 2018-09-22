@@ -37,7 +37,9 @@ task jacocoReport(type: JacocoReport, dependsOn: 'test') {
     classDirectories = fileTree(
             dir: 'build/classes',
             excludes: [
+                    '**/util/*.class',
                     '**/*Test.class',
+                    '**/*Test$*.class',
                     '**/TestData.class',
                     '**/TestData$*.class',
             ]

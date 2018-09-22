@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb;
+package com.fsryan.forsuredb.util;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;

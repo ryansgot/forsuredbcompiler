@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb;
+package com.fsryan.forsuredb.util;
 
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;

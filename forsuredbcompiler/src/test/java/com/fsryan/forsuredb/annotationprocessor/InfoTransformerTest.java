@@ -1,9 +1,9 @@
 package com.fsryan.forsuredb.annotationprocessor;
 
-import com.fsryan.forsuredb.*;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 import com.fsryan.forsuredb.annotations.FSDefault;
 import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.util.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb;
+package com.fsryan.forsuredb.util;
 
 import org.mockito.stubbing.Answer;
 

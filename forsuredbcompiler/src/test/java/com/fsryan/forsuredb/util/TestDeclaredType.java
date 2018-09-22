@@ -1,6 +1,5 @@
-package com.fsryan.forsuredb;
+package com.fsryan.forsuredb.util;
 
-import com.fsryan.forsuredb.annotations.FSDefault;
 import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nullable;
