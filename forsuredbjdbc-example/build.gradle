@@ -41,6 +41,7 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 mainClassName = 'com.fsryan.forsuredb.jdbcexample.ExampleApp'
 
 dependencies {
+    compileOnly project(':forsuredbannotations')
     implementation deps.gson
     implementation project(':dbinfo')
     implementation project(':forsuredbapi')

@@ -44,6 +44,7 @@ apply plugin: 'com.fsryan.gradle.forsuredb'
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
+    compileOnly project(':forsuredbannotations')
     implementation project(':dbinfo')
     implementation project(':forsuredbapi')
     implementation project(':forsuredbjdbc')

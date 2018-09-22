@@ -25,11 +25,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <p>
- *     Use the FSTable annotation on your extensions of {@link FSGetApi FSGetApi}
- *     in order to tell the forsuredb that this interface defines a table. <i>This is required.</i>
- * </p>
- * <p>
+ * <p>Use the FSTable annotation on your extensions of {@link FSGetApi} in
+ * order to tell forsuredb that this interface defines a table. <i>This is
+ * required for all tables defined for forsuredb. Note that this annotation
+ * only has any meaning when annotating interfaces--classes are ignored.
+ *
  * @author Ryan Scott
  */
 @Retention(RetentionPolicy.CLASS)
