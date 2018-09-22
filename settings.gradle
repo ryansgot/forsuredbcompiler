@@ -1,3 +1,4 @@
+include 'forsuredbannotations'
 include 'forsuredbcompiler'
 include 'forsuredbapi'
 include 'dbinfo'

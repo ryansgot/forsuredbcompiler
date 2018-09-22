@@ -12,6 +12,7 @@ dependencies {
     compileOnly deps.auto.valueAnnotations
     annotationProcessor deps.auto.value
 
+    testCompileOnly project(':forsuredbannotations')
     testCompileOnly deps.auto.valueAnnotations
     testAnnotationProcessor deps.auto.value
     testImplementation project(':forsuredbmodels-gson')

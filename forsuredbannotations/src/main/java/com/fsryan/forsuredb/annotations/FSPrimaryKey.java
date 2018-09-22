@@ -26,40 +26,35 @@ import java.lang.annotation.Target;
 
 
 /**
- * <p>
- *     Use the FSPrimaryKey annotation on your extensions of
- *     {@link com.fsryan.forsuredb.api.FSGetApi FSGetApi} in order to specify
- *     that the columns are a primary key in the table.
- * </p>
+ * <p>Use the FSPrimaryKey annotation on your extensions of
+ * {@link com.fsryan.forsuredb.api.FSGetApi FSGetApi} in order to specify
+ * that the columns are a primary key in the table. If you do not specify,
+ * then the automatically created _id column will become the primary key.
+ *
  * @author Ryan Scott
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface FSPrimaryKey {
     /**
-     * <p>
-     *     Defaults to {@link TableInfo#DEFAULT_PRIMARY_KEY_COLUMN}
-     * </p>
+     * <p>Defaults to {@link TableInfo#DEFAULT_PRIMARY_KEY_COLUMN}
      * @return the names of the columns of the primary key
      */
     String[] value() default {TableInfo.DEFAULT_PRIMARY_KEY_COLUMN};
 
     /**
-     * <p>
-     *     Defaults to the empty string, which will result in the DBMS default
-     *     being used
-     * </p>
-     * <p>
-     *     If your DBMS is SQLite, then the following values are possible:
-     *     <ul>
-     *         <li>ROLLBACK</li>
-     *         <li>ABORT (which is default for SQLite)</li>
-     *         <li>FAIL</li>
-     *         <li>IGNORE</li>
-     *         <li>REPLACE</li>
-     *     </ul>
-     * </p>
-     * @return
+     * <p> Defaults to the empty string, which will result in the DBMS default
+     * being used
+     *
+     * <p>If your DBMS is SQLite, then the following values are possible:
+     * <ul>
+     *   <li>ROLLBACK</li>
+     *   <li>ABORT (which is default for SQLite)</li>
+     *   <li>FAIL</li>
+     *   <li>IGNORE</li>
+     *   <li>REPLACE</li>
+     * </ul>
+     * @return the on-conflict algorithm name
      */
     String onConflict() default "";
 }
