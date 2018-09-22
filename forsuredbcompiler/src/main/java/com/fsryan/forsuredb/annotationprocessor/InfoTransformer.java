@@ -9,6 +9,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -25,76 +27,16 @@ class InfoTransformer {
         return builder;
     }
 
-    private static void throwIfDefaultInvalid(ExecutableElement ee) {
-        FSDefault fsDefault = ee.getAnnotation(FSDefault.class);
-        if (fsDefault == null) {
-            return;
-        }
-
-        TypeMirror returnType = ee.getReturnType();
-        if (returnType.getKind().isPrimitive()) {
-            switch (returnType.getKind()) {
-                case BOOLEAN:
-                    throwIfBooleanDefaultInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case BYTE:
-                case INT:
-                case LONG:
-                case SHORT:
-                    throwIfNumberInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case FLOAT:
-                case DOUBLE:
-                    throwIfFloatingPointNumberInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case CHAR:
-                    throw new IllegalArgumentException("type char not supported");
-
-            }
-        }
-
-        if (returnType.getKind() == TypeKind.DECLARED) {
-            switch (returnType.toString()) {
-                case "java.lang.Boolean":
-                    throwIfBooleanDefaultInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case "java.lang.Byte":
-                case "java.lang.Integer":
-                case "java.lang.Long":
-                case "java.lang.Short":
-                case "java.math.BigInteger":
-                    throwIfNumberInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case "java.lang.Float":
-                case "java.lang.Double":
-                case "java.math.BigDecimal":
-                    throwIfFloatingPointNumberInvalid(ee.getSimpleName().toString(), fsDefault);
-                    break;
-                case "java.lang.Character":
-                    throw new IllegalArgumentException("type Character not supported");
-            }
-        }
-
-        if (returnType.getKind() == TypeKind.ARRAY) {
-            if (!returnType.toString().equals(byte[].class.getCanonicalName())) {
-                throw new IllegalArgumentException("Array type not supported: " + returnType);
-            }
-            if (!Pattern.compile("([0-9a-fA-f]{2})+").matcher(fsDefault.value()).matches()) {
-                throw new RuntimeException("invalid byte array hexadecimal (must be even number of hex digits): " + fsDefault.value());
-            }
-        }
-    }
-
     static ColumnInfo.Builder defaultsFromElement(ExecutableElement ee) {
         ColumnInfo.Builder ret = ColumnInfo.builder()
                 .methodName(ee.getSimpleName().toString())
                 .qualifiedType(ee.getReturnType().toString());
 
-        // Being a primitive, a null value wouldn't do.
+        // Being a primitive, a null value would cause an NPE when deserializing
         if (ee.getReturnType().getKind().isPrimitive()) {
             FSDefault fsDefault = ee.getAnnotation(FSDefault.class);
             if (fsDefault == null) {
-                APLog.i("RYAN", "adding 0 as default value of column with method name: " + ee.getSimpleName().toString());
+                APLog.w("InfoTransformer", "default value of \"0\" implied for: " + ee.getSimpleName());
                 ret.defaultValue("0");
             }
         }
@@ -130,30 +72,6 @@ class InfoTransformer {
         }
     }
 
-    private static void throwIfBooleanDefaultInvalid(String name, FSDefault fsDefault) {
-        if (Boolean.TRUE.toString().equalsIgnoreCase(fsDefault.value())
-                || Boolean.FALSE.toString().equalsIgnoreCase(fsDefault.value())
-                || String.valueOf(0).equals(fsDefault.value())
-                || String.valueOf(1).equals(fsDefault.value())) {
-            return;
-        }
-        throw new RuntimeException("Boolean value for " + name + " invalid default: " + fsDefault.value());
-    }
-
-    private static void throwIfNumberInvalid(String name, FSDefault fsDefault) {
-        if (Pattern.compile("^([0-9]|[1-9][0-9]*)$").matcher(fsDefault.value()).matches()) {
-            return;
-        }
-        throw new RuntimeException("Decimal number for '" + name + "' invalid default: " + fsDefault.value());
-    }
-
-    private static void throwIfFloatingPointNumberInvalid(String name, FSDefault fsDefault) {
-        if (Pattern.compile("^(([0-9]?|[1-9][0-9]*)(\\.[0-9]+)?)$").matcher(fsDefault.value()).matches()) {
-            return;
-        }
-        throw new RuntimeException("Decimal number for '" + name + "' invalid default: " + fsDefault.value());
-    }
-
     private static String ensureCorrectDefault(String value, TypeMirror returnType) {
         if (returnType.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(returnType.toString())) {
             if ("true".equalsIgnoreCase(value)) {
@@ -164,5 +82,93 @@ class InfoTransformer {
             }
         }
         return value;
+    }
+
+    private static void throwIfDefaultInvalid(ExecutableElement ee) {
+        FSDefault fsDefault = ee.getAnnotation(FSDefault.class);
+        if (fsDefault == null) {
+            return;
+        }
+
+        TypeMirror returnType = ee.getReturnType();
+        try {
+            switch (returnType.toString()) {
+                case "boolean":
+                case "java.lang.Boolean":
+                    throwIfBooleanDefaultInvalid(ee, fsDefault.value());
+                    break;
+                case "byte":
+                case "java.lang.Byte":
+                    Byte.parseByte(fsDefault.value());
+                    break;
+                case "int":
+                case "java.lang.Integer":
+                    Integer.parseInt(fsDefault.value());
+                    break;
+                case "long":
+                case "java.lang.Long":
+                    Long.parseLong(fsDefault.value());
+                    break;
+                case "short":
+                case "java.lang.Short":
+                    Short.parseShort(fsDefault.value());
+                    break;
+                case "java.math.BigInteger":
+                    new BigInteger(fsDefault.value());
+                    break;
+                case "float":
+                case "java.lang.Float":
+                    float parsedFloat = Float.parseFloat(fsDefault.value());
+                    if (parsedFloat == Float.NEGATIVE_INFINITY || parsedFloat == Float.POSITIVE_INFINITY) {
+                        throwInvalidDefault(ee, fsDefault.value());
+                    }
+                    break;
+                case "double":
+                case "java.lang.Double":
+                    double parsedDouble = Double.parseDouble(fsDefault.value());
+                    if (parsedDouble == Double.NEGATIVE_INFINITY || parsedDouble == Double.POSITIVE_INFINITY) {
+                        throwInvalidDefault(ee, fsDefault.value());
+                    }
+                    break;
+                case "java.math.BigDecimal":
+                    new BigDecimal(fsDefault.value());
+                    break;
+                case "char":
+                case "java.lang.Character":
+                    throw new IllegalArgumentException("type Character not supported");
+            }
+        } catch (NumberFormatException nfe) {
+            throwInvalidDefault(ee, fsDefault.value(), nfe);
+        }
+
+        if (returnType.getKind() == TypeKind.ARRAY) {
+            if (!returnType.toString().equals(byte[].class.getCanonicalName())) {
+                throw new IllegalArgumentException("Array type not supported: " + returnType);
+            }
+            if (!Pattern.compile("([0-9a-fA-f]{2})+").matcher(fsDefault.value()).matches()) {
+                throwInvalidDefault(ee, fsDefault.value());
+            }
+        }
+    }
+
+    private static void throwIfBooleanDefaultInvalid(ExecutableElement ee, String defaultValue) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(defaultValue)
+                || Boolean.FALSE.toString().equalsIgnoreCase(defaultValue)
+                || String.valueOf(0).equals(defaultValue)
+                || String.valueOf(1).equals(defaultValue)) {
+            return;
+        }
+        throwInvalidDefault(ee, defaultValue);
+    }
+
+    private static void throwInvalidDefault(ExecutableElement ee, String defaultValue) {
+        throwInvalidDefault(ee, defaultValue, null);
+    }
+
+    private static void throwInvalidDefault(ExecutableElement ee, String defaultValue, Exception cause) {
+        throw new RuntimeException(
+                String.format("%s value for %s invalid default: %s", ee.getReturnType(), ee.getSimpleName(), defaultValue),
+                cause
+        );
     }
 }
