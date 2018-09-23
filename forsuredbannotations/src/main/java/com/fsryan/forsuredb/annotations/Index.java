@@ -36,6 +36,11 @@ import java.lang.annotation.Target;
  * }
  * </code></pre>
  *
+ * <p>Composite indices are allowed, and they are defined in the same way
+ * composite foreign keys are defined using {@link FSForeignKey#compositeId()}.
+ * All methods marked with {@link Index}, having the same nonempty compositeId
+ * will be part of the same composite index.
+ *
  * @author Ryan Scott
  */
 @Retention(RetentionPolicy.CLASS)
@@ -46,4 +51,27 @@ public @interface Index {
      * @return whether this column should also be an index of the table
      */
     boolean unique() default false;
+
+    /**
+     * <p>If this annotation is marking a column as part of a composite index,
+     * Then you should provide a compositeId that is not the empty string.
+     *
+     * <p>Note that if you specify one member of the composite as unique, and
+     * another member of the composite as not unique, the compiler will throw
+     * an error.
+     *
+     * @return the compositeId string for this member of a composite index
+     * @since 0.14.0
+     */
+    String compositeId() default "";
+
+    /**
+     * <p>This is DBMS-dependant, but many DBMS implementations allow you to
+     * specify the sort order of the index. If not specified, the DBMS default
+     * will be used.
+     *
+     * @return the sort order of the index
+     * @since 0.14.0
+     */
+    String sortOrder() default "";
 }
