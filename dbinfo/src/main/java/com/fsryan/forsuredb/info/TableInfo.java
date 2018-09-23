@@ -37,14 +37,21 @@ public abstract class TableInfo {
     public static final String DEFAULT_PRIMARY_KEY_COLUMN = "_id";
 
     /**
-     * <p>
-     *     By default, each table has the following columns:
-     * </p>
+     * <p>By default, each table has the following columns:
      * <ul>
-     *     <li>_id: an integer primary key</li>
-     *     <li>created: a datetime describing when the record was created</li>
-     *     <li>modified: a datetime describing when the record was last modified</li>
-     *     <li>deleted: an integer (either 0 or 1) describing whether the record is deleted</li>
+     *   <li>
+     *     _id: an integer primary key
+     *   </li>
+     *   <li>
+     *     created: a datetime describing when the record was created
+     *   </li>
+     *   <li>
+     *     modified: a datetime describing when the record was last modified
+     *   </li>
+     *   <li>
+     *     deleted: an integer (either 0 or 1) describing whether the record is
+     *     deleted
+     *   </li>
      * </ul>
      */
     /*package*/ static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new HashMap<>();
@@ -92,15 +99,16 @@ public abstract class TableInfo {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder columnMap(Map<String, ColumnInfo> columnMap);  // column_info_map
-        public abstract Builder tableName(String tableName); //table_name
-        public abstract Builder qualifiedClassName(String qualifiedClassName);    // qualified_class_name
-        public abstract Builder staticDataAsset(@Nullable String staticDataAsset);   // static_data_asset
-        public abstract Builder staticDataRecordName(@Nullable String staticDataRecordName);  // static_data_record_name
-        public abstract Builder docStoreParameterization(@Nullable String docStoreParameterization);  // doc_store_parameterization
-        public abstract Builder primaryKey(Set<String> primaryKey);   // primary_key
-        public abstract Builder primaryKeyOnConflict(@Nullable String primaryKeyOnConflict);  // primary_key_on_conflict
-        public abstract Builder foreignKeys(@Nullable Set<TableForeignKeyInfo> foreignKeys); // foreign_keys
+        public abstract Builder columnMap(Map<String, ColumnInfo> columnMap);                           // column_info_map
+        public abstract Builder tableName(String tableName);                                            // table_name
+        public abstract Builder qualifiedClassName(String qualifiedClassName);                          // qualified_class_name
+        public abstract Builder staticDataAsset(@Nullable String staticDataAsset);                      // static_data_asset
+        public abstract Builder staticDataRecordName(@Nullable String staticDataRecordName);            // static_data_record_name
+        public abstract Builder docStoreParameterization(@Nullable String docStoreParameterization);    // doc_store_parameterization
+        public abstract Builder primaryKey(Set<String> primaryKey);                                     // primary_key
+        public abstract Builder primaryKeyOnConflict(@Nullable String primaryKeyOnConflict);            // primary_key_on_conflict
+        public abstract Builder foreignKeys(@Nullable Set<TableForeignKeyInfo> foreignKeys);            // foreign_keys
+        public abstract Builder indices(@Nullable Set<TableIndexInfo> indices);                         // indices
         public abstract TableInfo build();
     }
 
@@ -116,6 +124,7 @@ public abstract class TableInfo {
         private Map<String, ColumnInfo> columnMap = new HashMap<>();
         private Set<String> primaryKey = new HashSet<>();
         private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
+        private Set<TableIndexInfo> indices = new HashSet<>();
         private final Builder builder = new AutoValue_TableInfo.Builder();
 
         public BuilderCompat columnMap(Map<String, ColumnInfo> columnMap) {
@@ -172,6 +181,15 @@ public abstract class TableInfo {
             return this;
         }
 
+        // TODO: find the places where this should be used . . . write tests.
+        public BuilderCompat indices(@Nullable Set<TableIndexInfo> indices) {
+            this.indices.clear();
+            if (foreignKeys != null) {
+                this.indices.addAll(indices);
+            }
+            return this;
+        }
+
         public TableInfo build() {
             // This nasty code preserves backwards compatibility.
             // primary key properties were serialized on columns pre 0.11.0
@@ -195,7 +213,7 @@ public abstract class TableInfo {
             // in actuality, primary keys are table properties.
             // TODO: remove this code when no longer necessary
             Set<TableForeignKeyInfo> actualForeignKeys = new HashSet<>();
-            if (!foreignKeys.isEmpty()) {
+            if (!foreignKeys.isEmpty()) {                       // <-- setting foreign keys not possible before 0.11.0
                 actualForeignKeys.addAll(foreignKeys);
             } else if (!columnMap.isEmpty()) {
                 for (ColumnInfo column : columnMap.values()) {
@@ -215,30 +233,36 @@ public abstract class TableInfo {
                 }
             }
 
+            // This nasty code preserves backwards compatibility.
+            // index properties were serialized on columns pre 0.14.0
+            // in actuality, indices are table properties.
+            // TODO: remove this code when no longer necessary
+            final Set<TableIndexInfo> actualIndices = new HashSet<>();
+            if (!indices.isEmpty()) {                           // <-- setting indices not possible before 0.14.0
+                actualIndices.addAll(indices);
+            } else if (!columnMap.isEmpty()) {
+                for (ColumnInfo column : columnMap.values()) {
+                    if (!column.index()) {
+                        continue;
+                    }
+
+                    actualIndices.add(TableIndexInfo.create(
+                            Collections.singletonMap(column.columnName(), ""),
+                            column.unique()
+                    ));
+                }
+            }
+
             columnMap.putAll(DEFAULT_COLUMNS);
             return builder.tableName(createTableName(tableName, qualifiedClassName))
                     .columnMap(columnMap)
                     .qualifiedClassName(qualifiedClassName)
                     .foreignKeys(actualForeignKeys)
                     .primaryKey(actualPrimaryKey)
+                    .indices(actualIndices)
                     .build();
         }
     }
-
-    public static BuilderCompat builder() {
-        return new BuilderCompat();
-    }
-
-    @Nullable public abstract Map<String, ColumnInfo> columnMap();  // column_info_map
-    public abstract String tableName(); //table_name
-    public abstract String qualifiedClassName();    // qualified_class_name
-    @Nullable public abstract String staticDataAsset();   // static_data_asset
-    @Nullable public abstract String staticDataRecordName();  // static_data_record_name
-    @Nullable public abstract String docStoreParameterization();  // doc_store_parameterization
-    public abstract Set<String> primaryKey();   // primary_key
-    @Nullable public abstract String primaryKeyOnConflict();  // primary_key_on_conflict
-    @Nullable public abstract Set<TableForeignKeyInfo> foreignKeys(); // foreign_keys
-    public abstract Builder toBuilder();
 
     public static Set<String> defaultColumnNames() {
         return DEFAULT_COLUMNS.keySet();
@@ -251,6 +275,22 @@ public abstract class TableInfo {
     public static Map<String, ColumnInfo> docStoreColumns() {
         return new HashMap<>(DOC_STORE_COLUMNS);
     }
+
+    public static BuilderCompat builder() {
+        return new BuilderCompat();
+    }
+
+    @Nullable public abstract Map<String, ColumnInfo> columnMap();      // column_info_map
+    public abstract String tableName();                                 // table_name
+    public abstract String qualifiedClassName();                        // qualified_class_name
+    @Nullable public abstract String staticDataAsset();                 // static_data_asset
+    @Nullable public abstract String staticDataRecordName();            // static_data_record_name
+    @Nullable public abstract String docStoreParameterization();        // doc_store_parameterization
+    public abstract Set<String> primaryKey();                           // primary_key
+    @Nullable public abstract String primaryKeyOnConflict();            // primary_key_on_conflict
+    @Nullable public abstract Set<TableForeignKeyInfo> foreignKeys();   // foreign_keys
+    @Nullable public abstract Set<TableIndexInfo> indices();            // indices
+    public abstract Builder toBuilder();
 
     public boolean isValid() {
         return (qualifiedClassName() != null && !qualifiedClassName().isEmpty()) || (tableName() != null && !tableName().isEmpty());
