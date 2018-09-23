@@ -18,6 +18,7 @@
 package com.fsryan.forsuredb.gsonserialization;
 
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.google.gson.Gson;
@@ -41,6 +42,7 @@ public final class FSDbInfoGsonSerializer implements FSDbInfoSerializer {
             .registerTypeAdapterFactory(new DbInfoAdapterFactory())
             .create();
     private static final Type foreignKeysType = new TypeToken<Set<TableForeignKeyInfo>>() {}.getType();
+    private static final Type indicesType = new TypeToken<Set<TableIndexInfo>>() {}.getType();
     private static final Type primaryKeyType = new TypeToken<Set<String>>() {}.getType();
 
     @Override
@@ -56,6 +58,11 @@ public final class FSDbInfoGsonSerializer implements FSDbInfoSerializer {
     @Override
     public Set<TableForeignKeyInfo> deserializeForeignKeys(String json) {
         return gson.fromJson(json, foreignKeysType);
+    }
+
+    @Override
+    public Set<TableIndexInfo> deserializeIndices(String json) {
+        return gson.fromJson(json, indicesType);
     }
 
     public String serialize(MigrationSet migrationSet) {

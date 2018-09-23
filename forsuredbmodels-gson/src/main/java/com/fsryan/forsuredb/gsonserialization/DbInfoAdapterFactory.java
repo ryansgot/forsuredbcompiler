@@ -17,10 +17,7 @@
  */
 package com.fsryan.forsuredb.gsonserialization;
 
-import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.ForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.gson.Gson;
@@ -46,6 +43,8 @@ class DbInfoAdapterFactory implements TypeAdapterFactory {
             return (TypeAdapter<T>) new MigrationSetAdapter(gson);
         } else if (ForeignKeyInfo.class.isAssignableFrom(rawType)) {
             return (TypeAdapter<T>) new ForeignKeyInfoAdapter(gson);
+        } else if (TableIndexInfo.class.isAssignableFrom(rawType)) {
+            return (TypeAdapter<T>) new TableIndexInfoAdapter(gson);
         } else {
             return null;
         }
