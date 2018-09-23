@@ -6,6 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p><i>IF YOU USE THIS IN COMBINATION WITH {@link FSIndex}, THEN
+ * {@link Index} WILL BE IGNORED</i>
+ *
  * <p> Marks a column as an index. This is not necessarily a unique index. If
  * you want to make the index unique, then set {@link #unique()} to true or use
  * the {@link Unique} annotation in combination with this annotation.

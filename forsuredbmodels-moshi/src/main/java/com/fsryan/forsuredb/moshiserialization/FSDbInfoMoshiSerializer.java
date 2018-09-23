@@ -24,6 +24,8 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
             .build();
     private static final JsonAdapter<Set<TableForeignKeyInfo>> tableForeignKeyInfoSetAdapter
             = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableForeignKeyInfo.class)).nullSafe();
+    private static final JsonAdapter<Set<TableIndexInfo>> tableIndexInfoSetAdapter
+            = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableIndexInfo.class)).nullSafe();
     private static final JsonAdapter<Set<String>> stringSetAdapter
             = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class)).nullSafe();
 
@@ -58,8 +60,11 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
 
     @Override
     public Set<TableIndexInfo> deserializeIndices(String json) {
-        // TODO
-        throw new UnsupportedOperationException();
+        try {
+            return tableIndexInfoSetAdapter.fromJson(json);
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     public String serialize(MigrationSet migrationSet) {
@@ -97,6 +102,9 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
             }
             if (MigrationSet.class.equals(type)) {
                 return new MigrationSetAdapter(moshi).nullSafe();
+            }
+            if (TableIndexInfo.class.equals(type)) {
+                return new TableIndexInfoAdapter(moshi).nullSafe();
             }
             if (ForeignKeyInfo.class.equals(type)) {
                 return new ForeignKeyInfoAdapter().nullSafe();

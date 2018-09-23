@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.fsryan.forsuredb.jacksonserialization.FSDbInfoJacksonSerializer.PRIMARY_KEY_TYPE;
-import static com.fsryan.forsuredb.jacksonserialization.FSDbInfoJacksonSerializer.TABLE_FOREIGN_KEY_INFO_TYPE;
+import static com.fsryan.forsuredb.jacksonserialization.FSDbInfoJacksonSerializer.TABLE_FOREIGN_KEY_INFO_SET_TYPE;
 
 public class TableInfoDeserializer extends StdDeserializer<TableInfo> {
 
@@ -52,7 +52,7 @@ public class TableInfoDeserializer extends StdDeserializer<TableInfo> {
                 ? node.get("primary_key_on_conflict").asText()
                 : null;
         final Set<TableForeignKeyInfo> foreignKeys = node.has("foreign_keys")
-                ? (Set<TableForeignKeyInfo>) mapper.readValue(node.get("foreign_keys").toString(), TABLE_FOREIGN_KEY_INFO_TYPE)
+                ? (Set<TableForeignKeyInfo>) mapper.readValue(node.get("foreign_keys").toString(), TABLE_FOREIGN_KEY_INFO_SET_TYPE)
                 : null;
         return TableInfo.builder()
                 .columnMap(columnInfoMap)
