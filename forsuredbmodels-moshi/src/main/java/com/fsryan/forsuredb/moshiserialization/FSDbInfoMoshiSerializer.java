@@ -1,9 +1,6 @@
 package com.fsryan.forsuredb.moshiserialization;
 
-import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.ForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
@@ -57,6 +54,12 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
+    }
+
+    @Override
+    public Set<TableIndexInfo> deserializeIndices(String json) {
+        // TODO
+        throw new UnsupportedOperationException();
     }
 
     public String serialize(MigrationSet migrationSet) {

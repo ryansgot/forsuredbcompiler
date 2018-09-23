@@ -211,7 +211,7 @@ public abstract class TableInfo {
             // This nasty code preserves backwards compatibility.
             // foreign key properties were serialized on columns pre 0.11.0
             // in actuality, primary keys are table properties.
-            // TODO: remove this code when no longer necessary
+            // TODO: remove this code when no longer necessary (scheduled for 1.0.0)
             Set<TableForeignKeyInfo> actualForeignKeys = new HashSet<>();
             if (!foreignKeys.isEmpty()) {                       // <-- setting foreign keys not possible before 0.11.0
                 actualForeignKeys.addAll(foreignKeys);
@@ -236,7 +236,7 @@ public abstract class TableInfo {
             // This nasty code preserves backwards compatibility.
             // index properties were serialized on columns pre 0.14.0
             // in actuality, indices are table properties.
-            // TODO: remove this code when no longer necessary
+            // TODO: remove this code when no longer necessary (scheduled for 1.0.0)
             final Set<TableIndexInfo> actualIndices = new HashSet<>();
             if (!indices.isEmpty()) {                           // <-- setting indices not possible before 0.14.0
                 actualIndices.addAll(indices);

@@ -9,4 +9,5 @@ include 'sqlitelib'
 include 'forsuredbjdbc'
 include 'forsuredbjdbc-example'
 include 'integrationtest'
+include 'testtools'
 

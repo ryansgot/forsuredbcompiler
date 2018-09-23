@@ -1,9 +1,6 @@
-package com.fsryan.forsuredb.api;
+package com.fsryan.forsuredb.test.tools;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CollectionUtil {
 
@@ -129,11 +126,11 @@ public class CollectionUtil {
         return ret;
     }
 
+    public static <T> Set<T> setOf(T... ts) {
+        return new HashSet<>(Arrays.asList(ts));
+    }
+
     public static <T> ArrayList<T> arrayListOf(T... ts) {
-        ArrayList<T> ret = new ArrayList<>(ts.length);
-        for (T t : ts) {
-            ret.add(t);
-        }
-        return ret;
+        return new ArrayList<>(Arrays.asList(ts));
     }
 }

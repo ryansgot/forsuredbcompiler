@@ -34,9 +34,6 @@ allprojects {
 
     repositories {
         jcenter()
-        maven {
-            url "http://projectlombok.org/mavenrepo"
-        }
     }
 
     autosemver {
@@ -75,7 +72,9 @@ subprojects { subproject ->
 
     group = rootProject.group
 
-    if (subproject.name == 'integrationtest' || subproject.name == 'forsuredbjdbc-example') {
+    if (subproject.name == 'integrationtest'
+            || subproject.name == 'forsuredbjdbc-example'
+            || subproject.name == 'testtools') {
         return
     }
 
@@ -89,7 +88,6 @@ subprojects { subproject ->
     repositories {
         jcenter()
     }
-
 
     jacoco {
         toolVersion = "0.7.6.+"
