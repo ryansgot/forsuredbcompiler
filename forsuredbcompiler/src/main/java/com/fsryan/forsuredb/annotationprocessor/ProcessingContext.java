@@ -21,19 +21,16 @@ import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory.AnnotationTranslator;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotations.*;
-import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.info.*;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.google.common.collect.Sets;
-import com.squareup.javapoet.TypeName;
 
 import java.util.*;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
+import static com.fsryan.forsuredb.annotationprocessor.InfoTranslator.columnNameOf;
+import static com.fsryan.forsuredb.annotationprocessor.InfoTranslator.tableNameOf;
 import static com.fsryan.forsuredb.info.TableInfo.docStoreColumns;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
@@ -129,24 +126,19 @@ public class ProcessingContext implements TableContext {
             throw new IllegalArgumentException("Can only create TableInfo create " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
         }
 
-        final String tableName = createTableName(intf);
+        final String tableName = tableNameOf(intf);
         // docStoreParametrization will be non-null only for doc store tables, so add the doc store columns in this case
-        String docStoreParameterization = getDocStoreParametrizationFrom(intf);
+        String docStoreParameterization = InfoTranslator.docStoreParameterizationOf(intf);
         if (docStoreParameterization != null) {
             docStoreColumns().values()
                     .forEach(c -> builder.addColumn(tableName, c.columnName(), c.toBuilder()));
         }
-        builder.addTable(tableName, intf.getQualifiedName().toString(), TableInfo.builder()
-                .tableName(tableName)
-                .qualifiedClassName(intf.getQualifiedName().toString())
-                .docStoreParameterization(docStoreParameterization)
-                .primaryKey(primaryKeyFrom(intf))
-                .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
-                .staticDataAsset(createStaticDataAsset(intf)));
+        builder.addTable(tableName, intf.getQualifiedName().toString(), InfoTranslator.toTableInfoBuilder(intf));
 
         methodsIn(intf.getEnclosedElements()).forEach(ee -> {
-            builder.addColumn(tableName, columnNameOf(ee), InfoTransformer.transform(ee));
-            if (containsForeignKey(ee)) {
+            builder.addColumn(tableName, columnNameOf(ee), InfoTranslator.toColumnInfoBuilder(ee));
+            InfoTranslator.validateForeignKeyDeclaration(ee);
+            if (InfoTranslator.containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
                 builder.addForeignKeyInfo(tableName, p.first, p.second);
             }
@@ -190,52 +182,5 @@ public class ProcessingContext implements TableContext {
                 .updateChangeAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()).name())
                 .localToForeignColumnMap(localToForeignColumnMap)
                 .foreignTableApiClassName(at.property("apiClass").asString());
-    }
-
-    private static boolean containsForeignKey(ExecutableElement ee) {
-        FSForeignKey fsfk = ee.getAnnotation(FSForeignKey.class);
-        ForeignKey legacyForeignKey = ee.getAnnotation(ForeignKey.class);
-        return fsfk != null || legacyForeignKey != null;
-    }
-
-    private static String getDocStoreParametrizationFrom(TypeElement intf) {
-        for (TypeMirror typeMirror : intf.getInterfaces()) {
-            DeclaredType declaredType = (DeclaredType) typeMirror;
-            if (typeMirror.toString().startsWith(FSDocStoreGetApi.class.getName())) {
-                return declaredType.getTypeArguments().get(0).toString();  // <-- there should be one type argument only
-            }
-        }
-        return null;
-    }
-
-    private static String createTableName(TypeElement intf) {
-        FSTable table = intf.getAnnotation(FSTable.class);
-        return table == null ? intf.getSimpleName().toString() : table.value();
-    }
-
-    private static String columnNameOf(ExecutableElement ee) {
-        for (AnnotationMirror annotationMirror : ee.getAnnotationMirrors()) {
-            if (annotationMirror.getAnnotationType().toString().equals(FSColumn.class.getName())) {
-                return AnnotationTranslatorFactory.inst().create(annotationMirror).property("value").asString();
-            }
-        }
-        return ee.getSimpleName().toString();
-    }
-
-    private static Set<String> primaryKeyFrom(TypeElement intf) {
-        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
-        return primaryKey == null || primaryKey.value().length == 0   // <-- do not allow user to specify no primary key
-                ? Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)
-                : Sets.newHashSet(primaryKey.value());
-    }
-
-    private static String createStaticDataAsset(TypeElement intf) {
-        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
-        return staticData == null ? null : staticData.value();
-    }
-
-    private static String primaryKeyOnConflictFrom(TypeElement intf) {
-        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
-        return primaryKey == null ? "" : primaryKey.onConflict();
     }
 }

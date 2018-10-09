@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -38,10 +39,11 @@ public abstract class TestExecutableElement implements ExecutableElement {
                 .setVarArgs(false);
     }
 
-    public static TestExecutableElement returningString(String methodName) {
+    public static TestExecutableElement returningString(String methodName, AnnotationMirror... annotationMirrors) {
         return builder()
                 .setReturnType(TestTypeMirror.string())
                 .setSimpleName(TestNameUtil.createReal(methodName))
+                .setAnnotationMirrors(Arrays.asList(annotationMirrors))
                 .build();
     }
 

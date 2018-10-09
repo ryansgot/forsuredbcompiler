@@ -3,23 +3,80 @@ package com.fsryan.forsuredb.annotationprocessor;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
 import com.fsryan.forsuredb.annotations.*;
+import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableInfo;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * <p>Transform from various {@link javax.lang.model.element.Element Element}
  * instances into the info objects used to describe the
  */
-class InfoTransformer {
+class InfoTranslator {
 
-    static ColumnInfo.Builder transform(ExecutableElement ee) {
+    static TableInfo.BuilderCompat toTableInfoBuilder(TypeElement te) {
+        return TableInfo.builder()
+                .tableName(tableNameOf(te))
+                .qualifiedClassName(te.getQualifiedName().toString())
+                .docStoreParameterization(docStoreParameterizationOf(te))
+                .primaryKey(primaryKeyFrom(te))
+                .primaryKeyOnConflict(primaryKeyOnConflictFrom(te))
+                .staticDataAsset(staticDataAssetOf(te));
+    }
+
+    static String docStoreParameterizationOf(TypeElement intf) {
+        TypeMirror docStoreMirror = intf.getInterfaces().stream()
+                .filter(typeMirror -> typeMirror.toString().startsWith(FSDocStoreGetApi.class.getName()))
+                .findFirst().orElse(null);
+        if (docStoreMirror == null) {
+            return null;
+        }
+        return Stream.of(docStoreMirror)
+                .map(typeMirror -> (DeclaredType) typeMirror)
+                .map(declaredType -> {
+                    List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
+                    return typeArguments == null || typeArguments.isEmpty()
+                            ? Object.class.getSimpleName()
+                            : typeArguments.get(0).toString();
+                })
+                .findFirst()
+                .orElse(null);
+    }
+
+    static Set<String> primaryKeyFrom(TypeElement intf) {
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
+        return primaryKey == null || primaryKey.value().length == 0   // <-- do not allow user to specify no primary key
+                ? Collections.singleton(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)
+                : new HashSet<>(Arrays.asList(primaryKey.value()));
+    }
+
+    static String primaryKeyOnConflictFrom(TypeElement intf) {
+        FSPrimaryKey primaryKey = intf.getAnnotation(FSPrimaryKey.class);
+        return primaryKey == null ? "" : primaryKey.onConflict();
+    }
+
+    static String staticDataAssetOf(TypeElement intf) {
+        FSStaticData staticData = intf.getAnnotation(FSStaticData.class);
+        return staticData == null ? null : staticData.value();
+    }
+
+    static String tableNameOf(TypeElement intf) {
+        FSTable table = intf.getAnnotation(FSTable.class);
+        return table == null ? intf.getSimpleName().toString() : table.value();
+    }
+
+    static ColumnInfo.Builder toColumnInfoBuilder(ExecutableElement ee) {
         throwIfDefaultInvalid(ee);
 
         ColumnInfo.Builder builder = defaultsFromElement(ee);
@@ -36,11 +93,35 @@ class InfoTransformer {
         if (ee.getReturnType().getKind().isPrimitive()) {
             FSDefault fsDefault = ee.getAnnotation(FSDefault.class);
             if (fsDefault == null) {
-                APLog.w("InfoTransformer", "default value of \"0\" implied for: " + ee.getSimpleName());
+                APLog.w("InfoTranslator", "default value of \"0\" implied for: " + ee.getSimpleName());
                 ret.defaultValue("0");
             }
         }
         return ret;
+    }
+
+    static String columnNameOf(ExecutableElement ee) {
+        for (AnnotationMirror annotationMirror : ee.getAnnotationMirrors()) {
+            if (annotationMirror.getAnnotationType().toString().equals(FSColumn.class.getName())) {
+                return AnnotationTranslatorFactory.inst()
+                        .create(annotationMirror)
+                        .property("value")
+                        .asString();
+            }
+        }
+        return ee.getSimpleName().toString();
+    }
+
+    static void validateForeignKeyDeclaration(ExecutableElement ee) {
+        if (ee.getAnnotation(FSForeignKey.class) != null && ee.getAnnotation(ForeignKey.class) != null) {
+            throw new IllegalStateException(FSForeignKey.class + " is incompatible with " + ForeignKey.class + ". " + ForeignKey.class + " is deprecated. Use " + FSForeignKey.class + ".");
+        }
+    }
+
+    static boolean containsForeignKey(ExecutableElement ee) {
+        FSForeignKey fsfk = ee.getAnnotation(FSForeignKey.class);
+        ForeignKey legacyForeignKey = ee.getAnnotation(ForeignKey.class);
+        return fsfk != null || legacyForeignKey != null;
     }
 
     private static void appendAnnotationInfo(ColumnInfo.Builder builder, AnnotationMirror am, TypeMirror returnType) {
@@ -68,11 +149,11 @@ class InfoTransformer {
                 builder.unique(true);
             }
         } else if (annotationClass.equals(FSDefault.class.getName())) {
-            builder.defaultValue(ensureCorrectDefault(at.property("value").asString(), returnType));
+            builder.defaultValue(ensureCorrectDefaultValue(at.property("value").asString(), returnType));
         }
     }
 
-    private static String ensureCorrectDefault(String value, TypeMirror returnType) {
+    private static String ensureCorrectDefaultValue(String value, TypeMirror returnType) {
         if (returnType.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(returnType.toString())) {
             if ("true".equalsIgnoreCase(value)) {
                 return "1";

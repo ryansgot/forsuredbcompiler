@@ -1,7 +1,10 @@
 package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
+import com.fsryan.forsuredb.annotations.FSColumn;
 import com.fsryan.forsuredb.annotations.FSDefault;
+import com.fsryan.forsuredb.annotations.ForeignKey;
+import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.testutil.*;
 import org.junit.*;
@@ -15,28 +18,51 @@ import javax.lang.model.util.Elements;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
+import static com.fsryan.forsuredb.testutil.FSTestTypesUtil.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public abstract class InfoTransformerTest<I extends Element, E> {
+public abstract class InfoTranslatorTest<I extends Element, E> {
 
     I input;
     E expected;
 
-    public InfoTransformerTest(I input, E expected) {
+    public InfoTranslatorTest(I input, E expected) {
         this.input = input;
         this.expected = expected;
     }
 
+    static abstract class UsingAnnotationTranslatorFactory<I extends Element, E> extends InfoTranslatorTest<I, E> {
+
+        public UsingAnnotationTranslatorFactory(I input, E expected) {
+            super(input, expected);
+        }
+
+        @Before
+        public void setUpTranslatorFactory() {
+            Elements mockElements = mock(Elements.class);
+            setUpMockElements(mockElements);
+            AnnotationTranslatorFactory.init(TestProcessingEnvironment.withElements(mockElements));
+        }
+
+        @After
+        public void tearDownAnnotationTranslatorFactory() throws Exception {
+            Field instance = AnnotationTranslatorFactory.class.getDeclaredField("instance");
+            instance.setAccessible(true);
+            instance.set(null, null);
+        }
+
+        abstract void setUpMockElements(Elements mockElements);
+    }
+
     @RunWith(Parameterized.class)
-    public static class DefaultsFromExecutableElement extends InfoTransformerTest<ExecutableElement, ColumnInfo> {
+    public static class DefaultsFromExecutableElement extends InfoTranslatorTest<ExecutableElement, ColumnInfo> {
 
         public DefaultsFromExecutableElement(ExecutableElement input, ColumnInfo expected) {
             super(input, expected);
@@ -158,18 +184,18 @@ public abstract class InfoTransformerTest<I extends Element, E> {
 
         @Test
         public void shouldCorrectlyCreateDefaultFromElement() {
-            assertEquals(expected, InfoTransformer.defaultsFromElement(input).build());
+            assertEquals(expected, InfoTranslator.defaultsFromElement(input).build());
         }
     }
 
     @RunWith(Parameterized.class)
-    public static class FSDefaultInterpretationSuccessPath extends InfoTransformerTest<ExecutableElement, ColumnInfo> {
+    public static class FSDefaultInterpretationSuccessPath extends UsingAnnotationTranslatorFactory<ExecutableElement, ColumnInfo> {
 
         public FSDefaultInterpretationSuccessPath(TestTypeMirror returnType, Name methodName, String defaultValue, ColumnInfo expected) {
             super(TestExecutableElement.builder()
                     .setReturnType(returnType)
                     .setSimpleName(methodName)
-                    .setFakedAnnotations(Collections.singletonList(FakeAnnotationUtil.createFSDefault(defaultValue)))
+                    .setFakedAnnotations(Collections.singletonList(FSTestTypesUtil.createFSDefault(defaultValue)))
                     .setAnnotationMirrors(Collections.singletonList(
                             TestAnnotationMirror.builder()
                                     .setAnnotationType(TestDeclaredType.of(FSDefault.class))
@@ -599,31 +625,21 @@ public abstract class InfoTransformerTest<I extends Element, E> {
             });
         }
 
-        @Before
-        public void setUpTranslatorFactory() {
-            Elements mockElements = mock(Elements.class);
+        @Test
+        public void shouldCorrectlyInterpretDefaultValue() {
+            assertEquals(expected, InfoTranslator.toColumnInfoBuilder(input).build());
+        }
+
+        protected void setUpMockElements(Elements mockElements) {
             when(mockElements.getElementValuesWithDefaults(any(AnnotationMirror.class)))
                     .thenAnswer((Answer<Map<? extends ExecutableElement, ? extends AnnotationValue>>) invocation -> {
                         return input.getAnnotationMirrors().get(0).getElementValues();
                     });
-            AnnotationTranslatorFactory.init(TestProcessingEnvironment.withElements(mockElements));
-        }
-
-        @After
-        public void tearDownAnnotationTranslatorFactory() throws Exception {
-            Field instance = AnnotationTranslatorFactory.class.getDeclaredField("instance");
-            instance.setAccessible(true);
-            instance.set(null, null);
-        }
-
-        @Test
-        public void shouldCorrectlyInterpretDefaultValue() {
-            assertEquals(expected, InfoTransformer.transform(input).build());
         }
     }
 
     @RunWith(Parameterized.class)
-    public static class FSDefaultInterpretationFailurePath extends InfoTransformerTest<ExecutableElement, Exception> {
+    public static class FSDefaultInterpretationFailurePath extends UsingAnnotationTranslatorFactory<ExecutableElement, Exception> {
 
         static final String BYTE_TOO_LOW = String.valueOf(Byte.MIN_VALUE - 1);
         static final String BYTE_TOO_HIGH = String.valueOf(Byte.MAX_VALUE + 1);
@@ -642,7 +658,7 @@ public abstract class InfoTransformerTest<I extends Element, E> {
             super(TestExecutableElement.builder()
                     .setReturnType(returnType)
                     .setSimpleName(methodName)
-                    .setFakedAnnotations(Collections.singletonList(FakeAnnotationUtil.createFSDefault(defaultValue)))
+                    .setFakedAnnotations(Collections.singletonList(FSTestTypesUtil.createFSDefault(defaultValue)))
                     .setAnnotationMirrors(Collections.singletonList(
                             TestAnnotationMirror.builder()
                                     .setAnnotationType(TestDeclaredType.of(FSDefault.class))
@@ -913,32 +929,324 @@ public abstract class InfoTransformerTest<I extends Element, E> {
             });
         }
 
-        @Before
-        public void setUpTranslatorFactory() {
-            Elements mockElements = mock(Elements.class);
-            when(mockElements.getElementValuesWithDefaults(any(AnnotationMirror.class)))
-                    .thenAnswer((Answer<Map<? extends ExecutableElement, ? extends AnnotationValue>>) invocation -> {
-                        return input.getAnnotationMirrors().get(0).getElementValues();
-                    });
-            AnnotationTranslatorFactory.init(TestProcessingEnvironment.withElements(mockElements));
-        }
-
-        @After
-        public void tearDownAnnotationTranslatorFactory() throws Exception {
-            Field instance = AnnotationTranslatorFactory.class.getDeclaredField("instance");
-            instance.setAccessible(true);
-            instance.set(null, null);
-        }
-
         @Test
         public void shouldCorrectlyInterpretDefaultValue() {
             try {
-                InfoTransformer.transform(input).build();
+                InfoTranslator.toColumnInfoBuilder(input).build();
                 fail("Should have thrown exception: " + expected);
             } catch (Exception actual) {
                 assertEquals(expected.getClass(), actual.getClass());
                 assertEquals(expected.getMessage(), actual.getMessage());
             }
+        }
+
+        @Override
+        void setUpMockElements(Elements mockElements) {
+            when(mockElements.getElementValuesWithDefaults(any(AnnotationMirror.class)))
+                    .thenAnswer((Answer<Map<? extends ExecutableElement, ? extends AnnotationValue>>) invocation -> {
+                        return input.getAnnotationMirrors().get(0).getElementValues();
+                    });
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ColumnNameOf extends UsingAnnotationTranslatorFactory<ExecutableElement, String> {
+
+        private final String desc;
+
+        public ColumnNameOf(String desc, ExecutableElement input, String expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: without @FSColumn annotation, should name the column with the method name",
+                            TestExecutableElement.returningString("methodName"),
+                            "methodName"
+                    },
+                    {
+                            "01: with @FSColumn annotation, should name the column with the value of @FSColumn",
+                            TestExecutableElement.returningString(
+                                    "methodName",
+                                    TestAnnotationMirror.builder()
+                                            .setAnnotationType(TestDeclaredType.of(FSColumn.class))
+                                            .setElementValues(TestAnnotationMirror.singletonElementValues(
+                                                    TestExecutableElement.returningString("value"),
+                                                    TestAnnotationValueUtil.createReal("string_column")
+                                            ))
+                                            .build()
+                            ),
+                            "string_column"
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineColumnNameFromExecutableElement() {
+            assertEquals(desc, expected, InfoTranslator.columnNameOf(input));
+        }
+
+        @Override
+        void setUpMockElements(Elements mockElements) {
+            when(mockElements.getElementValuesWithDefaults(any(AnnotationMirror.class)))
+                    .thenAnswer((Answer<Map<? extends ExecutableElement, ? extends AnnotationValue>>) invocation -> {
+                        return input.getAnnotationMirrors().get(0).getElementValues();
+                    });
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class TableNameOf extends InfoTranslatorTest<TypeElement, String> {
+
+        private final String desc;
+
+        public TableNameOf(String desc, TypeElement input, String expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: without @FSTable annotation should return the name of the class",
+                            TestTypeElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("MyTable"))
+                                    .build(),
+                            "MyTable"
+                    },
+                    {
+                            "01: with @FSColumn annotation, should name the column with the value of @FSColumn",
+                            TestTypeElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("MyTable"))
+                                    .setFakeAnnotations(Arrays.asList(FSTestTypesUtil.createFSTable("table_name")))
+                                    .build(),
+                            "table_name"
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineColumnNameFromExecutableElement() {
+            assertEquals(desc, expected, InfoTranslator.tableNameOf(input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class DocStoreParameterizationOf extends InfoTranslatorTest<TypeElement, String> {
+
+        private final String desc;
+
+        public DocStoreParameterizationOf(String desc, TypeElement input, String expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Raw FSDocStoreTable extension should have object as base class",
+                            TestTypeElement.withRawDocStoreInterface("MyDocStoreTable").build(),
+                            Object.class.getSimpleName()
+                    },
+                    {
+                            "01: Parameterized FSDocStoreTable extension should correctly determine base class based upon parameterization",
+                            TestTypeElement.withDocStoreInterface("MyDocStoreTable", Number.class.getName())
+                                    .setSimpleName(TestNameUtil.createReal("MyTable"))
+                                    .setFakeAnnotations(Arrays.asList(FSTestTypesUtil.createFSTable("table_name")))
+                                    .build(),
+                            Number.class.getName()
+                    },
+                    {
+                            "02: Non doc store table should return null",
+                            TestTypeElement.builder()
+                                    .setInterfaces(Collections.emptyList())
+                                    .build(),
+                            null
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineColumnNameFromExecutableElement() {
+            assertEquals(desc, expected, InfoTranslator.docStoreParameterizationOf(input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class PrimaryKeyFrom extends InfoTranslatorTest<TypeElement, Set<String>> {
+
+        private final String desc;
+        private final String expectedOnConflict;
+
+        public PrimaryKeyFrom(String desc, TypeElement input, Set<String> expected, String expectedOnConflict) {
+            super(input, expected);
+            this.desc = desc;
+            this.expectedOnConflict = expectedOnConflict;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @PrimaryKey annotation, should return [\"_id\"] as a singleton set; onConflict should be empty",
+                            TestTypeElement.builder()
+                                    .setFakeAnnotations(Collections.emptyList())
+                                    .build(),
+                            Collections.singleton("_id"),
+                            ""
+                    },
+                    {
+                            "01: with @PrimaryKey annotation, should return the full value as a set; should determine onConflict",
+                            TestTypeElement.builder()
+                                    .setFakeAnnotations(Collections.singletonList(createFSPrimaryKey("ABORT", "column1", "column2")))
+                                    .build(),
+                            new HashSet<>(Arrays.asList("column1", "column2")),
+                            "ABORT"
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDeterminePrimaryKey() {
+            Set<String> actual = InfoTranslator.primaryKeyFrom(input);
+            String failureMessage = String.format("%s: expected %s, but was %s", desc, expected, actual);
+            for (String primaryKeyComponent : actual) {
+                assertTrue(failureMessage, actual.contains(primaryKeyComponent));
+            }
+            assertEquals(failureMessage, expected.size(), actual.size());
+        }
+
+        @Test
+        public void shouldCorrectlyDeterminePrimaryKeyOnConflict() {
+            assertEquals(desc, expectedOnConflict, InfoTranslator.primaryKeyOnConflictFrom(input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class StaticDataAssetOf extends InfoTranslatorTest<TypeElement, String> {
+
+        private final String desc;
+
+        public StaticDataAssetOf(String desc, TypeElement input, String expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @FSStaticData annotation, should be null",
+                            TestTypeElement.builder()
+                                    .setFakeAnnotations(Collections.emptyList())
+                                    .build(),
+                            null
+                    },
+                    {
+                            "01: with @FSStaticData annotation, should return the name of the static data asset",
+                            TestTypeElement.builder()
+                                    .setFakeAnnotations(Collections.singletonList(createFSStaticData("assetName")))
+                                    .build(),
+                            "assetName"
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineStaticDataAsset() {
+            assertEquals(desc, expected, InfoTranslator.staticDataAssetOf(input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ContainsForeignKey extends InfoTranslatorTest<ExecutableElement, Boolean> {
+
+        private final String desc;
+
+        public ContainsForeignKey(String desc, ExecutableElement input, Boolean expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @FSForeignKey and without @ForeignKey annotation, should return false",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.emptyList())
+                                    .build(),
+                            false
+                    },
+                    {
+                            "01: Without @FSForeignKey and with @ForeignKey annotation, should return true",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createLegacyForeignKey(
+                                            FSGetApi.class,
+                                            "_id",
+                                            ForeignKey.ChangeAction.SET_DEFAULT,
+                                            ForeignKey.ChangeAction.SET_NULL
+                                    )))
+                                    .build(),
+                            true
+                    },
+                    {
+                            "02: with @FSForeignKey annotation, without @ForeignKey should return true",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createFSForeignKey(
+                                            FSGetApi.class,
+                                            "_id",
+                                            "CASCADE",
+                                            "CASCADE",
+                                            UUID.randomUUID().toString()
+                                    ))).build(),
+                            true
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineStaticDataAsset() {
+            assertEquals(desc, expected, InfoTranslator.containsForeignKey(input));
+        }
+
+        @Test
+        public void shouldNotThrowWhenValidating() {
+            InfoTranslator.validateForeignKeyDeclaration(input);
+        }
+    }
+
+    public static class ValidateForeignKeyDeclaration {
+
+        @Test(expected = IllegalStateException.class)
+        public void shouldThrowWhenBothUsed() {
+            ExecutableElement testExecutableElement = TestExecutableElement.builder()
+                    .setFakedAnnotations(Arrays.asList(createFSForeignKey(
+                            FSGetApi.class,
+                            "_id",
+                            "CASCADE",
+                            "CASCADE",
+                            ""
+                    ), createLegacyForeignKey(
+                            FSGetApi.class,
+                            "another_column",
+                            ForeignKey.ChangeAction.CASCADE,
+                            ForeignKey.ChangeAction.CASCADE
+                    ))).setReturnType(TestTypeMirror.primitiveInt())
+                    .setSimpleName(TestNameUtil.createReal("intColumn"))
+                    .build();
+            InfoTranslator.validateForeignKeyDeclaration(testExecutableElement);
         }
     }
 }

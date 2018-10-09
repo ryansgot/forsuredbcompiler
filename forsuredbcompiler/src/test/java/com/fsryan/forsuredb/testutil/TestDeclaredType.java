@@ -29,11 +29,11 @@ public abstract class TestDeclaredType implements DeclaredType {
         public abstract TestDeclaredType build();
     }
 
-    public static DeclaredType string() {
+    public static TestDeclaredType string() {
         return of(String.class);
     }
 
-    public static DeclaredType of(Class cls) {
+    public static TestDeclaredType of(Class cls) {
         return builder()
                 .setFakeClass(cls)
                 .setKind(TypeKind.DECLARED)
