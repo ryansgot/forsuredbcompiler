@@ -27,7 +27,7 @@ public interface AllTypesTable extends FSGetApi {
     @FSColumn("string_column")
     @FSIndex(compositeId = "long_column_string_column")
     @FSDefault("Some String with a '")
-    String stringColumn(Retriever retriever);
+    String stringColumn(Retriever retriever);   // TODO: there must be some way to order the composite index columns
     @FSColumn("big_integer_column") BigInteger bigIntegerColumn(Retriever retriever);
     @FSColumn("big_decimal_column") BigDecimal bigDecimalColumn(Retriever retriever);
     @FSColumn("date_column") Date dateColumn(Retriever retriever);
