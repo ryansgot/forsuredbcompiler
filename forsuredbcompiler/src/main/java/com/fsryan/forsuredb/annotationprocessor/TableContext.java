@@ -159,7 +159,8 @@ public interface TableContext {
             return indices;
         }
 
-        private static TableIndexInfo mergeTableIndexInfo(List<TableIndexInfo> toMerge) {
+        // TODO: extract to utility--create ability to order the columns (not sort order, but column order)
+        static TableIndexInfo mergeTableIndexInfo(List<TableIndexInfo> toMerge) {
             TableIndexInfo merged = toMerge.stream()
                     .reduce((acc, next) -> {
                         if (acc.unique() != next.unique()) {
