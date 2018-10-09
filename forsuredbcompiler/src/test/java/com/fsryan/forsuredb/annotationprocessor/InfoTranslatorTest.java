@@ -1283,7 +1283,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                             true
                     },
                     {
-                            "02: with @FSForeignKey annotation, without @ForeignKey should return true",
+                            "02: with @FSIndex annotation, without @Index should return true",
                             TestExecutableElement.builder()
                                     .setSimpleName(TestNameUtil.createReal("someName"))
                                     .setReturnType(TestTypeMirror.primitiveInt())
@@ -1352,7 +1352,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                             ""
                     },
                     {
-                            "02: with @FSForeignKey annotation, without @ForeignKey should return the defined compositeId",
+                            "02: with @FSIndex annotation, without @Index should return the defined compositeId",
                             TestExecutableElement.builder()
                                     .setSimpleName(TestNameUtil.createReal("someName"))
                                     .setReturnType(TestTypeMirror.primitiveInt())
@@ -1402,7 +1402,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                             TableIndexInfo.create(Collections.singletonMap("someName", ""), true)
                     },
                     {
-                            "02: with @FSForeignKey annotation, without @ForeignKey should return TableIndexInfo with correct sort order and unique value",
+                            "02: with @FSIndex annotation, without @Index should return TableIndexInfo with correct sort order and unique value",
                             TestExecutableElement.builder()
                                     .setAnnotationMirrors(Collections.emptyList())
                                     .setSimpleName(TestNameUtil.createReal("someName"))
