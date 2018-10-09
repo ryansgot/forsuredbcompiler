@@ -143,6 +143,46 @@ public abstract class FSTestTypesUtil {
         };
     }
 
+    public static Index createLegacyIndex(final boolean unique) {
+        return new Index() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return Index.class;
+            }
+
+            @Override
+            public boolean unique() {
+                return unique;
+            }
+        };
+    }
+
+    public static FSIndex createFSIndex(final boolean unique, final String sortOrder, final String compositeId) {
+        return new FSIndex() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return FSIndex.class;
+            }
+
+            @Override
+            public boolean unique() {
+                return unique;
+            }
+
+            @Override
+            public String compositeId() {
+                return compositeId;
+            }
+
+            @Override
+            public String sortOrder() {
+                return sortOrder;
+            }
+        };
+    }
+
     public static TestTypeMirror docStoreGetApi() {
         return TestTypeMirror.forName(FSDocStoreGetApi.class.getName());
     }

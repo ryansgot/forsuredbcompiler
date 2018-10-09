@@ -7,7 +7,6 @@ import com.fsryan.forsuredb.api.Retriever;
 @FSTable("references_all_types")
 @FSStaticData("references_all_types_static_data.xml")
 public interface ReferencesAllTypesTable extends FSDocStoreGetApi<MyPojo> {
-    Class BASE_CLASS = MyPojo.class;
     @FSColumn("all_types_id")
     @FSForeignKey(
             apiClass = AllTypesTable.class,     // <-- allows for code generation of resolver to account for join

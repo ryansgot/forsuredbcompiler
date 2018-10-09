@@ -138,9 +138,15 @@ public class ProcessingContext implements TableContext {
         methodsIn(intf.getEnclosedElements()).forEach(ee -> {
             builder.addColumn(tableName, columnNameOf(ee), InfoTranslator.toColumnInfoBuilder(ee));
             InfoTranslator.validateForeignKeyDeclaration(ee);
+            InfoTranslator.validateIndexDeclaration(ee);
             if (InfoTranslator.containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
                 builder.addForeignKeyInfo(tableName, p.first, p.second);
+            }
+            if (InfoTranslator.containsIndex(ee)) {
+                TableIndexInfo tio = InfoTranslator.tableIndexInfoOf(ee);
+                String compositeId = InfoTranslator.indexCompositeIdOf(ee);
+                builder.addTableIndexInfo(tableName, compositeId, tio);
             }
         });
     }

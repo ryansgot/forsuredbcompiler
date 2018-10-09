@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.annotations.FSDefault;
 import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.testutil.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -1217,7 +1218,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
         }
 
         @Test
-        public void shouldCorrectlyDetermineStaticDataAsset() {
+        public void shouldCorrectlyDetermineForeignKey() {
             assertEquals(desc, expected, InfoTranslator.containsForeignKey(input));
         }
 
@@ -1247,6 +1248,175 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                     .setSimpleName(TestNameUtil.createReal("intColumn"))
                     .build();
             InfoTranslator.validateForeignKeyDeclaration(testExecutableElement);
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ContainsFSIndex extends InfoTranslatorTest<ExecutableElement, Boolean> {
+
+        private final String desc;
+
+        public ContainsFSIndex(String desc, ExecutableElement input, Boolean expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @FSIndex and without @Index annotation, should return false",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.emptyList())
+                                    .build(),
+                            false
+                    },
+                    {
+                            "01: Without @FSIndex and with @Index annotation, should return true",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createLegacyIndex(false)))
+                                    .build(),
+                            true
+                    },
+                    {
+                            "02: with @FSForeignKey annotation, without @ForeignKey should return true",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createFSIndex(false, "DESC", "composite")))
+                                    .build(),
+                            true
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineIndex() {
+            assertEquals(desc, expected, InfoTranslator.containsIndex(input));
+        }
+
+        @Test
+        public void shouldNotThrowWhenValidating() {
+            InfoTranslator.validateIndexDeclaration(input);
+        }
+    }
+
+    public static class ValidateIndexDeclaration {
+
+        @Test(expected = IllegalStateException.class)
+        public void shouldThrowWhenBothUsed() {
+            ExecutableElement testExecutableElement = TestExecutableElement.builder()
+                    .setFakedAnnotations(Arrays.asList(
+                            createFSIndex(false, "DESC", "composite"),
+                            createLegacyIndex(false)
+                    )).setReturnType(TestTypeMirror.primitiveInt())
+                    .setSimpleName(TestNameUtil.createReal("intColumn"))
+                    .build();
+            InfoTranslator.validateIndexDeclaration(testExecutableElement);
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class IndexCompositeIdOf extends InfoTranslatorTest<ExecutableElement, String> {
+
+        private final String desc;
+
+        public IndexCompositeIdOf(String desc, ExecutableElement input, String expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @FSIndex and @Index, should reaturn null",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.emptyList())
+                                    .build(),
+                            null
+                    },
+                    {
+                            "01: Without @FSIndex and with @Index annotation, should return empty string",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createLegacyIndex(false)))
+                                    .build(),
+                            ""
+                    },
+                    {
+                            "02: with @FSForeignKey annotation, without @ForeignKey should return the defined compositeId",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createFSIndex(false, "DESC", "composite")))
+                                    .build(),
+                            "composite"
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineCompositeIndexId() {
+            assertEquals(desc, expected, InfoTranslator.indexCompositeIdOf(input));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class TableIndexInfoOf extends InfoTranslatorTest<ExecutableElement, TableIndexInfo> {
+
+        private final String desc;
+
+        public TableIndexInfoOf(String desc, ExecutableElement input, TableIndexInfo expected) {
+            super(input, expected);
+            this.desc = desc;
+        }
+
+        @Parameterized.Parameters
+        public static Iterable<Object[]> data() {
+            return Arrays.asList(new Object[][] {
+                    {
+                            "00: Without @FSIndex and @Index, should reaturn null",
+                            TestExecutableElement.builder()
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.emptyList())
+                                    .build(),
+                            null
+                    },
+                    {
+                            "01: Without @FSIndex and with @Index annotation, should return TableIndexInfo with correct unique value",
+                            TestExecutableElement.builder()
+                                    .setAnnotationMirrors(Collections.emptyList())
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createLegacyIndex(true)))
+                                    .build(),
+                            TableIndexInfo.create(Collections.singletonMap("someName", ""), true)
+                    },
+                    {
+                            "02: with @FSForeignKey annotation, without @ForeignKey should return TableIndexInfo with correct sort order and unique value",
+                            TestExecutableElement.builder()
+                                    .setAnnotationMirrors(Collections.emptyList())
+                                    .setSimpleName(TestNameUtil.createReal("someName"))
+                                    .setReturnType(TestTypeMirror.primitiveInt())
+                                    .setFakedAnnotations(Collections.singletonList(createFSIndex(true, "ASC", "composite")))
+                                    .build(),
+                            TableIndexInfo.create(Collections.singletonMap("someName", "ASC"), true)
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCorrectlyDetermineCompositeIndexId() {
+            assertEquals(desc, expected, InfoTranslator.tableIndexInfoOf(input));
         }
     }
 }

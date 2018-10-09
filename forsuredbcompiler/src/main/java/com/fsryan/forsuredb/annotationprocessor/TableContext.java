@@ -19,9 +19,11 @@ package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -42,6 +44,8 @@ public interface TableContext {
         private final Map<String, Map<String, ColumnInfo.Builder>> columnInfoMap = new HashMap<>();
         // tablekey -> Set of ForeignKeyInfo.Builder
         private final Map<String, Map<String, Set<TableForeignKeyInfo.Builder>>> tableForeignKeyInfoMap = new HashMap<>();
+        // tablekey -> Set of TableIndexInfo
+        private final Map<String, Map<String, Set<TableIndexInfo>>> tableIndexInfoMap = new HashMap<>();
 
         public Builder addTable(String tableName, String tableClassName, TableInfo.BuilderCompat builder) {
             tableClassNameToNameMap.put(tableClassName, tableName);
@@ -65,12 +69,20 @@ public interface TableContext {
             return this;
         }
 
+        public void addTableIndexInfo(String tableKey, String compositeKey, TableIndexInfo tio) {
+            Map<String, Set<TableIndexInfo>> forTableMap = tableIndexInfoMap
+                    .computeIfAbsent(tableKey, k -> new HashMap<>());
+            Set<TableIndexInfo> tmpSet = forTableMap.computeIfAbsent(compositeKey, k -> new HashSet<>());
+            tmpSet.add(tio);
+        }
+
         public TableContext build() {
             final Map<String, TableInfo> schema = new HashMap<>();
             tableInfoMap.keySet().forEach(tableKey -> {
                 TableInfo t = tableInfoMap.get(tableKey)
                         .columnMap(buildColumnMap(tableKey))
                         .foreignKeys(collapseForeignKeys(tableKey))
+                        .indices(collapseIndices(tableKey))
                         .build();
                 schema.put(t.tableName(), t);
             });
@@ -128,6 +140,43 @@ public interface TableContext {
             });
 
             return foreignKeys;
+        }
+
+        private Set<TableIndexInfo> collapseIndices(String tableKey) {
+            Set<TableIndexInfo> indices = new HashSet<>();
+            Map<String, Set<TableIndexInfo>> forTable = tableIndexInfoMap.get(tableKey);
+            if (forTable == null) {
+                return Collections.emptySet();
+            }
+
+            forTable.forEach((compositeId, tableIndexInfos) -> {
+                if ("".equals(compositeId)) {
+                    TableIndexInfo info = tableIndexInfos.stream()
+                            .reduce((current, next) -> {
+                                Map<String, String> sortOrderMap = new HashMap<>(current.columnSortOrderMap());
+                                sortOrderMap.putAll(next.columnSortOrderMap());
+                                return TableIndexInfo.create(sortOrderMap, current.unique());
+                            }).get();
+                    indices.add(info);
+                } else {
+                    TableIndexInfo accumulator = null;
+                    for (TableIndexInfo tio : tableIndexInfos) {
+                        if (accumulator == null) {
+                            accumulator = tio;
+                        } else {
+                            Map<String, String> newSortOrderMap = tio.columnSortOrderMap();
+                            newSortOrderMap.putAll(accumulator.columnSortOrderMap());
+                            if (accumulator.unique() != tio.unique()) {
+                                throw new IllegalStateException("Composite indices cannot mix unique and non-unique values: " + newSortOrderMap);
+                            }
+                            accumulator = TableIndexInfo.create(newSortOrderMap, accumulator.unique());
+                        }
+                    }
+                    indices.add(accumulator);
+                }
+            });
+
+            return indices;
         }
 
         static class BasicTableContext implements TableContext {

@@ -2,9 +2,11 @@ package com.fsryan.forsuredb.annotationprocessor;
 
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.annotationprocessor.util.AnnotationTranslatorFactory;
+import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -118,10 +120,60 @@ class InfoTranslator {
         }
     }
 
+    static void validateIndexDeclaration(ExecutableElement ee) {
+        if (ee.getAnnotation(FSIndex.class) != null && ee.getAnnotation(Index.class) != null) {
+            throw new IllegalStateException(FSIndex.class + " is incompatible with " + Index.class + ". " + Index.class + " is deprecated. Use " + FSIndex.class + ".");
+        }
+    }
+
     static boolean containsForeignKey(ExecutableElement ee) {
         FSForeignKey fsfk = ee.getAnnotation(FSForeignKey.class);
         ForeignKey legacyForeignKey = ee.getAnnotation(ForeignKey.class);
         return fsfk != null || legacyForeignKey != null;
+    }
+
+    static boolean containsIndex(ExecutableElement ee) {
+        FSIndex fsIndex = ee.getAnnotation(FSIndex.class);
+        Index legacyIndex = ee.getAnnotation(Index.class);
+        return fsIndex != null || legacyIndex != null;
+    }
+
+    /**
+     * <p>The {@link TableIndexInfo} may have a compositeId, and as such,
+     * should be replaced if another {@link TableIndexInfo} with the same
+     * compositieID is found
+     * @param ee the {@link ExecutableElement}
+     * @return
+     */
+    static TableIndexInfo tableIndexInfoOf(ExecutableElement ee) {
+        if (!containsIndex(ee)) {
+            return null;
+        }
+
+        Index legacyIndex = ee.getAnnotation(Index.class);
+        if (legacyIndex != null) {
+            Map<String, String> sortOrderMap = new HashMap<>();
+            sortOrderMap.put(InfoTranslator.columnNameOf(ee), "");
+            return TableIndexInfo.create(sortOrderMap, legacyIndex.unique());
+        }
+
+        FSIndex fsIndex = ee.getAnnotation(FSIndex.class);
+        if (fsIndex != null) {
+            Map<String, String> sortOrderMap = new HashMap<>();
+            sortOrderMap.put(InfoTranslator.columnNameOf(ee), fsIndex.sortOrder());
+            return TableIndexInfo.create(sortOrderMap, fsIndex.unique());
+        }
+
+        throw new IllegalStateException("Contact forsuredb developer with details of how you got here");
+    }
+
+    static String indexCompositeIdOf(ExecutableElement ee) {
+        if (!containsIndex(ee)) {
+            return null;
+        }
+
+        FSIndex fsIndex = ee.getAnnotation(FSIndex.class);
+        return fsIndex == null ? "" : fsIndex.compositeId();    // there is no composite ID of a non FSIndex
     }
 
     private static void appendAnnotationInfo(ColumnInfo.Builder builder, AnnotationMirror am, TypeMirror returnType) {
