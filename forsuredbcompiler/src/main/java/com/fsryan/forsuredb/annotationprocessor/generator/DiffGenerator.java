@@ -106,6 +106,7 @@ public class DiffGenerator {
             }
 
             final boolean updatingForeignKeys = addUpdateForeignKeysMigration(retList, sourceTable, targetTable);
+            // TODO: update table indices here
             for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable, updatingForeignKeys)) {
                 if (!sourceTable.hasColumn(targetColumn.getColumnName())) {
                     retList.add(addMigrationForNewColumn(targetColumn, targetTable));

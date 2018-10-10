@@ -62,6 +62,7 @@ public class MigrationContext implements TableContext {
     }
 
     private Map<String, TableInfo> createTables() {
+        // TODO: use TableContext.Builder
         Map<String, TableInfo.Builder> tableBuilderMap = new HashMap<>();
         Map<String, ColumnInfo.Builder> columnBuilderMap = new HashMap<>();
         for (MigrationSet migrationSet : mr.getMigrationSets()) {
