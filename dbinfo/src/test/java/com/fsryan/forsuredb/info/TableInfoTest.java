@@ -25,7 +25,6 @@ import org.junit.runners.Parameterized;
 import java.util.*;
 
 import static com.fsryan.forsuredb.info.TestData.*;
-import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -225,8 +224,9 @@ public abstract class TableInfoTest {
                             new ColumnInfo[] { longCol().index(true).unique(true).build() },
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     },
@@ -235,8 +235,9 @@ public abstract class TableInfoTest {
                             new ColumnInfo[] { longCol().index(true).unique(false).build() },
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            false
+                                            false,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     },
@@ -248,16 +249,18 @@ public abstract class TableInfoTest {
                             },
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            false
+                                            false,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     ),
                                     TableIndexInfo.create(
-                                            mapOf(stringCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(stringCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     },
-                    {   //
+                    {
                             "05: with a non-index column and a unique index column should result in a singleton TableIndexInfo set",
                             new ColumnInfo[] {
                                     longCol().index(false).unique(false).build(),
@@ -265,8 +268,9 @@ public abstract class TableInfoTest {
                             },
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(stringCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(stringCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     }
@@ -311,8 +315,9 @@ public abstract class TableInfoTest {
                             Collections.<TableIndexInfo>emptySet(),
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     },
@@ -321,14 +326,16 @@ public abstract class TableInfoTest {
                             new ColumnInfo[0],
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             ),
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), ""),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             )
                     },
@@ -337,14 +344,16 @@ public abstract class TableInfoTest {
                             new ColumnInfo[] {stringCol().index(true).build()},
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), "ASC"),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("ASC")
                                     )
                             ),
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(longCol().build().columnName(), "ASC"),
-                                            true
+                                            true,
+                                            Collections.singletonList(longCol().build().columnName()),
+                                            Collections.singletonList("ASC")
                                     )
                             )
                     },
@@ -353,32 +362,26 @@ public abstract class TableInfoTest {
                             new ColumnInfo[] {stringCol().index(true).build()},
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(
-                                                    longCol().build().columnName(), "ASC",
-                                                    intCol().build().columnName(), "DESC"
-                                            ),
-                                            true
+                                            true,
+                                            Arrays.asList(longCol().build().columnName(), intCol().build().columnName()),
+                                            Arrays.asList("ASC", "DESC")
                                     ),
                                     TableIndexInfo.create(
-                                            mapOf(
-                                                    doubleCol().build().columnName(), ""
-                                            ),
-                                            false
+                                            false,
+                                            Collections.singletonList(doubleCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             ),
                             setOf(
                                     TableIndexInfo.create(
-                                            mapOf(
-                                                    longCol().build().columnName(), "ASC",
-                                                    intCol().build().columnName(), "DESC"
-                                            ),
-                                            true
+                                            true,
+                                            Arrays.asList(longCol().build().columnName(), intCol().build().columnName()),
+                                            Arrays.asList("ASC", "DESC")
                                     ),
                                     TableIndexInfo.create(
-                                            mapOf(
-                                                    doubleCol().build().columnName(), ""
-                                            ),
-                                            false
+                                            false,
+                                            Collections.singletonList(doubleCol().build().columnName()),
+                                            Collections.singletonList("")
                                     )
                             ),
                     },

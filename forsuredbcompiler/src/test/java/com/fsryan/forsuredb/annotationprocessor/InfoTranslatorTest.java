@@ -1399,7 +1399,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                                     .setReturnType(TestTypeMirror.primitiveInt())
                                     .setFakedAnnotations(Collections.singletonList(createLegacyIndex(true)))
                                     .build(),
-                            TableIndexInfo.create(Collections.singletonMap("someName", ""), true)
+                            TableIndexInfo.create(true, Collections.singletonList("someName"), Collections.singletonList(""))
                     },
                     {
                             "02: with @FSIndex annotation, without @Index should return TableIndexInfo with correct sort order and unique value",
@@ -1407,9 +1407,9 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                                     .setAnnotationMirrors(Collections.emptyList())
                                     .setSimpleName(TestNameUtil.createReal("someName"))
                                     .setReturnType(TestTypeMirror.primitiveInt())
-                                    .setFakedAnnotations(Collections.singletonList(createFSIndex(true, "ASC", "composite")))
+                                    .setFakedAnnotations(Collections.singletonList(createFSIndex(false, "ASC", "composite")))
                                     .build(),
-                            TableIndexInfo.create(Collections.singletonMap("someName", "ASC"), true)
+                            TableIndexInfo.create(false, Collections.singletonList("someName"), Collections.singletonList("ASC"))
                     }
             });
         }

@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.test.tools;
 
 import java.util.*;
 
-public class CollectionUtil {
+public abstract class CollectionUtil {
 
     public static <K, V> Map<K, V> mapOf() {
         return new HashMap<>();

@@ -24,6 +24,9 @@ public abstract class TableIndexInfo {
      * @return a new {@link TableIndexInfo}
      */
     public static TableIndexInfo create(boolean unique, @Nonnull List<String> columns, @Nonnull List<String> columnSortOrders) {
+        if (columns.size() < 1) {
+            throw new IllegalArgumentException("an index must be on at least one column");
+        }
         if (columns.size() != columnSortOrders.size()) {
             throw new IllegalArgumentException("columns and columnSortOrders form a map. They must be the same length. columns " + columns + "; columnSortOrders: " + columnSortOrders);
         }
@@ -39,7 +42,7 @@ public abstract class TableIndexInfo {
      */
     public static TableIndexInfo merge(@Nonnull TableIndexInfo first, @Nonnull TableIndexInfo second) {
         if (first.unique() != second.unique()) {
-            throw new IllegalStateException("Composite indices cannot be both unique and non-unique: compositing '" + first + "' and '" + second + "'");
+            throw new IllegalArgumentException("Composite indices cannot be both unique and non-unique: compositing '" + first + "' and '" + second + "'");
         }
         List<String> accCols = first.columns();
         List<String> accSorts = first.columnSortOrders();
@@ -87,5 +90,4 @@ public abstract class TableIndexInfo {
      */
     @Nonnull
     abstract List<String> columnSortOrders();                   // column_sort_orders
-
 }
