@@ -4,6 +4,7 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,30 @@ public abstract class TableIndexInfo {
             throw new IllegalArgumentException("columns and columnSortOrders form a map. They must be the same length. columns " + columns + "; columnSortOrders: " + columnSortOrders);
         }
         return new AutoValue_TableIndexInfo(unique, columns, columnSortOrders);
+    }
+
+    /**
+     * <p>Utility to merge two {@link TableIndexInfo} objects, preserving the
+     * integrity of the column order and column sort orders
+     * @param first the first {@link TableIndexInfo}
+     * @param second  {@link TableIndexInfo} to be appended
+     * @return a merged {@link TableIndexInfo}
+     */
+    public static TableIndexInfo merge(@Nonnull TableIndexInfo first, @Nonnull TableIndexInfo second) {
+        if (first.unique() != second.unique()) {
+            throw new IllegalStateException("Composite indices cannot be both unique and non-unique: compositing '" + first + "' and '" + second + "'");
+        }
+        List<String> accCols = first.columns();
+        List<String> accSorts = first.columnSortOrders();
+        List<String> nextCols = second.columns();
+        List<String> nextSorts = second.columnSortOrders();
+        List<String> mergedColumns = new ArrayList<>(accCols.size() + nextCols.size());
+        List<String> mergedSorts = new ArrayList<>(accSorts.size() + nextSorts.size());
+        mergedColumns.addAll(accCols);
+        mergedColumns.addAll(nextCols);
+        mergedSorts.addAll(accSorts);
+        mergedSorts.addAll(nextSorts);
+        return TableIndexInfo.create(first.unique(), mergedColumns, mergedSorts);
     }
 
     /**

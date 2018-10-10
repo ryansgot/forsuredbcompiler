@@ -159,37 +159,14 @@ public interface TableContext {
             return indices;
         }
 
-        // TODO: extract to utility--create ability to order the columns (not sort order, but column order)
         static TableIndexInfo mergeTableIndexInfo(List<TableIndexInfo> toMerge) {
-            TableIndexInfo merged = toMerge.stream()
-                    .reduce((acc, next) -> {
-                        if (acc.unique() != next.unique()) {
-                            throw new IllegalStateException("Composite indices cannot be both unique and non-unique: compositing '" + acc + "' and '" + next + "'");
-                        }
-                        List<String> existingCols = acc.columns();
-                        List<String> nextCols = next.columns();
-                        List<String> mergedColumns = new ArrayList<>(existingCols.size() + nextCols.size());
-                        List<String> mergedSorts = new ArrayList<>(mergedColumns.size());
-
-                        Map<String, String> existingSortOrderMap = acc.columnSortOrderMap();
-                        Map<String, String> nextSortOrderMap = next.columnSortOrderMap();
-                        List<String> existingColSorts = existingCols.stream()
-                                .map(existingSortOrderMap::get)
-                                .collect(Collectors.toList());
-                        List<String> nextColSorts = nextCols.stream()
-                                .map(nextSortOrderMap::get)
-                                .collect(Collectors.toList());
-                        mergedColumns.addAll(existingCols);
-                        mergedColumns.addAll(nextCols);
-                        mergedSorts.addAll(existingColSorts);
-                        mergedSorts.addAll(nextColSorts);
-                        return TableIndexInfo.create(acc.unique(), mergedColumns, mergedSorts);
-
-                    }).orElse(null);
-            if (merged == null) {
-                throw new IllegalStateException("Merged composite index is null");
+            if (toMerge.size() < 1) {
+                throw new IllegalArgumentException("Cannot merge empty TableIndexInfo list");
             }
-            return merged;
+            if (toMerge.size() < 2) {
+                return toMerge.get(0);
+            }
+            return toMerge.stream().reduce(TableIndexInfo::merge).orElse(null);
         }
 
         static class BasicTableContext implements TableContext {
