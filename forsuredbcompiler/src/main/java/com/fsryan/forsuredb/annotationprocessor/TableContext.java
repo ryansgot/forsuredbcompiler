@@ -166,9 +166,24 @@ public interface TableContext {
                         if (acc.unique() != next.unique()) {
                             throw new IllegalStateException("Composite indices cannot be both unique and non-unique: compositing '" + acc + "' and '" + next + "'");
                         }
-                        Map<String, String> newSortOrderMap = acc.columnSortOrderMap();
-                        newSortOrderMap.putAll(next.columnSortOrderMap());
-                        return TableIndexInfo.create(newSortOrderMap, acc.unique());
+                        List<String> existingCols = acc.columns();
+                        List<String> nextCols = next.columns();
+                        List<String> mergedColumns = new ArrayList<>(existingCols.size() + nextCols.size());
+                        List<String> mergedSorts = new ArrayList<>(mergedColumns.size());
+
+                        Map<String, String> existingSortOrderMap = acc.columnSortOrderMap();
+                        Map<String, String> nextSortOrderMap = next.columnSortOrderMap();
+                        List<String> existingColSorts = existingCols.stream()
+                                .map(existingSortOrderMap::get)
+                                .collect(Collectors.toList());
+                        List<String> nextColSorts = nextCols.stream()
+                                .map(nextSortOrderMap::get)
+                                .collect(Collectors.toList());
+                        mergedColumns.addAll(existingCols);
+                        mergedColumns.addAll(nextCols);
+                        mergedSorts.addAll(existingColSorts);
+                        mergedSorts.addAll(nextColSorts);
+                        return TableIndexInfo.create(acc.unique(), mergedColumns, mergedSorts);
 
                     }).orElse(null);
             if (merged == null) {

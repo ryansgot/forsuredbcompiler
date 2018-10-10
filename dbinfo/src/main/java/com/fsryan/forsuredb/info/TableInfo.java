@@ -247,8 +247,9 @@ public abstract class TableInfo {
                     }
 
                     actualIndices.add(TableIndexInfo.create(
-                            Collections.singletonMap(column.columnName(), ""),
-                            column.unique()
+                            column.unique(),
+                            Collections.singletonList(column.columnName()),
+                            Collections.singletonList("")
                     ));
                 }
             }

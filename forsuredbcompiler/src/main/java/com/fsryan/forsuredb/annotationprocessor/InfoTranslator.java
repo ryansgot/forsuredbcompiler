@@ -152,16 +152,20 @@ class InfoTranslator {
 
         Index legacyIndex = ee.getAnnotation(Index.class);
         if (legacyIndex != null) {
-            Map<String, String> sortOrderMap = new HashMap<>();
-            sortOrderMap.put(InfoTranslator.columnNameOf(ee), "");
-            return TableIndexInfo.create(sortOrderMap, legacyIndex.unique());
+            return TableIndexInfo.create(
+                    legacyIndex.unique(),
+                    Collections.singletonList(InfoTranslator.columnNameOf(ee)),
+                    Collections.singletonList("")
+            );
         }
 
         FSIndex fsIndex = ee.getAnnotation(FSIndex.class);
         if (fsIndex != null) {
-            Map<String, String> sortOrderMap = new HashMap<>();
-            sortOrderMap.put(InfoTranslator.columnNameOf(ee), fsIndex.sortOrder());
-            return TableIndexInfo.create(sortOrderMap, fsIndex.unique());
+            return TableIndexInfo.create(
+                    fsIndex.unique(),
+                    Collections.singletonList(InfoTranslator.columnNameOf(ee)),
+                    Collections.singletonList(fsIndex.sortOrder())
+            );
         }
 
         throw new IllegalStateException("Contact forsuredb developer with details of how you got here");

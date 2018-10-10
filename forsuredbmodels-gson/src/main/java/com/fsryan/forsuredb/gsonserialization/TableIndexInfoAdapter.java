@@ -26,30 +26,41 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 //TODO: test this
 class TableIndexInfoAdapter extends TypeAdapter<TableIndexInfo> {
 
-    private static final TypeToken<Map<String, String>> columnSortOrderMapType = new TypeToken<Map<String, String>>() {};
+    private static final TypeToken<List<String>> listStringToken = new TypeToken<List<String>>() {};
 
-    private final TypeAdapter<Map<String, String>> columnSortOrderMapAdapter;
+    private final TypeAdapter<List<String>> listStringAdapter;
 
     public TableIndexInfoAdapter(Gson gson) {
-        columnSortOrderMapAdapter = gson.getAdapter(columnSortOrderMapType);
+        listStringAdapter = gson.getAdapter(listStringToken);
     }
 
     @Override
-    public void write(JsonWriter jsonWriter, TableIndexInfo object) throws IOException {
-        if (object == null) {
+    public void write(JsonWriter jsonWriter, TableIndexInfo obj) throws IOException {
+        if (obj == null) {
             jsonWriter.nullValue();
             return;
         }
 
+        List<String> cols = obj.columns();
+        Map<String, String> sortOrderMap = obj.columnSortOrderMap();
+        List<String> sorts = new ArrayList<>(cols.size());
+        for (String col : cols) {
+            sorts.add(sortOrderMap.get(col));
+        }
+
         jsonWriter.beginObject();
-        jsonWriter.name("column_sort_order_map");
-        columnSortOrderMapAdapter.write(jsonWriter, object.columnSortOrderMap());
         jsonWriter.name("unique");
-        jsonWriter.value(object.unique());
+        jsonWriter.value(obj.unique());
+        jsonWriter.name("columns");
+        listStringAdapter.write(jsonWriter, cols);
+        jsonWriter.name("column_sort_orders");
+        listStringAdapter.write(jsonWriter, sorts);
         jsonWriter.endObject();
     }
 
@@ -62,7 +73,8 @@ class TableIndexInfoAdapter extends TypeAdapter<TableIndexInfo> {
         
         jsonReader.beginObject();
 
-        Map<String, String> columnSortOrderMap = null;
+        List<String> cols = null;
+        List<String> sorts = null;
         Boolean unique = null;
         while (jsonReader.hasNext()) {
             String name = jsonReader.nextName();
@@ -71,11 +83,14 @@ class TableIndexInfoAdapter extends TypeAdapter<TableIndexInfo> {
                 continue;
             }
             switch (name) {
-                case "column_sort_order_map":
-                    columnSortOrderMap = columnSortOrderMapAdapter.read(jsonReader);
-                    break;
                 case "unique":
                     unique = jsonReader.nextBoolean();
+                    break;
+                case "columns":
+                    cols = listStringAdapter.read(jsonReader);
+                    break;
+                case "column_sort_orders":
+                    sorts = listStringAdapter.read(jsonReader);
                     break;
                 default:
                     jsonReader.skipValue();
@@ -83,12 +98,15 @@ class TableIndexInfoAdapter extends TypeAdapter<TableIndexInfo> {
         }
         jsonReader.endObject();
 
-        if (columnSortOrderMap == null) {
-            throw new IllegalStateException("TableIndexInfo must have a columnSortOrderMap");
+        if (cols == null) {
+            throw new IllegalStateException("TableIndexInfo must have a columns value");
+        }
+        if (sorts == null) {
+            throw new IllegalStateException("TableIndexInfo must have a column_sort_orders value");
         }
         if (unique == null) {
             throw new IllegalStateException("TableIndexInfo must have a value for unique");
         }
-        return TableIndexInfo.create(columnSortOrderMap, unique);
+        return TableIndexInfo.create(unique, cols, sorts);
     }
 }
