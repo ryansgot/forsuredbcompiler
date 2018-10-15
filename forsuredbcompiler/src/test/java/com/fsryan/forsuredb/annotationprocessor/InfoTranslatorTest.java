@@ -7,6 +7,7 @@ import com.fsryan.forsuredb.annotations.ForeignKey;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableIndexInfo;
+import com.fsryan.forsuredb.info.TableIndexInfoUtil;
 import com.fsryan.forsuredb.testutil.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -1399,7 +1400,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                                     .setReturnType(TestTypeMirror.primitiveInt())
                                     .setFakedAnnotations(Collections.singletonList(createLegacyIndex(true)))
                                     .build(),
-                            TableIndexInfo.create(true, Collections.singletonList("someName"), Collections.singletonList(""))
+                            TableIndexInfoUtil.uniqueDefaultSorts("someName")
                     },
                     {
                             "02: with @FSIndex annotation, without @Index should return TableIndexInfo with correct sort order and unique value",
@@ -1409,7 +1410,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                                     .setReturnType(TestTypeMirror.primitiveInt())
                                     .setFakedAnnotations(Collections.singletonList(createFSIndex(false, "ASC", "composite")))
                                     .build(),
-                            TableIndexInfo.create(false, Collections.singletonList("someName"), Collections.singletonList("ASC"))
+                            TableIndexInfoUtil.nonUniqueIndex("someName", "ASC")
                     }
             });
         }
