@@ -74,7 +74,7 @@ subprojects { subproject ->
 
     if (subproject.name == 'integrationtest'
             || subproject.name == 'forsuredbjdbc-example'
-            || subproject.name == 'testtools') {
+            || subproject.name.endsWith('testtools')) {
         return
     }
 

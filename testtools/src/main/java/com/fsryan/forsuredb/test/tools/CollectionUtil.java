@@ -4,6 +4,23 @@ import java.util.*;
 
 public abstract class CollectionUtil {
 
+    /**
+     * <p>
+     * @param ts an array of T with even length
+     * @param <T>
+     * @return
+     */
+    public static <T> Map<T, T> mapFromArray(T... ts) {
+        if (ts.length % 2 != 0) {
+            throw new IllegalArgumentException("Must input array with even length");
+        }
+        Map<T, T> ret = new HashMap<>(ts.length / 2);
+        for (int i = 0; i < ts.length; i += 2) {
+            ret.put(ts[i], ts[i + 1]);
+        }
+        return ret;
+    }
+
     public static <K, V> Map<K, V> mapOf() {
         return new HashMap<>();
     }
