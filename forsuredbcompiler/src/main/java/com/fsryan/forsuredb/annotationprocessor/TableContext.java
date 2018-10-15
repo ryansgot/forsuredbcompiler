@@ -23,8 +23,6 @@ import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
 import java.util.*;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
