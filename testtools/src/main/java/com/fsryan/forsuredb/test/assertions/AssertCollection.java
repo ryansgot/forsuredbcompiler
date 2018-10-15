@@ -10,6 +10,10 @@ import static org.junit.Assert.fail;
 
 public abstract class AssertCollection {
 
+    public static <K, V> void assertMapEquals(Map<K, V> expected, Map<K, V> actual) {
+        assertMapEquals(null, expected, actual);
+    }
+
     public static <K, V> void assertMapEquals(String desc, Map<K, V> expected, Map<K, V> actual) {
         if (handledNullPossiblity(desc, expected, actual)) {
             return;
@@ -40,9 +44,9 @@ public abstract class AssertCollection {
         fail(failPrepend(desc) + message);
     }
 
-//    public static <T> void assertSetEquals(Set<T> expected, Set<T> actual) {
-//        assertSetEquals(null, expected, actual);
-//    }
+    public static <T> void assertSetEquals(Set<T> expected, Set<T> actual) {
+        assertSetEquals(null, expected, actual);
+    }
 
     public static <T> void assertSetEquals(String desc, Set<T> expected, Set<T> actual) {
         if (handledNullPossiblity(desc, expected, actual)) {

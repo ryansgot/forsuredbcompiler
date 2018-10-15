@@ -30,10 +30,12 @@ public abstract class TableIndexInfoTest {
     @RunWith(Parameterized.class)
     public static class ColumnSortOrderMap {
 
+        private final String desc;
         private final TableIndexInfo infoUnderTest;
         private final Map<String, String> expected;
 
-        public ColumnSortOrderMap(TableIndexInfo infoUnderTest, Map<String, String> expected) {
+        public ColumnSortOrderMap(String desc, TableIndexInfo infoUnderTest, Map<String, String> expected) {
+            this.desc = desc;
             this.infoUnderTest = infoUnderTest;
             this.expected = expected;
         }
@@ -42,6 +44,7 @@ public abstract class TableIndexInfoTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     {
+                            "00: the column sort order map should be created correctly for single column index",
                             TableIndexInfo.create(
                                     true,
                                     Collections.singletonList("c1"),
@@ -50,6 +53,7 @@ public abstract class TableIndexInfoTest {
                             mapOf("c1", "")
                     },
                     {
+                            "01: the column sort order map should be created correctly for composite index",
                             TableIndexInfo.create(
                                     true,
                                     Arrays.asList("c1", "c2", "c3"),
@@ -66,7 +70,7 @@ public abstract class TableIndexInfoTest {
 
         @Test
         public void shouldCorrectlyDetermineColumnSortOrderMap() {
-            assertMapEquals(expected, infoUnderTest.columnSortOrderMap());
+            assertMapEquals(desc, expected, infoUnderTest.columnSortOrderMap());
         }
     }
 
