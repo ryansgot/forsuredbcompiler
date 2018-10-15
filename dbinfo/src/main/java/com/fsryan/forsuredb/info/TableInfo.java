@@ -117,15 +117,27 @@ public abstract class TableInfo {
      */
     public static class BuilderCompat {
 
-        private BuilderCompat() {}
-
         private String tableName;
         private String qualifiedClassName;
-        private Map<String, ColumnInfo> columnMap = new HashMap<>();
-        private Set<String> primaryKey = new HashSet<>();
-        private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
-        private Set<TableIndexInfo> indices = new HashSet<>();
-        private final Builder builder = new AutoValue_TableInfo.Builder();
+        private Map<String, ColumnInfo> columnMap;
+        private Set<String> primaryKey;
+        private Set<TableForeignKeyInfo> foreignKeys;
+        private Set<TableIndexInfo> indices;
+        private final Builder builder;
+
+        private BuilderCompat() {
+            this(null);
+        }
+
+        private BuilderCompat(TableInfo existing) {
+            tableName = existing == null ? null : existing.tableName();
+            qualifiedClassName = existing == null ? null : existing.qualifiedClassName();
+            columnMap = existing == null ? new HashMap<String, ColumnInfo>() : existing.columnMap();
+            primaryKey = existing == null ? new HashSet<String>() : existing.primaryKey();
+            foreignKeys = existing == null ? new HashSet<TableForeignKeyInfo>() : existing.foreignKeys();
+            indices = existing == null ? new HashSet<TableIndexInfo>() : existing.indices();
+            this.builder = existing == null ? new AutoValue_TableInfo.Builder() : existing.toBuilder();
+        }
 
         public BuilderCompat columnMap(Map<String, ColumnInfo> columnMap) {
             this.columnMap.clear();
@@ -292,6 +304,14 @@ public abstract class TableInfo {
     @Nullable public abstract Set<TableForeignKeyInfo> foreignKeys();   // foreign_keys
     @Nullable public abstract Set<TableIndexInfo> indices();            // indices
     public abstract Builder toBuilder();
+
+    /**
+     * <p>Creates a {@link BuilderCompat} seeded with all of the initial
+     * @return
+     */
+    public BuilderCompat toBuilderCompat() {
+        return new BuilderCompat(this);
+    }
 
     public boolean isValid() {
         return (qualifiedClassName() != null && !qualifiedClassName().isEmpty()) || (tableName() != null && !tableName().isEmpty());
