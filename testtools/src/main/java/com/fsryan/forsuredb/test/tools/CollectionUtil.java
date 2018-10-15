@@ -5,10 +5,12 @@ import java.util.*;
 public abstract class CollectionUtil {
 
     /**
-     * <p>
+     * <p>Use when you have a map whose key and value types are the same. Even
+     * indices are the keys and odd indices are the values.
      * @param ts an array of T with even length
-     * @param <T>
-     * @return
+     * @param <T> both the key and value type of the map
+     * @return a {@link Map} created from the array values
+     * @throws IllegalArgumentException if the array is not of even length
      */
     public static <T> Map<T, T> mapFromArray(T... ts) {
         if (ts.length % 2 != 0) {

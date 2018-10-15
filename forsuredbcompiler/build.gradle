@@ -26,6 +26,7 @@ dependencies {
     testCompileOnly deps.auto.valueAnnotations
     testAnnotationProcessor deps.auto.value
     testImplementation project(':dbinfo-testtools')
+    testImplementation project(':testtools')
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {
