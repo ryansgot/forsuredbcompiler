@@ -196,7 +196,7 @@ public abstract class TableInfo {
         // TODO: find the places where this should be used . . . write tests.
         public BuilderCompat indices(@Nullable Set<TableIndexInfo> indices) {
             this.indices.clear();
-            if (foreignKeys != null) {
+            if (indices != null) {
                 this.indices.addAll(indices);
             }
             return this;

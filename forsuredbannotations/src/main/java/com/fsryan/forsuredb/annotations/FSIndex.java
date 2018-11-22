@@ -12,8 +12,9 @@ import java.lang.annotation.Target;
  *
  * <p>Due to the fact that you can create an index that is not unique on some
  * DBMS implementations, there is also a {@link Unique} annotation. Thus, the
- * following are equivalent:
- * Using only {@link FSIndex}:</br>
+ * following are equivalent:<br />
+ *
+ * Using only {@link FSIndex}:<br />
  * <pre><code>   public interface MyTable extends FSGetApi {
  *    {@literal @}FSColumn("my_column")
  *    {@literal @}Index(unique = true)
@@ -28,7 +29,7 @@ import java.lang.annotation.Target;
  *     String uuid(Retriever r)
  * }
  * </code> </pre>
- * Using only {@link Unique}:</br>
+ * Using only {@link Unique}:<br />
  * <pre><code>   public interface MyTable extends FSGetApi {
  *    {@literal @}FSColumn("my_column")
  *    {@literal @}Unique(index = true)

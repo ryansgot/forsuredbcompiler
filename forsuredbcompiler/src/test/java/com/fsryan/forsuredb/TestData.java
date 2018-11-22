@@ -18,11 +18,8 @@
 package com.fsryan.forsuredb;
 
 import com.fsryan.forsuredb.annotations.ForeignKey;
-import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.ForeignKeyInfo;
+import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
-import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.google.common.collect.ImmutableMap;
 
@@ -31,6 +28,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestData {
 
@@ -44,7 +44,6 @@ public class TestData {
 
     // Convenience constants
     public static final String TABLE_NAME = "test_table";
-    public static final String TABLE_CLASS_NAME = "com.fsryan.test.TestTable";
 
     public static String resourceText(String resourceName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(TEST_RES + File.separator + resourceName));
@@ -65,7 +64,7 @@ public class TestData {
     public static ProgressiveTableInfoBuilder table(String tableName, ColumnInfo... columns) {
         ProgressiveTableInfoBuilder ret = new ProgressiveTableInfoBuilder()
                 .tableName(tableName)
-                .qualifiedClassName(TABLE_CLASS_NAME);
+                .qualifiedClassName(tableName);
         Arrays.stream(DEFAULT_COLUMNS).forEach(ret::addToColumns);
         if (columns != null && columns.length > 0) {
             Arrays.stream(columns).forEach(ret::addToColumns);
@@ -204,7 +203,7 @@ public class TestData {
     public static TableForeignKeyInfo.Builder dbmsDefaultTFKI(String foreignTableName) {
         return TableForeignKeyInfo.builder()
                 .foreignTableName(foreignTableName)
-                .foreignTableApiClassName(TestData.class.getName())
+                .foreignTableApiClassName(foreignTableName)
                 .updateChangeAction("")
                 .deleteChangeAction("");
     }
@@ -389,6 +388,7 @@ public class TestData {
     public static class ProgressiveTableInfoBuilder {
 
         private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
+        private Set<TableIndexInfo> tableIndexInfos = new HashSet<>();
         private Set<String> primaryKey = new HashSet<>();
         private Map<String, ColumnInfo> columnMap = new HashMap<>();
         private final TableInfo.BuilderCompat realBuilder = TableInfo.builder();
@@ -407,6 +407,18 @@ public class TestData {
 
         public ProgressiveTableInfoBuilder foreignKeys(Set<TableForeignKeyInfo> foreignKeys) {
             this.foreignKeys = foreignKeys;
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder addIndex(TableIndexInfo... tableIndexInfos) {
+            if (tableIndexInfos != null && tableIndexInfos.length > 0) {
+                Arrays.stream(tableIndexInfos).forEach(tii -> this.tableIndexInfos.add(tii));
+            }
+            return this;
+        }
+
+        public ProgressiveTableInfoBuilder indices(Set<TableIndexInfo> tableIndexInfos) {
+            this.tableIndexInfos = tableIndexInfos;
             return this;
         }
 
@@ -460,7 +472,10 @@ public class TestData {
         }
 
         public TableInfo build() {
-            return realBuilder.foreignKeys(foreignKeys).columnMap(columnMap).primaryKey(primaryKey).build();
+            return realBuilder.foreignKeys(foreignKeys)
+                    .columnMap(columnMap)
+                    .indices(tableIndexInfos)
+                    .primaryKey(primaryKey).build();
         }
     }
 

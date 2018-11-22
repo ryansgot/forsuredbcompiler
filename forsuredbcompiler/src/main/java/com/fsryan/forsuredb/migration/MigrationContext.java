@@ -19,12 +19,12 @@ package com.fsryan.forsuredb.migration;
 
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MigrationContext implements TableContext {
 
@@ -62,73 +62,38 @@ public class MigrationContext implements TableContext {
     }
 
     private Map<String, TableInfo> createTables() {
-        // TODO: use TableContext.Builder
-        Map<String, TableInfo.Builder> tableBuilderMap = new HashMap<>();
-        Map<String, ColumnInfo.Builder> columnBuilderMap = new HashMap<>();
-        for (MigrationSet migrationSet : mr.getMigrationSets()) {
-            for (Migration m : migrationSet.orderedMigrations()) {
-                final TableInfo table = migrationSet.targetSchema().get(m.tableName());
-                update(table, m, tableBuilderMap, columnBuilderMap);
+        TableContext.Builder builder = new TableContext.Builder();
+        for (MigrationSet set : mr.getMigrationSets()) {
+            for (Migration m : set.orderedMigrations()) {
+                update(builder, m, set.targetSchema());
             }
         }
 
-        for (Map.Entry<String, Map<String, ColumnInfo>> entry : createTableBuilderKeyToColumnMapMap(columnBuilderMap).entrySet()) {
-            TableInfo.Builder tb = tableBuilderMap.get(entry.getKey());
-            TableInfo temp = tb.build();
-            Map<String, ColumnInfo> previousColumnMap = temp.columnMap();    // <-- cannot overwrite previous
-            previousColumnMap.putAll(entry.getValue());
-            tb.columnMap(previousColumnMap);
-        }
-
-        Map<String, TableInfo> retMap = new HashMap<>();
-        for (Map.Entry<String, TableInfo.Builder> entry : tableBuilderMap.entrySet()) {
-            retMap.put(entry.getKey(), entry.getValue().build());
-        }
-
-        return retMap;
+        return builder.build().tableMap();
     }
 
-    private Map<String, Map<String, ColumnInfo>> createTableBuilderKeyToColumnMapMap(Map<String, ColumnInfo.Builder> columnBuilderMap) {
-        Map<String, Map<String, ColumnInfo>> retMap = new HashMap<>();
-        for (Map.Entry<String, ColumnInfo.Builder> entry : columnBuilderMap.entrySet()) {
-            String tableBuilderKey = tableKeyFromColumnKey(entry.getKey());
-            Map<String, ColumnInfo> columnMap = retMap.get(tableBuilderKey);
-            if (columnMap == null) {
-                columnMap = new HashMap<>();
-                retMap.put(tableBuilderKey, columnMap);
-            }
-            ColumnInfo column = entry.getValue().build();
-            columnMap.put(column.getColumnName(), column);
-        }
-        return retMap;
-    }
-
-    // TODO: drop table handling; consider changing the structure from a big switch
-    private void update(TableInfo table,
-                        Migration m,
-                        Map<String, TableInfo.Builder> tableBuilderMap,
-                        Map<String, ColumnInfo.Builder> columnBuilderMap) {
+    private void update(Builder builder, Migration m, Map<String, TableInfo> currentSchema) {
+        TableInfo table = currentSchema.get(m.tableName());
         switch (m.type()) {
             case CREATE_TABLE:
-                tableBuilderMap.put(tableKey(m), table.toBuilder());
+                builder.addTable(table.tableName(), table.qualifiedClassName(), table.toBuilderCompat());
+                table.getColumns().stream()
+                        .filter(c -> !TableInfo.defaultColumns().containsKey(c.columnName()))
+                        .forEach(c -> builder.addColumn(table.tableName(), c.columnName(), c.toBuilder()));
+                builder.replaceForeignKeyInfo(table.tableName(), table.foreignKeys());
                 break;
             case UPDATE_PRIMARY_KEY:
-                handleUpdatePrimaryKey(table, m, tableBuilderMap);
-                for (String primaryKeyColumnName : table.getPrimaryKey()) {
-                    final String columnKey = columnKey(table.tableName(), primaryKeyColumnName);
-                    final ColumnInfo column = table.getColumn(primaryKeyColumnName);
-                    columnBuilderMap.put(columnKey, column.toBuilder());
-                }
+                builder.setPrimaryKey(table.tableName(), table.primaryKey());
+                table.getPrimaryKey().stream()
+                        .map(table::getColumn)
+                        .forEach(c -> builder.addColumn(table.tableName(), c.columnName(), c.toBuilder()));
                 break;
             case ADD_FOREIGN_KEY_REFERENCE:
                 // intentionaly falling through
             case UPDATE_FOREIGN_KEYS:
-                handleUpdateForeignKeys(table, m, tableBuilderMap);
-                for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
-                    for (String columnName : foreignKey.localToForeignColumnMap().keySet()) {
-                        columnBuilderMap.put(columnKey(table.tableName(), columnName), table.getColumn(columnName).toBuilder());
-                    }
-                }
+                table.getForeignKeyColumns()
+                        .forEach(fkColumn -> builder.addColumn(table.tableName(), fkColumn.columnName(), fkColumn.toBuilder()));
+                builder.replaceForeignKeyInfo(table.tableName(), table.foreignKeys());
                 break;
             case CHANGE_DEFAULT_VALUE:
                 // intentionally falling through
@@ -136,47 +101,35 @@ public class MigrationContext implements TableContext {
                 // intentionally falling through
             case MAKE_COLUMN_UNIQUE:
                 // intentionally falling through
-            case ALTER_TABLE_ADD_COLUMN:
-                columnBuilderMap.put(columnKey(m), table.getColumn(m.columnName()).toBuilder());
+            case ALTER_TABLE_ADD_COLUMN: {
+                ColumnInfo column = table.getColumn(m.columnName());
+                builder.addColumn(table.tableName(), m.columnName(), column.toBuilder());
                 break;
-            case ADD_INDEX:
-                columnBuilderMap.put(columnKey(m), table.getColumn(m.columnName()).toBuilder().index(true));
+            }
+            case ADD_INDEX: {
+                builder.replaceIndexInfo(table.tableName(), table.indices());
+                ColumnInfo column = table.getColumn(m.columnName());
+                // Legacy versions used to set a column name to be the index.
+                // This happened because indices used to only be supported on a
+                // single column. This functionality has been replaced by use
+                // of extras to determine the column order of the index.
+                if (column != null) {
+                    builder.addColumn(table.tableName(), m.columnName(), column.toBuilder());
+                }
+                if (m.hasExtras()) {
+                    String order = m.extras().get("order");
+                    if (order != null) {
+                        Arrays.stream(order.split(","))
+                                .map(table::getColumn)
+                                .forEach(c -> builder.addColumn(table.tableName(), c.columnName(), c.toBuilder().index(true)));
+
+                    }
+                }
                 break;
+            }
             default:
                 APLog.w(LOG_TAG, "Not handling update of type " + m.type() + "; this could cause the migration context to misrepresent the existing schema.");
         }
-    }
-
-    private void handleUpdatePrimaryKey(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap) {
-        TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
-        if (tb == null) {
-            throw new RuntimeException("cannot find table " + m.tableName() + " in prior migration context");
-        }
-        tb.primaryKey(table.getPrimaryKey());
-    }
-
-    private void handleUpdateForeignKeys(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap) {
-        TableInfo.Builder tb = tableBuilderMap.get(tableKey(m));
-        if (tb == null) {
-            throw new RuntimeException("cannot find table " + m.tableName() + " in prior migration context");
-        }
-        tb.foreignKeys(table.foreignKeys());
-    }
-
-    private String tableKey(Migration m) {
-        return m.tableName();
-    }
-
-    private String columnKey(Migration m) {
-        return columnKey(m.tableName(), m.columnName());
-    }
-
-    private String columnKey(String tableName, String columnName) {
-        return tableName + "." + columnName;
-    }
-
-    private String tableKeyFromColumnKey(String columnBuilderMapKey) {
-        return columnBuilderMapKey.split("\\.")[0];
     }
 
     private void createTableMapIfNull() {

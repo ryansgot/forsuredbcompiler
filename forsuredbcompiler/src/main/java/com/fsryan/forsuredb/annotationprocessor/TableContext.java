@@ -61,6 +61,15 @@ public interface TableContext {
             return this;
         }
 
+        public Builder replaceForeignKeyInfo(String tableKey, Set<TableForeignKeyInfo> foreignKeys) {
+            Map<String, Set<TableForeignKeyInfo.Builder>> forTableMap = tableForeignKeyInfoMap
+                    .computeIfAbsent(tableKey, k -> new HashMap<>());
+            forTableMap.clear();
+            Set<TableForeignKeyInfo.Builder> all = foreignKeys.stream().map(TableForeignKeyInfo::toBuilder).collect(toSet());
+            forTableMap.put("", all);
+            return this;
+        }
+
         public Builder addForeignKeyInfo(String tableKey, String compositeKey, TableForeignKeyInfo.Builder builder) {
             Map<String, Set<TableForeignKeyInfo.Builder>> forTableMap = tableForeignKeyInfoMap
                     .computeIfAbsent(tableKey, k -> new HashMap<>());
@@ -69,11 +78,46 @@ public interface TableContext {
             return this;
         }
 
-        public void addTableIndexInfo(String tableKey, String compositeKey, TableIndexInfo tio) {
+        public Builder addTableIndexInfo(String tableKey, String compositeKey, TableIndexInfo tio) {
             Map<String, List<TableIndexInfo>> forTableMap = tableIndexInfoMap
                     .computeIfAbsent(tableKey, k -> new HashMap<>());
             List<TableIndexInfo> tmpList = forTableMap.computeIfAbsent(compositeKey, k -> new ArrayList<>());
             tmpList.add(tio);
+            return this;
+        }
+
+        /**
+         * <p>Clears the current {@link TableInfo#primaryKey()} for the table
+         * at the tableKey passed in and overwrites.
+         * @param tableKey the tableKey for the table to overwrite the primary
+         *                 key
+         * @param primaryKey the {@link List}&lt;{@link String}&gt; describing
+         *                   the primary key of this table.
+         * @return this {@link Builder}
+         */
+        public Builder setPrimaryKey(String tableKey, Set<String> primaryKey) {
+            TableInfo.BuilderCompat builder = tableInfoMap.get(tableKey);
+            if (builder == null) {
+                throw new IllegalArgumentException("Cannot find table by key: " + tableKey);
+            }
+            builder.primaryKey(primaryKey);
+            return this;
+        }
+
+        /**
+         * <p>Clears the current {@link TableIndexInfo} list for the table
+         * identified by tableKey
+         * @param tableKey the key to the table which
+         * @param indices the {@link Set}&lt;{@link TableIndexInfo}&gt; to
+         *                replace whatever is currently stored for the key
+         * @return this {@link Builder}
+         */
+        public Builder replaceIndexInfo(String tableKey, Set<TableIndexInfo> indices) {
+            Map<String, List<TableIndexInfo>> forTableMap = tableIndexInfoMap.computeIfAbsent(tableKey, k -> new HashMap<>());
+            forTableMap.clear();
+            List<TableIndexInfo> nonCollapseable = forTableMap.computeIfAbsent("", k -> new ArrayList<>());
+            nonCollapseable.addAll(indices);
+            return this;
         }
 
         public TableContext build() {
@@ -152,7 +196,7 @@ public interface TableContext {
             indices.addAll(forTable.keySet().stream()
                     .filter(key -> !key.isEmpty())  // empty key list was added above
                     .map(key -> mergeTableIndexInfo(forTable.get(key)))
-                    .collect(Collectors.toSet()));
+                    .collect(toSet()));
 
             return indices;
         }

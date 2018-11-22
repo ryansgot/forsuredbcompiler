@@ -8,11 +8,13 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertCollectionEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,12 +42,7 @@ public abstract class MigrationContextTest {
 
     @Test
     public void shouldHaveAllExpectedTables() {
-        // All expected tables exist
-        expectedSchema.keySet()
-                .forEach(expectedTableName -> assertTrue("missing table: " + expectedTableName, migrationContext.hasTable(expectedTableName)));
-        // no unexpected tables exist
-        migrationContext.allTables()
-                .forEach(actualTable -> assertTrue("unexpected table: " + actualTable, expectedSchema.containsKey(actualTable.tableName())));
+        assertMapEquals(expectedSchema, migrationContext.tableMap());
     }
 
     @Test
@@ -54,7 +51,7 @@ public abstract class MigrationContextTest {
             TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
 
             assertNotNull(actualTable);
-            assertEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
+            assertSetEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
             assertEquals(expectedTable.primaryKeyOnConflict(), actualTable.primaryKeyOnConflict());
         });
     }
@@ -64,22 +61,17 @@ public abstract class MigrationContextTest {
         expectedSchema.values().forEach(expectedTable -> {
             TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
             assertNotNull(actualTable);
-            assertEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
+            assertSetEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
         });
     }
 
     @Test
     public void allTablesShouldHaveCorrectColumns() {
-        expectedSchema.values().forEach(expectedTable -> expectedTable.getColumns().forEach(c -> {
+        expectedSchema.values().forEach(expectedTable -> {
                 final TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
                 assertNotNull(actualTable);
-
-                final Map<String, ColumnInfo> expectedColumns = expectedTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
-                final Map<String, ColumnInfo> actualColumns = actualTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
-
-                expectedColumns.forEach((expectedName, expectedColumn) -> assertEquals(expectedColumn, actualColumns.get(expectedName)));
-                actualColumns.forEach((actualName, actualColumn) -> assertTrue("extra column: " + actualColumn, expectedColumns.containsKey(actualName)));
-            }));
+                assertCollectionEquals(expectedTable.getColumns(), actualTable.getColumns());
+            });
     }
 
     public static abstract class OneMigrationSetTest extends MigrationContextTest {

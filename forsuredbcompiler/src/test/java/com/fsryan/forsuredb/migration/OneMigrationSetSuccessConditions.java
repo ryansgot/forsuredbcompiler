@@ -1,15 +1,18 @@
 package com.fsryan.forsuredb.migration;
 
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 
 @RunWith(Parameterized.class)
 public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMigrationSetTest {
@@ -84,6 +87,24 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                         newTableContext()
                                 .addTable(table("table1")
                                         .addToColumns(longCol().columnName("table_1_index").index(true).build())
+                                        .build())
+                                .build()
+                                .tableMap()
+                },
+                {   // 05: one table with a composite index
+                        Arrays.asList(
+                                createTableMigration("table1"),
+                                addColumnMigration("table1").columnName("table_1_index_col1").build(),
+                                addColumnMigration("table1").columnName("table_1_index_col2").build(),
+                                addIndexMigration("table1")
+                                        .extras(mapOf("order", "table_1_index_col1,table_1_index_col2"))
+                                        .build()
+                        ),
+                        newTableContext()
+                                .addTable(table("table1")
+                                        .addToColumns(longCol().columnName("table_1_index_col1").index(true).build())
+                                        .addToColumns(longCol().columnName("table_1_index_col2").index(true).build())
+                                        .addIndex(TableIndexInfo.create(false, Arrays.asList("table_1_index_col1", "table_1_index_col2"), Arrays.asList("", "")))
                                         .build())
                                 .build()
                                 .tableMap()

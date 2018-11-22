@@ -1,9 +1,6 @@
 package com.fsryan.forsuredb.test.assertions;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -69,6 +66,15 @@ public abstract class AssertCollection {
                 "excess:   " + excess + "\n" +
                 "missing:  " + missing;
         fail(failPrepend(desc) + message);
+    }
+
+    public static <T> void assertCollectionEquals(Collection<T> expected, Collection<T> actual) {
+        assertCollectionEquals(null, new HashSet<>(expected), new HashSet<>(actual));
+    }
+
+    public static <T> void assertCollectionEquals(String desc, Collection<T> expected, Collection<T> actual) {
+        // TODO: make assertions based upon ordered collections
+        assertSetEquals(desc, new HashSet<>(expected), new HashSet<>(actual));
     }
 
     private static boolean handledNullPossiblity(String desc, Object expected, Object actual) {

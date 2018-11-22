@@ -19,7 +19,9 @@ package com.fsryan.forsuredb.info;
 
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,6 +37,27 @@ public abstract class TableForeignKeyInfo {
     public static Builder builder() {
         return new AutoValue_TableForeignKeyInfo.Builder()
                 .foreignTableName("");
+    }
+
+    @Nonnull
+    public static TableForeignKeyInfo fromLegacy(@Nonnull ColumnInfo column) {
+        if (column.foreignKeyInfo() == null) {
+            throw new IllegalArgumentException("Column must be a legacy foreign key");
+        }
+        return fromLegacy(column.foreignKeyInfo(), column.columnName());
+    }
+
+    @Nonnull
+    public static TableForeignKeyInfo fromLegacy(@Nonnull ForeignKeyInfo legacy, @Nonnull String localColumn) {
+        Map<String, String> localToForeignColumnMap = new HashMap<>(1);
+        localToForeignColumnMap.put(localColumn, legacy.columnName());
+        return builder()
+                .foreignTableName(legacy.tableName())
+                .foreignTableApiClassName(legacy.apiClassName())
+                .localToForeignColumnMap(localToForeignColumnMap)
+                .deleteChangeAction(legacy.deleteAction())
+                .updateChangeAction(legacy.updateAction())
+                .build();
     }
 
     // not known until later on . . . so hack to set this value on an otherwise immutable class
