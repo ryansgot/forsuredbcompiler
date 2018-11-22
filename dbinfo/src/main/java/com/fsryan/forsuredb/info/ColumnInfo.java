@@ -34,19 +34,36 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder methodName(String methodName);    // method_name
-        public abstract Builder columnName(@Nullable String columnName);    // column_name
-        public abstract Builder qualifiedType(@Nullable String qualifiedType); // column_type
-        public abstract Builder index(boolean index);  // index
-        public abstract Builder defaultValue(String defaultValue);  // default_value
-        public abstract Builder unique(boolean unique); // unique
+        public abstract Builder methodName(String methodName);                              // method_name
+        public abstract Builder columnName(@Nullable String columnName);                    // column_name
+        public abstract Builder qualifiedType(@Nullable String qualifiedType);              // column_type
+        /**
+         * <p>Instead set indices on {@link TableInfo.Builder#indices(Set)}
+         * @param index whether this column is an index column
+         * @return this {@link Builder}
+         */
         @Deprecated
-        public abstract Builder primaryKey(boolean primaryKey); // primary_key
+        public abstract Builder index(boolean index);                                       // index
+        public abstract Builder defaultValue(String defaultValue);                          // default_value
+        public abstract Builder unique(boolean unique);                                     // unique
+        /**
+         * <p>Instead set primary key on {@link TableInfo.Builder#primaryKey(Set)}}
+         * @param primaryKey whether this column is <i>THE</i> primary key of
+         *                   the table
+         * @return this {@link Builder}
+         */
+        @Deprecated
+        public abstract Builder primaryKey(boolean primaryKey);                             // primary_key
+        /**
+         * <p>Instead set indices on {@link TableInfo.Builder#foreignKeys(Set)}
+         * @param foreignKeyInfo the {@link ForeignKeyInfo} for this column
+         * @return this {@link Builder}
+         */
         @Deprecated
         public abstract Builder foreignKeyInfo(@Nullable ForeignKeyInfo foreignKeyInfo);    // foreign_key_info
-        public abstract Builder searchable(boolean searchable); // searchable
-        public abstract Builder orderable(boolean orderable);  // orderable
-        public abstract Builder valueAccess(@Nullable List<String> access);
+        public abstract Builder searchable(boolean searchable);                             // searchable
+        public abstract Builder orderable(boolean orderable);                               // orderable
+        public abstract Builder valueAccess(@Nullable List<String> access);                 // NOT SERIALIZED
         public abstract ColumnInfo build();
     }
 
@@ -59,26 +76,53 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
                 .index(false);
     }
 
-    public abstract String methodName();    // method_name
-    @Nullable public abstract String columnName();    // column_name
-    @Nullable public abstract String qualifiedType(); // column_type
-    public abstract boolean index();  // index
-    @Nullable public abstract String defaultValue();  // default_value
-    public abstract boolean unique(); // unique
+    public abstract String methodName();                                                    // method_name
+    @Nullable public abstract String columnName();                                          // column_name
+    @Nullable public abstract String qualifiedType();                                       // column_type
+    public abstract boolean index();                                                        // index
+    @Nullable public abstract String defaultValue();                                        // default_value
+    public abstract boolean unique();                                                       // unique
+
+    /**
+     * <p>This is a remnant of a time in which you could only set one column as
+     * the primary key for a table. The framework has since moved on such that
+     * {@link TableInfo#primaryKey()} is the real primary key, supporting
+     * composites.
+     * @return whether this column is <i>THE</i> primary key of the table
+     */
     @Deprecated
-    public abstract boolean primaryKey(); // primary_key
+    public abstract boolean primaryKey();                                                   // primary_key
+
+    /**
+     * <p>This is a remnant of a time in which composite foreign keys were not
+     * supported. Instead of this, see {@link TableInfo#foreignKeys()} for the
+     * real foreign key information for the table.
+     * @return whether this column is <i>THE</i> primary key of the table
+     */
     @Deprecated
     @Nullable
     public abstract ForeignKeyInfo foreignKeyInfo();    // foreign_key_info
-    public abstract boolean searchable(); // searchable
-    public abstract boolean orderable();  // orderable
+
+    /**
+     * <p>If the column is searchable, the relevant finder methods for this
+     * column will be generated on the associated Finder class.
+     * @return whether finder methods will be generated for this column
+     */
+    public abstract boolean searchable();                                                   // searchable
+
+    /**
+     * <p>If the column is orderable, the relevant order by methods for this
+     * column will be generated on the associated OrderBy class
+     * @return whether order by methods will be generated for this column
+     */
+    public abstract boolean orderable();                                                    // orderable
 
     /**
      * <p><i>NOT SERIALIZED</i>--only useful in code generation
      * @return the method access path on an object for accessing a possibly-nested value at runtime.
      */
     @Nullable
-    public abstract List<String> valueAccess();
+    public abstract List<String> valueAccess();                                             // NOT SERIALIZED
     public abstract Builder toBuilder();
 
     public boolean isValid() {
