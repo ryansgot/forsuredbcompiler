@@ -22,8 +22,8 @@ import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
+import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -132,7 +132,7 @@ public interface TableContext {
             });
 
             // a TableContext that returns copies of everything
-            return new BasicTableContext(schema);
+            return TableContext.fromSchema(schema);
         }
 
         private Map<String, ColumnInfo> buildColumnMap(String tableName) {
@@ -211,13 +211,14 @@ public interface TableContext {
             return toMerge.stream().reduce(TableIndexInfo::merge).orElse(null);
         }
 
-        static class BasicTableContext implements TableContext {
+    }
 
-            private final Map<String, TableInfo> schema;
+    static TableContext empty() {
+        return fromSchema(Collections.emptyMap());
+    }
 
-            BasicTableContext(Map<String, TableInfo> schema) {
-                this.schema = schema;
-            }
+    static TableContext fromSchema(@Nonnull final Map<String, TableInfo> schema) {
+        return new TableContext() {
 
             @Override
             public boolean hasTable(String tableName) {
@@ -238,7 +239,7 @@ public interface TableContext {
             public Map<String, TableInfo> tableMap() {
                 return new HashMap<>(schema);
             }
-        }
+        };
     }
 
     /**
