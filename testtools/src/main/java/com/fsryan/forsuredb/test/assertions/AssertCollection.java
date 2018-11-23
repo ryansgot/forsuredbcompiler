@@ -77,6 +77,27 @@ public abstract class AssertCollection {
         assertSetEquals(desc, new HashSet<>(expected), new HashSet<>(actual));
     }
 
+    public static <T> void assertListEquals(List<T> expected, List<T> actual) {
+        assertListEquals(null, expected, actual);
+    }
+
+    public static <T> void assertListEquals(String desc, List<T> expected, List<T> actual) {
+        if (handledNullPossiblity(desc, expected, actual)) {
+            return;
+        }
+        for (int i = 0; i < expected.size(); i++) {
+            T expectedItem = expected.get(i);
+            try {
+                T actualItem = actual.get(i);
+                if (!expectedItem.equals(actualItem)) {
+                    fail(failPrepend(desc) + "\nfirst unequal item at index " + i + "\nexpected: " + expected.get(i));
+                }
+            } catch (IndexOutOfBoundsException ioobe) {
+                throw new RuntimeException("actual did not have index " + i + (desc == null ? "" : "; " + desc),  ioobe);
+            }
+        }
+    }
+
     private static boolean handledNullPossiblity(String desc, Object expected, Object actual) {
         if (expected == null) {
             assertNull(actual);
