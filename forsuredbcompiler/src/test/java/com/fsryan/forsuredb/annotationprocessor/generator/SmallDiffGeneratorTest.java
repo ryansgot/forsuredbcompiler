@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.TableIndexInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -467,7 +469,33 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         )
                                 )
                                 .build()
-                }
+                },
+//                {   // 17: add a composite index with two new columns
+//                        2,
+//                        newTableContext()
+//                                .addTable(defaultPkTable("test1").build())
+//                                .build(),
+//                        newTableContext()
+//                                .addTable(defaultPkTable("test1")
+//                                        .addToColumns(longCol().columnName("index_col_1").index(true).build())
+//                                        .addToColumns(longCol().columnName("index_col_2").index(true).build())
+//                                        .addIndex(TableIndexInfo.create(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
+//                                        .build()
+//                                ).build(),
+//                        MigrationSet.builder()
+//                                .dbVersion(3)
+//                                .orderedMigrations(Arrays.asList(
+//                                        addIndexMigration("test1")
+//                                                .extras(mapOf("order", "index_col_1,index_col_2"))
+//                                                .build()
+//                                )).targetSchema(tableMapOf(
+//                                        defaultPkTable("test1")
+//                                                .addToColumns(longCol().columnName("index_col_1").index(true).build())
+//                                                .addToColumns(longCol().columnName("index_col_2").index(true).build())
+//                                                .addIndex(TableIndexInfo.create(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
+//                                                .build()))
+//                                .build()
+//                }
         });
     }
 
