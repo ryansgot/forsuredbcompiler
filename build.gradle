@@ -2,6 +2,9 @@ buildscript {
     ext.versions = [
             'auto': [
                     'value': '1.6.2'
+            ],
+            'junit': [
+                    'jupiter': '5.3.1'
             ]
     ]
     ext.deps = [
@@ -11,7 +14,16 @@ buildscript {
             ],
             'jsr305': 'com.google.code.findbugs:jsr305:3.0.2',
             'test': [
-                    'junit': 'junit:junit:4.12',
+                    'junit4': 'junit:junit:4.12',
+                    'junit': [
+                            'jupiter': [
+                                    'api': "org.junit.jupiter:junit-jupiter-api:${versions.junit.jupiter}",
+                                    'engine': "org.junit.jupiter:junit-jupiter-engine:${versions.junit.jupiter}"
+                            ],
+                            'vintage': [
+                                    'engine': "org.junit.vintage:junit-vintage-engine:${versions.junit.jupiter}"
+                            ]
+                    ],
                     'mockito': 'org.mockito:mockito-core:2.21.0'
             ],
             'gson': 'com.google.code.gson:gson:2.8.5'
@@ -84,6 +96,10 @@ subprojects { subproject ->
     apply plugin: 'com.jfrog.bintray'
     apply plugin: 'jacoco'
     apply plugin: 'findbugs'
+
+    test {
+        useJUnitPlatform()
+    }
 
     repositories {
         jcenter()

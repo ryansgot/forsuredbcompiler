@@ -14,5 +14,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'junit:junit:4.12'
+    compileOnly deps.test.junit4
+    implementation deps.test.junit.jupiter.api
+    runtime deps.test.junit.jupiter.engine
+    runtime deps.test.junit.vintage.engine
 }

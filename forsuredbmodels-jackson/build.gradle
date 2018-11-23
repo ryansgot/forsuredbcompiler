@@ -8,7 +8,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
     compileOnly deps.jsr305
 
-    testImplementation deps.test.junit
+    testCompileOnly deps.test.junit4
+    testImplementation deps.test.junit.jupiter.api
+    testRuntime deps.test.junit.jupiter.engine
+    testRuntime deps.test.junit.vintage.engine
+
     testImplementation deps.test.mockito
 }
 

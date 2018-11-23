@@ -22,7 +22,12 @@ dependencies {
     annotationProcessor deps.auto.value
 
     testCompileOnly deps.jsr305
-    testImplementation deps.test.junit
+
+    testCompileOnly deps.test.junit4
+    testImplementation deps.test.junit.jupiter.api
+    testRuntime deps.test.junit.jupiter.engine
+    testRuntime deps.test.junit.vintage.engine
+    
     testImplementation deps.test.mockito
     testCompileOnly deps.auto.valueAnnotations
     testAnnotationProcessor deps.auto.value
