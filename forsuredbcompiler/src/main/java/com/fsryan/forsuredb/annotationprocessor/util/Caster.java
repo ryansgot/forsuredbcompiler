@@ -88,7 +88,7 @@ public class Caster {
             // TODO: not sure this works
             dest.add((T) Enum.valueOf(cls.asSubclass(Enum.class), src.toString()));
         } else {
-            throw new IllegalArgumentException("cannot create list of " + cls + " from constant");
+            throw new IllegalArgumentException("cannot of list of " + cls + " from constant");
         }
     }
 }

@@ -1064,7 +1064,7 @@ public abstract class InfoTranslatorTest<I extends Element, E> {
                             Number.class.getName()
                     },
                     {
-                            "02: Non doc store table should return null",
+                            "02: Non doc store tableBuilder should return null",
                             TestTypeElement.builder()
                                     .setInterfaces(Collections.emptyList())
                                     .build(),

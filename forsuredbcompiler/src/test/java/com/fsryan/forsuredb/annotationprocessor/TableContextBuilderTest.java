@@ -36,12 +36,12 @@ public abstract class TableContextBuilderTest {
     public void createBuilderUnderTest() {
         builderUnderTest = new TableContext.Builder();
         startingTables.forEach((tableKeys, tabeBuilder) -> {
-            builderUnderTest.addTable(tableKeys.first, tableKeys.second, tabeBuilder);
+            builderUnderTest.addTable(tableKeys.first(), tableKeys.second(), tabeBuilder);
             TableInfo.defaultColumns().forEach((columnName, columnInfo) -> {
-                builderUnderTest.addColumn(tableKeys.first, columnName, columnInfo.toBuilder());
+                builderUnderTest.addColumn(tableKeys.first(), columnName, columnInfo.toBuilder());
             });
-            startingColumns.getOrDefault(tableKeys.first, Collections.emptyMap()).forEach((columnName, columnBuilder) -> {
-                builderUnderTest.addColumn(tableKeys.first, columnName, columnBuilder);
+            startingColumns.getOrDefault(tableKeys.first(), Collections.emptyMap()).forEach((columnName, columnBuilder) -> {
+                builderUnderTest.addColumn(tableKeys.first(), columnName, columnBuilder);
             });
         });
         updateBuilder(builderUnderTest);
@@ -80,7 +80,7 @@ public abstract class TableContextBuilderTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     {
-                            "00: one table with no extra columns tests basic one-table behavior",
+                            "00: one tableBuilder with no extra columns tests basic one-tableBuilder behavior",
                             mapOf(table1KeyPair(), table1Builder()),
                             Collections.emptyMap(),
                             mapOf(
@@ -92,7 +92,7 @@ public abstract class TableContextBuilderTest {
                             )
                     },
                     {
-                            "01: one table with an extra column tests that extra column defninitions",
+                            "01: one tableBuilder with an extra column tests that extra column defninitions",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf("column_1", table1ColumnBuilder("column_1"))),
                             mapOf(
@@ -281,9 +281,9 @@ public abstract class TableContextBuilderTest {
         @Override
         protected void updateBuilder(TableContext.Builder tableContextBuilder) {
             startingTables.forEach((tableKeys, tableBuilder) -> {
-                startingForeignKeys.getOrDefault(tableKeys.first, Collections.emptyMap())
+                startingForeignKeys.getOrDefault(tableKeys.first(), Collections.emptyMap())
                         .forEach((compositeId, foreignKeyBuilders) -> {
-                            foreignKeyBuilders.forEach(builder -> tableContextBuilder.addForeignKeyInfo(tableKeys.first, compositeId, builder));
+                            foreignKeyBuilders.forEach(builder -> tableContextBuilder.addForeignKeyInfo(tableKeys.first(), compositeId, builder));
                         });
             });
         }
@@ -316,7 +316,7 @@ public abstract class TableContextBuilderTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     {
-                            "00: a single, non-composite, non-unique table index with default sort order",
+                            "00: a single, non-composite, non-unique tableBuilder index with default sort order",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf("column_1", table1ColumnBuilder("column_1"))),
                             mapOf(
@@ -336,7 +336,7 @@ public abstract class TableContextBuilderTest {
                             )
                     },
                     {
-                            "01: a single, non-composite, unique table index with default sort order",
+                            "01: a single, non-composite, unique tableBuilder index with default sort order",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf("column_1", table1ColumnBuilder("column_1"))),
                             mapOf(
@@ -356,7 +356,7 @@ public abstract class TableContextBuilderTest {
                             )
                     },
                     {
-                            "02: a single, non-composite, non-unique table index with ASC sort order",
+                            "02: a single, non-composite, non-unique tableBuilder index with ASC sort order",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf("column_1", table1ColumnBuilder("column_1"))),
                             mapOf(
@@ -376,7 +376,7 @@ public abstract class TableContextBuilderTest {
                             )
                     },
                     {
-                            "03: a single, non-composite, unique table index with DESC sort order",
+                            "03: a single, non-composite, unique tableBuilder index with DESC sort order",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf("column_1", table1ColumnBuilder("column_1"))),
                             mapOf(
@@ -396,7 +396,7 @@ public abstract class TableContextBuilderTest {
                             )
                     },
                     {
-                            "04: multiple, non-composite, table indices with ASC and DESC sort order respectively--ensures non-composited indices show up as separate indices",
+                            "04: multiple, non-composite, tableBuilder indices with ASC and DESC sort order respectively--ensures non-composited indices show up as separate indices",
                             mapOf(table1KeyPair(), table1Builder()),
                             mapOf("table_1", mapOf(
                                     "column_1", table1ColumnBuilder("column_1"),
@@ -531,16 +531,16 @@ public abstract class TableContextBuilderTest {
         @Override
         protected void updateBuilder(TableContext.Builder tableContextBuilder) {
             startingTables.forEach((tableKeys, tableBuilder) -> {
-                startingTableIndices.getOrDefault(tableKeys.first, Collections.emptyMap())
+                startingTableIndices.getOrDefault(tableKeys.first(), Collections.emptyMap())
                         .forEach((compositeId, tableIndexInfoList) -> {
-                            tableIndexInfoList.forEach(tio -> tableContextBuilder.addTableIndexInfo(tableKeys.first, compositeId, tio));
+                            tableIndexInfoList.forEach(tio -> tableContextBuilder.addTableIndexInfo(tableKeys.first(), compositeId, tio));
                         });
             });
         }
     }
 
     private static Pair<String, String> table1KeyPair() {
-        return new Pair<>("table_1", TableContextBuilderTest.class.getName());
+        return Pair.of("table_1", TableContextBuilderTest.class.getName());
     }
 
     private static TableInfo.BuilderCompat table1Builder() {
@@ -566,7 +566,7 @@ public abstract class TableContextBuilderTest {
     }
 
     private static Pair<String, String> table2KeyPair() {
-        return new Pair<>("table_2", ForeignKeys.class.getName());
+        return Pair.of("table_2", ForeignKeys.class.getName());
     }
 
     private static TableInfo.BuilderCompat table2Builder() {
@@ -601,7 +601,7 @@ public abstract class TableContextBuilderTest {
     }
 
     private static Pair<String, String> table3KeyPair() {
-        return new Pair<>("table_3", FSAnnotationProcessor.class.getName());
+        return Pair.of("table_3", FSAnnotationProcessor.class.getName());
     }
 
     private static TableInfo.BuilderCompat table3Builder() {

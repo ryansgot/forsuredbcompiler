@@ -1,16 +1,15 @@
 package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
+import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 public class SchemaDiffGenerator {
 
@@ -26,25 +25,53 @@ public class SchemaDiffGenerator {
 
     @Nonnull
     public Map<String, Set<SchemaDiff>> calculateDiff(TableContext toDiff) {
-        Map<String, Set<SchemaDiff>> ret = new HashMap<>();
-
-        // find the table keys that were matched--none of these will be created
-        Set<String> matchedTableKeys = toDiff.tableMap().keySet()
+        return toDiff.tableMap().entrySet()
                 .stream()
-                .filter(qName -> base.tableMap().containsKey(qName))
-                .collect(Collectors.toSet());
+                .flatMap(entry -> base.hasTable(entry.getKey()) ? findAllDiffs(entry) : createTableStream(entry))
+                .collect(Collector.of(HashMap::new, SchemaDiffGenerator::accumulateDiffs, SchemaDiffGenerator::combineDiffs));
+    }
 
-        // Add create diffs for all tables whose keys were not matched
-        toDiff.tableMap().entrySet()
-                .stream()
-                .filter(toDiffEntry -> !matchedTableKeys.contains(toDiffEntry.getKey()))
-                .forEach(toDiffEntry -> {
-                    final String key = toDiffEntry.getKey();
-                    final TableInfo table = toDiffEntry.getValue();
-                    Set<SchemaDiff> diffs = ret.computeIfAbsent(key, k -> new HashSet<>());
-                    diffs.add(SchemaDiff.forTableCreated(table.tableName()));
-                });
-
+    private static Map<String, Set<SchemaDiff>> combineDiffs(Map<String, Set<SchemaDiff>> result1, Map<String, Set<SchemaDiff>> result2) {
+        Map<String, Set<SchemaDiff>> ret = new HashMap<>(result1.size() + result2.size());
+        ret.putAll(result1);
+        ret.putAll(result2);
         return ret;
+    }
+
+    private Stream<Pair<String, Set<SchemaDiff>>> createTableStream(Map.Entry<String, TableInfo> entry) {
+        String tableName = entry.getValue().tableName();
+        SchemaDiff diff = SchemaDiff.forTableCreated(tableName);
+        return Stream.of(Pair.of(tableName, Collections.singleton(diff)));
+    }
+
+    private Stream<Pair<String, Set<SchemaDiff>>> findAllDiffs(Map.Entry<String, TableInfo> entry) {
+        // TODO: further matched table diffs
+        return Stream.of(
+                createdColumnDiffs(entry.getKey(), entry.getValue())
+        );
+    }
+
+    private static void accumulateDiffs(Map<String, Set<SchemaDiff>> result, Pair<String, Set<SchemaDiff>> pair) {
+        Set<SchemaDiff> newDiffs = pair.second();
+        if (newDiffs == null || newDiffs.isEmpty()) {
+            return;
+        }
+        result.computeIfAbsent(pair.first(), k -> new HashSet<>()).addAll(newDiffs);
+    }
+
+    private Pair<String, Set<SchemaDiff>> createdColumnDiffs(String tableKey, TableInfo table) {
+        final TableInfo baseTable = base.getTable(tableKey);
+        return table.getColumns().stream()
+                .filter(c -> !baseTable.hasColumn(c.columnName()))
+                .collect(Collector.of(
+                        () -> Pair.of(tableKey, new HashSet<>()),
+                        (result, c) -> result.second().add(SchemaDiff.forColumnCreated(c.columnName())),
+                        (result1, result2) -> {
+                            Set<SchemaDiff> combined = new HashSet<>(result1.second().size() + result2.second().size());
+                            combined.addAll(result1.second());
+                            combined.addAll(result2.second());
+                            return Pair.of(result1.first(), combined);
+                        }
+                ));
     }
 }

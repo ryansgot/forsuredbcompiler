@@ -23,7 +23,6 @@ import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.info.*;
 import com.fsryan.forsuredb.api.FSGetApi;
-import com.google.common.collect.Sets;
 
 import java.util.*;
 
@@ -120,10 +119,10 @@ public class ProcessingContext implements TableContext {
 
     private static void addToBuilder(TableContext.Builder builder, TypeElement intf) {
         if (intf == null) {
-            throw new IllegalArgumentException("Cannot create TableInfo create null TypeElement");
+            throw new IllegalArgumentException("Cannot of TableInfo of null TypeElement");
         }
         if (intf.getKind() != ElementKind.INTERFACE) {
-            throw new IllegalArgumentException("Can only create TableInfo create " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
+            throw new IllegalArgumentException("Can only of TableInfo of " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
         }
 
         final String tableName = tableNameOf(intf);
@@ -140,7 +139,7 @@ public class ProcessingContext implements TableContext {
             InfoTranslator.validateForeignKeyDeclaration(ee);
             if (InfoTranslator.containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
-                builder.addForeignKeyInfo(tableName, p.first, p.second);
+                builder.addForeignKeyInfo(tableName, p.first(), p.second());
             }
 
             InfoTranslator.validateIndexDeclaration(ee);
@@ -159,15 +158,15 @@ public class ProcessingContext implements TableContext {
         return ee.getAnnotationMirrors().stream().filter(am -> {
             final String type = am.getAnnotationType().toString();
             return type.equals(FSForeignKey.class.getName()) || type.equals(ForeignKey.class.getName());
-        }).map(am -> new Pair<>(am.getAnnotationType().toString(), AnnotationTranslatorFactory.inst().create(am)))
+        }).map(am -> Pair.of(am.getAnnotationType().toString(), AnnotationTranslatorFactory.inst().create(am)))
         .map(p -> {
-            String type = p.first;
-            AnnotationTranslator at = p.second;
+            String type = p.first();
+            AnnotationTranslator at = p.second();
             if (type.equals(ForeignKey.class.getName())) {
-                return new Pair<>("", tableForeignKeyInfoBuilderFromLegacy(columnNameOf(ee), at));
+                return Pair.of("", tableForeignKeyInfoBuilderFromLegacy(columnNameOf(ee), at));
             }
             final String compositeId = at.property("compositeId").asString();
-            return new Pair<>(compositeId, tableForeignKeyInfoBuilderSet(columnNameOf(ee), at));
+            return Pair.of(compositeId, tableForeignKeyInfoBuilderSet(columnNameOf(ee), at));
         })
         .findFirst()
         .get();

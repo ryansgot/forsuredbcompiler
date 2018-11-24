@@ -24,14 +24,14 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {   // 00: one table with no extra columns
+                {   // 00: one tableBuilder with no extra columns
                         Arrays.asList(createTableMigration("table1")),
                         newTableContext()
                                 .addTable(defaultPkTable("table1").build())
                                 .build()
                                 .tableMap()
                 },
-                {   // 01: one table with one extra non-unique column
+                {   // 01: one tableBuilder with one extra non-unique column
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName(longCol().build().getColumnName()).build()
@@ -43,7 +43,7 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                 .build()
                                 .tableMap()
                 },
-                {   // 02: one table with one two extra non-unique columns
+                {   // 02: one tableBuilder with one two extra non-unique columns
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName(longCol().build().getColumnName()).build(),
@@ -78,7 +78,7 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                 .build()
                                 .tableMap()
                 },
-                {   // 04: one table with a column that has an index
+                {   // 04: one tableBuilder with a column that has an index
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName("table_1_index").build(),
@@ -91,7 +91,7 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
                                 .build()
                                 .tableMap()
                 },
-                {   // 05: one table with a composite index
+                {   // 05: one tableBuilder with a composite index
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName("table_1_index_col1").build(),

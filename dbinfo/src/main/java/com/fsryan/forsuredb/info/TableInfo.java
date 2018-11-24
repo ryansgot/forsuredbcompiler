@@ -147,6 +147,13 @@ public abstract class TableInfo {
             return this;
         }
 
+        public BuilderCompat addToColumns(ColumnInfo column) {
+            if (column != null) {
+                columnMap.put(column.columnName(), column);
+            }
+            return this;
+        }
+
         public BuilderCompat tableName(String tableName) {
             this.tableName = tableName;
             return this;

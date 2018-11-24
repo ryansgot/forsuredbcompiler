@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    implementation deps.jsr305
     implementation project(':dbinfo')
     implementation project(':testtools')
 }

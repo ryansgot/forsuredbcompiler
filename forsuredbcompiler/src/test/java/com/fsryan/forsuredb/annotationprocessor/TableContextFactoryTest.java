@@ -66,7 +66,7 @@ public abstract class TableContextFactoryTest<T> {
                             Collections.<String, TableInfo>emptyMap()
                     },
                     {
-                            "01: single migration defining a table should result int correct table",
+                            "01: single migration defining a tableBuilder should result int correct tableBuilder",
                             Collections.singletonList(MigrationSetUtil.createDefault()),
                             mapOf(TableInfoUtil.DEFAULT_TABLE_NAME, TableInfoUtil.defaultBuilder().build()),
                     }

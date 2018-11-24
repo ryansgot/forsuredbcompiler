@@ -53,7 +53,7 @@ public class FinderGenerator extends JavaSourceGenerator {
                 .addLine(".then()")
                 .addLine(".get();")
                 .endCode()
-                .addLine("The above will create the following query:")
+                .addLine("The above will of the following query:")
                 .addLine("SELECT * FROM $L where _id >= $L AND _id <= $L AND created < [the system time]", table.tableName(), CodeUtil.javaExampleOf("long").toString().replace("L", ""), CodeUtil.javaExampleOf("long").toString().replace("L", ""))
                 .endParagraph()
                 .addLine(JavadocInfo.AUTHOR_STRING)

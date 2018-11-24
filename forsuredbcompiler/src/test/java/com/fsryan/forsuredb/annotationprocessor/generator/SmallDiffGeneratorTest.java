@@ -61,7 +61,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .orderedMigrations(new ArrayList<>())
                                 .build()
                 },
-                {   // 01 The processing context has a table that the migration context does not have--table has no extra columns
+                {   // 01 The processing context has a tableBuilder that the migration context does not have--tableBuilder has no extra columns
                         1,
                         newTableContext().build(),
                         newTableContext().addTable(table().build())
@@ -73,7 +73,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .targetSchema(tableMapOf(table().build()))
                                 .build()
                 },
-                {   // 02 The processing context has a table that the migration context does not have--table has extra columns
+                {   // 02 The processing context has a tableBuilder that the migration context does not have--tableBuilder has extra columns
                         10,
                         newTableContext().build(),
                         newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
@@ -175,7 +175,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build()))
                                 .build()
                 },
-                {   // 07 The processing does not have a table the migration context knows about (a table deletion)
+                {   // 07 The processing does not have a tableBuilder the migration context knows about (a tableBuilder deletion)
                         47,
                         newTableContext()
                                 .addTable(table()
@@ -332,7 +332,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build()))
                                 .build()
                 },
-                {   // 12: change the primary key of a table
+                {   // 12: change the primary key of a tableBuilder
                         1,
                         newTableContext()
                                 .addTable(table()
@@ -479,7 +479,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
 //                                .addTable(defaultPkTable("test1")
 //                                        .addToColumns(longCol().columnName("index_col_1").index(true).build())
 //                                        .addToColumns(longCol().columnName("index_col_2").index(true).build())
-//                                        .addIndex(TableIndexInfo.create(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
+//                                        .addIndex(TableIndexInfo.of(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
 //                                        .build()
 //                                ).build(),
 //                        MigrationSet.builder()
@@ -492,7 +492,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
 //                                        defaultPkTable("test1")
 //                                                .addToColumns(longCol().columnName("index_col_1").index(true).build())
 //                                                .addToColumns(longCol().columnName("index_col_2").index(true).build())
-//                                                .addIndex(TableIndexInfo.create(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
+//                                                .addIndex(TableIndexInfo.of(false, Arrays.asList("index_col_1", "index_col_2"), Arrays.asList("", "")))
 //                                                .build()))
 //                                .build()
 //                }

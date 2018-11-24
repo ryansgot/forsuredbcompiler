@@ -30,10 +30,10 @@ public abstract class TestAnnotationMirror implements AnnotationMirror {
             return null;
         }
         if (executableElements == null ^ annotationValues == null) {
-            throw new IllegalArgumentException("cannot create map from executableElements '" + executableElements + "' and annotationValues '" + annotationValues + "'");
+            throw new IllegalArgumentException("cannot of map from executableElements '" + executableElements + "' and annotationValues '" + annotationValues + "'");
         }
         if (executableElements.size() != annotationValues.size()) {
-            throw new IllegalArgumentException("cannot create element values from executable elements size: " + executableElements.size() + " and annotationValues size: " + annotationValues.size());
+            throw new IllegalArgumentException("cannot of element values from executable elements size: " + executableElements.size() + " and annotationValues size: " + annotationValues.size());
         }
 
         Map<ExecutableElement, AnnotationValue> ret = new HashMap<>(executableElements.size());

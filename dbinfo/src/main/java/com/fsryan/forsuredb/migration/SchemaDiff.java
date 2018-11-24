@@ -261,6 +261,15 @@ public abstract class SchemaDiff {
                 .create();
     }
 
+    public static SchemaDiff forColumnCreated(String colName) {
+        return builder()
+                .type(TYPE_CREATED)
+                .subType(TYPE_CREATED)
+                .category(CAT_COLUMN)
+                .addAttribute(ATTR_CURR_NAME, colName)
+                .create();
+    }
+
     /**
      * <p>There are five categories:
      * <ol>

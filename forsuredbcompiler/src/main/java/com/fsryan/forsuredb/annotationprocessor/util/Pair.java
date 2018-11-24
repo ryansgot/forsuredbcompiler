@@ -1,12 +1,14 @@
 package com.fsryan.forsuredb.annotationprocessor.util;
 
-public class Pair<T, S> {
+import com.google.auto.value.AutoValue;
 
-    public T first;
-    public S second;
+@AutoValue
+public abstract class Pair<F, S> {
 
-    public Pair(T first, S second) {
-        this.first = first;
-        this.second = second;
+    public static <F, S> Pair<F, S> of(F first, S second) {
+        return new AutoValue_Pair(first, second);
     }
+
+    public abstract F first();
+    public abstract S second();
 }

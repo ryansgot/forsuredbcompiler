@@ -25,7 +25,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
     @Parameterized.Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {   // 00: one table with no extra columns, add a column
+                {   // 00: one tableBuilder with no extra columns, add a column
                         Arrays.asList(createTableMigration("table1")),
                         newTableContext()
                                 .addTable(defaultPkTable("table1").build())
@@ -39,7 +39,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                 .build()
                                 .tableMap()
                 },
-                {   // 01: one table with no extra columns, add two columns
+                {   // 01: one tableBuilder with no extra columns, add two columns
                         Arrays.asList(createTableMigration("table1")),
                         newTableContext()
                                 .addTable(defaultPkTable("table1").build())
@@ -197,7 +197,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                 .build()
                                 .tableMap()
                 },
-                {   // 07: one table with a column that has an index added after creation
+                {   // 07: one tableBuilder with a column that has an index added after creation
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName("table_1_index").build()
@@ -217,7 +217,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                 .tableMap(),
 
                 },
-                {   // 08: one table with a column that has a composite index added after creation
+                {   // 08: one tableBuilder with a column that has a composite index added after creation
                         Arrays.asList(
                                 createTableMigration("table1"),
                                 addColumnMigration("table1").columnName("table_1_index_col1").build(),
