@@ -119,14 +119,11 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
     @Override
     public int compareTo(ColumnInfo other) {
         // handle null cases
-        if (other == null || other.getColumnName() == null) {
+        if (other == null) {
             return -1;
         }
 
         final String actualColumn = getColumnName();
-        if (actualColumn == null) {
-            return 1;
-        }
 
         // prioritize default columns
 

@@ -92,10 +92,8 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
         writer.beginObject();
 
         Map<String, ColumnInfo> columnMap = value.columnMap();
-        if (columnMap != null) {
-            writer.name("column_info_map");
-            columnMapAdapter.toJson(writer, columnMap);
-        }
+        writer.name("column_info_map");
+        columnMapAdapter.toJson(writer, columnMap);
 
         writer.name("table_name");
         writer.value(value.tableName());

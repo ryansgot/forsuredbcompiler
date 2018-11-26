@@ -4,12 +4,6 @@
         <Class name="com.fsryan.forsuredb.info.ColumnInfo" />
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
     </Match>
-    <!-- TODO: verify whether this is really necessary. It's possible a legacy
-         version of the model was serialized as such -->
-    <Match>
-        <Class name="com.fsryan.forsuredb.info.ColumnInfo" />
-        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
-    </Match>
     <Match>
         <Class name="com.fsryan.forsuredb.migration.Migration" />
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
