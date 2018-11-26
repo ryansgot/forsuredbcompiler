@@ -5,10 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.fsryan.forsuredb.TestData.*;
 
@@ -34,7 +31,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         Arrays.asList(addColumnMigration("table1").columnName(longCol().build().getColumnName()).build()),
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
-                                        .addToColumns(longCol().build())
+                                        .addColumn(longCol().build())
                                         .build())
                                 .build()
                                 .tableMap()
@@ -51,8 +48,8 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         ),
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
-                                        .addToColumns(longCol().build())
-                                        .addToColumns(stringCol().build())
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
                                         .build())
                                 .build()
                                 .tableMap()
@@ -71,10 +68,10 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         ),
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
-                                        .addTableForeignKey(dbmsDefaultTFKI("table2")
+                                        .addForeignKey(dbmsDefaultTFKI("table2")
                                                 .localToForeignColumnMap(ImmutableMap.of(longCol().build().getColumnName(), "_id"))
                                                 .build())
-                                        .addToColumns(longCol()
+                                        .addColumn(longCol()
                                                 .foreignKeyInfo(cascadeFKI("table2")
                                                         .apiClassName(TABLE_CLASS_NAME)
                                                         .build())
@@ -99,10 +96,10 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         ),
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
-                                        .addTableForeignKey(dbmsDefaultTFKI("table2")
+                                        .addForeignKey(dbmsDefaultTFKI("table2")
                                                 .localToForeignColumnMap(ImmutableMap.of(longCol().build().getColumnName(), "_id"))
                                                 .build())
-                                        .addToColumns(longCol()
+                                        .addColumn(longCol()
                                                 .foreignKeyInfo(cascadeFKI("table2")
                                                         .apiClassName(TABLE_CLASS_NAME)
                                                         .build())
@@ -121,56 +118,48 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         Arrays.asList(updatePrimaryKeyMigration("table1").build()),
                         newTableContext()
                                 .addTable(table("table1")
-                                        .addToPrimaryKey(longCol().build().getColumnName())
-                                        .addToColumns(longCol().primaryKey(true).build())
+                                        .resetPrimaryKey(Collections.singleton(longCol().build().getColumnName()))
+                                        .addColumn(longCol().primaryKey(true).build())
                                         .build())
                                 .build()
                                 .tableMap()
                 },
                 {   // 05: two tables--composite primary and foreign keys in first migration--add one column in next
                         Arrays.asList(createTableMigration("table1"), createTableMigration("table2")),
-                        newTableContext()
-                                .addTable(defaultPkTable("table1")
-                                        .addToColumns(stringCol().columnName("table2_project").build())
-                                        .addToColumns(longCol().columnName("table2_build").build())
-                                        .addTableForeignKey(cascadeTFKI("table2")
-                                                .localToForeignColumnMap(ImmutableMap.of(
-                                                        "table2_project", "project",
-                                                        "table2_build", "build")
-                                                ).build())
-                                        .build())
-                                .addTable(table("table2")
-                                        .addToColumns(stringCol().columnName("project").build())
-                                        .addToColumns(longCol().columnName("build").build())
-                                        .addToPrimaryKey("project")
-                                        .addToPrimaryKey("build")
-                                        .build())
-                                .build()
-                                .tableMap(),
+                        tableMapOf(defaultPkTable("table1")
+                                .addColumn(stringCol().columnName("table2_project").build())
+                                .addColumn(longCol().columnName("table2_build").build())
+                                .addForeignKey(cascadeTFKI("table2")
+                                        .localToForeignColumnMap(ImmutableMap.of(
+                                                "table2_project", "project",
+                                                "table2_build", "build")
+                                        ).build())
+                                .build(),
+                                table("table2")
+                                        .addColumn(stringCol().columnName("project").build())
+                                        .addColumn(longCol().columnName("build").build())
+                                        .resetPrimaryKey(new HashSet<>(Arrays.asList("project", "build")))
+                                        .build()),
                         Arrays.asList(
                                 addColumnMigration("table1")
                                         .columnName(longCol().build().getColumnName())
                                         .build()
                         ),
-                        newTableContext()
-                                .addTable(defaultPkTable("table1")
-                                        .addToColumns(stringCol().columnName("table2_project").build())
-                                        .addToColumns(longCol().columnName("table2_build").build())
-                                        .addToColumns(longCol().build())
-                                        .addTableForeignKey(cascadeTFKI("table2")
-                                                .localToForeignColumnMap(ImmutableMap.of(
-                                                        "table2_project", "project",
-                                                        "table2_build", "build")
-                                                ).build())
+                        tableMapOf(defaultPkTable("table1")
+                                .addColumn(stringCol().columnName("table2_project").build())
+                                .addColumn(longCol().columnName("table2_build").build())
+                                .addColumn(longCol().build())
+                                .addForeignKey(cascadeTFKI("table2")
+                                        .localToForeignColumnMap(ImmutableMap.of(
+                                                "table2_project", "project",
+                                                "table2_build", "build")
+                                        ).build())
+                                .build(),
+                                table("table2")
+                                        .addColumn(stringCol().columnName("project").build())
+                                        .addColumn(longCol().columnName("build").build())
+                                        .resetPrimaryKey(new HashSet<>(Arrays.asList("project", "build")))
                                         .build())
-                                .addTable(table("table2")
-                                        .addToColumns(stringCol().columnName("project").build())
-                                        .addToColumns(longCol().columnName("build").build())
-                                        .addToPrimaryKey("project")
-                                        .addToPrimaryKey("build")
-                                        .build())
-                                .build()
-                                .tableMap()
                 },
                 {   // 06: update an existing column's default value when it did not have one previously
                         Arrays.asList(
@@ -181,7 +170,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         ),
                         newTableContext()
                                 .addTable(defaultPkTable("table1")
-                                        .addToColumns(stringCol().build())
+                                        .addColumn(stringCol().build())
                                         .build())
                                 .build()
                                 .tableMap(),
@@ -190,7 +179,7 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                                 .build()),
                         newTableContext()
                                 .addTable(table("table1")
-                                        .addToColumns(stringCol().defaultValue("some default").build())
+                                        .addColumn(stringCol().defaultValue("some default").build())
                                         .build())
                                 .build()
                                 .tableMap()
@@ -202,14 +191,14 @@ public class TwoMigrationSetsSuccessConditions extends MigrationContextTest.TwoM
                         ),
                         newTableContext()
                                 .addTable(table("table1")
-                                        .addToColumns(longCol().columnName("table_1_index").build())
+                                        .addColumn(longCol().columnName("table_1_index").build())
                                         .build())
                                 .build()
                                 .tableMap(),
                         Collections.singletonList(addIndexMigration("table1").columnName("table_1_index").build()),
                         newTableContext()
                                 .addTable(table("table1")
-                                        .addToColumns(longCol().columnName("table_1_index").index(true).build())
+                                        .addColumn(longCol().columnName("table_1_index").index(true).build())
                                         .build())
                                 .build()
                                 .tableMap(),

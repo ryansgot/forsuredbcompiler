@@ -19,6 +19,7 @@ package com.fsryan.forsuredb.info;
 
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
@@ -34,18 +35,18 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder methodName(String methodName);    // method_name
-        public abstract Builder columnName(@Nullable String columnName);    // column_name
-        public abstract Builder qualifiedType(@Nullable String qualifiedType); // column_type
-        public abstract Builder index(boolean index);  // index
-        public abstract Builder defaultValue(String defaultValue);  // default_value
-        public abstract Builder unique(boolean unique); // unique
+        public abstract Builder methodName(@Nonnull String methodName);                     // method_name
+        public abstract Builder columnName(@Nullable String columnName);                    // column_name
+        public abstract Builder qualifiedType(@Nullable String qualifiedType);              // column_type
+        public abstract Builder index(boolean index);                                       // index
+        public abstract Builder defaultValue(String defaultValue);                          // default_value
+        public abstract Builder unique(boolean unique);                                     // unique
         @Deprecated
-        public abstract Builder primaryKey(boolean primaryKey); // primary_key
+        public abstract Builder primaryKey(boolean primaryKey);                             // primary_key
         @Deprecated
         public abstract Builder foreignKeyInfo(@Nullable ForeignKeyInfo foreignKeyInfo);    // foreign_key_info
-        public abstract Builder searchable(boolean searchable); // searchable
-        public abstract Builder orderable(boolean orderable);  // orderable
+        public abstract Builder searchable(boolean searchable);                             // searchable
+        public abstract Builder orderable(boolean orderable);                               // orderable
         public abstract Builder valueAccess(@Nullable List<String> access);
         public abstract ColumnInfo build();
     }
@@ -59,7 +60,7 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
                 .index(false);
     }
 
-    public abstract String methodName();    // method_name
+    @Nonnull public abstract String methodName();    // method_name
     @Nullable public abstract String columnName();    // column_name
     @Nullable public abstract String qualifiedType(); // column_type
     public abstract boolean index();  // index
@@ -80,12 +81,6 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
     @Nullable
     public abstract List<String> valueAccess();
     public abstract Builder toBuilder();
-
-    public boolean isValid() {
-        final String method = methodName();
-        final String column = columnName();
-        return (method != null && !method.isEmpty()) || (column != null && !column.isEmpty());
-    }
 
     public String getColumnName() {
         final String column = columnName();
@@ -124,14 +119,11 @@ public abstract class ColumnInfo implements Comparable<ColumnInfo> {
     @Override
     public int compareTo(ColumnInfo other) {
         // handle null cases
-        if (other == null || other.getColumnName() == null) {
+        if (other == null) {
             return -1;
         }
 
         final String actualColumn = getColumnName();
-        if (actualColumn == null) {
-            return 1;
-        }
 
         // prioritize default columns
 

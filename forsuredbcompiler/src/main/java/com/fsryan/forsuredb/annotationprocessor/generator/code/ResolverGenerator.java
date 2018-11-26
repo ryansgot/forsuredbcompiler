@@ -123,7 +123,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
             return;
         }
         for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
-            final TableInfo referencedTable = targetContext.getTable(foreignKey.foreignTableName());
+            final TableInfo referencedTable = targetContext.getTableByName(foreignKey.foreignTableName());
             codeBuilder.addType(createJoinResolverClass(referencedTable, foreignKey));
         }
         for (Pair<TableInfo, TableForeignKeyInfo> parentJoin : parentJoins) {
@@ -275,7 +275,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
         // Add join methods where this table is the child in the join relationship
         for (TableForeignKeyInfo foreignKey : table.foreignKeys()) {
             JavadocInfo jd = javadocFor(foreignKey, table.tableName());
-            TableInfo targetTable = targetContext.getTable(foreignKey.foreignTableName());
+            TableInfo targetTable = targetContext.getTableByName(foreignKey.foreignTableName());
             codeBuilder.addMethod(createMethodSpecForJoin(targetTable, createJoinSpec(foreignKey, table.tableName()), jd));
         }
 

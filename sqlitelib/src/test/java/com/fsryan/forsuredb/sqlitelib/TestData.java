@@ -80,7 +80,7 @@ public class TestData {
     }
 
     // Convenience methods for making data to go into the tests
-    public static TableInfo.BuilderCompat table() {
+    public static TableInfo.Builder table() {
         return TableInfo.builder().tableName(TABLE_NAME).qualifiedClassName(TestData.class.getName());
     }
 

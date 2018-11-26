@@ -35,7 +35,7 @@ public interface TableContext {
     class Builder {
 
         // tableKey -> TableInfo.BuilderCompat
-        private final Map<String, TableInfo.BuilderCompat> tableInfoMap = new HashMap<>();
+        private final Map<String, TableInfo.Builder> tableInfoMap = new HashMap<>();
         // tableClassName -> tableName
         private final Map<String, String> tableClassNameToNameMap = new HashMap<>();
         // tablekey -> columnKey -> ColumnInfo.Builder
@@ -43,7 +43,7 @@ public interface TableContext {
         // tablekey -> Set of ForeignKeyInfo.Builder
         private final Map<String, Map<String, Set<TableForeignKeyInfo.Builder>>> tableForeignKeyInfoMap = new HashMap<>();
 
-        public Builder addTable(String tableName, String tableClassName, TableInfo.BuilderCompat builder) {
+        public Builder addTable(String tableName, String tableClassName, TableInfo.Builder builder) {
             tableClassNameToNameMap.put(tableClassName, tableName);
             tableInfoMap.put(tableName, builder);
             TableInfo.defaultColumns().values().forEach(c -> addColumn(tableName, c.columnName(), c.toBuilder()));
@@ -69,14 +69,14 @@ public interface TableContext {
             final Map<String, TableInfo> schema = new HashMap<>();
             tableInfoMap.keySet().forEach(tableKey -> {
                 TableInfo t = tableInfoMap.get(tableKey)
-                        .columnMap(buildColumnMap(tableKey))
-                        .foreignKeys(collapseForeignKeys(tableKey))
+                        .addAllColumns(buildColumnMap(tableKey).values())
+                        .addAllForeignKeys(collapseForeignKeys(tableKey))
                         .build();
                 schema.put(t.tableName(), t);
             });
 
             // a TableContext that returns copies of everything
-            return new BasicTableContext(schema);
+            return fromSchema(schema);
         }
 
         private Map<String, ColumnInfo> buildColumnMap(String tableName) {
@@ -129,48 +129,57 @@ public interface TableContext {
 
             return foreignKeys;
         }
+    }
 
-        static class BasicTableContext implements TableContext {
+    static TableContext empty() {
+        return fromSchema(null);
+    }
 
-            private final Map<String, TableInfo> schema;
-
-            BasicTableContext(Map<String, TableInfo> schema) {
-                this.schema = schema;
+    static TableContext fromSchema(Map<String, TableInfo> schema) {
+        final Map<String, TableInfo> actualSchema = schema == null ? Collections.emptyMap() : new HashMap<>(schema);
+        return new TableContext() {
+            @Override
+            public boolean hasTableWithName(String tableName) {
+                if (tableName == null) {
+                    return false;
+                }
+                return actualSchema.values().stream().anyMatch(t -> tableName.equals(t.tableName()));
             }
 
             @Override
-            public boolean hasTable(String tableName) {
-                return schema.containsKey(tableName);
-            }
-
-            @Override
-            public TableInfo getTable(String tableName) {
-                return schema.get(tableName).toBuilder().build();
+            public TableInfo getTableByName(String tableName) {
+                if (tableName == null) {
+                    return null;
+                }
+                return actualSchema.values().stream()
+                        .filter(t -> tableName.equals(t.tableName()))
+                        .findFirst()
+                        .orElse(null);
             }
 
             @Override
             public Collection<TableInfo> allTables() {
-                return new ArrayList<>(schema.values());
+                return actualSchema.values();
             }
 
             @Override
             public Map<String, TableInfo> tableMap() {
-                return new HashMap<>(schema);
+                return actualSchema;
             }
-        }
+        };
     }
 
     /**
      * @param tableName the name of the table to check
      * @return true if the table exists within the context
      */
-    boolean hasTable(String tableName);
+    boolean hasTableWithName(String tableName);
 
     /**
      * @param tableName the name of the table to get
      * @return a TableInfo object if the context contains the table and null if not
      */
-    TableInfo getTable(String tableName);
+    TableInfo getTableByName(String tableName);
 
     /**
      * @return all of the tables in the context

@@ -1,6 +1,5 @@
 package com.fsryan.forsuredb.api;
 
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Test;
 
@@ -16,19 +15,17 @@ public class TableInfoUtilTest {
     @Test
     public void shouldProperlySort() {
         TableInfo tA = table("tA")
-                .foreignKeys(setOf(foreignKeyTo("tB").build()))
+                .addForeignKey(foreignKeyTo("tB").build())
                 .build();
         TableInfo tB = table("tB")
-                .foreignKeys(TestData.<TableForeignKeyInfo>setOf())
                 .build();
         TableInfo tC = table("tC")
-                .foreignKeys(setOf(foreignKeyTo("tA").build()))
+                .addForeignKey(foreignKeyTo("tA").build())
                 .build();
         TableInfo tD = table("tD")
-                .foreignKeys(setOf(
-                        foreignKeyTo("tC").build(),
-                        foreignKeyTo("tB").build()
-                )).build();
+                .addForeignKey(foreignKeyTo("tC").build())
+                .addForeignKey(foreignKeyTo("tB").build())
+                .build();
 
         // A -> B
         // ^    ^

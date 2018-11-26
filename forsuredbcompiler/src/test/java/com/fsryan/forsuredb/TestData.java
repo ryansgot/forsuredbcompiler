@@ -58,23 +58,24 @@ public class TestData {
     }
 
     // Convenience methods for making data to go into the tests
-    public static ProgressiveTableInfoBuilder table() {
+    public static TableInfo.Builder table() {
         return table(TABLE_NAME);
     }
 
-    public static ProgressiveTableInfoBuilder table(String tableName, ColumnInfo... columns) {
-        ProgressiveTableInfoBuilder ret = new ProgressiveTableInfoBuilder()
+    public static TableInfo.Builder table(String tableName, ColumnInfo... columns) {
+        return TableInfo.builder()
                 .tableName(tableName)
-                .qualifiedClassName(TABLE_CLASS_NAME);
-        Arrays.stream(DEFAULT_COLUMNS).forEach(ret::addToColumns);
-        if (columns != null && columns.length > 0) {
-            Arrays.stream(columns).forEach(ret::addToColumns);
-        }
-        return ret;
+//                .qualifiedClassName("qclass.name." + tableName)
+                .qualifiedClassName(TABLE_CLASS_NAME)
+                .addColumn(idCol())
+                .addColumn(createdCol())
+                .addColumn(deletedCol())
+                .addColumn(modifiedCol())
+                .addAllColumns(Arrays.asList(columns));
     }
 
-    public static ProgressiveTableInfoBuilder defaultPkTable(String tableName, ColumnInfo... columns) {
-        return table(tableName, columns).addToPrimaryKey(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN);
+    public static TableInfo.Builder defaultPkTable(String tableName, ColumnInfo... columns) {
+        return table(tableName, columns).resetPrimaryKey(Collections.singleton(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN));
     }
 
     public static ImmutableMap.Builder<String, ColumnInfo> baseColumnMapBuilder() {
@@ -307,11 +308,11 @@ public class TestData {
     }
 
     public static TableInfo targetTableWithChildForeignKey() {
-        return testTargetContext().getTable("test_table_3");
+        return testTargetContext().getTableByName("test_table_3");
     }
 
     public static TableInfo targetTableWithParentAndChildForeignKey() {
-        return testTargetContext().getTable("test_table_2");
+        return testTargetContext().getTableByName("test_table_2");
     }
 
     public static TableContext testTargetContext() {
@@ -320,7 +321,7 @@ public class TestData {
                                 .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable")
                                 .staticDataAsset("test_table_data.xml")
                                 .staticDataRecordName("test_table_data")
-                                .addToColumns(longCol().columnName("test_table_2_id")
+                                .addColumn(longCol().columnName("test_table_2_id")
                                         .methodName("testTable2Id")
                                         .foreignKeyInfo(cascadeFKI("test_table_2")
                                                 .columnName("_id")
@@ -332,7 +333,7 @@ public class TestData {
                 .addTable(
                         table("test_table_2")
                                 .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-                                .addToColumns(longCol().columnName("test_table_3_id")
+                                .addColumn(longCol().columnName("test_table_3_id")
                                         .methodName("testTable3Id")
                                         .foreignKeyInfo(cascadeFKI("test_table_3")
                                                 .columnName("_id")
@@ -343,10 +344,10 @@ public class TestData {
                 )
                 .addTable(table("test_table_3")
                         .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-                        .addToColumns(doubleCol().columnName("app_rating").methodName("appRating").build())
-                        .addToColumns(bigDecimalCol().columnName("competitor_app_rating").methodName("competitorAppRating").searchable(false).build())
-                        .addToColumns(longCol().columnName("global_id").methodName("globalId").orderable(false).build())
-                        .addToColumns(intCol().columnName("login_count").methodName("loginCount").build())
+                        .addColumn(doubleCol().columnName("app_rating").methodName("appRating").build())
+                        .addColumn(bigDecimalCol().columnName("competitor_app_rating").methodName("competitorAppRating").searchable(false).build())
+                        .addColumn(longCol().columnName("global_id").methodName("globalId").orderable(false).build())
+                        .addColumn(intCol().columnName("login_count").methodName("loginCount").build())
                         .build()
                 )
                 .build();
@@ -364,12 +365,12 @@ public class TestData {
         public TableContext build() {
             return new TableContext() {
                 @Override
-                public boolean hasTable(String tableName) {
+                public boolean hasTableWithName(String tableName) {
                     return tableMap.containsKey(tableName);
                 }
 
                 @Override
-                public TableInfo getTable(String tableName) {
+                public TableInfo getTableByName(String tableName) {
                     return tableMap.get(tableName);
                 }
 
@@ -383,84 +384,6 @@ public class TestData {
                     return tableMap;
                 }
             };
-        }
-    }
-
-    public static class ProgressiveTableInfoBuilder {
-
-        private Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
-        private Set<String> primaryKey = new HashSet<>();
-        private Map<String, ColumnInfo> columnMap = new HashMap<>();
-        private final TableInfo.BuilderCompat realBuilder = TableInfo.builder();
-
-        public ProgressiveTableInfoBuilder tableName(String tableName) {
-            realBuilder.tableName(tableName);
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder addTableForeignKey(TableForeignKeyInfo... foreignKeys) {
-            if (foreignKeys != null && foreignKeys.length > 0) {
-                Arrays.stream(foreignKeys).forEach(fk -> this.foreignKeys.add(fk));
-            }
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder foreignKeys(Set<TableForeignKeyInfo> foreignKeys) {
-            this.foreignKeys = foreignKeys;
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder addToPrimaryKey(String... primaryKeyColumns) {
-            if (primaryKeyColumns != null && primaryKeyColumns.length > 0) {
-                Arrays.stream(primaryKeyColumns).forEach(pkc -> this.primaryKey.add(pkc));
-            }
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder primaryKey(Set<String> primaryKey) {
-            this.primaryKey = primaryKey;
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder primaryKeyOnConflict(String primaryKeyOnConflict) {
-            realBuilder.primaryKeyOnConflict(primaryKeyOnConflict);
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder qualifiedClassName(String tableName) {
-            realBuilder.qualifiedClassName(tableName);
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder addToColumns(ColumnInfo... columns) {
-            if (columns != null && columns.length > 0) {
-                Arrays.stream(columns).forEach(c -> columnMap.put(c.getColumnName(), c));
-            }
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder columnMap(Map<String, ColumnInfo> columnMap) {
-            this.columnMap = columnMap;
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder docStoreParameterization(String docStoreParameterization) {
-            realBuilder.docStoreParameterization(docStoreParameterization);
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder staticDataAsset(String staticDataAsset) {
-            realBuilder.staticDataAsset(staticDataAsset);
-            return this;
-        }
-
-        public ProgressiveTableInfoBuilder staticDataRecordName(String staticDataRecordName) {
-            realBuilder.staticDataRecordName(staticDataRecordName);
-            return this;
-        }
-
-        public TableInfo build() {
-            return realBuilder.foreignKeys(foreignKeys).columnMap(columnMap).primaryKey(primaryKey).build();
         }
     }
 

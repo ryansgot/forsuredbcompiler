@@ -83,7 +83,7 @@ public class DiffGenerator {
     private List<Migration> additiveChanges(TableContext targetContext) {
         List<Migration> retList = new ArrayList<>();
         for (TableInfo targetTable : targetContext.allTables()) {
-            if (!sourceContext.hasTable(targetTable.tableName())) {
+            if (!sourceContext.hasTableWithName(targetTable.tableName())) {
                 retList.add(Migration.builder().type(Migration.Type.CREATE_TABLE)
                         .tableName(targetTable.tableName())
                         .build());
@@ -97,7 +97,7 @@ public class DiffGenerator {
                 continue;
             }
 
-            TableInfo sourceTable = sourceContext.getTable(targetTable.tableName());
+            TableInfo sourceTable = sourceContext.getTableByName(targetTable.tableName());
             if (sourceTable != null && !sourceTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
                 retList.add(Migration.builder().type(Migration.Type.UPDATE_PRIMARY_KEY)
                         .extras(ImmutableMap.of("existing_column_names", gson.toJson(columnNamesOf(sourceTable))))
@@ -200,14 +200,14 @@ public class DiffGenerator {
     private List<Migration> subtractiveChanges(TableContext targetContext) {
         List<Migration> retList = new ArrayList<>();
         for (TableInfo sourceTable : sourceContext.allTables()) {
-            if (!targetContext.hasTable(sourceTable.tableName())) {
+            if (!targetContext.hasTableWithName(sourceTable.tableName())) {
                 retList.add(Migration.builder().type(Migration.Type.DROP_TABLE)
                         .tableName(sourceTable.tableName())
                         .build());
                 continue;
             }
 
-//            TableInfo sourceTable = sourceContext.getTable(targetTable.tableName());
+//            TableInfo sourceTable = sourceContext.getTableByName(targetTable.tableName());
 //            for (ColumnInfo targetColumn : nonDefaultColumnsIn(targetTable)) {
 //                if (tableCreateMigrationCreated || !sourceTable.hasColumn(targetColumn.getColumnName())) {
 //                    // if the TABLE_CREATE migration was added, then all non-default columns must be added as migrations

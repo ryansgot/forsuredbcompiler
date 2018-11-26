@@ -23,10 +23,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 import static com.fsryan.forsuredb.sqlitelib.TestData.*;
@@ -54,7 +51,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(longCol().build().getColumnName()),
                         tableMapOf(table().tableName("table_name")
-                                .columnMap(columnMapOf(longCol().build()))
+                                .addColumn(longCol().build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -71,8 +68,8 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(longCol().build().getColumnName()),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(longCol().build().getColumnName())))
-                                .columnMap(columnMapOf(longCol().primaryKey(true).build()))
+                                .resetPrimaryKey(new HashSet<>(Collections.singletonList(longCol().build().getColumnName())))
+                                .addColumn(longCol().primaryKey(true).build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -88,8 +85,8 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNameSet(),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(longCol().build().getColumnName())))
-                                .columnMap(columnMapOf(longCol().primaryKey(true).build()))
+                                .resetPrimaryKey(new HashSet<>(Collections.singletonList(longCol().build().getColumnName())))
+                                .addColumn(longCol().primaryKey(true).build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -105,9 +102,9 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(stringCol().build().getColumnName()),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName())))
+                                .resetPrimaryKey(new HashSet<>(Collections.singletonList(stringCol().build().getColumnName())))
                                 .primaryKeyOnConflict("REPLACE")
-                                .columnMap(columnMapOf(stringCol().primaryKey(true).build()))
+                                .addColumn(stringCol().primaryKey(true).build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -123,9 +120,9 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNameSet(),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName())))
+                                .resetPrimaryKey(new HashSet<>(Collections.singletonList(stringCol().build().getColumnName())))
                                 .primaryKeyOnConflict("REPLACE")
-                                .columnMap(columnMapOf(stringCol().primaryKey(true).build()))
+                                .addColumn(stringCol().primaryKey(true).build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -141,8 +138,10 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNameSet(),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
-                                .columnMap(columnMapOf(stringCol().build(), stringCol().columnName("string_column_2").build())).build()),
+                                .resetPrimaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
+                                .addColumn(stringCol().build())
+                                .addColumn(stringCol().columnName("string_column_2").build())
+                                .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
                                 "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified FROM table_name;",
@@ -157,8 +156,10 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(stringCol().build().getColumnName()),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
-                                .columnMap(columnMapOf(stringCol().build(), stringCol().columnName("string_column_2").build())).build()),
+                                .resetPrimaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
+                                .addColumn(stringCol().build())
+                                .addColumn(stringCol().columnName("string_column_2").build())
+                                .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
                                 "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified, string_column FROM table_name;",
@@ -173,8 +174,10 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(stringCol().build().getColumnName(), "string_column_2"),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
-                                .columnMap(columnMapOf(stringCol().build(), stringCol().columnName("string_column_2").build())).build()),
+                                .resetPrimaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
+                                .addColumn(stringCol().build())
+                                .addColumn(stringCol().columnName("string_column_2").build())
+                                .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
                                 "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified, string_column, string_column_2 FROM table_name;",
@@ -189,9 +192,11 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         "table_name",
                         defaultColumnNamesWith(stringCol().build().getColumnName(), "string_column_2"),
                         tableMapOf(table().tableName("table_name")
-                                .primaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
+                                .resetPrimaryKey(new HashSet<>(Arrays.asList(stringCol().build().getColumnName(), "string_column_2")))
                                 .primaryKeyOnConflict("ROLLBACK")
-                                .columnMap(columnMapOf(stringCol().build(), stringCol().columnName("string_column_2").build())).build()),
+                                .addColumn(stringCol().build())
+                                .addColumn(stringCol().columnName("string_column_2").build())
+                                .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
                                 "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified, string_column, string_column_2 FROM table_name;",

@@ -35,15 +35,14 @@ public class CombinedMigrationTest {
             TableInfo.builder()
                     .qualifiedClassName(SqlGeneratorTest.class.getName())
                     .tableName("table")
-                    .columnMap(TestData.columnMapOf(
-                            ColumnInfo.builder()
-                                    .methodName("column")
-                                    .columnName("column")
-                                    .unique(true)
-                                    .index(true)
-                                    .qualifiedType(String.class.getName())
-                                    .build()
-                    )).build()
+                    .addColumn(ColumnInfo.builder()
+                            .methodName("column")
+                            .columnName("column")
+                            .unique(true)
+                            .index(true)
+                            .qualifiedType(String.class.getName())
+                            .build())
+                    .build()
     );
 
     private final MigrationSet inputMigrationSet;
