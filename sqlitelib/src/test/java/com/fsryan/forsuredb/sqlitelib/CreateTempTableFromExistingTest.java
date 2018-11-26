@@ -47,7 +47,7 @@ public class CreateTempTableFromExistingTest extends BaseSQLiteGeneratorTest {
         return Arrays.asList(new Object[][]{
                 // Copy a table with a non-default column
                 {
-                        table().columnMap(columnMapOf(stringCol().build())).build(),
+                        table().addColumn(stringCol().build()).build(),
                         new ColumnInfo[] {},
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_" + TABLE_NAME + ";",
@@ -56,10 +56,7 @@ public class CreateTempTableFromExistingTest extends BaseSQLiteGeneratorTest {
                 },
                 // Copy a table with a foreign key column
                 {
-                        table()
-                                .columnMap(columnMapOf(
-                                        longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
-                                ).build(),
+                        table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build()).build(),
                         new ColumnInfo[] {},
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_" + TABLE_NAME + ";",
@@ -68,7 +65,7 @@ public class CreateTempTableFromExistingTest extends BaseSQLiteGeneratorTest {
                 },
                 // Copy a table with an excluded column
                 {
-                        table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())).build(),
+                        table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build()).build(),
                         new ColumnInfo[] {
                                 longCol().foreignKeyInfo(cascadeFKI("user").build()).build()
                         },

@@ -38,13 +38,13 @@ public class MigrationContext implements TableContext {
     }
 
     @Override
-    public boolean hasTable(String tableName) {
+    public boolean hasTableWithName(String tableName) {
         createTableMapIfNull();
         return tableMap.containsKey(tableName);
     }
 
     @Override
-    public TableInfo getTable(String tableName) {
+    public TableInfo getTableByName(String tableName) {
         createTableMapIfNull();
         return tableMap.get(tableName);
     }
@@ -76,7 +76,7 @@ public class MigrationContext implements TableContext {
             TableInfo temp = tb.build();
             Map<String, ColumnInfo> previousColumnMap = temp.columnMap();    // <-- cannot overwrite previous
             previousColumnMap.putAll(entry.getValue());
-            tb.columnMap(previousColumnMap);
+            tb.addAllColumns(previousColumnMap.values());
         }
 
         Map<String, TableInfo> retMap = new HashMap<>();
@@ -151,7 +151,7 @@ public class MigrationContext implements TableContext {
         if (tb == null) {
             throw new RuntimeException("cannot find table " + m.tableName() + " in prior migration context");
         }
-        tb.primaryKey(table.getPrimaryKey());
+        tb.resetPrimaryKey(table.getPrimaryKey());
     }
 
     private void handleUpdateForeignKeys(TableInfo table, Migration m, Map<String, TableInfo.Builder> tableBuilderMap) {
@@ -159,7 +159,7 @@ public class MigrationContext implements TableContext {
         if (tb == null) {
             throw new RuntimeException("cannot find table " + m.tableName() + " in prior migration context");
         }
-        tb.foreignKeys(table.foreignKeys());
+        tb.addAllForeignKeys(table.foreignKeys());
     }
 
     private String tableKey(Migration m) {

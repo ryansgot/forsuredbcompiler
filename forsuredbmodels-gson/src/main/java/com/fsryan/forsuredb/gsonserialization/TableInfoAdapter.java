@@ -87,8 +87,7 @@ class TableInfoAdapter extends TypeAdapter<TableInfo> {
         
         jsonReader.beginObject();
 
-        // TODO: change when removing BuilderCompat
-        TableInfo.BuilderCompat builder = TableInfo.builder();
+        TableInfo.Builder builder = TableInfo.builder();
         while (jsonReader.hasNext()) {
             String name = jsonReader.nextName();
             if (jsonReader.peek() == JsonToken.NULL) {
@@ -97,7 +96,7 @@ class TableInfoAdapter extends TypeAdapter<TableInfo> {
             }
             switch (name) {
                 case "column_info_map":
-                    builder.columnMap(columnMapAdapter.read(jsonReader));
+                    builder.addAllColumns(columnMapAdapter.read(jsonReader).values());
                     break;
                 case "table_name":
                     builder.tableName(stringAdapter.read(jsonReader));
@@ -115,13 +114,13 @@ class TableInfoAdapter extends TypeAdapter<TableInfo> {
                     builder.docStoreParameterization(stringAdapter.read(jsonReader));
                     break;
                 case "primary_key":
-                    builder.primaryKey(primaryKeyAdapter.read(jsonReader));
+                    builder.resetPrimaryKey(primaryKeyAdapter.read(jsonReader));
                     break;
                 case "primary_key_on_conflict":
                     builder.primaryKeyOnConflict(stringAdapter.read(jsonReader));
                     break;
                 case "foreign_keys":
-                    builder.foreignKeys(foreignKeysAdapter.read(jsonReader));
+                    builder.addAllForeignKeys(foreignKeysAdapter.read(jsonReader));
                     break;
                 default:
                     jsonReader.skipValue();

@@ -38,11 +38,11 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
     public TableInfo fromJson(JsonReader reader) throws IOException {
         reader.beginObject();
 
-        TableInfo.BuilderCompat builder = TableInfo.builder();
+        TableInfo.Builder builder = TableInfo.builder();
         while (reader.hasNext()) {
             switch (reader.selectName(OPTIONS)) {
                 case 0: {
-                    builder.columnMap(columnMapAdapter.fromJson(reader));
+                    builder.addAllColumns(columnMapAdapter.fromJson(reader).values());
                     break;
                 }
                 case 1: {
@@ -66,7 +66,7 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
                     break;
                 }
                 case 6: {
-                    builder.primaryKey(primaryKeyAdapter.fromJson(reader));
+                    builder.resetPrimaryKey(primaryKeyAdapter.fromJson(reader));
                     break;
                 }
                 case 7: {
@@ -74,7 +74,7 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
                     break;
                 }
                 case 8: {
-                    builder.foreignKeys(foreignKeysAdapter.fromJson(reader));
+                    builder.addAllForeignKeys(foreignKeysAdapter.fromJson(reader));
                     break;
                 }
                 case -1: {

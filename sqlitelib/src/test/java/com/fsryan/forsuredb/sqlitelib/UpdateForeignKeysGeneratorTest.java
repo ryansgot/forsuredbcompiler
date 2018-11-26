@@ -64,29 +64,23 @@ public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
                         tableMapOf(
                                 table().tableName("referenced_table")
                                         .qualifiedClassName(UpdateForeignKeysGeneratorTest.class.getName())
-                                        .primaryKey(setOf("referenced_int_column", "referenced_long_column"))
-                                        .columnMap(columnMapOf(
-                                                intCol().columnName("referenced_int_column").build(),
-                                                longCol().columnName("referenced_long_column").build())
-                                        )
+                                        .resetPrimaryKey(setOf("referenced_int_column", "referenced_long_column"))
+                                        .addColumn(intCol().columnName("referenced_int_column").build())
+                                        .addColumn(longCol().columnName("referenced_long_column").build())
                                         .build(),
                                 table().tableName("referencing_table")
-                                        .foreignKeys(setOf(
-                                                TableForeignKeyInfo.builder()
-                                                        .foreignTableName("referenced_table")
-                                                        .foreignTableApiClassName(UpdateForeignKeysGeneratorTest.class.getName())
-                                                        .localToForeignColumnMap(stringMapOf(
-                                                                "referencing_int_column", "referenced_int_column",
-                                                                "referencing_long_column", "referenced_long_column"
-                                                        )).updateChangeAction("CASCADE")
-                                                        .deleteChangeAction("CASCADE")
-                                                        .build())
-                                        )
-                                        .primaryKey(setOf("_id"))
-                                        .columnMap(columnMapOf(
-                                                intCol().columnName("referencing_int_column").build(),
-                                                longCol().columnName("referencing_long_column").build())
-                                        )
+                                        .addForeignKey(TableForeignKeyInfo.builder()
+                                                .foreignTableName("referenced_table")
+                                                .foreignTableApiClassName(UpdateForeignKeysGeneratorTest.class.getName())
+                                                .localToForeignColumnMap(stringMapOf(
+                                                        "referencing_int_column", "referenced_int_column",
+                                                        "referencing_long_column", "referenced_long_column"
+                                                )).updateChangeAction("CASCADE")
+                                                .deleteChangeAction("CASCADE")
+                                                .build())
+                                        .resetPrimaryKey(Collections.singleton("_id"))
+                                        .addColumn(intCol().columnName("referencing_int_column").build())
+                                        .addColumn(longCol().columnName("referencing_long_column").build())
                                         .build()
                                 ),
                         new String[] {

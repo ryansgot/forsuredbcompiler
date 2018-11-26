@@ -55,15 +55,15 @@ public class TableInfoDeserializer extends StdDeserializer<TableInfo> {
                 ? (Set<TableForeignKeyInfo>) mapper.readValue(node.get("foreign_keys").toString(), TABLE_FOREIGN_KEY_INFO_TYPE)
                 : null;
         return TableInfo.builder()
-                .columnMap(columnInfoMap)
+                .addAllColumns(columnInfoMap.values())
                 .tableName(tableName)
                 .qualifiedClassName(qualifiedClassName)
                 .staticDataAsset(staticDataAsset)
                 .staticDataRecordName(staticDataRecordName)
                 .docStoreParameterization(docStoreParameterization)
-                .primaryKey(primaryKey)
+                .resetPrimaryKey(primaryKey)
                 .primaryKeyOnConflict(primaryKeyOnConflict)
-                .foreignKeys(foreignKeys)
+                .addAllForeignKeys(foreignKeys)
                 .build();
     }
 }

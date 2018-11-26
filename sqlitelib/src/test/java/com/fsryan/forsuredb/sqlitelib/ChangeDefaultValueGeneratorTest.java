@@ -49,7 +49,7 @@ public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 00: changes the default value of a column
                         "table_name",
                         tableMapOf(table().tableName("table_name")
-                                .columnMap(columnMapOf(longCol().defaultValue("12").build()))
+                                .addColumn(longCol().defaultValue("12").build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",

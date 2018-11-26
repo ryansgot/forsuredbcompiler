@@ -28,23 +28,21 @@ public class ParseHandlerErrorTest {
             TableInfo.builder()
                     .tableName("table")
                     .qualifiedClassName(ParseHandlerErrorTest.class.getName())
-                    .columnMap(mapOf("column", ColumnInfo.builder()
+                    .addColumn(ColumnInfo.builder()
                             .columnName("column")
                             .methodName("column")
-                            .build(),
-                            "column2",
-                            ColumnInfo.builder()
+                            .build())
+                    .addColumn(ColumnInfo.builder()
                             .columnName("column2")
                             .methodName("column2")
                             .qualifiedType("unsupported")
-                            .build(),
-                            "date_column",
-                            ColumnInfo.builder()
+                            .build())
+                    .addColumn(ColumnInfo.builder()
                             .columnName("date_column")
                             .methodName("date_column")
                             .qualifiedType(Date.class.getName())
                             .build())
-                    ).build()
+                    .build()
     );
     private static final List<MigrationSet> errorMigrationSet = Arrays.asList(MigrationSet.builder()
             .dbVersion(1)

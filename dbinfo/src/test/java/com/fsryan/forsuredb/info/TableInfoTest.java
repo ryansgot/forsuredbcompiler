@@ -42,16 +42,16 @@ public abstract class TableInfoTest {
 
     @Before
     public void setUp() {
-        TableInfo.BuilderCompat builder = table();
+        TableInfo.Builder builder = table();
         Map<String, ColumnInfo> columnMap = new HashMap<>();
         for (ColumnInfo column : nonDefaultColumns) {
             columnMap.put(column.getColumnName(), column);
         }
-        builder.columnMap(columnMap);
+        builder.addAllColumns(columnMap.values());
         tableUnderTest = buildTableUnderTest(builder);
     }
 
-    protected TableInfo buildTableUnderTest(TableInfo.BuilderCompat builder) {
+    protected TableInfo buildTableUnderTest(TableInfo.Builder builder) {
         return builder.build();
     }
 
@@ -179,8 +179,8 @@ public abstract class TableInfoTest {
         }
 
         @Override
-        protected TableInfo buildTableUnderTest(TableInfo.BuilderCompat builder) {
-            return builder.primaryKey(expectedPrimaryKeys).build();
+        protected TableInfo buildTableUnderTest(TableInfo.Builder builder) {
+            return builder.resetPrimaryKey(expectedPrimaryKeys).build();
         }
     }
 

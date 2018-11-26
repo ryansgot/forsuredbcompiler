@@ -23,10 +23,8 @@ import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotations.*;
 import com.fsryan.forsuredb.api.FSDocStoreGetApi;
 import com.fsryan.forsuredb.info.*;
-import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.FSGetApi;
 import com.google.common.collect.Sets;
-import com.squareup.javapoet.TypeName;
 
 import java.util.*;
 
@@ -67,13 +65,13 @@ public class ProcessingContext implements TableContext {
     }
 
     @Override
-    public boolean hasTable(String tableName) {
+    public boolean hasTableWithName(String tableName) {
         createTableMapIfNecessary();
         return tableName != null && tableMap.containsKey(tableName);
     }
 
     @Override
-    public TableInfo getTable(String tableName) {
+    public TableInfo getTableByName(String tableName) {
         createTableMapIfNecessary();
         return tableName == null ? null : tableMap.get(tableName);
     }
@@ -140,7 +138,7 @@ public class ProcessingContext implements TableContext {
                 .tableName(tableName)
                 .qualifiedClassName(intf.getQualifiedName().toString())
                 .docStoreParameterization(docStoreParameterization)
-                .primaryKey(primaryKeyFrom(intf))
+                .resetPrimaryKey(primaryKeyFrom(intf))
                 .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
                 .staticDataAsset(createStaticDataAsset(intf)));
 

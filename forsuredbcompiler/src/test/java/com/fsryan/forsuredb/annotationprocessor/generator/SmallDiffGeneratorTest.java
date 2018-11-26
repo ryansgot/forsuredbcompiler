@@ -47,14 +47,14 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
         return Arrays.asList(new Object[][] {
                 {   // 00 No diff (identical contexts)
                         4,
-                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
-                                        .build())
+                        newTableContext()
+                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
                                 .build(),
-                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
-                                        .build())
+                        newTableContext()
+                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(5)
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                .targetSchema(tableMapOf(table().addColumn(intCol().build()).addColumn(stringCol().build())
                                         .build()))
                                 .orderedMigrations(new ArrayList<>())
                                 .build()
@@ -62,7 +62,8 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                 {   // 01 The processing context has a table that the migration context does not have--table has no extra columns
                         1,
                         newTableContext().build(),
-                        newTableContext().addTable(table().build())
+                        newTableContext()
+                                .addTable(table().build())
                                 .build(),
                         MigrationSet.builder().dbVersion(2)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
@@ -74,8 +75,8 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                 {   // 02 The processing context has a table that the migration context does not have--table has extra columns
                         10,
                         newTableContext().build(),
-                        newTableContext().addTable(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
-                                        .build())
+                        newTableContext()
+                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(11)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
@@ -89,36 +90,32 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .tableName(TABLE_NAME)
                                                 .columnName(stringCol().build().getColumnName())
                                                 .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(intCol().build(), stringCol().build()))
+                                .targetSchema(tableMapOf(table().addColumn(intCol().build()).addColumn(stringCol().build())
                                 .build()))
                                 .build()
                 },
                 {   // 03 The processing context has a non-unique, non foreign-key column that the migration context does not have
                         3,
-                        newTableContext().addTable(table().build())
+                        newTableContext()
+                                .addTable(table().build())
                                 .build(),
-                        newTableContext().addTable(table()
-                                        .columnMap(columnMapOf(bigDecimalCol().build()))
-                                        .build())
+                        newTableContext().addTable(table().addColumn(bigDecimalCol().build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                         .tableName(TABLE_NAME)
                                         .columnName(bigDecimalCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .columnMap(columnMapOf(bigDecimalCol().build()))
-                                        .build()))
+                                .targetSchema(tableMapOf(table().addColumn(bigDecimalCol().build()).build()))
                                 .build()
                 },
                 {   // 04 The processing context has a foreign key the migration context does not know about (default delete and update actions)
                         2,
-                        newTableContext().addTable(table().build()).build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user").apiClassName("")
-                                                        .build())
-                                                .build()))
-                                        .build())
+                                .addTable(table().build())
+                                .build(),
+                        newTableContext()
+                                .addTable(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").apiClassName("").build()).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
@@ -128,48 +125,42 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .put("current_foreign_keys", "[]")
                                                 .build())
                                         .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
-                                                        .build())
-                                                .build()))
+                                .targetSchema(tableMapOf(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))
                                 .build()
                 },
                 {   // 05 The processing context has a unique index column the migration context doesn't know about
                         4364,
-                        newTableContext().addTable(table().build())
+                        newTableContext()
+                                .addTable(table().build())
                                 .build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                .build()))
-                                        .build())
+                                .addTable(table().addColumn(stringCol().unique(true).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4365)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                         .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                .build()))
+                                .targetSchema(tableMapOf(table().addColumn(stringCol().unique(true).build())
                                         .build()))
                                 .build()
                 },
                 {   // 06 The processing context has a unique index on a column the migration context knows about, but doesn't know is unique
                         8,
-                        newTableContext().addTable(table().columnMap(columnMapOf(stringCol().build()))
-                                        .build())
+                        newTableContext()
+                                .addTable(table().addColumn(stringCol().build()).build())
                                 .build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                .build()))
-                                        .build())
+                                .addTable(table().addColumn(stringCol().unique(true).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(9)
                                 .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
                                         .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
                                         .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(stringCol().unique(true)
-                                                .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .addColumn(stringCol().unique(true).build())
                                         .build()))
                                 .build()
                 },
@@ -178,23 +169,17 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext()
                                 .addTable(table()
                                         .tableName("table_1")
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put("table_1_string", stringCol().columnName("table_1_string").build())
-                                                .build())
+                                        .addColumn(stringCol().columnName("table_1_string").build())
                                         .build())
                                 .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
-                                                .build())
+                                        .addColumn(stringCol().columnName("table_2_string").build())
                                         .build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
                                         .tableName("table_2")
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
-                                                .build())
+                                        .addColumn(stringCol().columnName("table_2_string").build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(48)
@@ -204,9 +189,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build()))
                                 .targetSchema(tableMapOf(table()
                                         .tableName("table_2")
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put("table_2_string", stringCol().columnName("table_2_string").build())
-                                                .build())
+                                        .addColumn(stringCol().columnName("table_2_string").build())
                                         .build()))
                                 .build()
                 },
@@ -214,16 +197,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         1,
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().build())
-                                                .build())
+                                        .addColumn(longCol().build())
                                         .build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build())
                                 .build(),
                         MigrationSet.builder()
@@ -235,24 +214,18 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build()))
                                 .build()
                 },
                 {   // 09: add new column that is a non-unique index
                         1,
                         newTableContext()
-                                .addTable(table()
-                                        .columnMap(baseColumnMapBuilder().build())
-                                        .build())
+                                .addTable(table().build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build())
                                 .build(),
                         MigrationSet.builder()
@@ -264,9 +237,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build()))
                                 .build()
                 },
@@ -274,16 +245,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         1,
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().build())
-                                                .build())
+                                        .addColumn(longCol().build())
                                         .build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().unique(true).index(true).build())
-                                                .build())
+                                        .addColumn(longCol().unique(true).index(true).build())
                                         .build())
                                 .build(),
                         MigrationSet.builder()
@@ -295,24 +262,18 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build()))
                                 .build()
                 },
                 {   // 11: add a new column that is a unique index
                         1,
                         newTableContext()
-                                .addTable(table()
-                                        .columnMap(baseColumnMapBuilder().build())
-                                        .build())
+                                .addTable(table().build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().unique(true).index(true).build())
-                                                .build())
+                                        .addColumn(longCol().unique(true).index(true).build())
                                         .build())
                                 .build(),
                         MigrationSet.builder()
@@ -324,9 +285,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .columnName(longCol().build().getColumnName())
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().index(true).build())
-                                                .build())
+                                        .addColumn(longCol().index(true).build())
                                         .build()))
                                 .build()
                 },
@@ -334,16 +293,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         1,
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().primaryKey(false).build())
-                                                .build())
+                                        .addColumn(longCol().primaryKey(false).build())
                                         .build())
                                 .build(),
                         newTableContext()
                                 .addTable(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
-                                                .build())
+                                        .addColumn(longCol().primaryKey(true).build())
                                         .build())
                                 .build(),
                         MigrationSet.builder()
@@ -355,9 +310,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .tableName(TABLE_NAME)
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
-                                        .columnMap(baseColumnMapBuilder()
-                                                .put(longCol().build().getColumnName(), longCol().primaryKey(true).build())
-                                                .build())
+                                        .addColumn(longCol().primaryKey(true).build())
                                         .build()))
                                 .build()
                 },
@@ -365,15 +318,13 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         2,
                         newTableContext().addTable(table().build()).build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(longCol().build()))
-                                        .foreignKeys(Sets.newHashSet(
-                                                tableForeignKeyInfoBuilder()
-                                                        .foreignTableName("user")
-                                                        .updateChangeAction("CASCADE")
-                                                        .deleteChangeAction("CASCADE")
-                                                        .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
-                                                        .build()
-                                        ))
+                                .addTable(table().addColumn(longCol().build())
+                                        .addForeignKey(tableForeignKeyInfoBuilder()
+                                                .foreignTableName("user")
+                                                .updateChangeAction("CASCADE")
+                                                .deleteChangeAction("CASCADE")
+                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                                                .build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
@@ -384,25 +335,22 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .put("current_foreign_keys", "[]")
                                                 .build())
                                         .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
-                                        .build())
-                                        .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))
                                 .build()
                 },
                 {   // 14: same as 13, but transitions an existing column to being a foreign key
                         2,
-                        newTableContext().addTable(table().columnMap(columnMapOf(longCol().build())).build()).build(),
+                        newTableContext().addTable(table().addColumn(longCol().build()).build()).build(),
                         newTableContext()
-                                .addTable(table().columnMap(columnMapOf(longCol().build()))
-                                        .foreignKeys(Sets.newHashSet(
-                                                tableForeignKeyInfoBuilder()
-                                                        .foreignTableName("user")
-                                                        .updateChangeAction("CASCADE")
-                                                        .deleteChangeAction("CASCADE")
-                                                        .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
-                                                        .build()
-                                        ))
+                                .addTable(table().addColumn(longCol().build())
+                                        .addForeignKey(tableForeignKeyInfoBuilder()
+                                                .foreignTableName("user")
+                                                .updateChangeAction("CASCADE")
+                                                .deleteChangeAction("CASCADE")
+                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                                                .build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
@@ -413,9 +361,8 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .put("current_foreign_keys", "[]")
                                                 .build())
                                         .build()))
-                                .targetSchema(tableMapOf(table().columnMap(columnMapOf(longCol().foreignKeyInfo(cascadeFKI("user")
-                                        .build())
-                                        .build()))
+                                .targetSchema(tableMapOf(table()
+                                        .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))
                                 .build()
                 },
@@ -436,7 +383,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 ))
                                 .targetSchema(tableMapOf(
                                         defaultPkTable("test1")
-                                                .addToColumns(longCol().defaultValue("12").build())
+                                                .addColumn(longCol().defaultValue("12").build())
                                                 .build()
                                         )
                                 )
@@ -462,7 +409,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 ))
                                 .targetSchema(tableMapOf(
                                         defaultPkTable("test1")
-                                                .addToColumns(longCol().defaultValue("12").build())
+                                                .addColumn(longCol().defaultValue("12").build())
                                                 .build()
                                         )
                                 )

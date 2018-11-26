@@ -42,7 +42,7 @@ public abstract class MigrationContextTest {
     public void shouldHaveAllExpectedTables() {
         // All expected tables exist
         expectedSchema.keySet()
-                .forEach(expectedTableName -> assertTrue("missing table: " + expectedTableName, migrationContext.hasTable(expectedTableName)));
+                .forEach(expectedTableName -> assertTrue("missing table: " + expectedTableName, migrationContext.hasTableWithName(expectedTableName)));
         // no unexpected tables exist
         migrationContext.allTables()
                 .forEach(actualTable -> assertTrue("unexpected table: " + actualTable, expectedSchema.containsKey(actualTable.tableName())));
@@ -51,7 +51,7 @@ public abstract class MigrationContextTest {
     @Test
     public void allTablesShouldHaveCorrectPrimaryKey() {
         expectedSchema.values().forEach(expectedTable -> {
-            TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
+            TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
 
             assertNotNull(actualTable);
             assertEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
@@ -62,16 +62,16 @@ public abstract class MigrationContextTest {
     @Test
     public void allTablesShouldHaveCorrectForeignKeys() {
         expectedSchema.values().forEach(expectedTable -> {
-            TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
-            assertNotNull(actualTable);
-            assertEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
+            TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
+            assertNotNull("Did not find table: " + expectedTable.tableName(), actualTable);
+            assertEquals("table: " + expectedTable.tableName(), expectedTable.foreignKeys(), actualTable.foreignKeys());
         });
     }
 
     @Test
     public void allTablesShouldHaveCorrectColumns() {
         expectedSchema.values().forEach(expectedTable -> expectedTable.getColumns().forEach(c -> {
-                final TableInfo actualTable = migrationContext.getTable(expectedTable.tableName());
+                final TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
                 assertNotNull(actualTable);
 
                 final Map<String, ColumnInfo> expectedColumns = expectedTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
