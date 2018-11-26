@@ -109,7 +109,7 @@ class ParseHandler extends DefaultHandler {
             TableInfo table = currentMigrationSet.targetSchema().get(tableName);
             if (!table.hasColumn(column)) {
                 Map<String, ColumnInfo> columnMap = table.columnMap();
-                List<String> columns = columnMap == null ? Collections.<String>emptyList() : new ArrayList<>(columnMap.keySet());
+                List<String> columns = new ArrayList<>(columnMap.keySet());
                 Collections.sort(columns);
                 throw new IllegalStateException("Table '" + tableName + "' does not have column '" + column + "'; db_version: " + currentMigrationSet.dbVersion() + "; columns: " + columns);
             }
