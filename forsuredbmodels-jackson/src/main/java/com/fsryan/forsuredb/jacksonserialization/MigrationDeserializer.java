@@ -34,11 +34,10 @@ public class MigrationDeserializer extends StdDeserializer<Migration> {
         final Map<String, String> extras = node.has("extras")
                 ? (Map<String, String>) mapper.readValue(node.get("extras").toString(), extrasType)
                 : null;
-        return Migration.builder()
+        Migration.Builder builder = Migration.builder()
                 .tableName(tableName)
                 .columnName(columnName)
-                .type(type)
-                .extras(extras)
-                .build();
+                .type(type);
+        return extras == null ? builder.build() : builder.putAllExtras(extras).build();
     }
 }

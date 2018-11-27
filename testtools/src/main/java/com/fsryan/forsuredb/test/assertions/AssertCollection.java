@@ -90,7 +90,7 @@ public abstract class AssertCollection {
             try {
                 T actualItem = actual.get(i);
                 if (!expectedItem.equals(actualItem)) {
-                    fail(failPrepend(desc) + "\nfirst unequal item at index " + i + "\nexpected: " + expected.get(i));
+                    fail(failPrepend(desc) + "\nfirst unequal item at index " + i + "\nexpected: " + expected.get(i) + "\nbut was:  " + actual.get(i));
                 }
             } catch (IndexOutOfBoundsException ioobe) {
                 throw new RuntimeException("actual did not have index " + i + (desc == null ? "" : "; " + desc),  ioobe);

@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.*;
 
-import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 import static org.junit.Assert.assertEquals;
@@ -294,13 +294,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table1Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_1")
-                .qualifiedClassName(TableContextBuilderTest.class.getName())
-                .resetPrimaryKey(setOf(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
+        return tableBuilder("table_1")
+                .qualifiedClassName(TableContextBuilderTest.class.getName());
     }
 
     private static ColumnInfo.Builder table1Column1Builder() {
@@ -315,13 +310,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table2Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_2")
-                .qualifiedClassName(TableContextBuilderTest.NonDocStore.class.getName())
-                .resetPrimaryKey(setOf(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
+        return tableBuilder("table_2")
+                .qualifiedClassName(TableContextBuilderTest.NonDocStore.class.getName());
     }
 
     private static ColumnInfo.Builder table2ColumnBuilder() {
@@ -350,20 +340,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table3Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_3")
+        return tableBuilder("table_3")
                 .qualifiedClassName(FSAnnotationProcessor.class.getName())
-                .resetPrimaryKey(setOf(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
-    }
-
-    private static TableInfo.Builder tableBuilderWithDefaultColumns() {
-        return TableInfo.builder()
-                .addColumn(createdCol())
-                .addColumn(deletedCol())
-                .addColumn(modifiedCol())
-                .addColumn(idCol());
+                .resetPrimaryKey(setOf(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN));
     }
 }

@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.fsryan.forsuredb.api.TableInfoUtil.bestEffortDAGSort;
-import static com.fsryan.forsuredb.info.Fixtures.tableBuilder;
-import static com.fsryan.forsuredb.info.TableForeignKeyInfoUtil.foreignKeyTo;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.foreignKeyTo;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static org.junit.Assert.assertEquals;
 

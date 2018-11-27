@@ -86,7 +86,7 @@ class MigrationAdapter extends TypeAdapter<Migration> {
                     builder.type(Migration.Type.from(stringAdapter.read(jsonReader)));
                     break;
                 case "extras":
-                    builder.extras(extrasAdapter.read(jsonReader));
+                    builder.putAllExtras(extrasAdapter.read(jsonReader));
                     break;
                 default:
                     jsonReader.skipValue();

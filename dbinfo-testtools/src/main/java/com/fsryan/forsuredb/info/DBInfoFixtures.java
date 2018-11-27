@@ -3,14 +3,11 @@ package com.fsryan.forsuredb.info;
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
-public abstract class Fixtures {
+public abstract class DBInfoFixtures {
 
     private static final Map<Class, String> defaultColNameMap = new HashMap<>();
     private static final Map<Class, String> defaultMethodNameMap = new HashMap<>();
@@ -66,6 +63,20 @@ public abstract class Fixtures {
                 .addColumn(deletedCol())
                 .addColumn(modifiedCol())
                 .addAllColumns(Arrays.asList(columns));
+    }
+
+    /**
+     * <p>Legacy implementations used to set non-composite primary key on a
+     * single column only.
+     * @param tableName the name of the table
+     * @param columns any additional columns to add to the table
+     * @return the default {@link TableInfo.Builder} that builds a default
+     * {@link TableInfo} in the legacy condition with _id as the primary key
+     * @see #tableBuilder(String, ColumnInfo...)
+     */
+    public static TableInfo.Builder legacyPKTableBuilder(String tableName, ColumnInfo... columns) {
+        return tableBuilder(tableName, columns)
+                .resetPrimaryKey(Collections.emptySet());
     }
 
     // ColumnInfo
@@ -167,10 +178,10 @@ public abstract class Fixtures {
     }
 
     public static ForeignKeyInfo.Builder cascadeFKI(@Nonnull String foreignKeyTableName, @Nonnull String foreignColumnName) {
-        return ForeignKeyInfo.builder().updateAction("CASCADE")
+        return fki(foreignKeyTableName)
+                .updateAction("CASCADE")
                 .deleteAction("CASCADE")
-                .columnName(foreignColumnName)
-                .tableName(foreignKeyTableName);
+                .columnName(foreignColumnName);
     }
 
     public static ForeignKeyInfo idNoActionFKI(@Nonnull String foreignKeyTableName) {
@@ -178,10 +189,10 @@ public abstract class Fixtures {
     }
 
     public static ForeignKeyInfo.Builder noActionFKI(@Nonnull String foreignKeyTableName, @Nonnull String foreignColumnName) {
-        return ForeignKeyInfo.builder().updateAction("NO ACTION")
+        return fki(foreignKeyTableName)
+                .updateAction("NO ACTION")
                 .deleteAction("NO ACTION")
-                .columnName(foreignColumnName)
-                .tableName(foreignKeyTableName);
+                .columnName(foreignColumnName);
     }
 
     public static ForeignKeyInfo idSetNullFKI(@Nonnull String foreignKeyTableName) {
@@ -189,10 +200,10 @@ public abstract class Fixtures {
     }
 
     public static ForeignKeyInfo.Builder setNullFKI(@Nonnull String foreignKeyTableName, @Nonnull String foreignColumnName) {
-        return ForeignKeyInfo.builder().updateAction("SET NULL")
+        return fki(foreignKeyTableName)
+                .updateAction("SET NULL")
                 .deleteAction("SET NULL")
-                .columnName(foreignColumnName)
-                .tableName(foreignKeyTableName);
+                .columnName(foreignColumnName);
     }
 
     public static ForeignKeyInfo idSetDefaultFKI(@Nonnull String foreignKeyTableName) {
@@ -200,10 +211,10 @@ public abstract class Fixtures {
     }
 
     public static ForeignKeyInfo.Builder setDefaultFKI(@Nonnull String foreignKeyTableName, @Nonnull String foreignColumnName) {
-        return ForeignKeyInfo.builder().updateAction("SET DEFAULT")
+        return fki(foreignKeyTableName)
+                .updateAction("SET DEFAULT")
                 .deleteAction("SET DEFAULT")
-                .columnName(foreignColumnName)
-                .tableName(foreignKeyTableName);
+                .columnName(foreignColumnName);
     }
 
     public static ForeignKeyInfo idRestrictFKI(@Nonnull String foreignKeyTableName) {
@@ -211,9 +222,45 @@ public abstract class Fixtures {
     }
 
     public static ForeignKeyInfo.Builder restrictFKI(@Nonnull String foreignKeyTableName, @Nonnull String foreignColumnName) {
-        return ForeignKeyInfo.builder().updateAction("RESTRICT")
+        return fki(foreignKeyTableName)
+                .updateAction("RESTRICT")
                 .deleteAction("RESTRICT")
-                .columnName(foreignColumnName)
-                .tableName(foreignKeyTableName);
+                .columnName(foreignColumnName);
+    }
+
+    public static ForeignKeyInfo.Builder fki(@Nonnull String foreignKeyTableName) {
+        return ForeignKeyInfo.builder()
+                .tableName(foreignKeyTableName)
+                .apiClassName(TableInfoUtil.tableFQClassName(foreignKeyTableName));
+    }
+
+    // TableForeignKeyInfo
+
+    /**
+     * @param foreignTableName the name of the referenced table
+     * @return a {@link TableForeignKeyInfo.Builder} that will fail to build
+     * unless you call
+     * {@link TableForeignKeyInfo.Builder#localToForeignColumnMap(Map)} on it
+     * first.
+     */
+    public static TableForeignKeyInfo.Builder foreignKeyTo(String foreignTableName) {
+        return TableForeignKeyInfo.builder()
+                .foreignTableName(foreignTableName)
+                .foreignTableApiClassName(TableInfoUtil.tableFQClassName(foreignTableName))
+                .updateChangeAction("")
+                .deleteChangeAction("");
+    }
+
+    /**
+     * @param foreignTableName the name of the referenced table
+     * @return a {@link TableForeignKeyInfo.Builder} whose update and change
+     * actions are both CASCADE
+     */
+    public static TableForeignKeyInfo.Builder cascadeForeignKeyTo(String foreignTableName) {
+        return TableForeignKeyInfo.builder()
+                .foreignTableName(foreignTableName)
+                .foreignTableApiClassName(TableInfoUtil.tableFQClassName(foreignTableName))
+                .updateChangeAction("CASCADE")
+                .deleteChangeAction("CASCADE");
     }
 }
