@@ -10,7 +10,8 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
 import static org.junit.Assert.fail;
 
 public abstract class BaseDiffGeneratorTest {
@@ -49,14 +50,12 @@ public abstract class BaseDiffGeneratorTest {
     public void shouldMatchMigrationsInOrderAndContent() {
         final List<Migration> expected = expectedMigrationSet.orderedMigrations();
         final List<Migration> actual = actualMigrationSet.orderedMigrations();
-        for (int i = 0; i < expected.size(); i++) {
-            assertEquals("migration index " + i, expected.get(i), actual.get(i));
-        }
+        assertListEquals(expected, actual);
     }
 
     @Test
     public void shouldContainTargetContext() {
-        assertEquals(processingContext.tableMap(), actualMigrationSet.targetSchema());
+        assertMapEquals(processingContext.tableMap(), actualMigrationSet.targetSchema());
     }
 
     private String formatErrorMessage(String firstLine) {

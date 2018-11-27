@@ -22,17 +22,16 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -66,7 +65,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .addTable(table().build())
                                 .build(),
                         MigrationSet.builder().dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                                .orderedMigrations(Collections.singletonList(Migration.builder().type(Migration.Type.CREATE_TABLE)
                                         .tableName(TABLE_NAME)
                                         .build()))
                                 .targetSchema(tableMapOf(table().build()))
@@ -79,7 +78,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(11)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.CREATE_TABLE)
                                                 .tableName(TABLE_NAME)
                                                 .build(),
                                         Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
@@ -102,7 +101,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         newTableContext().addTable(table().addColumn(bigDecimalCol().build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                         .tableName(TABLE_NAME)
                                         .columnName(bigDecimalCol().build().getColumnName())
                                         .build()))
@@ -118,13 +117,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .addTable(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").apiClassName("").build()).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
                                         .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
-                                                .build())
-                                        .build()))
+                                        .extras(mapOf(
+                                                "existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]",
+                                                "current_foreign_keys", "[]"
+                                        )).build()))
                                 .targetSchema(tableMapOf(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))
                                 .build()
@@ -138,7 +136,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .addTable(table().addColumn(stringCol().unique(true).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(4365)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                         .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
                                         .build()))
@@ -155,7 +153,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .addTable(table().addColumn(stringCol().unique(true).build()).build())
                                 .build(),
                         MigrationSet.builder().dbVersion(9)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
                                         .tableName(TABLE_NAME)
                                         .columnName(stringCol().build().getColumnName())
                                         .build()))
@@ -183,7 +181,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(48)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder()
+                                .orderedMigrations(Arrays.asList(Migration.builder()
                                         .type(Migration.Type.DROP_TABLE)
                                         .tableName("table_1")
                                         .build()))
@@ -207,7 +205,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build(),
                         MigrationSet.builder()
                                 .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .type(Migration.Type.ADD_INDEX)
                                                 .tableName(TABLE_NAME)
@@ -230,7 +228,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build(),
                         MigrationSet.builder()
                                 .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
@@ -255,7 +253,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build(),
                         MigrationSet.builder()
                                 .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .type(Migration.Type.ADD_UNIQUE_INDEX)
                                                 .tableName(TABLE_NAME)
@@ -278,7 +276,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build(),
                         MigrationSet.builder()
                                 .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                                 .tableName(TABLE_NAME)
@@ -303,10 +301,10 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .build(),
                         MigrationSet.builder()
                                 .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .type(Migration.Type.UPDATE_PRIMARY_KEY)
-                                                .extras(ImmutableMap.of("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]"))
+                                                .extras(mapOf("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]"))
                                                 .tableName(TABLE_NAME)
                                                 .build()))
                                 .targetSchema(tableMapOf(table()
@@ -323,18 +321,17 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .foreignTableName("user")
                                                 .updateChangeAction("CASCADE")
                                                 .deleteChangeAction("CASCADE")
-                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                                                .localToForeignColumnMap(mapOf("long_column", "_id"))
                                                 .build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
                                         .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
-                                                .build())
-                                        .build()))
+                                        .extras(mapOf(
+                                                "existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]",
+                                                "current_foreign_keys", "[]"
+                                        )).build()))
                                 .targetSchema(tableMapOf(table()
                                         .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))
@@ -349,18 +346,17 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .foreignTableName("user")
                                                 .updateChangeAction("CASCADE")
                                                 .deleteChangeAction("CASCADE")
-                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                                                .localToForeignColumnMap(mapOf("long_column", "_id"))
                                                 .build())
                                         .build())
                                 .build(),
                         MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                .orderedMigrations(Arrays.asList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
                                         .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
-                                                .build())
-                                        .build()))
+                                        .extras(mapOf(
+                                                "existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]",
+                                                "current_foreign_keys", "[]"
+                                        )).build()))
                                 .targetSchema(tableMapOf(table()
                                         .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
                                         .build()))

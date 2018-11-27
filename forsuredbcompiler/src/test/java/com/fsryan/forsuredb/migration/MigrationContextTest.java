@@ -12,7 +12,6 @@ import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEqu
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;

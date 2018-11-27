@@ -3,7 +3,6 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
-import com.google.common.collect.Lists;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -47,7 +46,7 @@ public class ZeroToOneDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 )),
                         MigrationSet.builder()
                                 .dbVersion(1)
-                                .orderedMigrations(Lists.newArrayList(
+                                .orderedMigrations(Arrays.asList(
                                         Migration.builder()
                                                 .tableName("test_table")
                                                 .type(Migration.Type.CREATE_TABLE)
