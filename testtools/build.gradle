@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
+}
+
+group 'com.fsryan.forsuredb'
+version 'unspecified'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly deps.test.junit4
+    implementation deps.test.junit.jupiter.api
+    runtime deps.test.junit.jupiter.engine
+    runtime deps.test.junit.vintage.engine
+}
