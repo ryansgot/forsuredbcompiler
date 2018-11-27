@@ -19,6 +19,7 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 
+import com.fsryan.forsuredb.info.ColumnInfoUtil;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import org.junit.Test;
@@ -105,11 +106,11 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build(),
                                         migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
-                                                .columnName(colNameByType(int.class))
+                                                .columnName(ColumnInfoUtil.colNameByType(int.class))
                                                 .build(),
                                         migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
-                                                .columnName(colNameByType(String.class))
+                                                .columnName(ColumnInfoUtil.colNameByType(String.class))
                                                 .build())
                                 ).targetSchema(tableMapOf(
                                         tableBuilder(TABLE_NAME)
@@ -131,7 +132,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
-                                                .columnName(colNameByType(BigDecimal.class))
+                                                .columnName(ColumnInfoUtil.colNameByType(BigDecimal.class))
                                                 .build())
                                 ).targetSchema(tableMapOf(
                                         tableBuilder(TABLE_NAME)
