@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
@@ -54,8 +56,7 @@ public abstract class MigrationContextTest {
             TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
 
             assertNotNull(actualTable);
-            assertEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
-            assertEquals(expectedTable.primaryKeyOnConflict(), actualTable.primaryKeyOnConflict());
+            assertSetEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
         });
     }
 
@@ -64,7 +65,7 @@ public abstract class MigrationContextTest {
         expectedSchema.values().forEach(expectedTable -> {
             TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
             assertNotNull("Did not find table: " + expectedTable.tableName(), actualTable);
-            assertEquals("table: " + expectedTable.tableName(), expectedTable.foreignKeys(), actualTable.foreignKeys());
+            assertSetEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
         });
     }
 
@@ -76,9 +77,7 @@ public abstract class MigrationContextTest {
 
                 final Map<String, ColumnInfo> expectedColumns = expectedTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
                 final Map<String, ColumnInfo> actualColumns = actualTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
-
-                expectedColumns.forEach((expectedName, expectedColumn) -> assertEquals(expectedColumn, actualColumns.get(expectedName)));
-                actualColumns.forEach((actualName, actualColumn) -> assertTrue("extra column: " + actualColumn, expectedColumns.containsKey(actualName)));
+                assertMapEquals(expectedColumns, actualColumns);
             }));
     }
 
