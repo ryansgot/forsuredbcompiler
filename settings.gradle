@@ -11,3 +11,4 @@ include 'forsuredbjdbc-example'
 include 'integrationtest'
 
 include 'testtools'
+include 'dbinfo-testtools'
