@@ -7,22 +7,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.fsryan.forsuredb.api.TableInfoUtil.bestEffortDAGSort;
-import static com.fsryan.forsuredb.api.TestData.*;
+import static com.fsryan.forsuredb.info.Fixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.TableForeignKeyInfoUtil.foreignKeyTo;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static org.junit.Assert.assertEquals;
 
 public class TableInfoUtilTest {
 
     @Test
     public void shouldProperlySort() {
-        TableInfo tA = table("tA")
+        TableInfo tA = tableBuilder("tA")
                 .addForeignKey(foreignKeyTo("tB").build())
                 .build();
-        TableInfo tB = table("tB")
-                .build();
-        TableInfo tC = table("tC")
+        TableInfo tB = tableBuilder("tB").build();
+        TableInfo tC = tableBuilder("tC")
                 .addForeignKey(foreignKeyTo("tA").build())
                 .build();
-        TableInfo tD = table("tD")
+        TableInfo tD = tableBuilder("tD")
                 .addForeignKey(foreignKeyTo("tC").build())
                 .addForeignKey(foreignKeyTo("tB").build())
                 .build();

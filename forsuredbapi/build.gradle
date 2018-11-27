@@ -14,6 +14,7 @@ dependencies {
 
     testCompileOnly project(':forsuredbannotations')
     testImplementation project(':forsuredbmodels-gson')
+    testImplementation project(':dbinfo-testtools')
     testImplementation project(':testtools')
 
     testCompileOnly deps.auto.valueAnnotations
