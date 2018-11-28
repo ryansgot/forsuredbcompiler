@@ -19,21 +19,24 @@ package com.fsryan.forsuredb.info;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
+import static com.fsryan.forsuredb.info.ColumnInfoUtil.idCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class ColumnInfoTest {
 
-    private static ColumnInfo longColumnWithForeignKey = TestData.longCol().foreignKeyInfo(TestData.cascadeFKI("user").build()).build();
+    private static ColumnInfo longColumnWithForeignKey = longCol()
+            .foreignKeyInfo(idCascadeFKI("user"))
+            .build();
 
     @Test
     public void shouldPutIdColumnFirst() {
-        List<ColumnInfo> defaultColumns = new LinkedList<>();
-        defaultColumns.addAll(TableInfo.DEFAULT_COLUMNS.values());
+        List<ColumnInfo> defaultColumns = new ArrayList<>(TableInfo.DEFAULT_COLUMNS.values());
         Collections.sort(defaultColumns);
         assertEquals("_id", defaultColumns.get(0).getColumnName());
     }
@@ -41,7 +44,7 @@ public class ColumnInfoTest {
     @Test
     public void shouldPutDefaultColumnsBeforeOthers() {
         ColumnInfo defaultColumn = TableInfo.DEFAULT_COLUMNS.get("created");
-        assertTrue(defaultColumn.compareTo(TestData.longCol().build()) < 0);
+        assertTrue(defaultColumn.compareTo(longCol().build()) < 0);
     }
 
     @Test
@@ -57,32 +60,32 @@ public class ColumnInfoTest {
 
     @Test
     public void shouldSortForeignKeyBeforeNonForeignKey() {
-        assertTrue("Did not sort foreign key column before non-foreign key", longColumnWithForeignKey.compareTo(TestData.longCol().build()) < 0);
+        assertTrue("Did not sort foreign key column before non-foreign key", longColumnWithForeignKey.compareTo(longCol().build()) < 0);
     }
 
     @Test
     public void shouldSortNonForeignKeyAfterForeignKey() {
-        ColumnInfo nonForeignKeyColumn = TestData.intCol().build();
+        ColumnInfo nonForeignKeyColumn = intCol().build();
         assertTrue("Did not sort non foreign key column after foreign key", nonForeignKeyColumn.compareTo(longColumnWithForeignKey) > 0);
     }
 
     @Test
     public void shouldSortIdColumnBeforeOtherColumn() {
-        assertTrue("Did not sort _id column before other column", TestData.idCol().compareTo(TestData.longCol().build()) < 0);
+        assertTrue("Did not sort _id column before other column", idCol().compareTo(longCol().build()) < 0);
     }
 
     @Test
     public void shouldSortIdColumnBeforeForeignKey() {
-        assertTrue("Did not sort _id column before foreign key", TestData.idCol().compareTo(longColumnWithForeignKey) < 0);
+        assertTrue("Did not sort _id column before foreign key", idCol().compareTo(longColumnWithForeignKey) < 0);
     }
 
     @Test
     public void shouldAlphabetizeColumns() {
-        assertTrue("Did not sort int_column before long_column", TestData.intCol().build().compareTo(TestData.longCol().build()) < 0);
+        assertTrue("Did not sort int_column before long_column", intCol().build().compareTo(longCol().build()) < 0);
     }
 
     @Test
     public void shouldSayHasDefaultValueAfterSettingDefaultValue() {
-        assertTrue(TestData.booleanCol().defaultValue("0").build().hasDefaultValue());
+        assertTrue(booleanCol().defaultValue("0").build().hasDefaultValue());
     }
 }

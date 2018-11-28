@@ -30,7 +30,6 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
-import static com.fsryan.forsuredb.sqlitelib.TestData.*;
 
 @RunWith(Parameterized.class)
 public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {

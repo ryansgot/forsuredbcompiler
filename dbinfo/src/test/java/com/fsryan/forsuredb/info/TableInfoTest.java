@@ -24,10 +24,10 @@ import org.junit.runners.Parameterized;
 
 import java.util.*;
 
-import static com.fsryan.forsuredb.info.TestData.longCol;
-import static com.fsryan.forsuredb.info.TestData.stringCol;
-import static com.fsryan.forsuredb.info.TestData.table;
-import static org.junit.Assert.assertEquals;
+import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static org.junit.Assert.assertTrue;
 
 public abstract class TableInfoTest {
@@ -37,17 +37,16 @@ public abstract class TableInfoTest {
     protected List<ColumnInfo> nonDefaultColumns;
 
     public TableInfoTest(ColumnInfo[] nonDefaultColumns) {
-        this.nonDefaultColumns = createColumns(nonDefaultColumns);
+        this.nonDefaultColumns = Arrays.asList(nonDefaultColumns);
     }
 
     @Before
     public void setUp() {
-        TableInfo.Builder builder = table();
-        Map<String, ColumnInfo> columnMap = new HashMap<>();
-        for (ColumnInfo column : nonDefaultColumns) {
-            columnMap.put(column.getColumnName(), column);
-        }
-        builder.addAllColumns(columnMap.values());
+        TableInfo.Builder builder = TableInfo.builder()
+                .tableName("test_table")
+                .qualifiedClassName(TableInfoUtil.tableFQClassName("test_table"))
+                .resetPrimaryKey(Collections.<String>emptySet())
+                .addAllColumns(nonDefaultColumns);
         tableUnderTest = buildTableUnderTest(builder);
     }
 
@@ -65,7 +64,6 @@ public abstract class TableInfoTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    // Table with only default columns
                     {
                             new ColumnInfo[] {}
                     },
@@ -77,7 +75,7 @@ public abstract class TableInfoTest {
 
         @Test
         public void shouldHaveDefaultColumns() {
-            for (ColumnInfo column : TestData.DEFAULT_COLUMNS) {
+            for (ColumnInfo column : TableInfo.defaultColumns().values()) {
                 assertTrue("Default column: " + column.getColumnName() + " was not in table", tableUnderTest.hasColumn(column.getColumnName()));
             }
         }
@@ -89,9 +87,7 @@ public abstract class TableInfoTest {
             Collections.sort(sortedNonForeignKeyColumns);
 
             List<ColumnInfo> unsortedColumns = tableUnderTest.getNonForeignKeyColumns();
-            for (int i = 0; i < sortedNonForeignKeyColumns.size(); i++) {
-                assertEquals("Incorrect column sort", sortedNonForeignKeyColumns.get(i).getColumnName(), unsortedColumns.get(i).getColumnName());
-            }
+            assertListEquals("Incorrect column sort", sortedNonForeignKeyColumns, unsortedColumns);
         }
     }
 
@@ -102,15 +98,12 @@ public abstract class TableInfoTest {
 
         public PrimaryKeySetByColumns(ColumnInfo[] nonDefaultColumns, String[] expectedPrimaryKeys) {
             super(nonDefaultColumns);
-            for (String expectedPrimaryKeyColumnName : expectedPrimaryKeys) {
-                this.expectedPrimaryKeys.add(expectedPrimaryKeyColumnName);
-            }
+            this.expectedPrimaryKeys.addAll(Arrays.asList(expectedPrimaryKeys));
         }
 
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    // Table with only default columns
                     {
                             new ColumnInfo[] {},
                             new String[] {"_id"}
@@ -121,18 +114,18 @@ public abstract class TableInfoTest {
                     },
                     {
                             new ColumnInfo[] {longCol().primaryKey(true).build()},
-                            new String[] {longCol().build().getColumnName()}
+                            new String[] {colNameByType(long.class)}
                     },
                     {
                             new ColumnInfo[] {longCol().primaryKey(true).build(), stringCol().primaryKey(true).build()},
-                            new String[] {longCol().build().getColumnName(), stringCol().build().getColumnName()}
+                            new String[] {colNameByType(long.class), colNameByType(String.class)}
                     },
             });
         }
 
         @Test
         public void shouldHaveExpectedPrimaryKey() {
-            assertEquals(expectedPrimaryKeys, tableUnderTest.getPrimaryKey());
+            assertSetEquals(expectedPrimaryKeys, tableUnderTest.getPrimaryKey());
         }
     }
 
@@ -143,9 +136,7 @@ public abstract class TableInfoTest {
 
         public PrimaryKeySetByTable(ColumnInfo[] nonDefaultColumns, String[] primaryKey) {
             super(nonDefaultColumns);
-            for (String expectedPrimaryKeyColumnName : primaryKey) {
-                this.expectedPrimaryKeys.add(expectedPrimaryKeyColumnName);
-            }
+            this.expectedPrimaryKeys.addAll(Arrays.asList(primaryKey));
         }
 
         @Parameterized.Parameters
@@ -166,27 +157,19 @@ public abstract class TableInfoTest {
                     },
                     {
                             new ColumnInfo[] {longCol().primaryKey(true).build(), stringCol().primaryKey(true).build()},
-                            new String[] {stringCol().build().getColumnName()}
+                            new String[] {colNameByType(String.class)}
                     },
             });
         }
 
         @Test
         public void shouldHaveExpectedPrimaryKey() {
-            assertEquals(expectedPrimaryKeys, tableUnderTest.getPrimaryKey());
+            assertSetEquals(expectedPrimaryKeys, tableUnderTest.getPrimaryKey());
         }
 
         @Override
         protected TableInfo buildTableUnderTest(TableInfo.Builder builder) {
             return builder.resetPrimaryKey(expectedPrimaryKeys).build();
         }
-    }
-
-    /*package*/ static List<ColumnInfo> createColumns(ColumnInfo[] nonDefaultColumns) {
-        List<ColumnInfo> retList = new LinkedList<ColumnInfo>();
-        for (ColumnInfo column : nonDefaultColumns) {
-            retList.add(column);
-        }
-        return retList;
     }
 }
