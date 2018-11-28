@@ -26,6 +26,9 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Map;
 
+import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 import static com.fsryan.forsuredb.sqlitelib.TestData.*;
 
@@ -48,17 +51,19 @@ public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {
         return Arrays.asList(new Object[][] {
                 {   // 00: changes the default value of a column
                         "table_name",
-                        tableMapOf(table().tableName("table_name")
-                                .addColumn(longCol().defaultValue("12").build())
-                                .build()),
+                        tableMapOf(
+                                tableBuilder("table_name")
+                                        .addColumn(longCol().defaultValue("12").build())
+                                        .build()
+                        ),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
-                                "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified, long_column FROM table_name;",
+                                "CREATE TEMP TABLE temp_table_name AS SELECT _id, created, deleted, modified, long_col FROM table_name;",
                                 "DROP TABLE IF EXISTS table_name;",
                                 "CREATE TABLE table_name(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT '0', modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER table_name_updated_trigger AFTER UPDATE ON table_name BEGIN UPDATE table_name SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "ALTER TABLE table_name ADD COLUMN long_column INTEGER DEFAULT '12';",
-                                "INSERT INTO table_name SELECT _id, created, deleted, modified, long_column FROM temp_table_name;",
+                                "ALTER TABLE table_name ADD COLUMN long_col INTEGER DEFAULT '12';",
+                                "INSERT INTO table_name SELECT _id, created, deleted, modified, long_col FROM temp_table_name;",
                                 "DROP TABLE IF EXISTS temp_table_name;"
                         }
                 }

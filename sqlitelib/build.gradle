@@ -6,6 +6,8 @@ dependencies {
     compileOnly deps.jsr305
 
     testImplementation project(':forsuredbmodels-gson')
+    testImplementation project(':testtools')
+    testImplementation project(':dbinfo-testtools')
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api
     testRuntime deps.test.junit.jupiter.engine

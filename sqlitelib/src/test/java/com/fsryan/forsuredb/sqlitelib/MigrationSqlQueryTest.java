@@ -28,6 +28,7 @@ import org.junit.runners.Parameterized;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
@@ -53,7 +54,7 @@ public class MigrationSqlQueryTest {
         return Arrays.asList(new Object[][] {
                 {   // 00 ALTER TABLE ADD COLUMN
                         resourceText("alter_table_add_column_migration.json"),
-                        Arrays.asList("ALTER TABLE user ADD COLUMN global_id INTEGER;")
+                        Collections.singletonList("ALTER TABLE user ADD COLUMN global_id INTEGER;")
                 },
                 {   // 01 CREATE TABLE
                         resourceText("create_table_migration.json"),

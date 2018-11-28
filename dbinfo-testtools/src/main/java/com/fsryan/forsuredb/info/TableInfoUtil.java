@@ -1,10 +1,13 @@
 package com.fsryan.forsuredb.info;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
 public abstract class TableInfoUtil {
+
+    private static final Set<String> defaultColumnNames = setOf("created", "deleted", "modified", "_id");
 
     /**
      * <p>{@link TableInfo} in tests typically don't pertain to actual classes.
@@ -33,5 +36,11 @@ public abstract class TableInfoUtil {
             retMap.put(table.tableName(), table);
         }
         return retMap;
+    }
+
+    public static Set<String> defaultColumnsPlus(String... additionalColumns) {
+        Set<String> ret = new HashSet<>(defaultColumnNames);
+        ret.addAll(Arrays.asList(additionalColumns));
+        return ret;
     }
 }
