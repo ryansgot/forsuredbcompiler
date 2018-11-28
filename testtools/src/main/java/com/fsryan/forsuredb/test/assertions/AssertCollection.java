@@ -2,6 +2,7 @@ package com.fsryan.forsuredb.test.assertions;
 
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -94,6 +95,52 @@ public abstract class AssertCollection {
                 }
             } catch (IndexOutOfBoundsException ioobe) {
                 throw new RuntimeException("actual did not have index " + i + (desc == null ? "" : "; " + desc),  ioobe);
+            }
+        }
+        assertEquals(failPrepend(desc) + " longer than expected", expected.size(), actual.size());
+    }
+
+    public static <T> void assertListDescending(List<T> list) {
+        assertListDescending(null, list);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> void assertListDescending(String desc, List<T> list) {
+        assertListDescending(list, (Comparator<T>) Comparator.naturalOrder());
+    }
+
+    public static <T> void assertListDescending(List<T> list, Comparator<T> comparator) {
+        assertListAscending(null, list, comparator.reversed());
+    }
+
+    public static <T> void assertListDescending(String desc, List<T> list, Comparator<T> comparator) {
+        assertListAscending(desc, list, comparator.reversed());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> void assertListAscending(List<T> list) {
+        assertListAscending(null, list);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> void assertListAscending(String desc, List<T> list) {
+        assertListAscending(desc, list, (Comparator<T>) Comparator.naturalOrder());
+    }
+
+    public static <T> void assertListAscending(List<T> list, Comparator<T> comparator) {
+        assertListAscending(null, list, comparator);
+    }
+
+    public static <T> void assertListAscending(String desc, List<T> list, Comparator<T> comparator) {
+        if (list.size() < 2) {
+            return;
+        }
+
+        for (int i = 0; i < list.size() - 1; i ++) {
+            final T lesser = list.get(i);
+            final T greater = list.get(i + 1);
+            if (comparator.compare(lesser, greater) > 0) {
+                fail(failPrepend(desc) + "expected sort " + lesser + " after " + greater);
             }
         }
     }
