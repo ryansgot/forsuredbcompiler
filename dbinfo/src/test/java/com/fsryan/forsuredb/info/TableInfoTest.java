@@ -85,9 +85,7 @@ public abstract class TableInfoTest {
         @Test
         public void shouldReturnNonForeignKeyColumnsInCorrectSort() {
             List<ColumnInfo> sortedNonForeignKeyColumns = new LinkedList<>();
-            for (ColumnInfo column : tableUnderTest.getNonForeignKeyColumns()) {
-                sortedNonForeignKeyColumns.add(column);
-            }
+            sortedNonForeignKeyColumns.addAll(tableUnderTest.getNonForeignKeyColumns());
             Collections.sort(sortedNonForeignKeyColumns);
 
             List<ColumnInfo> unsortedColumns = tableUnderTest.getNonForeignKeyColumns();

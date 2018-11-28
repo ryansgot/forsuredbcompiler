@@ -17,7 +17,6 @@
  */
 package com.fsryan.forsuredb.info;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -34,9 +33,7 @@ public class ColumnInfoTest {
     @Test
     public void shouldPutIdColumnFirst() {
         List<ColumnInfo> defaultColumns = new LinkedList<>();
-        for (ColumnInfo column : TableInfo.DEFAULT_COLUMNS.values()) {
-            defaultColumns.add(column);
-        }
+        defaultColumns.addAll(TableInfo.DEFAULT_COLUMNS.values());
         Collections.sort(defaultColumns);
         assertEquals("_id", defaultColumns.get(0).getColumnName());
     }
@@ -86,6 +83,6 @@ public class ColumnInfoTest {
 
     @Test
     public void shouldSayHasDefaultValueAfterSettingDefaultValue() {
-        TestCase.assertTrue(TestData.booleanCol().defaultValue("0").build().hasDefaultValue());
+        assertTrue(TestData.booleanCol().defaultValue("0").build().hasDefaultValue());
     }
 }
