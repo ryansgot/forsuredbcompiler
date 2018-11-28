@@ -13,6 +13,7 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.stringCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.migrationSet;
 
 
 /**
@@ -49,8 +50,7 @@ public class ZeroToOneDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build())
                                         .build())
                         ),
-                        MigrationSet.builder()
-                                .dbVersion(1)
+                        migrationSet(1)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.CREATE_TABLE)
                                                 .tableName(TABLE_NAME)

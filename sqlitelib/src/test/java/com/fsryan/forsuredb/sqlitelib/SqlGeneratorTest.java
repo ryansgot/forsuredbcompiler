@@ -70,7 +70,7 @@ public abstract class SqlGeneratorTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    {   // 00: empty input map
+                    {   // 00: emptyMigrationSet input map
                             TABLE_NAME,
                             Collections.emptyList(),
                             "INSERT INTO test_table (deleted) VALUES (?);"
@@ -216,11 +216,11 @@ public abstract class SqlGeneratorTest {
                             ),
                             "table.column1 ASC, table2.column1 DESC"
                     },
-                    {   // 08: Empty list returns empty string
+                    {   // 08: Empty list returns emptyMigrationSet string
                             new ArrayList<FSOrdering>(0),
                             ""
                     },
-                    {   // 09: null returns empty string
+                    {   // 09: null returns emptyMigrationSet string
                             null,
                             ""
                     }

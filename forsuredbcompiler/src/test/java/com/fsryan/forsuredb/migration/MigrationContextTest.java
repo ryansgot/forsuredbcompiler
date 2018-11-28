@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.migrationSet;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static java.util.function.Function.identity;
@@ -82,9 +83,8 @@ public abstract class MigrationContextTest {
 
     public static abstract class OneMigrationSetTest extends MigrationContextTest {
         public OneMigrationSetTest(List<Migration> migrations, Map<String, TableInfo> expectedSchema) {
-            super(Arrays.asList(MigrationSet.builder()
+            super(Collections.singletonList(migrationSet(1)
                     .orderedMigrations(migrations)
-                    .dbVersion(1)
                     .targetSchema(expectedSchema)
                     .build()),1, expectedSchema);
         }
@@ -95,18 +95,20 @@ public abstract class MigrationContextTest {
                                    Map<String, TableInfo> firstExpectedSchema,
                                    List<Migration> secondMigrations,
                                    Map<String, TableInfo> secondExpectedSchema) {
-            super(Arrays.asList(MigrationSet.builder()
-                            .orderedMigrations(firstMigrations)
-                            .dbVersion(1)
-                            .targetSchema(firstExpectedSchema)
-                            .build(),
-                    MigrationSet.builder()
-                            .orderedMigrations(secondMigrations)
-                            .dbVersion(2)
-                            .targetSchema(secondExpectedSchema)
-                            .build()),
+            super(
+                    Arrays.asList(
+                            migrationSet(1)
+                                    .orderedMigrations(firstMigrations)
+                                    .targetSchema(firstExpectedSchema)
+                                    .build(),
+                            migrationSet(2)
+                                    .orderedMigrations(secondMigrations)
+                                    .targetSchema(secondExpectedSchema)
+                                    .build()
+                    ),
                     2,
-                    secondExpectedSchema);
+                    secondExpectedSchema
+            );
         }
     }
 }

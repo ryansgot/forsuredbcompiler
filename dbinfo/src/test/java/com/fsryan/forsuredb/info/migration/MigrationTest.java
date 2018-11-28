@@ -45,12 +45,12 @@ public abstract class MigrationTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    {   // 00: null extras should cause empty foreign keys and current columns
+                    {   // 00: null extras should cause emptyMigrationSet foreign keys and current columns
                             null,
                             Collections.<TableForeignKeyInfo>emptySet(),
                             Collections.<String>emptySet()
                     },
-                    {   // 01: non-null, but empty
+                    {   // 01: non-null, but emptyMigrationSet
                             Collections.<String, String>emptyMap(),
                             Collections.<TableForeignKeyInfo>emptySet(),
                             Collections.<String>emptySet()

@@ -35,6 +35,7 @@ import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.addUniqueIndexMigration;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.changeDefaultValueMigration;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.migrationSet;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 
@@ -65,8 +66,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(stringCol().build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(5)
+                        migrationSet(5)
                                 .targetSchema(tableMapOf(
                                         tableBuilder(TABLE_NAME)
                                                 .addColumn(intCol().build())
@@ -79,8 +79,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         1,
                         TableContext.empty(),
                         TableContext.fromSchema(tableMapOf(tableBuilder(TABLE_NAME).build())),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Collections.singletonList(migration(
                                         Migration.Type.CREATE_TABLE)
                                                 .tableName(TABLE_NAME)
@@ -98,8 +97,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .build()
                         )),
 
-                        MigrationSet.builder()
-                                .dbVersion(11)
+                        migrationSet(11)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.CREATE_TABLE)
                                                 .tableName(TABLE_NAME)
@@ -127,8 +125,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(bigDecimalCol().build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(4)
+                        migrationSet(4)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
@@ -148,8 +145,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(3)
+                        migrationSet(3)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.UPDATE_FOREIGN_KEYS)
                                                 .tableName(TABLE_NAME)
@@ -170,8 +166,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(stringCol().unique(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(4365)
+                        migrationSet(4365)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                                 .tableName(TABLE_NAME)
@@ -195,8 +190,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(stringCol().unique(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(9)
+                        migrationSet(9)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.MAKE_COLUMN_UNIQUE)
                                                 .tableName(TABLE_NAME)
@@ -223,7 +217,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(stringCol().columnName("table_2_string").build())
                                         .build()
                         )),
-                        MigrationSet.builder().dbVersion(48)
+                        migrationSet(48)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.DROP_TABLE)
                                         .tableName("table_1")
@@ -247,8 +241,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().index(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ADD_INDEX)
                                                 .tableName(TABLE_NAME)
@@ -268,8 +261,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().index(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
@@ -293,8 +285,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().unique(true).index(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ADD_UNIQUE_INDEX)
                                                 .tableName(TABLE_NAME)
@@ -314,8 +305,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().unique(true).index(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                                 .tableName(TABLE_NAME)
@@ -339,8 +329,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().primaryKey(true).build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(2)
+                        migrationSet(2)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.UPDATE_PRIMARY_KEY)
                                                 .putExtra("existing_column_names", "[\"long_col\",\"deleted\",\"created\",\"modified\",\"_id\"]")
@@ -363,8 +352,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(3)
+                        migrationSet(3)
                                 .orderedMigrations(Collections.singletonList(
                                         migration(Migration.Type.UPDATE_FOREIGN_KEYS)
                                                 .tableName(TABLE_NAME)
@@ -391,7 +379,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build())
                                         .build()
                         )),
-                        MigrationSet.builder().dbVersion(3)
+                        migrationSet(3)
                                 .orderedMigrations(Arrays.asList(
                                         migration(Migration.Type.UPDATE_FOREIGN_KEYS)
                                                 .tableName(TABLE_NAME)
@@ -416,8 +404,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().defaultValue("12").build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(3)
+                        migrationSet(3)
                                 .orderedMigrations(Collections.singletonList(
                                         changeDefaultValueMigration("test1")
                                                 .columnName(longCol().build().getColumnName())
@@ -440,8 +427,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                         .addColumn(longCol().unique(true).index(true).defaultValue("12").build())
                                         .build()
                         )),
-                        MigrationSet.builder()
-                                .dbVersion(3)
+                        migrationSet(3)
                                 .orderedMigrations(Arrays.asList(
                                         changeDefaultValueMigration("test1")
                                                 .columnName(longCol().build().getColumnName())

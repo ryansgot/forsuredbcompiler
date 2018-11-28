@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class OneMigrationSetSuccessConditions extends MigrationContextTest.OneMi
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {   // 00: one table with no extra columns
-                        Arrays.asList(createTableMigration("table1")),
+                        Collections.singletonList(createTableMigration("table1")),
                         tableMapOf(tableBuilder("table1").build())
                 },
                 {   // 01: one table with one extra non-unique column
