@@ -16,6 +16,7 @@ dependencies {
     testRuntime deps.test.junit.vintage.engine
     testImplementation deps.test.mockito
     testImplementation project(':testtools')
+    testImplementation project(':dbinfo-testtools')
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

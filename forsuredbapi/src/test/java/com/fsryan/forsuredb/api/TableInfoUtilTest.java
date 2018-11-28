@@ -1,5 +1,6 @@
 package com.fsryan.forsuredb.api;
 
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Test;
 
@@ -10,22 +11,23 @@ import static com.fsryan.forsuredb.api.TableInfoUtil.bestEffortDAGSort;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.foreignKeyTo;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
-import static org.junit.Assert.assertEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 
 public class TableInfoUtilTest {
 
     @Test
     public void shouldProperlySort() {
         TableInfo tA = tableBuilder("tA")
-                .addForeignKey(foreignKeyTo("tB").build())
+                .addForeignKey(tfkiTo("tB"))
                 .build();
         TableInfo tB = tableBuilder("tB").build();
         TableInfo tC = tableBuilder("tC")
-                .addForeignKey(foreignKeyTo("tA").build())
+                .addForeignKey(tfkiTo("tA"))
                 .build();
         TableInfo tD = tableBuilder("tD")
-                .addForeignKey(foreignKeyTo("tC").build())
-                .addForeignKey(foreignKeyTo("tB").build())
+                .addForeignKey(tfkiTo("tC"))
+                .addForeignKey(tfkiTo("tB"))
                 .build();
 
         // A -> B
@@ -36,6 +38,10 @@ public class TableInfoUtilTest {
 
         List<TableInfo> output = bestEffortDAGSort(tableMapOf(tA, tB, tC, tD));
         List<TableInfo> expected = Arrays.asList(tB, tA, tC, tD);
-        assertEquals(expected, output);
+        assertListEquals(expected, output);
+    }
+
+    private static TableForeignKeyInfo tfkiTo(String table) {
+        return foreignKeyTo(table).localToForeignColumnMap(mapOf("", "")).build();
     }
 }
