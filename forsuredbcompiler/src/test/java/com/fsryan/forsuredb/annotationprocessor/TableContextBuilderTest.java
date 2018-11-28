@@ -4,8 +4,6 @@ import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +11,9 @@ import org.junit.runners.Parameterized;
 
 import java.util.*;
 
-import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 import static org.junit.Assert.assertEquals;
 
 public abstract class TableContextBuilderTest {
@@ -44,17 +44,17 @@ public abstract class TableContextBuilderTest {
             return Arrays.asList(new Object[][] {
                     {   // 00: one table with no extra columns
                         // tests basic one-table behavior
-                            ImmutableMap.of(table1KeyPair(), table1Builder()),
+                            mapOf(table1KeyPair(), table1Builder()),
                             Collections.emptyMap(),
                             Collections.emptyMap(),
-                            ImmutableMap.of("table_1", table1Builder().build())
+                            mapOf("table_1", table1Builder().build())
                     },
                     {   // 01: one table with an extra column
                         // tests that extra column definitions
-                            ImmutableMap.of(table1KeyPair(), table1Builder()),
-                            ImmutableMap.of("table_1", ImmutableMap.of("column_1", table1Column1Builder())),
+                            mapOf(table1KeyPair(), table1Builder()),
+                            mapOf("table_1", mapOf("column_1", table1Column1Builder())),
                             Collections.emptyMap(),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
                                     table1Builder()
                                             .addColumn(table1Column1Builder().build())
@@ -63,16 +63,16 @@ public abstract class TableContextBuilderTest {
                     },
                     {   // 02: two tables
                         // Tests that multiple tables are supported
-                            ImmutableMap.of(
+                            mapOf(
                                     table1KeyPair(), table1Builder(),
                                     table2KeyPair(), table2Builder()
                             ),
-                            ImmutableMap.of(
-                                    "table_1", ImmutableMap.of("column_1", table1Column1Builder()),
-                                    "table_2", ImmutableMap.of("table_2_column", table2ColumnBuilder())
+                            mapOf(
+                                    "table_1", mapOf("column_1", table1Column1Builder()),
+                                    "table_2", mapOf("table_2_column", table2ColumnBuilder())
                             ),
                             Collections.emptyMap(),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
                                     table1Builder()
                                             .addColumn(table1Column1Builder().build())
@@ -85,28 +85,28 @@ public abstract class TableContextBuilderTest {
                     },
                     {   // 03: two tables, one with a non-composite foreign key to the other
                         // Tests basic foreign key building
-                            ImmutableMap.of(
+                            mapOf(
                                     table1KeyPair(), table1Builder(),
                                     table2KeyPair(), table2Builder()
                             ),
-                            ImmutableMap.of(
-                                    "table_1", ImmutableMap.of("column_1", table1Column1Builder()),
-                                    "table_2", ImmutableMap.of("table_2_column", table2ColumnBuilder())
+                            mapOf(
+                                    "table_1", mapOf("column_1", table1Column1Builder()),
+                                    "table_2", mapOf("table_2_column", table2ColumnBuilder())
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_2",
-                                    ImmutableMap.of(
+                                    mapOf(
                                             "",
-                                            Sets.newHashSet(
+                                            setOf(
                                                     TableForeignKeyInfo.builder()
-                                                            .localToForeignColumnMap(ImmutableMap.of("table_2_column", "_id"))
+                                                            .localToForeignColumnMap(mapOf("table_2_column", "_id"))
                                                             .deleteChangeAction("CASCADE")
                                                             .updateChangeAction("CASCADE")
                                                             .foreignTableApiClassName(TableContextBuilderTest.class.getName())
                                             )
                                     )
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
                                     table1Builder()
                                             .addColumn(table1Column1Builder().build())
@@ -115,7 +115,7 @@ public abstract class TableContextBuilderTest {
                                     table2Builder()
                                             .addColumn(table2ColumnBuilder().build())
                                             .addForeignKey(TableForeignKeyInfo.builder()
-                                                    .localToForeignColumnMap(ImmutableMap.of("table_2_column", "_id"))
+                                                    .localToForeignColumnMap(mapOf("table_2_column", "_id"))
                                                     .deleteChangeAction("CASCADE")
                                                     .updateChangeAction("CASCADE")
                                                     .foreignTableApiClassName(TableContextBuilderTest.class.getName())
@@ -126,45 +126,45 @@ public abstract class TableContextBuilderTest {
                     },
                     {   // 04: two tables, one with a composite foreign key to the other and one with a composite primary key
                             // Tests the collapsing of composites into a single foreign key with multiple columns
-                            ImmutableMap.of(
+                            mapOf(
                                     table1KeyPair(),
                                     table1Builder()
-                                            .resetPrimaryKey(Sets.newHashSet("_id", "column_1"))
+                                            .resetPrimaryKey(setOf("_id", "column_1"))
                                             .primaryKeyOnConflict("REPLACE"),
                                     table2KeyPair(),
                                     table2Builder()
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
-                                    ImmutableMap.of("column_1", table1Column1Builder().unique(true)),
+                                    mapOf("column_1", table1Column1Builder().unique(true)),
                                     "table_2",
-                                    ImmutableMap.of(
+                                    mapOf(
                                             "table_2_column", table2ColumnBuilder(),
                                             "table_2_string_column", table2StringColumnBuilder()
                                     )
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_2",
-                                    ImmutableMap.of(
+                                    mapOf(
                                             UUID.randomUUID().toString(),   // <-- this is the composite id
-                                            Sets.newHashSet(
+                                            setOf(
                                                     TableForeignKeyInfo.builder()
-                                                            .localToForeignColumnMap(ImmutableMap.of("table_2_column", "_id"))
+                                                            .localToForeignColumnMap(mapOf("table_2_column", "_id"))
                                                             .deleteChangeAction("CASCADE")
                                                             .updateChangeAction("CASCADE")
                                                             .foreignTableApiClassName(TableContextBuilderTest.class.getName()),
                                                     TableForeignKeyInfo.builder()
-                                                            .localToForeignColumnMap(ImmutableMap.of("table_2_string_column", "column_1"))
+                                                            .localToForeignColumnMap(mapOf("table_2_string_column", "column_1"))
                                                             .deleteChangeAction("CASCADE")
                                                             .updateChangeAction("CASCADE")
                                                             .foreignTableApiClassName(TableContextBuilderTest.class.getName())
                                             )
                                     )
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
                                     table1Builder()
-                                            .resetPrimaryKey(Sets.newHashSet("_id", "column_1"))
+                                            .resetPrimaryKey(setOf("_id", "column_1"))
                                             .primaryKeyOnConflict("REPLACE")
                                             .addColumn(table1Column1Builder().unique(true).build())
                                             .build(),
@@ -173,7 +173,7 @@ public abstract class TableContextBuilderTest {
                                             .addColumn(table2ColumnBuilder().build())
                                             .addColumn(table2StringColumnBuilder().build())
                                             .addForeignKey(TableForeignKeyInfo.builder()
-                                                    .localToForeignColumnMap(ImmutableMap.of(
+                                                    .localToForeignColumnMap(mapOf(
                                                             "table_2_column", "_id",
                                                             "table_2_string_column", "column_1")
                                                     ).deleteChangeAction("CASCADE")
@@ -186,38 +186,38 @@ public abstract class TableContextBuilderTest {
                     },
                     {   // 05: three tables-one with multiple non-composite foreign keys
                         // Tests the collapsing of composites into a single foreign key with multiple columns
-                            ImmutableMap.of(
+                            mapOf(
                                     table1KeyPair(), table1Builder(),
                                     table2KeyPair(), table2Builder(),
                                     table3KeyPair(), table3Builder()
                             ),
-                            ImmutableMap.of(
-                                    "table_1", ImmutableMap.of("column_1", table1Column1Builder()),
-                                    "table_2", ImmutableMap.of(
+                            mapOf(
+                                    "table_1", mapOf("column_1", table1Column1Builder()),
+                                    "table_2", mapOf(
                                             "table_2_column", table2ColumnBuilder(),
                                             "table_2_string_column", table2StringColumnBuilder(),
                                             "table_2_second_long_column", table2SecondLongColumnBuilder()
                                     )
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_2",
-                                    ImmutableMap.of(
+                                    mapOf(
                                             "",
-                                            Sets.newHashSet(
+                                            setOf(
                                                     TableForeignKeyInfo.builder()
-                                                            .localToForeignColumnMap(ImmutableMap.of("table_2_column", "_id"))
+                                                            .localToForeignColumnMap(mapOf("table_2_column", "_id"))
                                                             .deleteChangeAction("CASCADE")
                                                             .updateChangeAction("CASCADE")
                                                             .foreignTableApiClassName(TableContextBuilderTest.class.getName()),
                                                     TableForeignKeyInfo.builder()
-                                                            .localToForeignColumnMap(ImmutableMap.of("table_2_second_long_column", "_id"))
+                                                            .localToForeignColumnMap(mapOf("table_2_second_long_column", "_id"))
                                                             .deleteChangeAction("CASCADE")
                                                             .updateChangeAction("CASCADE")
                                                             .foreignTableApiClassName(FSAnnotationProcessor.class.getName())
                                             )
                                     )
                             ),
-                            ImmutableMap.of(
+                            mapOf(
                                     "table_1",
                                     table1Builder()
                                             .addColumn(table1Column1Builder().build())
@@ -228,14 +228,14 @@ public abstract class TableContextBuilderTest {
                                             .addColumn(table2StringColumnBuilder().build())
                                             .addColumn(table2SecondLongColumnBuilder().build())
                                             .addForeignKey(TableForeignKeyInfo.builder()
-                                                    .localToForeignColumnMap(ImmutableMap.of("table_2_column", "_id"))
+                                                    .localToForeignColumnMap(mapOf("table_2_column", "_id"))
                                                     .deleteChangeAction("CASCADE")
                                                     .updateChangeAction("CASCADE")
                                                     .foreignTableApiClassName(TableContextBuilderTest.class.getName())
                                                     .foreignTableName("table_1")
                                                     .build())
                                             .addForeignKey(TableForeignKeyInfo.builder()
-                                                    .localToForeignColumnMap(ImmutableMap.of("table_2_second_long_column", "_id"))
+                                                    .localToForeignColumnMap(mapOf("table_2_second_long_column", "_id"))
                                                     .deleteChangeAction("CASCADE")
                                                     .updateChangeAction("CASCADE")
                                                     .foreignTableApiClassName(FSAnnotationProcessor.class.getName())
@@ -294,13 +294,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table1Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_1")
-                .qualifiedClassName(TableContextBuilderTest.class.getName())
-                .resetPrimaryKey(Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
+        return tableBuilder("table_1")
+                .qualifiedClassName(TableContextBuilderTest.class.getName());
     }
 
     private static ColumnInfo.Builder table1Column1Builder() {
@@ -315,13 +310,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table2Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_2")
-                .qualifiedClassName(TableContextBuilderTest.NonDocStore.class.getName())
-                .resetPrimaryKey(Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
+        return tableBuilder("table_2")
+                .qualifiedClassName(TableContextBuilderTest.NonDocStore.class.getName());
     }
 
     private static ColumnInfo.Builder table2ColumnBuilder() {
@@ -350,20 +340,8 @@ public abstract class TableContextBuilderTest {
     }
 
     private static TableInfo.Builder table3Builder() {
-        return tableBuilderWithDefaultColumns()
-                .tableName("table_3")
+        return tableBuilder("table_3")
                 .qualifiedClassName(FSAnnotationProcessor.class.getName())
-                .resetPrimaryKey(Sets.newHashSet(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN))
-                .primaryKeyOnConflict("")
-                .staticDataAsset("")
-                .staticDataRecordName("");
-    }
-
-    private static TableInfo.Builder tableBuilderWithDefaultColumns() {
-        return TableInfo.builder()
-                .addColumn(createdCol())
-                .addColumn(deletedCol())
-                .addColumn(modifiedCol())
-                .addColumn(idCol());
+                .resetPrimaryKey(setOf(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN));
     }
 }

@@ -43,7 +43,7 @@ public class ProjectionHelperTest {
                         null,
                         null
                 },
-                {   // 01: empty input results in null output
+                {   // 01: emptyMigrationSet input results in null output
                         Collections.<FSProjection>emptyList(),
                         null
                 },

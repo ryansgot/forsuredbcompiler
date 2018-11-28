@@ -8,9 +8,11 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.migrationSet;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -54,8 +56,7 @@ public abstract class MigrationContextTest {
             TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
 
             assertNotNull(actualTable);
-            assertEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
-            assertEquals(expectedTable.primaryKeyOnConflict(), actualTable.primaryKeyOnConflict());
+            assertSetEquals(expectedTable.getPrimaryKey(), actualTable.getPrimaryKey());
         });
     }
 
@@ -64,7 +65,7 @@ public abstract class MigrationContextTest {
         expectedSchema.values().forEach(expectedTable -> {
             TableInfo actualTable = migrationContext.getTableByName(expectedTable.tableName());
             assertNotNull("Did not find table: " + expectedTable.tableName(), actualTable);
-            assertEquals("table: " + expectedTable.tableName(), expectedTable.foreignKeys(), actualTable.foreignKeys());
+            assertSetEquals(expectedTable.foreignKeys(), actualTable.foreignKeys());
         });
     }
 
@@ -76,17 +77,14 @@ public abstract class MigrationContextTest {
 
                 final Map<String, ColumnInfo> expectedColumns = expectedTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
                 final Map<String, ColumnInfo> actualColumns = actualTable.getColumns().stream().collect(toMap(ColumnInfo::getColumnName, identity()));
-
-                expectedColumns.forEach((expectedName, expectedColumn) -> assertEquals(expectedColumn, actualColumns.get(expectedName)));
-                actualColumns.forEach((actualName, actualColumn) -> assertTrue("extra column: " + actualColumn, expectedColumns.containsKey(actualName)));
+                assertMapEquals(expectedColumns, actualColumns);
             }));
     }
 
     public static abstract class OneMigrationSetTest extends MigrationContextTest {
         public OneMigrationSetTest(List<Migration> migrations, Map<String, TableInfo> expectedSchema) {
-            super(Arrays.asList(MigrationSet.builder()
+            super(Collections.singletonList(migrationSet(1)
                     .orderedMigrations(migrations)
-                    .dbVersion(1)
                     .targetSchema(expectedSchema)
                     .build()),1, expectedSchema);
         }
@@ -97,18 +95,20 @@ public abstract class MigrationContextTest {
                                    Map<String, TableInfo> firstExpectedSchema,
                                    List<Migration> secondMigrations,
                                    Map<String, TableInfo> secondExpectedSchema) {
-            super(Arrays.asList(MigrationSet.builder()
-                            .orderedMigrations(firstMigrations)
-                            .dbVersion(1)
-                            .targetSchema(firstExpectedSchema)
-                            .build(),
-                    MigrationSet.builder()
-                            .orderedMigrations(secondMigrations)
-                            .dbVersion(2)
-                            .targetSchema(secondExpectedSchema)
-                            .build()),
+            super(
+                    Arrays.asList(
+                            migrationSet(1)
+                                    .orderedMigrations(firstMigrations)
+                                    .targetSchema(firstExpectedSchema)
+                                    .build(),
+                            migrationSet(2)
+                                    .orderedMigrations(secondMigrations)
+                                    .targetSchema(secondExpectedSchema)
+                                    .build()
+                    ),
                     2,
-                    secondExpectedSchema);
+                    secondExpectedSchema
+            );
         }
     }
 }

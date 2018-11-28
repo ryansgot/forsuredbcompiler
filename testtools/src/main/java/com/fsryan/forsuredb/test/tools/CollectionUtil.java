@@ -1,11 +1,27 @@
-package com.fsryan.forsuredb.api;
+package com.fsryan.forsuredb.test.tools;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class CollectionUtil {
+public abstract class CollectionUtil {
+
+    /**
+     * <p>Use when you have a map whose key and value types are the same. Even
+     * indices are the keys and odd indices are the values.
+     * @param ts an array of T with even length
+     * @param <T> both the key and value type of the map
+     * @return a {@link Map} created from the array values
+     * @throws IllegalArgumentException if the array is not of even length
+     */
+    public static <T> Map<T, T> mapFromArray(T... ts) {
+        if (ts.length % 2 != 0) {
+            throw new IllegalArgumentException("Must input array with even length");
+        }
+        Map<T, T> ret = new HashMap<>(ts.length / 2);
+        for (int i = 0; i < ts.length; i += 2) {
+            ret.put(ts[i], ts[i + 1]);
+        }
+        return ret;
+    }
 
     public static <K, V> Map<K, V> mapOf() {
         return new HashMap<>();
@@ -129,11 +145,11 @@ public class CollectionUtil {
         return ret;
     }
 
+    public static <T> Set<T> setOf(T... ts) {
+        return new HashSet<>(Arrays.asList(ts));
+    }
+
     public static <T> ArrayList<T> arrayListOf(T... ts) {
-        ArrayList<T> ret = new ArrayList<>(ts.length);
-        for (T t : ts) {
-            ret.add(t);
-        }
-        return ret;
+        return new ArrayList<>(Arrays.asList(ts));
     }
 }

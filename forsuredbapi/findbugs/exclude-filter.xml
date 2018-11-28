@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- TODO: remove these in 0.13.0 -->
+    <!-- TODO: figure out a good time to remove these -->
     <Match>
         <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
         <Method name="createStringDoc" />
@@ -10,6 +10,10 @@
         <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
         <Method name="fromStorage" />
         <Bug pattern="DM_DEFAULT_ENCODING" />
+    </Match>
+    <Match>
+        <Class name="com.fsryan.forsuredb.api.adapter.FSDefaultSerializer" />
+        <Bug pattern="DE_MIGHT_IGNORE" />
     </Match>
     <Match>
         <Class name="com.fsryan.forsuredb.api.PluginHelper" />

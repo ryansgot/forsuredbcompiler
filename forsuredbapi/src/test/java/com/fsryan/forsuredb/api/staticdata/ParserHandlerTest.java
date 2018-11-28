@@ -18,7 +18,6 @@
 package com.fsryan.forsuredb.api.staticdata;
 
 import com.fsryan.forsuredb.api.RecordContainer;
-import com.fsryan.forsuredb.api.TestData;
 import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
@@ -35,7 +34,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.fsryan.forsuredb.api.TestData.resourceText;
+import static com.fsryan.forsuredb.test.tools.ResourceUtil.resourceText;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -127,7 +126,7 @@ public class ParserHandlerTest {
     @Before
     public void setUp() {
         mockRetrieveListener = mock(OnRecordRetrievedListener.class);
-        xmlStream = TestData.resourceStream(staticDataXmlResource);
+        xmlStream = ParserHandlerTest.class.getClassLoader().getResourceAsStream(staticDataXmlResource);
     }
 
     @After

@@ -12,12 +12,13 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.fsryan.forsuredb.integrationtest.ForSure.allTypesTable;
-import static com.fsyran.forsuredb.integrationtest.MoreAssertions.*;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListAscending;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListDescending;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
+import static com.fsryan.forsuredb.test.assertions.MoreAssertions.assertCallThrowsException;
 import static com.fsyran.forsuredb.integrationtest.TestUtil.*;
 import static com.fsyran.forsuredb.integrationtest.singletable.AllTypesTableTestUtil.*;
 import static java.util.stream.Collectors.toList;
@@ -66,7 +67,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::booleanColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -76,7 +77,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::booleanColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -86,7 +87,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::booleanWrapperColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -96,7 +97,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::booleanWrapperColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -106,7 +107,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::intColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -116,7 +117,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::intColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -126,7 +127,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::integerWrapperColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -136,7 +137,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::integerWrapperColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -146,7 +147,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::longColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -156,7 +157,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::longColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -166,7 +167,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::longWrapperColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -176,7 +177,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::longWrapperColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -186,7 +187,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::floatColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -196,7 +197,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::floatColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -206,7 +207,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::floatWrapperColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -216,7 +217,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::floatWrapperColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -226,7 +227,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::doubleColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -236,7 +237,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::doubleColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -246,7 +247,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::doubleWrapperColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -256,7 +257,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::doubleWrapperColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -266,7 +267,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::dateColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -276,7 +277,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::dateColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -286,7 +287,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::byteArrayColumn)
                 .collect(toList());
-        assertAscending(expectedAscending, MEMCMP_COMPARATOR);
+        assertListAscending(expectedAscending, MEMCMP_COMPARATOR);
     }
 
     @Test
@@ -296,7 +297,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::byteArrayColumn)
                 .collect(toList());
-        assertDescending(expectedDescending, MEMCMP_COMPARATOR);
+        assertListDescending(expectedDescending, MEMCMP_COMPARATOR);
     }
 
     @Test
@@ -306,7 +307,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::stringColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -316,7 +317,7 @@ public class RetrievalTests {
                 .stream()
                 .map(AllTypesTable.Record::stringColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
 //    @Test
@@ -327,7 +328,7 @@ public class RetrievalTests {
 //                .stream()
 //                .map(AllTypesTable.Record::bigIntegerColumn)
 //                .collect(toList());
-//        assertAscending(expectedAscending);
+//        assertListAscending(expectedAscending);
 //    }
 
 //    @Test
@@ -338,7 +339,7 @@ public class RetrievalTests {
 //                .stream()
 //                .map(AllTypesTable.Record::bigIntegerColumn)
 //                .collect(toList());
-//        assertDescending(expectedDescending);
+//        assertListDescending(expectedDescending);
 //    }
 
 //    @Test
@@ -349,7 +350,7 @@ public class RetrievalTests {
 //                .stream()
 //                .map(AllTypesTable.Record::bigDecimalColumn)
 //                .collect(toList());
-//        assertAscending(expectedAscending);
+//        assertListAscending(expectedAscending);
 //    }
 
 //    @Test
@@ -360,7 +361,7 @@ public class RetrievalTests {
 //                .stream()
 //                .map(AllTypesTable.Record::bigDecimalColumn)
 //                .collect(toList());
-//        assertDescending(expectedDescending);
+//        assertListDescending(expectedDescending);
 //    }
 
     // TWO COLUMN SORTS: boolean column will have a fair number of duplicates, so it's ideal to use as the first sorting criteria for the tests
@@ -377,7 +378,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, sameDirectionComparator);
+        assertListAscending(expectedAscending, sameDirectionComparator);
     }
 
     @Test
@@ -392,7 +393,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertDescending(expectedDescending, sameDirectionComparator);
+        assertListDescending(expectedDescending, sameDirectionComparator);
     }
 
     @Test
@@ -407,7 +408,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, firstASCSecondDescComparator);
+        assertListAscending(expectedAscending, firstASCSecondDescComparator);
     }
 
     @Test
@@ -422,7 +423,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, firstDescSecondAscComparator);
+        assertListAscending(expectedAscending, firstDescSecondAscComparator);
     }
 
     // FROM BOTTOM SORTS (which have inner queries that have sorting options flipped):
@@ -440,7 +441,7 @@ public class RetrievalTests {
         ).stream()
                 .map(AllTypesTable.Record::intColumn)
                 .collect(toList());
-        assertAscending(expectedAscending);
+        assertListAscending(expectedAscending);
     }
 
     @Test
@@ -456,7 +457,7 @@ public class RetrievalTests {
         ).stream()
                 .map(AllTypesTable.Record::intColumn)
                 .collect(toList());
-        assertDescending(expectedDescending);
+        assertListDescending(expectedDescending);
     }
 
     @Test
@@ -473,7 +474,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, sameDirectionComparator);
+        assertListAscending(expectedAscending, sameDirectionComparator);
     }
 
     @Test
@@ -490,7 +491,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertDescending(expectedDescending, sameDirectionComparator);
+        assertListDescending(expectedDescending, sameDirectionComparator);
     }
 
     @Test
@@ -507,7 +508,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, firstASCSecondDescComparator);
+        assertListAscending(expectedAscending, firstASCSecondDescComparator);
     }
 
     @Test
@@ -524,7 +525,7 @@ public class RetrievalTests {
         ).stream()
                 .map(r -> new Pair<>(r.booleanColumn(), r.stringColumn()))
                 .collect(toList());
-        assertAscending(expectedAscending, firstDescSecondAscComparator);
+        assertListAscending(expectedAscending, firstDescSecondAscComparator);
     }
 
     // FIND by single column (id) long

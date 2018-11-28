@@ -13,11 +13,18 @@ dependencies {
     annotationProcessor deps.auto.value
 
     testCompileOnly project(':forsuredbannotations')
+    testImplementation project(':forsuredbmodels-gson')
+    testImplementation project(':dbinfo-testtools')
+    testImplementation project(':testtools')
+
     testCompileOnly deps.auto.valueAnnotations
     testAnnotationProcessor deps.auto.value
-    testImplementation project(':forsuredbmodels-gson')
-    testImplementation deps.test.junit
     testImplementation deps.gson
+
+    testCompileOnly deps.test.junit4
+    testImplementation deps.test.junit.jupiter.api
+    testRuntime deps.test.junit.jupiter.engine
+    testRuntime deps.test.junit.vintage.engine
     testImplementation deps.test.mockito
 }
 

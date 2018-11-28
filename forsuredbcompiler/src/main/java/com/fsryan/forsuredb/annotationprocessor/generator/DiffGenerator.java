@@ -100,7 +100,7 @@ public class DiffGenerator {
             TableInfo sourceTable = sourceContext.getTableByName(targetTable.tableName());
             if (sourceTable != null && !sourceTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
                 retList.add(Migration.builder().type(Migration.Type.UPDATE_PRIMARY_KEY)
-                        .extras(ImmutableMap.of("existing_column_names", gson.toJson(columnNamesOf(sourceTable))))
+                        .putAllExtras(ImmutableMap.of("existing_column_names", gson.toJson(columnNamesOf(sourceTable))))
                         .tableName(targetTable.tableName())
                         .build());
             }
@@ -161,10 +161,8 @@ public class DiffGenerator {
 
         retList.add(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
                 .tableName(targetTable.tableName())
-                .extras(new ImmutableMap.Builder<String, String>()
-                        .put("existing_column_names", gson.toJson(columnNamesOf(sourceTable)))
-                        .put("current_foreign_keys", gson.toJson(sourceTable.foreignKeys()))
-                        .build())
+                .putExtra("existing_column_names", gson.toJson(columnNamesOf(sourceTable)))
+                .putExtra("current_foreign_keys", gson.toJson(sourceTable.foreignKeys()))
                 .build());
         return true;
     }

@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,16 +36,9 @@ public abstract class BaseSQLiteGeneratorTest {
     }
 
     @Test
-    public void shouldHaveCorrectNumberOfQueries() {
-        assertEquals(expectedSql.size(), getGenerator().generate().size());
-    }
-
-    @Test
     public void shouldMatchExpectedQueries() {
         List<String> generatedSql = getGenerator().generate();
-        for (int i = 0; i < expectedSql.size(); i++) {
-            assertEquals(expectedSql.get(i), generatedSql.get(i));
-        }
+        assertListEquals(expectedSql, generatedSql);
     }
 
     @Test

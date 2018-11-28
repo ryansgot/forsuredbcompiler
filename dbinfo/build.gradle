@@ -10,8 +10,13 @@ dependencies {
     compileOnly deps.auto.valueAnnotations
     annotationProcessor deps.auto.value
 
-    testImplementation deps.test.junit
+    testCompileOnly deps.test.junit4
+    testImplementation deps.test.junit.jupiter.api
+    testRuntime deps.test.junit.jupiter.engine
+    testRuntime deps.test.junit.vintage.engine
     testImplementation deps.test.mockito
+    testImplementation project(':testtools')
+    testImplementation project(':dbinfo-testtools')
 }
 
 task jacocoReport(type: JacocoReport, dependsOn: 'test') {

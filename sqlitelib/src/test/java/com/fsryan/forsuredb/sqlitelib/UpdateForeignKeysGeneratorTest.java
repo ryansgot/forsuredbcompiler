@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.api.migration.QueryGenerator;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.info.TableInfoUtil;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,8 +30,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import static com.fsryan.forsuredb.sqlitelib.CollectionUtil.stringMapOf;
-import static com.fsryan.forsuredb.sqlitelib.TestData.*;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.intCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
 @RunWith(Parameterized.class)
 public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
@@ -60,19 +65,19 @@ public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 00: add a composite foreign key
                         "referencing_table",
                         Collections.<TableForeignKeyInfo>emptySet(),
-                        defaultColumnNameSet(),
+                        TableInfoUtil.defaultColumnsPlus(),
                         tableMapOf(
-                                table().tableName("referenced_table")
+                                tableBuilder("referenced_table")
                                         .qualifiedClassName(UpdateForeignKeysGeneratorTest.class.getName())
                                         .resetPrimaryKey(setOf("referenced_int_column", "referenced_long_column"))
                                         .addColumn(intCol().columnName("referenced_int_column").build())
                                         .addColumn(longCol().columnName("referenced_long_column").build())
                                         .build(),
-                                table().tableName("referencing_table")
+                                tableBuilder("referencing_table")
                                         .addForeignKey(TableForeignKeyInfo.builder()
                                                 .foreignTableName("referenced_table")
                                                 .foreignTableApiClassName(UpdateForeignKeysGeneratorTest.class.getName())
-                                                .localToForeignColumnMap(stringMapOf(
+                                                .localToForeignColumnMap(mapOf(
                                                         "referencing_int_column", "referenced_int_column",
                                                         "referencing_long_column", "referenced_long_column"
                                                 )).updateChangeAction("CASCADE")

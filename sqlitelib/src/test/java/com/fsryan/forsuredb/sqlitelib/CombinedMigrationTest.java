@@ -14,24 +14,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
+import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 
 @RunWith(Parameterized.class)
 public class CombinedMigrationTest {
 
     private static final List<Migration> createAndAddUniqueList = Arrays.asList(
-            Migration.builder()
-                    .type(Migration.Type.CREATE_TABLE)
+            migration(Migration.Type.CREATE_TABLE)
                     .tableName("table")
                     .build(),
-            Migration.builder()
-                    .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+            migration(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                     .tableName("table")
                     .columnName("column")
                     .build()
     );
 
-    private static final Map<String, TableInfo> testSchema = TestData.tableMapOf(
+    private static final Map<String, TableInfo> testSchema = tableMapOf(
             TableInfo.builder()
                     .qualifiedClassName(SqlGeneratorTest.class.getName())
                     .tableName("table")
@@ -84,10 +84,8 @@ public class CombinedMigrationTest {
 
     @Test
     public void shouldGenerateExpectedSqlScript() {
-        List<String> actualSqlScript = new SqlGenerator().generateMigrationSql(inputMigrationSet, new FSDbInfoGsonSerializer());
-        for (int i = 0; i < expectedMigrationScript.size(); i++) {
-            assertEquals(expectedMigrationScript.get(i), actualSqlScript.get(i));
-        }
-        assertEquals(expectedMigrationScript.size(), actualSqlScript.size());
+        List<String> actualSqlScript = new SqlGenerator()
+                .generateMigrationSql(inputMigrationSet, new FSDbInfoGsonSerializer());
+        assertListEquals(expectedMigrationScript, actualSqlScript);
     }
 }

@@ -1,16 +1,13 @@
 package com.fsryan.forsuredb.info.migration;
 
-import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.emptyMigrationSet;
 import static org.junit.Assert.assertEquals;
 
 public abstract class MigrationSetTest {
@@ -32,13 +29,13 @@ public abstract class MigrationSetTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     {
-                            createMigrationSet(1),
-                            createMigrationSet(2),
+                            emptyMigrationSet(1),
+                            emptyMigrationSet(2),
                             -1
                     },
                     {
-                            createMigrationSet(1),
-                            createMigrationSet(1),
+                            emptyMigrationSet(1),
+                            emptyMigrationSet(1),
                             0
                     }
             });
@@ -55,13 +52,5 @@ public abstract class MigrationSetTest {
             final int comparison = rhs.compareTo(lhs);
             assertEquals(-1 * signOfLeftToRightComparison, (int) Math.signum(comparison));
         }
-    }
-
-    protected static MigrationSet createMigrationSet(int version) {
-        return MigrationSet.builder()
-                .dbVersion(version)
-                .orderedMigrations(new ArrayList<Migration>())
-                .targetSchema(new HashMap<String, TableInfo>())
-                .build();
     }
 }

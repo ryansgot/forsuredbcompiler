@@ -11,6 +11,7 @@ local.properties
 classes/*
 **/*.class
 classes/*
+forsuredbannotations/out/*
 forsuredbcompiler/out/*
 forsuredbapi/out/*
 dbinfo/out/*
@@ -22,3 +23,5 @@ forsuredbjdbc-example/*.db
 forsuredbjdbc-example/out/*
 sqlitelib/out/*
 integrationtest/out/*
+testtools/out/*
+dbinfo-testtools/out/*

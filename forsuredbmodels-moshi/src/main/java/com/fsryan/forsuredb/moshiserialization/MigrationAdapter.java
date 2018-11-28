@@ -44,7 +44,10 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
                     break;
                 }
                 case 3: {
-                    builder.extras(extrasAdapter.fromJson(reader));
+                    Map<String, String> extras = extrasAdapter.fromJson(reader);
+                    if (extras != null) {
+                        builder.putAllExtras(extras);
+                    }
                     break;
                 }
                 case -1: {
@@ -73,10 +76,9 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
         writer.name("migration_type");
         writer.value(value.type().toString());
 
-        Map<String, String> extras = value.extras();
-        if (extras != null) {
+        if (value.hasExtras()) {
             writer.name("extras");
-            extrasAdapter.toJson(writer, extras);
+            extrasAdapter.toJson(writer, value.extras());
         }
 
         writer.endObject();

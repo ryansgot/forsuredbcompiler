@@ -41,21 +41,23 @@ class MigrationAdapter extends TypeAdapter<Migration> {
     }
 
     @Override
-    public void write(JsonWriter jsonWriter, Migration object) throws IOException {
-        if (object == null) {
+    public void write(JsonWriter jsonWriter, Migration obj) throws IOException {
+        if (obj == null) {
             jsonWriter.nullValue();
             return;
         }
 
         jsonWriter.beginObject();
         jsonWriter.name("table_name");
-        stringAdapter.write(jsonWriter, object.tableName());
+        stringAdapter.write(jsonWriter, obj.tableName());
         jsonWriter.name("column_name");
-        stringAdapter.write(jsonWriter, object.columnName());
+        stringAdapter.write(jsonWriter, obj.columnName());
         jsonWriter.name("migration_type");
-        stringAdapter.write(jsonWriter, object.type().name());
-        jsonWriter.name("extras");
-        extrasAdapter.write(jsonWriter, object.extras());
+        stringAdapter.write(jsonWriter, obj.type().name());
+        if (obj.hasExtras()) {
+            jsonWriter.name("extras");
+            extrasAdapter.write(jsonWriter, obj.extras());
+        }
         jsonWriter.endObject();
     }
 
@@ -86,7 +88,7 @@ class MigrationAdapter extends TypeAdapter<Migration> {
                     builder.type(Migration.Type.from(stringAdapter.read(jsonReader)));
                     break;
                 case "extras":
-                    builder.extras(extrasAdapter.read(jsonReader));
+                    builder.putAllExtras(extrasAdapter.read(jsonReader));
                     break;
                 default:
                     jsonReader.skipValue();

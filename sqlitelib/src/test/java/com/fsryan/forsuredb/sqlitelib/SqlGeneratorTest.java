@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-import static com.fsryan.forsuredb.sqlitelib.CollectionUtil.stringMapOf;
 import static com.fsryan.forsuredb.sqlitelib.TestData.*;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -70,14 +70,14 @@ public abstract class SqlGeneratorTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    {   // 00: empty input map
+                    {   // 00: emptyMigrationSet input map
                             TABLE_NAME,
-                            Arrays.asList(),
+                            Collections.emptyList(),
                             "INSERT INTO test_table (deleted) VALUES (?);"
                     },
                     {   // 01: valid args, one column and one value
                             TABLE_NAME,
-                            Arrays.asList("col1"),
+                            Collections.singletonList("col1"),
                             "INSERT INTO test_table (col1) VALUES (?);"
                     },
                     {   // 02: valid args, two columns and two values
@@ -146,7 +146,7 @@ public abstract class SqlGeneratorTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldThrowOnInvalidInputsEvenWhenColumnsListNonempty() {
-            generatorUnderTest.newSingleRowInsertionSql(invalidTableName, Arrays.asList("col1"));
+            generatorUnderTest.newSingleRowInsertionSql(invalidTableName, Collections.singletonList("col1"));
         }
     }
 
@@ -165,25 +165,25 @@ public abstract class SqlGeneratorTest {
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
                     {   // 00: number greater than OrderBy.ORDER_ASC treated as ascending
-                            Arrays.asList(
+                            Collections.singletonList(
                                     FSOrdering.create("table", "column1", OrderBy.ORDER_ASC + 1)
                             ),
                             "table.column1 ASC"
                     },
                     {   // 01: number lower than OrderBy.ORDER_DESC treated as descending
-                            Arrays.asList(
+                            Collections.singletonList(
                                     FSOrdering.create("table", "column1", OrderBy.ORDER_DESC - 1)
                             ),
                             "table.column1 DESC"
                     },
                     {   // 02: OrderBy.ORDER_ASC treated as ASC
-                            Arrays.asList(
+                            Collections.singletonList(
                                     FSOrdering.create("table", "column1", OrderBy.ORDER_ASC)
                             ),
                             "table.column1 ASC"
                     },
                     {   // 03: OrderBy.ORDER_DESC treated as DESC
-                            Arrays.asList(
+                            Collections.singletonList(
                                     FSOrdering.create("table", "column1", OrderBy.ORDER_DESC)
                             ),
                             "table.column1 DESC"
@@ -216,11 +216,11 @@ public abstract class SqlGeneratorTest {
                             ),
                             "table.column1 ASC, table2.column1 DESC"
                     },
-                    {   // 08: Empty list returns empty string
+                    {   // 08: Empty list returns emptyMigrationSet string
                             new ArrayList<FSOrdering>(0),
                             ""
                     },
-                    {   // 09: null returns empty string
+                    {   // 09: null returns emptyMigrationSet string
                             null,
                             ""
                     }
@@ -316,7 +316,9 @@ public abstract class SqlGeneratorTest {
                             "table05",
                             createProjection("table05", "col01", "col02"),
                             createSelection("table05.col01 < ? AND table05.col01 > ?", "5", "0"),
-                            Arrays.asList(FSOrdering.create("table05", "_id", OrderBy.ORDER_DESC)),
+                            Collections.singletonList(
+                                    FSOrdering.create("table05", "_id", OrderBy.ORDER_DESC)
+                            ),
                             new SqlForPreparedStatement(
                                     "SELECT table05.col01 AS table05_col01, table05.col02 AS table05_col02 FROM table05 WHERE table05.col01 < ? AND table05.col01 > ? ORDER BY table05._id DESC;",
                                     new String[] {"5", "0"}
@@ -491,8 +493,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child01",
-                            Arrays.asList(
-                                    FSJoin.create(Type.NATURAL, "parent01", "child01", stringMapOf())
+                            Collections.singletonList(
+                                    FSJoin.create(Type.NATURAL, "parent01", "child01", Collections.<String, String>emptyMap())
                             ),
                             null,
                             null,
@@ -507,8 +509,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child02",
-                            Arrays.asList(
-                                    FSJoin.create(Type.LEFT, "parent02", "child02", stringMapOf("parent02_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.LEFT, "parent02", "child02", mapOf("parent02_id", "_id"))
                             ),
                             null,
                             null,
@@ -523,8 +525,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child03",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent03", "child03", stringMapOf("parent03_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent03", "child03", mapOf("parent03_id", "_id"))
                             ),
                             null,
                             null,
@@ -539,8 +541,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child04",
-                            Arrays.asList(
-                                    FSJoin.create(Type.OUTER, "parent04", "child04", stringMapOf("parent04_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.OUTER, "parent04", "child04", mapOf("parent04_id", "_id"))
                             ),
                             null,
                             null,
@@ -555,8 +557,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child05",
-                            Arrays.asList(
-                                    FSJoin.create(Type.LEFT_OUTER, "parent05", "child05", stringMapOf("parent05_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.LEFT_OUTER, "parent05", "child05", mapOf("parent05_id", "_id"))
                             ),
                             null,
                             null,
@@ -571,8 +573,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child06",
-                            Arrays.asList(
-                                    FSJoin.create(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.CROSS, "parent06", "child06", mapOf("parent06_id", "_id"))
                             ),
                             null,
                             null,
@@ -587,8 +589,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child06",
-                            Arrays.asList(
-                                    FSJoin.create(Type.CROSS, "parent06", "child06", stringMapOf("parent06_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.CROSS, "parent06", "child06", mapOf("parent06_id", "_id"))
                             ),
                             null,
                             null,
@@ -604,8 +606,8 @@ public abstract class SqlGeneratorTest {
                             // null ordering should take away ORDER BY clause
                             "child07",
                             Arrays.asList(
-                                    FSJoin.create(Type.LEFT, "parent07", "child07", stringMapOf("parent07_id", "_id")),
-                                    FSJoin.create(Type.INNER, "child07", "grandchild07", stringMapOf("child07_id", "_id"))
+                                    FSJoin.create(Type.LEFT, "parent07", "child07", mapOf("parent07_id", "_id")),
+                                    FSJoin.create(Type.INNER, "child07", "grandchild07", mapOf("child07_id", "_id"))
                             ),
                             null,
                             null,
@@ -620,8 +622,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child08",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent08", "child08", stringMapOf(
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent08", "child08", mapOf(
                                             "parent08_first_name", "first_name",
                                             "parent08_last_name", "last_name"
                                     ))
@@ -642,10 +644,10 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child09",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent09", "child09", stringMapOf("parent09_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent09", "child09", mapOf("parent09_id", "_id"))
                             ),
-                            Arrays.asList(
+                            Collections.singletonList(
                                     createProjection("child09", "col1", "col2")
                             ),
                             null,
@@ -660,8 +662,8 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child10",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent10", "child10", stringMapOf("parent10_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent10", "child10", mapOf("parent10_id", "_id"))
                             ),
                             Arrays.asList(
                                     createProjection("child10", "col1", "col2"),
@@ -679,10 +681,10 @@ public abstract class SqlGeneratorTest {
                             // null selection should take away WHERE clause;
                             // null ordering should take away ORDER BY clause
                             "child11",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent11", "child11", stringMapOf("parent11_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent11", "child11", mapOf("parent11_id", "_id"))
                             ),
-                            Arrays.asList(
+                            Collections.singletonList(
                                     createDistinctProjection("child11", "col1", "col2")
                             ),
                             null,
@@ -700,10 +702,10 @@ public abstract class SqlGeneratorTest {
                             // selection with limit and offset;
                             // null ordering should take away ORDER BY clause
                             "child12",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent12", "child12", stringMapOf("parent12_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent12", "child12", mapOf("parent12_id", "_id"))
                             ),
-                            Arrays.asList(
+                            Collections.singletonList(
                                     createDistinctProjection("child12", "col1", "col2")
                             ),
                             createSelection(createLimits(5, 20), null, null),
@@ -718,8 +720,8 @@ public abstract class SqlGeneratorTest {
                             // selection with limit and offset;
                             // order by with columns from both tables
                             "child13",
-                            Arrays.asList(
-                                    FSJoin.create(Type.INNER, "parent13", "child13", stringMapOf("parent13_id", "_id"))
+                            Collections.singletonList(
+                                    FSJoin.create(Type.INNER, "parent13", "child13", mapOf("parent13_id", "_id"))
                             ),
                             Arrays.asList(
                                     createProjection("child13", "col1", "col2"),
@@ -1078,7 +1080,7 @@ public abstract class SqlGeneratorTest {
             return Arrays.asList(new Object[][] {
                     {   // 00: a single condition
                             "table",
-                            Arrays.asList(mockCondition("column", Finder.OP_EQ, "value")),
+                            Collections.singletonList(mockCondition("column", Finder.OP_EQ, "value")),
                             "table.column = ?"
                     },
                     {   // 01: two conditions on the same column anded together
@@ -1171,12 +1173,12 @@ public abstract class SqlGeneratorTest {
                     },
                     {   // 09: equals a null value
                             "table",
-                            Arrays.asList(mockCondition("column", Finder.OP_EQ, null)),
+                            Collections.singletonList(mockCondition("column", Finder.OP_EQ, null)),
                             "table.column IS NULL"
                     },
                     {   // 09: not equals a null value
                             "table",
-                            Arrays.asList(mockCondition("column", Finder.OP_NE, null)),
+                            Collections.singletonList(mockCondition("column", Finder.OP_NE, null)),
                             "table.column IS NOT NULL"
                     }
             });

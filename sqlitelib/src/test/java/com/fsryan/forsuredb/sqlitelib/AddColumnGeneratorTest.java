@@ -25,7 +25,10 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static com.fsryan.forsuredb.sqlitelib.TestData.*;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.dateCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.intCol;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.stringCol;
+import static com.fsryan.forsuredb.sqlitelib.TestData.TABLE_NAME;
 
 @RunWith(Parameterized.class)
 public class AddColumnGeneratorTest extends BaseSQLiteGeneratorTest {
@@ -45,45 +48,45 @@ public class AddColumnGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 00: add a normal column
                         stringCol().build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN string_column TEXT;"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN string_col TEXT;"
                         }
                 },
                 {   // 01: add a date column that has CURRENT_TIMESTAMP magic string as its time set
                         dateCol().defaultValue("CURRENT_TIMESTAMP").build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN date_column DATETIME DEFAULT(" + SqlGenerator.CURRENT_UTC_TIME + ");"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN date_col DATETIME DEFAULT(" + SqlGenerator.CURRENT_UTC_TIME + ");"
                         }
                 },
                 {   // 02: add a column that has a default set that is not CURRENT_TIMESTAMP
                         dateCol().defaultValue("2000-01-01 00:00:00.000").build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN date_column DATETIME DEFAULT '2000-01-01 00:00:00.000';"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN date_col DATETIME DEFAULT '2000-01-01 00:00:00.000';"
                         }
                 },
                 {   // 03: add an integer column that has a default set
                         intCol().defaultValue("10").build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_column INTEGER DEFAULT '10';"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_col INTEGER DEFAULT '10';"
                         }
                 },
                 {   // 04: add column that is an index
                         intCol().index(true).build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_column INTEGER;",
-                                "CREATE INDEX IF NOT EXISTS " + TABLE_NAME + "_int_column ON " + TABLE_NAME + "(int_column);"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_col INTEGER;",
+                                "CREATE INDEX IF NOT EXISTS " + TABLE_NAME + "_int_col ON " + TABLE_NAME + "(int_col);"
                         }
                 },
                 {   // 05: add column that is an index and has a default value
                         intCol().defaultValue("10").index(true).build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_column INTEGER DEFAULT '10';",
-                                "CREATE INDEX IF NOT EXISTS " + TABLE_NAME + "_int_column ON " + TABLE_NAME + "(int_column);"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN int_col INTEGER DEFAULT '10';",
+                                "CREATE INDEX IF NOT EXISTS " + TABLE_NAME + "_int_col ON " + TABLE_NAME + "(int_col);"
                         }
                 },
                 {   // 06: add column that has a default value with a string that has a single quote in it
                         stringCol().defaultValue("a ' single quote ' ' something else").build(),
                         new String[] {
-                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN string_column TEXT DEFAULT 'a '' single quote '' '' something else';"
+                                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN string_col TEXT DEFAULT 'a '' single quote '' '' something else';"
                         }
                 }
         });

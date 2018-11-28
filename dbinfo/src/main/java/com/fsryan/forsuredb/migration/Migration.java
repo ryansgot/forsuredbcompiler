@@ -24,6 +24,7 @@ import com.google.auto.value.AutoValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,11 +81,29 @@ public abstract class Migration implements Comparable<Migration> {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder tableName(String tableName); // table_name
-        public abstract Builder columnName(String columnName);    // column_name
-        public abstract Builder type(Type type);    // migration_type
-        public abstract Builder extras(@Nullable Map<String, String> extras);   // extras
-        public abstract Migration build();
+
+        private final Map<String, String> extras = new HashMap<>();
+
+        public abstract Builder tableName(String tableName);                // table_name
+        public abstract Builder columnName(String columnName);              // column_name
+        public abstract Builder type(Type type);                            // migration_type
+
+        public Builder putExtra(@Nonnull String key, @Nonnull String val) {
+            extras.put(key, val);
+            return this;
+        }
+
+        public Builder putAllExtras(@Nonnull Map<String, String> extras) {
+            this.extras.putAll(extras);
+            return this;
+        }
+
+        public Migration build() {
+            return extras(extras).autoBuild();
+        }
+
+        abstract Builder extras(@Nonnull Map<String, String> extras);      // extras
+        abstract Migration autoBuild();
     }
 
     public static Builder builder() {
@@ -101,7 +120,7 @@ public abstract class Migration implements Comparable<Migration> {
      */
     @Nonnull
     public static Set<TableForeignKeyInfo> foreignKeysOf(@Nonnull Migration migration, @Nonnull FSDbInfoSerializer serializer) {
-        if (migration.extras() == null) {
+        if (!migration.hasExtras()) {
             return Collections.emptySet();
         }
 
@@ -121,7 +140,7 @@ public abstract class Migration implements Comparable<Migration> {
      */
     @Nonnull
     public static Set<String> existingColumnNamesOf(@Nonnull Migration migration, @Nonnull FSDbInfoSerializer serializer) {
-        if (migration.extras() == null) {
+        if (!migration.hasExtras()) {
             return Collections.emptySet();
         }
 
@@ -139,13 +158,13 @@ public abstract class Migration implements Comparable<Migration> {
                 .build();
     }
 
-    public abstract String tableName(); // table_name
-    @Nullable public abstract String columnName();    // column_name
-    public abstract Type type();    // migration_type
-    @Nullable public abstract Map<String, String> extras();   // extras
+    public abstract String tableName();                                             // table_name
+    @Nullable public abstract String columnName();                                  // column_name
+    public abstract Type type();                                                    // migration_type
+    @Nonnull public abstract Map<String, String> extras();                          // extras
 
     public boolean hasExtras() {
-        return extras() != null && !extras().isEmpty();
+        return !extras().isEmpty();
     }
 
     @Override

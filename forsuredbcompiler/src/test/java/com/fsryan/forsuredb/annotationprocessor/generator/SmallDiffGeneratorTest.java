@@ -19,24 +19,31 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
+import com.fsryan.forsuredb.info.ColumnInfoUtil;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 
-import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.migration.MigrationFixtures.addUniqueIndexMigration;
+import static com.fsryan.forsuredb.migration.MigrationFixtures.changeDefaultValueMigration;
+import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
+import static com.fsryan.forsuredb.migration.MigrationSetFixtures.migrationSet;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
+    
+    private static final String TABLE_NAME = "test_table";
+    private static final TableContext emptyTestTableContext = TableContext.fromSchema(tableMapOf(tableBuilder(TABLE_NAME).build()));
 
     public SmallDiffGeneratorTest(int sourceDbVersion, TableContext migrationContext, TableContext processingContext, MigrationSet expectedMigrationSet) {
         super(sourceDbVersion, migrationContext, processingContext, expectedMigrationSet);
@@ -47,358 +54,380 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
         return Arrays.asList(new Object[][] {
                 {   // 00 No diff (identical contexts)
                         4,
-                        newTableContext()
-                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(5)
-                                .targetSchema(tableMapOf(table().addColumn(intCol().build()).addColumn(stringCol().build())
-                                        .build()))
-                                .orderedMigrations(new ArrayList<>())
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(intCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(intCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        migrationSet(5)
+                                .targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(intCol().build())
+                                                .addColumn(stringCol().build())
+                                                .build()
+                                )).orderedMigrations(Collections.emptyList())
                                 .build()
                 },
                 {   // 01 The processing context has a table that the migration context does not have--table has no extra columns
                         1,
-                        newTableContext().build(),
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
-                                        .tableName(TABLE_NAME)
-                                        .build()))
-                                .targetSchema(tableMapOf(table().build()))
+                        TableContext.empty(),
+                        TableContext.fromSchema(tableMapOf(tableBuilder(TABLE_NAME).build())),
+                        migrationSet(2)
+                                .orderedMigrations(Collections.singletonList(migration(
+                                        Migration.Type.CREATE_TABLE)
+                                                .tableName(TABLE_NAME)
+                                                .build())
+                                ).targetSchema(tableMapOf(tableBuilder(TABLE_NAME).build()))
                                 .build()
                 },
                 {   // 02 The processing context has a table that the migration context does not have--table has extra columns
                         10,
-                        newTableContext().build(),
-                        newTableContext()
-                                .addTable(table().addColumn(intCol().build()).addColumn(stringCol().build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(11)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.CREATE_TABLE)
+                        TableContext.empty(),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(intCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+
+                        migrationSet(11)
+                                .orderedMigrations(Arrays.asList(
+                                        migration(Migration.Type.CREATE_TABLE)
                                                 .tableName(TABLE_NAME)
                                                 .build(),
-                                        Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                        migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
-                                                .columnName(intCol().build().getColumnName())
+                                                .columnName(ColumnInfoUtil.colNameByType(int.class))
                                                 .build(),
-                                        Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                        migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
-                                                .columnName(stringCol().build().getColumnName())
-                                                .build()))
-                                .targetSchema(tableMapOf(table().addColumn(intCol().build()).addColumn(stringCol().build())
-                                .build()))
-                                .build()
+                                                .columnName(ColumnInfoUtil.colNameByType(String.class))
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(intCol().build())
+                                                .addColumn(stringCol().build())
+                                                .build())
+                                ).build()
                 },
                 {   // 03 The processing context has a non-unique, non foreign-key column that the migration context does not have
                         3,
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        newTableContext().addTable(table().addColumn(bigDecimalCol().build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(4)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
-                                        .tableName(TABLE_NAME)
-                                        .columnName(bigDecimalCol().build().getColumnName())
-                                        .build()))
-                                .targetSchema(tableMapOf(table().addColumn(bigDecimalCol().build()).build()))
-                                .build()
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(bigDecimalCol().build())
+                                        .build()
+                        )),
+                        migrationSet(4)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(ColumnInfoUtil.colNameByType(BigDecimal.class))
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(bigDecimalCol().build())
+                                                .build())
+                                ).build()
                 },
                 {   // 04 The processing context has a foreign key the migration context does not know about (default delete and update actions)
                         2,
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").apiClassName("").build()).build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
-                                        .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
+                                        .build()
+                        )),
+                        migrationSet(3)
+                                .orderedMigrations(Arrays.asList(
+                                        migration(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                                .tableName(TABLE_NAME)
+                                                .putExtra("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
+                                                .putExtra("current_foreign_keys", "[]")
                                                 .build())
-                                        .build()))
-                                .targetSchema(tableMapOf(table().addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
-                                        .build()))
-                                .build()
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 05 The processing context has a unique index column the migration context doesn't know about
                         4364,
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table().addColumn(stringCol().unique(true).build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(4365)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
-                                        .tableName(TABLE_NAME)
-                                        .columnName(stringCol().build().getColumnName())
-                                        .build()))
-                                .targetSchema(tableMapOf(table().addColumn(stringCol().unique(true).build())
-                                        .build()))
-                                .build()
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        )),
+                        migrationSet(4365)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(stringCol().build().getColumnName())
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(stringCol().unique(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 06 The processing context has a unique index on a column the migration context knows about, but doesn't know is unique
                         8,
-                        newTableContext()
-                                .addTable(table().addColumn(stringCol().build()).build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table().addColumn(stringCol().unique(true).build()).build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(9)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.MAKE_COLUMN_UNIQUE)
-                                        .tableName(TABLE_NAME)
-                                        .columnName(stringCol().build().getColumnName())
-                                        .build()))
-                                .targetSchema(tableMapOf(table()
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(stringCol().unique(true).build())
-                                        .build()))
-                                .build()
+                                        .build()
+                        )),
+                        migrationSet(9)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.MAKE_COLUMN_UNIQUE)
+                                                .tableName(TABLE_NAME)
+                                                .columnName(stringCol().build().getColumnName())
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(stringCol().unique(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 07 The processing does not have a table the migration context knows about (a table deletion)
                         47,
-                        newTableContext()
-                                .addTable(table()
-                                        .tableName("table_1")
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("table_1")
                                         .addColumn(stringCol().columnName("table_1_string").build())
-                                        .build())
-                                .addTable(table()
-                                        .tableName("table_2")
+                                        .build(),
+                                tableBuilder("table_2")
                                         .addColumn(stringCol().columnName("table_2_string").build())
-                                        .build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
-                                        .tableName("table_2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("table_2")
                                         .addColumn(stringCol().columnName("table_2_string").build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(48)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder()
-                                        .type(Migration.Type.DROP_TABLE)
+                                        .build()
+                        )),
+                        migrationSet(48)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.DROP_TABLE)
                                         .tableName("table_1")
-                                        .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .tableName("table_2")
-                                        .addColumn(stringCol().columnName("table_2_string").build())
-                                        .build()))
-                                .build()
+                                        .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .tableName("table_2")
+                                                .addColumn(stringCol().columnName("table_2_string").build())
+                                                .build())
+                                ).build()
                 },
                 {   // 08: add non-unique index to existing column
                         1,
-                        newTableContext()
-                                .addTable(table()
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().build())
-                                        .build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().index(true).build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
-                                        Migration.builder()
-                                                .type(Migration.Type.ADD_INDEX)
+                                        .build()
+                        )),
+                        migrationSet(2)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.ADD_INDEX)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().index(true).build())
-                                        .build()))
-                                .build()
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().index(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 09: add new column that is a non-unique index
                         1,
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().index(true).build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
-                                        Migration.builder()
-                                                .type(Migration.Type.ALTER_TABLE_ADD_COLUMN)
+                                        .build()
+                        )),
+                        migrationSet(2)
+                                .orderedMigrations(Arrays.asList(
+                                        migration(Migration.Type.ALTER_TABLE_ADD_COLUMN)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().index(true).build())
-                                        .build()))
-                                .build()
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().index(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 10: make an existing column a unique index
                         1,
-                        newTableContext()
-                                .addTable(table()
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().build())
-                                        .build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().unique(true).index(true).build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
-                                        Migration.builder()
-                                                .type(Migration.Type.ADD_UNIQUE_INDEX)
+                                        .build()
+                        )),
+                        migrationSet(2)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.ADD_UNIQUE_INDEX)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().index(true).build())
-                                        .build()))
-                                .build()
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().index(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 11: add a new column that is a unique index
                         1,
-                        newTableContext()
-                                .addTable(table().build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().unique(true).index(true).build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
-                                        Migration.builder()
-                                                .type(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
+                                        .build()
+                        )),
+                        migrationSet(2)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.ALTER_TABLE_ADD_UNIQUE)
                                                 .tableName(TABLE_NAME)
                                                 .columnName(longCol().build().getColumnName())
-                                                .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().index(true).build())
-                                        .build()))
-                                .build()
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().index(true).build())
+                                                .build())
+                                ).build()
                 },
-                {   // 12: change the primary key of a table
+                {   // 12: change the primary key of a table with legacy keys
                         1,
-                        newTableContext()
-                                .addTable(table()
+                        TableContext.fromSchema(tableMapOf(
+                                legacyPKTableBuilder(TABLE_NAME)
                                         .addColumn(longCol().primaryKey(false).build())
-                                        .build())
-                                .build(),
-                        newTableContext()
-                                .addTable(table()
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                legacyPKTableBuilder(TABLE_NAME)
                                         .addColumn(longCol().primaryKey(true).build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(2)
-                                .orderedMigrations(Lists.newArrayList(
-                                        Migration.builder()
-                                                .type(Migration.Type.UPDATE_PRIMARY_KEY)
-                                                .extras(ImmutableMap.of("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]"))
+                                        .build()
+                        )),
+                        migrationSet(2)
+                                .orderedMigrations(Arrays.asList(
+                                        migration(Migration.Type.UPDATE_PRIMARY_KEY)
+                                                .putExtra("existing_column_names", "[\"long_col\",\"deleted\",\"created\",\"modified\",\"_id\"]")
                                                 .tableName(TABLE_NAME)
-                                                .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().primaryKey(true).build())
-                                        .build()))
-                                .build()
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().primaryKey(true).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 13: same as 04, but done via TableForeignKeyInfo instead of foreign key info on columns
                         2,
-                        newTableContext().addTable(table().build()).build(),
-                        newTableContext()
-                                .addTable(table().addColumn(longCol().build())
-                                        .addForeignKey(tableForeignKeyInfoBuilder()
-                                                .foreignTableName("user")
-                                                .updateChangeAction("CASCADE")
-                                                .deleteChangeAction("CASCADE")
-                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                        emptyTestTableContext,
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(cascadeForeignKeyTo("user")
+                                                .localToForeignColumnMap(mapOf("long_col", "_id"))
                                                 .build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
-                                        .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
+                                        .build()
+                        )),
+                        migrationSet(3)
+                                .orderedMigrations(Collections.singletonList(
+                                        migration(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                                .tableName(TABLE_NAME)
+                                                .putExtra("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"_id\"]")
+                                                .putExtra("current_foreign_keys", "[]")
                                                 .build())
-                                        .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
-                                        .build()))
-                                .build()
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 14: same as 13, but transitions an existing column to being a foreign key
                         2,
-                        newTableContext().addTable(table().addColumn(longCol().build()).build()).build(),
-                        newTableContext()
-                                .addTable(table().addColumn(longCol().build())
-                                        .addForeignKey(tableForeignKeyInfoBuilder()
-                                                .foreignTableName("user")
-                                                .updateChangeAction("CASCADE")
-                                                .deleteChangeAction("CASCADE")
-                                                .localToForeignColumnMap(ImmutableMap.of("long_column", "_id"))
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME)
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder(TABLE_NAME).addColumn(longCol().build())
+                                        .addForeignKey(cascadeForeignKeyTo("user")
+                                                .localToForeignColumnMap(mapOf("long_column", "_id"))
                                                 .build())
-                                        .build())
-                                .build(),
-                        MigrationSet.builder().dbVersion(3)
-                                .orderedMigrations(Lists.newArrayList(Migration.builder().type(Migration.Type.UPDATE_FOREIGN_KEYS)
-                                        .tableName(TABLE_NAME)
-                                        .extras(new ImmutableMap.Builder<String, String>()
-                                                .put("existing_column_names", "[\"deleted\",\"created\",\"modified\",\"long_column\",\"_id\"]")
-                                                .put("current_foreign_keys", "[]")
+                                        .build()
+                        )),
+                        migrationSet(3)
+                                .orderedMigrations(Arrays.asList(
+                                        migration(Migration.Type.UPDATE_FOREIGN_KEYS)
+                                                .tableName(TABLE_NAME)
+                                                .putExtra("existing_column_names", "[\"long_col\",\"deleted\",\"created\",\"modified\",\"_id\"]")
+                                                .putExtra("current_foreign_keys", "[]")
                                                 .build())
-                                        .build()))
-                                .targetSchema(tableMapOf(table()
-                                        .addColumn(longCol().foreignKeyInfo(cascadeFKI("user").build()).build())
-                                        .build()))
-                                .build()
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder(TABLE_NAME)
+                                                .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
+                                                .build())
+                                ).build()
                 },
                 {   // 15: change the default value of an existing column
                         2,
-                        newTableContext()
-                                .addTable(defaultPkTable("test1", longCol().build()).build())
-                                .build(),
-                        newTableContext()
-                                .addTable(defaultPkTable("test1", longCol().defaultValue("12").build()).build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(3)
-                                .orderedMigrations(Arrays.asList(
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("test1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("test1")
+                                        .addColumn(longCol().defaultValue("12").build())
+                                        .build()
+                        )),
+                        migrationSet(3)
+                                .orderedMigrations(Collections.singletonList(
                                         changeDefaultValueMigration("test1")
                                                 .columnName(longCol().build().getColumnName())
-                                                .build()
-                                ))
-                                .targetSchema(tableMapOf(
-                                        defaultPkTable("test1")
+                                                .build())
+                                ).targetSchema(tableMapOf(
+                                        tableBuilder("test1")
                                                 .addColumn(longCol().defaultValue("12").build())
-                                                .build()
-                                        )
-                                )
-                                .build()
+                                                .build())
+                                ).build()
                 },
                 {   // 16: change the default value of an existing column and make it a unique index
                         2,
-                        newTableContext()
-                                .addTable(defaultPkTable("test1", longCol().build()).build())
-                                .build(),
-                        newTableContext()
-                                .addTable(defaultPkTable("test1", longCol().unique(true).index(true).defaultValue("12").build()).build())
-                                .build(),
-                        MigrationSet.builder()
-                                .dbVersion(3)
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("test1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("test1")
+                                        .addColumn(longCol().unique(true).index(true).defaultValue("12").build())
+                                        .build()
+                        )),
+                        migrationSet(3)
                                 .orderedMigrations(Arrays.asList(
                                         changeDefaultValueMigration("test1")
                                                 .columnName(longCol().build().getColumnName())
@@ -408,19 +437,12 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                                 .build()
                                 ))
                                 .targetSchema(tableMapOf(
-                                        defaultPkTable("test1")
+                                        tableBuilder("test1")
                                                 .addColumn(longCol().defaultValue("12").build())
-                                                .build()
-                                        )
-                                )
-                                .build()
+                                                .build())
+                                ).build()
                 }
         });
-    }
-
-    private static TableForeignKeyInfo.Builder tableForeignKeyInfoBuilder() {
-        return TableForeignKeyInfo.builder()
-                .foreignTableApiClassName(SmallDiffGeneratorTest.class.getSimpleName());
     }
 
     @Test

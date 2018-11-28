@@ -3,13 +3,15 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
-import com.fsryan.forsuredb.TestData;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
+
+import static com.fsryan.forsuredb.TestData.testTargetContext;
+import static com.fsryan.forsuredb.test.tools.ResourceUtil.resourceText;
 
 @RunWith(Parameterized.class)
 public class ForSureGeneratorTest extends GeneratorTest<JavaFileObject> {
@@ -33,9 +35,9 @@ public class ForSureGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        TestData.resourceText("example_forsure.txt"),
+                        resourceText("example_forsure.txt"),
                         "com.fsryan.annotationprocessor.generator.code",
-                        TestData.testTargetContext()
+                        testTargetContext()
                 }
         });
     }

@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.fsryan.forsuredb.api.TestData.mapOf;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
