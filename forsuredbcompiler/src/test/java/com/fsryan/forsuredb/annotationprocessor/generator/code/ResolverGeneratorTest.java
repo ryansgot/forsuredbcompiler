@@ -12,6 +12,7 @@ import javax.tools.JavaFileObject;
 import java.util.Arrays;
 
 import static com.fsryan.forsuredb.TestData.*;
+import static com.fsryan.forsuredb.test.tools.ResourceUtil.resourceText;
 
 @RunWith(Parameterized.class)
 public class ResolverGeneratorTest extends GeneratorTest<JavaFileObject> {

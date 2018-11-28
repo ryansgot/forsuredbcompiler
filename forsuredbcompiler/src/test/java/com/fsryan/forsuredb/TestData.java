@@ -21,29 +21,10 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.info.DBInfoFixtures;
 import com.fsryan.forsuredb.info.TableInfo;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-
 import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 
 public class TestData {
-
-    public static final String TEST_RES = "src/test/resources";
-
-    public static String resourceText(String resourceName) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(TEST_RES + File.separator + resourceName));
-        String line;
-        StringBuilder out = new StringBuilder();
-        while (null != (line = br.readLine())) {
-            out.append(line).append("\n");
-        }
-        br.close();
-        return out.toString();
-    }
 
     /**
      * <p>DO NOT USE--this was used in legacy tests and is an unsustainable way
@@ -118,40 +99,5 @@ public class TestData {
                                 ).build()
                 )
         );
-//        return newTableContext().addTable(
-//                        table("test_table")
-//                                .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable")
-//                                .staticDataAsset("test_table_data.xml")
-//                                .staticDataRecordName("test_table_data")
-//                                .addColumn(longCol().columnName("test_table_2_id")
-//                                        .methodName("testTable2Id")
-//                                        .foreignKeyInfo(cascadeFKI("test_table_2")
-//                                                .columnName("_id")
-//                                                .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-//                                                .build())
-//                                        .build())
-//                                .build()
-//                )
-//                .addTable(
-//                        table("test_table_2")
-//                                .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable2")
-//                                .addColumn(longCol().columnName("test_table_3_id")
-//                                        .methodName("testTable3Id")
-//                                        .foreignKeyInfo(cascadeFKI("test_table_3")
-//                                                .columnName("_id")
-//                                                .apiClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-//                                                .build())
-//                                        .build())
-//                                .build()
-//                )
-//                .addTable(table("test_table_3")
-//                        .qualifiedClassName("com.fsryan.annotationprocessor.generator.code.TestTable3")
-//                        .addColumn(doubleCol().columnName("app_rating").methodName("appRating").build())
-//                        .addColumn(bigDecimalCol().columnName("competitor_app_rating").methodName("competitorAppRating").searchable(false).build())
-//                        .addColumn(longCol().columnName("global_id").methodName("globalId").orderable(false).build())
-//                        .addColumn(intCol().columnName("login_count").methodName("loginCount").build())
-//                        .build()
-//                )
-//                .build();
     }
 }

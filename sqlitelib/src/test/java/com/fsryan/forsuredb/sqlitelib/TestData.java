@@ -21,28 +21,10 @@ import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.FSSelection;
 import com.fsryan.forsuredb.api.Limits;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 public class TestData {
-
-    public static final String TEST_RES = "src" + File.separator + "test" + File.separator + "resources";
 
     // Convenience constants
     public static final String TABLE_NAME = "test_table";
-
-    public static String resourceText(String resourceName) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(TEST_RES + File.separator + resourceName));
-        String line;
-        StringBuilder out = new StringBuilder();
-        while (null != (line = br.readLine())) {
-            out.append(line).append("\n");
-        }
-        br.close();
-        return out.toString();
-    }
 
     static FSSelection createSelection(String where, String... replacements) {
         return createSelection(null, where, replacements);

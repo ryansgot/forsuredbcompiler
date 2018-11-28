@@ -3,7 +3,6 @@ package com.fsryan.forsuredb.annotationprocessor.generator.code;
 import com.fsryan.forsuredb.annotationprocessor.generator.GeneratorTest;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.TestData;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -12,6 +11,9 @@ import org.junit.runners.Parameterized;
 import javax.tools.JavaFileObject;
 import java.util.Arrays;
 import java.util.Collection;
+
+import static com.fsryan.forsuredb.TestData.testTargetContext;
+import static com.fsryan.forsuredb.test.tools.ResourceUtil.resourceText;
 
 @RunWith(Parameterized.class)
 public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
@@ -31,9 +33,9 @@ public class TableCreatorGeneratorTest extends GeneratorTest<JavaFileObject> {
     public static Iterable<Object[]> data() throws Exception {
         return Arrays.asList(new Object[][] {
                 {
-                        TestData.resourceText("example_table_creator.txt"),
+                        resourceText("example_table_creator.txt"),
                         "com.fsryan.annotationprocessor.generator.code",
-                        Lists.newArrayList(TestData.testTargetContext().allTables())
+                        Lists.newArrayList(testTargetContext().allTables())
                 }
         });
     }

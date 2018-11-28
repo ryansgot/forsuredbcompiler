@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
-import static com.fsryan.forsuredb.sqlitelib.TestData.resourceText;
+import static com.fsryan.forsuredb.test.tools.ResourceUtil.resourceText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
