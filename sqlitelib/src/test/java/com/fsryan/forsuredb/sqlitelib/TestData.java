@@ -20,7 +20,6 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.api.FSProjection;
 import com.fsryan.forsuredb.api.FSSelection;
 import com.fsryan.forsuredb.api.Limits;
-import com.fsryan.forsuredb.info.ColumnInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -125,19 +124,5 @@ public class TestData {
                 return distinct;
             }
         };
-    }
-
-    // Helpers for covenience methods
-
-    private static ColumnInfo.Builder columnFrom(TypeTranslator tt) {
-        return ColumnInfo.builder().columnName(nameFrom(tt)).qualifiedType(tt.getQualifiedType()).methodName(methodNameFrom(tt));
-    }
-
-    private static String nameFrom(TypeTranslator tt) {
-        return tt.name().toLowerCase() + "_column";
-    }
-
-    private static String methodNameFrom(TypeTranslator tt) {
-        return tt.name().toLowerCase() + "Column";
     }
 }
