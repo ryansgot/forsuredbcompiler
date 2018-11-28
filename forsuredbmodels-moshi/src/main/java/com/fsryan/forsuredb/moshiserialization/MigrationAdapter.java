@@ -76,10 +76,9 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
         writer.name("migration_type");
         writer.value(value.type().toString());
 
-        Map<String, String> extras = value.extras();
-        if (extras != null) {
+        if (value.hasExtras()) {
             writer.name("extras");
-            extrasAdapter.toJson(writer, extras);
+            extrasAdapter.toJson(writer, value.extras());
         }
 
         writer.endObject();
