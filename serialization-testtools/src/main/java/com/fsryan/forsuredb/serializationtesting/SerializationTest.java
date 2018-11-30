@@ -1,9 +1,8 @@
-package com.fsryan.forsuredb.moshiserialization;
+package com.fsryan.forsuredb.serializationtesting;
 
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.migration.MigrationSet;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
-import com.squareup.moshi.JsonAdapter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
@@ -32,9 +30,11 @@ public abstract class SerializationTest {
 
     @Before
     public void setUpInputStream() {
-        serializerUnderTest = new FSDbInfoMoshiSerializer();
+        serializerUnderTest = createFSDBInfoSerializer();
         source = SerializationTest.class.getClassLoader().getResource(jsonResource);
     }
+
+    protected abstract FSDbInfoSerializer createFSDBInfoSerializer();
 
     public static abstract class SymmetricReadWrite<IS, T> extends SerializationTest {
 
@@ -130,7 +130,7 @@ public abstract class SerializationTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class MigrationSetFromStream extends SymmetricReadWriteInputStream<MigrationSet> {
+    public static abstract class MigrationSetFromStream extends SymmetricReadWriteInputStream<MigrationSet> {
 
         public MigrationSetFromStream(String jsonResource) {
             super(jsonResource);
@@ -144,7 +144,8 @@ public abstract class SerializationTest {
                     {"02_schema_0_7_0.json"},
                     {"03_schema_0_8_0.json"},
                     {"04_schema_0_9_0.json"},
-                    {"05_schema_0_12_0.json"}
+                    {"05_schema_0_12_0.json"},
+                    {"06_schema_0_14_0.json"}
             });
         }
 
@@ -160,7 +161,7 @@ public abstract class SerializationTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class MigrationSetFromString extends SymmetricReadWriteString<MigrationSet> {
+    public static abstract class MigrationSetFromString extends SymmetricReadWriteString<MigrationSet> {
 
         public MigrationSetFromString(String jsonResource) {
             super(jsonResource);
@@ -174,7 +175,8 @@ public abstract class SerializationTest {
                     {"02_schema_0_7_0.json"},
                     {"03_schema_0_8_0.json"},
                     {"04_schema_0_9_0.json"},
-                    {"05_schema_0_12_0.json"}
+                    {"05_schema_0_12_0.json"},
+                    {"06_schema_0_14_0.json"}
             });
         }
 
@@ -190,7 +192,7 @@ public abstract class SerializationTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class TableForeignKeyInfoSets extends SymmetricReadWriteString<Set<TableForeignKeyInfo>> {
+    public static abstract class TableForeignKeyInfoSets extends SymmetricReadWriteString<Set<TableForeignKeyInfo>> {
 
         public TableForeignKeyInfoSets(String jsonResource) {
             super(jsonResource);
@@ -207,15 +209,10 @@ public abstract class SerializationTest {
         protected Set<TableForeignKeyInfo> readObject(String json) {
             return serializerUnderTest.deserializeForeignKeys(json);
         }
-
-        @Override
-        protected String writeObject(Set<TableForeignKeyInfo> object) {
-            return acquireSubjectTableForeignKeyInfoSetAdapter().toJson(object);
-        }
     }
 
     @RunWith(Parameterized.class)
-    public static class ColumnNames extends SymmetricReadWriteString<Set<String>> {
+    public static abstract class ColumnNames extends SymmetricReadWriteString<Set<String>> {
 
         public ColumnNames(String jsonResource) {
             super(jsonResource);
@@ -232,33 +229,5 @@ public abstract class SerializationTest {
         protected Set<String> readObject(String json) {
             return serializerUnderTest.deserializeColumnNames(json);
         }
-
-        @Override
-        protected String writeObject(Set<String> object) {
-            try {
-                return acquireSubjectStringSetAdapter().toJson(object);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
-
-    static JsonAdapter<Set<TableForeignKeyInfo>> acquireSubjectTableForeignKeyInfoSetAdapter() {
-        return (JsonAdapter<Set<TableForeignKeyInfo>>) reflectivelyAcquireStaticFieldFromSubject("tableForeignKeyInfoSetAdapter");
-    }
-
-    static JsonAdapter<Set<String>> acquireSubjectStringSetAdapter() {
-        return (JsonAdapter<Set<String>>) reflectivelyAcquireStaticFieldFromSubject("stringSetAdapter");
-    }
-
-    static Object reflectivelyAcquireStaticFieldFromSubject(String fieldName) {
-        try {
-            Field gsonField = FSDbInfoMoshiSerializer.class.getDeclaredField(fieldName);
-            gsonField.setAccessible(true);
-            return gsonField.get(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

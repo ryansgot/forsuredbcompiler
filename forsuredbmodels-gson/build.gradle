@@ -1,12 +1,11 @@
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
-sourceSets.test.resources.srcDirs += new File(rootProject.projectDir, 'shared' + File.separator + 'serialization_test_resources')
-
 dependencies {
     implementation project(':dbinfo')
     implementation deps.gson
     compileOnly deps.jsr305
 
+    testImplementation project(':serialization-testtools')
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api
     testRuntime deps.test.junit.jupiter.engine

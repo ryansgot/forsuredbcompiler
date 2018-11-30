@@ -12,3 +12,4 @@ include 'integrationtest'
 
 include 'testtools'
 include 'dbinfo-testtools'
+include 'serialization-testtools'

@@ -1,14 +1,12 @@
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
-sourceSets.test.resources.srcDirs += new File(rootProject.projectDir, 'shared' + File.separator + 'serialization_test_resources')
-
 dependencies {
     implementation project(':dbinfo')
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
     compileOnly deps.jsr305
 
-
+    testImplementation project(':serialization-testtools')
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api
     testRuntime deps.test.junit.jupiter.engine
