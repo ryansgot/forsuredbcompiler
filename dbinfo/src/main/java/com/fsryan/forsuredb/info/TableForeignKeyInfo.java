@@ -61,8 +61,12 @@ public abstract class TableForeignKeyInfo {
         public abstract Builder updateChangeAction(String updateAction);                        // update_action
         public abstract Builder deleteChangeAction(String deleteAction);                        // delete_action
 
-        public abstract Map<String, String> localToForeignColumnMap();
         public abstract String foreignTableApiClassName();
+
+        @Nonnull
+        public Map<String, String> localToForeignColumnMap() {
+            return new HashMap<>(columnNameMap);
+        }
 
         public Builder mapLocalToForeignColumn(@Nonnull String localColumnName, @Nonnull String foreignColumnName) {
             columnNameMap.put(localColumnName, foreignColumnName);

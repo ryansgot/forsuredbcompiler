@@ -77,10 +77,9 @@ public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
                                         .addForeignKey(TableForeignKeyInfo.builder()
                                                 .foreignTableName("referenced_table")
                                                 .foreignTableApiClassName(UpdateForeignKeysGeneratorTest.class.getName())
-                                                .localToForeignColumnMap(mapOf(
-                                                        "referencing_int_column", "referenced_int_column",
-                                                        "referencing_long_column", "referenced_long_column"
-                                                )).updateChangeAction("CASCADE")
+                                                .mapLocalToForeignColumn("referencing_int_column", "referenced_int_column")
+                                                .mapLocalToForeignColumn("referencing_long_column", "referenced_long_column")
+                                                .updateChangeAction("CASCADE")
                                                 .deleteChangeAction("CASCADE")
                                                 .build())
                                         .resetPrimaryKey(Collections.singleton("_id"))

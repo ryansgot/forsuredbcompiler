@@ -20,7 +20,6 @@ package com.fsryan.forsuredb.migration;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.auto.value.AutoValue;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +75,18 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
     public abstract Map<String, TableInfo> targetSchema();                              // target_schema
     public abstract int dbVersion();                                                    // db_version
     public abstract int setVersion();                                                   // set_version
+    public abstract Builder toBuilder();
+
+    @Override
+    public int compareTo(MigrationSet other) {
+        final int v = dbVersion();
+        final int otherV = other.dbVersion();
+        return v < otherV ? -1 : (v == otherV) ? 0 : 1;
+    }
+
+    public boolean containsMigrations() {
+        return orderedMigrations() != null && !orderedMigrations().isEmpty();
+    }
 
     @Nullable
     public TableInfo findTableByName(@Nullable String tableName) {
@@ -88,16 +99,5 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
             }
         }
         return null;
-    }
-
-    @Override
-    public int compareTo(MigrationSet other) {
-        final int v = dbVersion();
-        final int otherV = other.dbVersion();
-        return v < otherV ? -1 : (v == otherV) ? 0 : 1;
-    }
-
-    public boolean containsMigrations() {
-        return orderedMigrations() != null && !orderedMigrations().isEmpty();
     }
 }

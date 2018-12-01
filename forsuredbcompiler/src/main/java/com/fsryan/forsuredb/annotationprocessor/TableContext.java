@@ -17,10 +17,14 @@
  */
 package com.fsryan.forsuredb.annotationprocessor;
 
+import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.migration.MigrationSet;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,64 +138,58 @@ public interface TableContext {
         private static String nestedKey(String tableClassName, String nestedLevel) {
             return tableClassName + "#" + nestedLevel;
         }
-
-//        private Map<String, ColumnInfo> buildColumnMap(String tableName) {
-//            Map<String, ColumnInfo> tableColumnInfoMap = new HashMap<>();
-//            if (!columnInfoMap.containsKey(tableName)) {
-//                throw new IllegalStateException("found no columns for table key: " + tableName);
-//            }
-//
-//            columnInfoMap.get(tableName).values().forEach(builder -> {
-//                ColumnInfo columnInfo = builder.build();
-//                tableColumnInfoMap.put(columnInfo.columnName(), columnInfo);
-//            });
-//            return tableColumnInfoMap;
-//        }
-//
-//        private Set<TableForeignKeyInfo> collapseForeignKeys(String tableKey) {
-//            Set<TableForeignKeyInfo> foreignKeys = new HashSet<>();
-//            Map<String, Set<TableForeignKeyInfo.Builder>> forTable = tableForeignKeyInfoMap.get(tableKey);
-//            if (forTable == null) {
-//                return Collections.emptySet();
-//            }
-//
-//            forTable.forEach((compositeId, builders) -> {
-//                if ("".equals(compositeId)) {
-//                    foreignKeys.addAll(builders.stream()
-//                            .map(TableForeignKeyInfo.Builder::build)
-//                            .map(tfki -> tfki.toBuilder()
-//                                    .foreignTableName(tableClassNameToNameMap.get(tfki.foreignTableApiClassName()))
-//                                    .build())
-//                            .collect(toSet()));
-//                } else {
-//                    TableForeignKeyInfo.Builder accumulator = null;
-//                    for (TableForeignKeyInfo.Builder b : builders) {
-//                        if (accumulator == null) {
-//                            accumulator = b;
-//                        } else {
-//                            TableForeignKeyInfo accumulated = accumulator.build();
-//                            Map<String, String> localToForeignColumnMap = new HashMap<>(accumulated.localToForeignColumnMap());
-//                            localToForeignColumnMap.putAll(b.build().localToForeignColumnMap());
-//                            accumulator = accumulated.toBuilder()
-//                                    .localToForeignColumnMap(localToForeignColumnMap);
-//                        }
-//                    }
-//                    TableForeignKeyInfo tfki = accumulator.build();
-//                    foreignKeys.add(tfki.toBuilder()
-//                            .foreignTableName(tableClassNameToNameMap.get(tfki.foreignTableApiClassName()))
-//                            .build());
-//                }
-//            });
-//
-//            return foreignKeys;
-//        }
     }
 
+    @Nonnull
     static TableContext empty() {
         return fromSchema(null);
     }
 
-    static TableContext fromSchema(Map<String, TableInfo> schema) {
+    /**
+     * <p>Use this method to build the migration context. The table schema with
+     * the highest revision number will be selected to represent the migration
+     * context. In otherwords, the current schema prior to applying any changes
+     * caused by a difference between all previous changes and the current
+     * state of the code.
+     * <p>Note that this method updates the {@link MigrationSet#targetSchema()}
+     * to be of the format that the rest of the system (at compile and runtime)
+     * expects
+     * @param mr the {@link MigrationRetriever} that retrieves all migrations
+     * @return the {@link TableContext} associated with the migration context
+     * or {@link TableContext#empty()} if the input is null or no
+     * {@link MigrationSet}s could be found by the {@link MigrationRetriever}
+     */
+    @Nonnull
+    static TableContext fromMigrationRetrieverCompat(@Nullable MigrationRetriever mr) {
+        return mr == null ? empty() : fromMigrationsCompat(mr.getMigrationSets());
+    }
+
+    /**
+     * @param migrationSets the list of all {@link MigrationSet} that have
+     *                      historically been a part of the project
+     * @return the {@link TableContext} associated with the highest
+     * {@link MigrationSet#dbVersion()} in the input list or {@link #empty()}
+     * if the input is null or empty.
+     * @see #fromMigrationRetrieverCompat(MigrationRetriever)
+     */
+    @Nonnull
+    static TableContext fromMigrationsCompat(@Nullable List<MigrationSet> migrationSets) {
+        if (migrationSets == null || migrationSets.isEmpty()) {
+            return empty();
+        }
+
+        // finds the migration set with the max db version
+        // converts to the latest schema
+        Map<String, TableInfo> schema = migrationSets.stream()
+                .max((ms1, ms2) -> ms2.dbVersion() - ms1.dbVersion())
+                .map(ms -> ms.setVersion() == 1 ? convertToMigrationSetV2(ms) : ms)
+                .map(MigrationSet::targetSchema)
+                .orElseThrow(() -> new IllegalStateException("nonempty migration sets list must have a max db version"));
+        return fromSchema(schema);
+    }
+
+    @Nonnull
+    static TableContext fromSchema(@Nullable Map<String, TableInfo> schema) {
         final Map<String, TableInfo> actualSchema = schema == null ? Collections.emptyMap() : new HashMap<>(schema);
         return new TableContext() {
             @Override
@@ -223,6 +221,19 @@ public interface TableContext {
                 return actualSchema;
             }
         };
+    }
+
+    static MigrationSet convertToMigrationSetV2(MigrationSet ms) {
+        Map<String, TableInfo> schema = ms.targetSchema().values().stream()
+                .map(table -> table.toBuilder()
+                        .clearColumns()
+                        .addAllColumns(table.getColumns())
+                ).map(TableInfo.Builder::build)
+                .collect(mapCollector((acc, table) -> acc.put(table.qualifiedClassName(), table)));
+        return ms.toBuilder()
+                .setVersion(2)
+                .targetSchema(schema)
+                .build();
     }
 
     /**

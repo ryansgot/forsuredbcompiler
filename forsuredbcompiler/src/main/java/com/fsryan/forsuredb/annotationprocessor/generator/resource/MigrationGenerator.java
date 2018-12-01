@@ -26,7 +26,6 @@ import com.fsryan.forsuredb.api.FSLogger;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 import com.fsryan.forsuredb.api.migration.MigrationRetrieverFactory;
 import com.fsryan.forsuredb.migration.MigrationSet;
-import com.fsryan.forsuredb.migration.MigrationContext;
 
 import com.fsryan.forsuredb.gsonserialization.FSDbInfoGsonSerializer;
 
@@ -66,7 +65,7 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
 
     @Override
     protected String getCode() {
-        TableContext migrationContext = MigrationContext.createFromMigrationRetriever(mr);
+        TableContext migrationContext = TableContext.fromMigrationRetrieverCompat(mr);
         MigrationSet migrationSet = new DiffGenerator(migrationContext, mr.latestDbVersion()).analyzeDiff(pContext);
         APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.orderedMigrations().size());
         if (migrationSet.orderedMigrations().size() == 0) {

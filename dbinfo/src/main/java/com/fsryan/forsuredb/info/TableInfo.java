@@ -139,12 +139,10 @@ public abstract class TableInfo {
                     if (legacyForeignKey == null) {
                         continue;
                     }
-                    Map<String, String> localToForeignColumnMap = new HashMap<>(1);
-                    localToForeignColumnMap.put(column.getColumnName(), legacyForeignKey.columnName());
                     actualForeignKeys.add(TableForeignKeyInfo.builder()
                             .foreignTableApiClassName(legacyForeignKey.apiClassName())
                             .foreignTableName(legacyForeignKey.tableName())
-                            .localToForeignColumnMap(localToForeignColumnMap)
+                            .mapLocalToForeignColumn(column.getColumnName(), legacyForeignKey.columnName())
                             .updateChangeAction(legacyForeignKey.updateAction())
                             .deleteChangeAction(legacyForeignKey.deleteAction())
                             .build());
