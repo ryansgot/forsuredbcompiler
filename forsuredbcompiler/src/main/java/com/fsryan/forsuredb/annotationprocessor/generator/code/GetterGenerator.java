@@ -6,7 +6,6 @@ import com.fsryan.forsuredb.api.BaseGetter;
 import com.fsryan.forsuredb.api.Retriever;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.google.common.collect.Streams;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -19,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.info.TableInfo.defaultColumns;
 import static com.fsryan.forsuredb.info.TableInfo.docStoreColumns;
@@ -268,9 +268,8 @@ public abstract class GetterGenerator extends JavaSourceGenerator {
 
         @Override
         protected ColumnInfo[] getColumnExclusions() {
-            return Streams.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
-                    .collect(Collectors.toList())
-                    .toArray(new ColumnInfo[0]);
+            return Stream.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
+                    .toArray(ColumnInfo[]::new);
         }
 
         @Override

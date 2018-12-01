@@ -4,7 +4,6 @@ import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.api.*;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.google.common.collect.Streams;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -13,6 +12,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.annotationprocessor.generator.code.CodeUtil.typeNameOf;
 import static com.fsryan.forsuredb.info.TableInfo.defaultColumns;
@@ -260,7 +260,7 @@ public abstract class SetterGenerator extends JavaSourceGenerator {
 
         @Override
         protected ColumnInfo[] columnExclusions() {
-            return Streams.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
+            return Stream.concat(defaultColumns().values().stream(), docStoreColumns().values().stream())
                     .toArray(ColumnInfo[]::new);
         }
 

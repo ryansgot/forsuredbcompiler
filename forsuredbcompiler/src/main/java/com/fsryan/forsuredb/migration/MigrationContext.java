@@ -17,6 +17,7 @@
  */
 package com.fsryan.forsuredb.migration;
 
+import com.fsryan.forsuredb.annotationprocessor.util.StreamUtil;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
@@ -24,7 +25,11 @@ import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
 import com.fsryan.forsuredb.api.migration.MigrationRetriever;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class MigrationContext implements TableContext {
 
@@ -36,6 +41,40 @@ public class MigrationContext implements TableContext {
     public MigrationContext(MigrationRetriever mr) {
         this.mr = mr;
     }
+
+    @Nonnull
+    public static TableContext createFromMigrationRetriever(@Nullable MigrationRetriever mr) {
+        return createfromMigrations(mr == null ? null : mr.getMigrationSets());
+    }
+
+    @Nonnull
+    public static TableContext createfromMigrations(@Nullable List<MigrationSet> migrationSets) {
+        if (migrationSets == null || migrationSets.isEmpty()) {
+            return TableContext.empty();
+        }
+
+        MigrationSet max = migrationSets.stream()
+                .max((ms1, ms2) -> ms2.dbVersion() - ms1.dbVersion())
+                .orElseThrow(() -> new IllegalStateException("nonempty migration sets list must have a max db version"));
+        return max.setVersion() < 2 ? convert(max.targetSchema()) : TableContext.fromSchema(max.targetSchema());
+    }
+
+    private static TableContext convert(Map<String, TableInfo> legacySchema) {
+        Map<String, TableInfo> schema = legacySchema.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .collect(StreamUtil.mapCollector(MigrationContext::accumulateLegacy));
+        return TableContext.fromSchema(schema);
+    }
+
+    private static void accumulateLegacy(Map<String, TableInfo> acc, TableInfo table) {
+        Set<ColumnInfo> columns = new HashSet<>(table.getColumns());
+        TableInfo converted = table.toBuilder()
+                .clearColumns()
+                .addAllColumns(columns)
+                .build();
+        acc.put(converted.qualifiedClassName(), converted);
+    }
+
 
     @Override
     public boolean hasTableWithName(String tableName) {

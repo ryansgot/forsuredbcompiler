@@ -17,6 +17,8 @@ dependencies {
     implementation project(':forsuredbmodels-gson')
     implementation deps.gson
 
+    compileOnly deps.jsr305
+
     compileOnly deps.auto.valueAnnotations
     annotationProcessor deps.auto.value
 

@@ -18,6 +18,7 @@
 package com.fsryan.forsuredb.annotationprocessor.generator.resource;
 
 import com.fsryan.forsuredb.annotationprocessor.ProcessingContext;
+import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.generator.BaseGenerator;
 import com.fsryan.forsuredb.annotationprocessor.generator.DiffGenerator;
 import com.fsryan.forsuredb.annotationprocessor.util.APLog;
@@ -65,7 +66,8 @@ public class MigrationGenerator extends BaseGenerator<FileObject> {
 
     @Override
     protected String getCode() {
-        MigrationSet migrationSet = new DiffGenerator(new MigrationContext(mr), mr.latestDbVersion()).analyzeDiff(pContext);
+        TableContext migrationContext = MigrationContext.createFromMigrationRetriever(mr);
+        MigrationSet migrationSet = new DiffGenerator(migrationContext, mr.latestDbVersion()).analyzeDiff(pContext);
         APLog.i(LOG_TAG, "Number of migrations in set = " + migrationSet.orderedMigrations().size());
         if (migrationSet.orderedMigrations().size() == 0) {
             return null;
