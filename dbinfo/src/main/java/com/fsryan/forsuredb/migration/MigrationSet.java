@@ -41,10 +41,10 @@ import java.util.Map;
  *     <td>column name</td>
  *   </tr>
  *   <tr>
- *     <td>1</td>
- *     <td>NO</td>
- *     <td>table name</td>
- *     <td>column name</td>
+ *     <td>2</td>
+ *     <td>YES</td>
+ *     <td>table java class name</td>
+ *     <td>column method name</td>
  *   </tr>
  * </table>
  *
