@@ -58,16 +58,16 @@ public class ColumnInfoUtil {
         return ret;
     }
 
-    public static ColumnInfo findDefaultColumn(String colName) {
-        ColumnInfo ret = TableInfo.defaultColumns().get(colName);
+    public static ColumnInfo findDefaultColumn(String colMethodName) {
+        ColumnInfo ret = TableInfo.defaultColumns().get(colMethodName);
         if (ret == null) {
-            throw new IllegalStateException("could not find '" + colName + "' column on TableInfo.defaultColumns()");
+            throw new IllegalStateException("could not find column with method name '" + colMethodName + "' on TableInfo.defaultColumns()");
         }
         return ret;
     }
 
     public static ColumnInfo idCol() {
-        return findDefaultColumn("_id");
+        return findDefaultColumn("id");
     }
 
     public static ColumnInfo createdCol() {

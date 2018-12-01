@@ -62,7 +62,7 @@ public abstract class MigrationTest {
                             ),
                             setOf(
                                     cascadeForeignKeyTo("foreign")
-                                            .localToForeignColumnMap(mapOf("local", "foreign"))
+                                            .mapLocalToForeignColumn("local", "foreign")
                                             .build()
                             ),
                             setOf("some", "list", "of", "column", "names")
