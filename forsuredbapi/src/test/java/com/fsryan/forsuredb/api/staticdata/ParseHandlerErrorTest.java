@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -24,10 +26,8 @@ public class ParseHandlerErrorTest {
             Migration.builder().tableName("table").type(Migration.Type.CREATE_TABLE).build()
     );
     private static final Map<String, TableInfo> errorSchema = mapOf(
-            "table",
-            TableInfo.builder()
-                    .tableName("table")
-                    .qualifiedClassName(ParseHandlerErrorTest.class.getName())
+            tableFQClassName("table"),
+            tableBuilder("table")
                     .addColumn(ColumnInfo.builder()
                             .columnName("column")
                             .methodName("column")
@@ -75,7 +75,7 @@ public class ParseHandlerErrorTest {
             createRetriever().retrieve(mock(OnRecordRetrievedListener.class));
             fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
-            assertEquals("java.lang.IllegalStateException: Table 'table' does not have column 'non_existent_column'; db_version: 1; columns: [_id, column, column2, created, date_column, deleted, modified]", e.getMessage());
+            assertEquals("java.lang.IllegalStateException: Table 'table' does not have column 'non_existent_column'; db_version: 1; columns: [column, column2, created, date_column, deleted, id, modified]", e.getMessage());
         }
     }
 

@@ -106,7 +106,10 @@ class ParseHandler extends DefaultHandler {
             String column = attributes.getQName(idx);
             String value = attributes.getValue(idx);
 
-            TableInfo table = currentMigrationSet.targetSchema().get(tableName);
+            TableInfo table = currentMigrationSet.findTableByName(tableName);
+            if (table == null) {
+                throw new IllegalStateException("Table '" + tableName + "' not found; db_version: " + currentMigrationSet.dbVersion());
+            }
             if (!table.hasColumn(column)) {
                 Map<String, ColumnInfo> columnMap = table.columnMap();
                 List<String> columns = new ArrayList<>(columnMap.keySet());
