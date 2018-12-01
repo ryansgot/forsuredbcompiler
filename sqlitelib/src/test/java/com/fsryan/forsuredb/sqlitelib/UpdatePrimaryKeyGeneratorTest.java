@@ -157,7 +157,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                         .addColumn(stringCol().build())
-                                        .addColumn(stringCol().columnName("string_col_2").build())
+                                        .addColumn(stringCol().methodName("stringCol2").columnName("string_col_2").build())
                                         .build()
                         ),
                         new String[] {
@@ -177,7 +177,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                         .addColumn(stringCol().build())
-                                        .addColumn(stringCol().columnName("string_col_2").build())
+                                        .addColumn(stringCol().methodName("stringCol2").columnName("string_col_2").build())
                                         .build()
                         ),
                         new String[] {
@@ -196,7 +196,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                         tableMapOf(tableBuilder("table_name")
                                 .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                 .addColumn(stringCol().build())
-                                .addColumn(stringCol().columnName("string_col_2").build())
+                                .addColumn(stringCol().methodName("stringCol2").columnName("string_col_2").build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
@@ -215,7 +215,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                                 .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                 .primaryKeyOnConflict("ROLLBACK")
                                 .addColumn(stringCol().build())
-                                .addColumn(stringCol().columnName("string_col_2").build())
+                                .addColumn(stringCol().methodName("stringCol2").columnName("string_col_2").build())
                                 .build()),
                         new String[] {
                                 "DROP TABLE IF EXISTS temp_table_name;",
