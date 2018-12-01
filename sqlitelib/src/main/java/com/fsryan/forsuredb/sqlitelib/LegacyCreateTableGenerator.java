@@ -24,7 +24,6 @@ import com.fsryan.forsuredb.migration.Migration;
 
 import java.util.*;
 
-import static com.fsryan.forsuredb.sqlitelib.ApiInfo.DEFAULT_COLUMN_MAP;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
 /**
@@ -44,7 +43,7 @@ public class LegacyCreateTableGenerator extends QueryGenerator {
     public LegacyCreateTableGenerator(String tableName, Map<String, TableInfo> targetSchema) {
         super(tableName, Migration.Type.CREATE_TABLE);
         this.targetSchema = targetSchema;
-        TableInfo table = targetSchema.get(tableName);
+        TableInfo table = targetSchema.get(tableName);  // TODO: referencing by table name here won't work. You have to reference tables by their java class names.
         primaryKey = table.getPrimaryKey();
         primaryKeyOnConflict = table.primaryKeyOnConflict();
         sortedPrimaryKeyColumnNames = new ArrayList<>(primaryKey);
@@ -82,7 +81,7 @@ public class LegacyCreateTableGenerator extends QueryGenerator {
     }
 
     private List<ColumnInfo> determineColumnsToAdd() {
-        List<ColumnInfo> ret = new ArrayList<>(DEFAULT_COLUMN_MAP.values());
+        List<ColumnInfo> ret = new ArrayList<>(TableInfo.defaultColumns().values());
         for (ColumnInfo column : targetSchema.get(getTableName()).getColumns()) {
             if (column.getColumnName().equals(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN)) {
                 continue;
