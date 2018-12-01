@@ -35,7 +35,7 @@ public class TableForeignKeyInfoDeserializer extends StdDeserializer<TableForeig
         return TableForeignKeyInfo.builder()
                 .foreignTableApiClassName(foreignApiClassName)
                 .foreignTableName(foreignTableName)
-                .localToForeignColumnMap(localToForeignColumnMap)
+                .addAllLocalToForeignColumns(localToForeignColumnMap)
                 .updateChangeAction(updateAction)
                 .deleteChangeAction(deleteAction)
                 .build();

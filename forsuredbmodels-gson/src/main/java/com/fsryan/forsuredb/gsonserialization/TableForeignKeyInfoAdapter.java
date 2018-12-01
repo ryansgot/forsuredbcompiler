@@ -85,7 +85,7 @@ class TableForeignKeyInfoAdapter extends TypeAdapter<TableForeignKeyInfo> {
                     builder.foreignTableName(stringAdapter.read(jsonReader));
                     break;
                 case "local_to_foreign_column_map":
-                    builder.localToForeignColumnMap(localToForeignColumnMapAdapter.read(jsonReader));
+                    builder.addAllLocalToForeignColumns(localToForeignColumnMapAdapter.read(jsonReader));
                     break;
                 case "update_action":
                     builder.updateChangeAction(stringAdapter.read(jsonReader));

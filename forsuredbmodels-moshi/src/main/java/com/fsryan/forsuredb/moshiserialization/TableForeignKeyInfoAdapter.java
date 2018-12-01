@@ -40,7 +40,7 @@ final class TableForeignKeyInfoAdapter extends JsonAdapter<TableForeignKeyInfo> 
                     break;
                 }
                 case 2: {
-                    builder.localToForeignColumnMap(string2StringMapAdapter.fromJson(reader));
+                    builder.addAllLocalToForeignColumns(string2StringMapAdapter.fromJson(reader));
                     break;
                 }
                 case 3: {
