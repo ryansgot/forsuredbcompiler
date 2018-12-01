@@ -20,12 +20,34 @@ package com.fsryan.forsuredb.migration;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Contains an ordered set of {@link Migration} as well as a database version and
- * target schema (modeled as a map, table name -&gt; {@link TableInfo})
+ * <p>Contains a list of {@link Migration} as well as a
+ * {@link #dbVersion() database version} version and {@link #targetSchema()}.
+ * The target schema is represented differently based upon version:
+ * <table>
+ *   <th>
+ *     <td>Version</td>
+ *     <td>Version written to file</td>
+ *     <td>Schema table key</td>
+ *     <td>Schema column key</td>
+ *   </th>
+ *   <tr>
+ *     <td>1</td>
+ *     <td>NO</td>
+ *     <td>table name</td>
+ *     <td>column name</td>
+ *   </tr>
+ *   <tr>
+ *     <td>2</td>
+ *     <td>YES</td>
+ *     <td>table java class name</td>
+ *     <td>column method name</td>
+ *   </tr>
+ * </table>
  *
  * Note: this class has a natural ordering that is inconsistent with equals.
  */
@@ -34,19 +56,26 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder orderedMigrations(List<Migration> orderedMigrations);    // ordered_migrations
-        public abstract Builder targetSchema(Map<String, TableInfo> targetSchema);  // target_schema
-        public abstract Builder dbVersion(int dbVersion);    // db_version
+        public abstract Builder orderedMigrations(List<Migration> orderedMigrations);   // ordered_migrations
+        public abstract Builder targetSchema(Map<String, TableInfo> targetSchema);      // target_schema
+        public abstract Builder dbVersion(int dbVersion);                               // db_version
+        public abstract Builder setVersion(int version);                                // set_version
         public abstract MigrationSet build();
     }
 
-    public static Builder builder() {
-        return new AutoValue_MigrationSet.Builder();
+    public static Builder v2Builder() {
+        return builder().setVersion(2);
     }
 
-    public abstract List<Migration> orderedMigrations();    // ordered_migrations
-    public abstract Map<String, TableInfo> targetSchema();  // target_schema
-    public abstract int dbVersion();    // db_version
+    public static Builder builder() {
+        return new AutoValue_MigrationSet.Builder().setVersion(1);
+    }
+
+    public abstract List<Migration> orderedMigrations();                                // ordered_migrations
+    public abstract Map<String, TableInfo> targetSchema();                              // target_schema
+    public abstract int dbVersion();                                                    // db_version
+    public abstract int setVersion();                                                   // set_version
+    public abstract Builder toBuilder();
 
     @Override
     public int compareTo(MigrationSet other) {
@@ -57,5 +86,18 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
 
     public boolean containsMigrations() {
         return orderedMigrations() != null && !orderedMigrations().isEmpty();
+    }
+
+    @Nullable
+    public TableInfo findTableByName(@Nullable String tableName) {
+        if (tableName == null) {
+            return null;
+        }
+        for (TableInfo t : targetSchema().values()) {
+            if (t.tableName().equals(tableName)) {
+                return t;
+            }
+        }
+        return null;
     }
 }

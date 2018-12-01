@@ -25,3 +25,4 @@ sqlitelib/out/*
 integrationtest/out/*
 testtools/out/*
 dbinfo-testtools/out/*
+serialization-testtools/out/*

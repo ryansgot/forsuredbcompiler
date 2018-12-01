@@ -36,26 +36,28 @@ public class ColumnInfoTest {
 
     @Test
     public void shouldPutIdColumnFirst() {
-        List<ColumnInfo> defaultColumns = new ArrayList<>(TableInfo.DEFAULT_COLUMNS.values());
+        List<ColumnInfo> defaultColumns = new ArrayList<>(TableInfo.defaultColumns().values());
         Collections.sort(defaultColumns);
         assertEquals("_id", defaultColumns.get(0).getColumnName());
     }
 
     @Test
     public void shouldPutDefaultColumnsBeforeOthers() {
-        ColumnInfo defaultColumn = TableInfo.DEFAULT_COLUMNS.get("created");
+        ColumnInfo defaultColumn = TableInfo.defaultColumns().get("created");
         assertTrue(defaultColumn.compareTo(longCol().build()) < 0);
     }
 
     @Test
     public void shouldPutDefaultColumnsBeforeForeignKeyColumns() {
-        ColumnInfo defaultColumn = TableInfo.DEFAULT_COLUMNS.get("created");
+        ColumnInfo defaultColumn = TableInfo.defaultColumns().get("created");
         assertTrue(defaultColumn.compareTo(longColumnWithForeignKey) < 0);
     }
 
     @Test
     public void shouldAlphabetizeSortDefaultColumns() {
-        assertTrue(TableInfo.DEFAULT_COLUMNS.get("created").compareTo(TableInfo.DEFAULT_COLUMNS.get("modified")) < 0);
+        ColumnInfo created = TableInfo.defaultColumns().get("created");
+        ColumnInfo modified = TableInfo.defaultColumns().get("modified");
+        assertTrue(created.compareTo(modified) < 0);
     }
 
     @Test

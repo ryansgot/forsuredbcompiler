@@ -42,6 +42,7 @@ public class TableInfoUtilTest {
     }
 
     private static TableForeignKeyInfo tfkiTo(String table) {
-        return foreignKeyTo(table).localToForeignColumnMap(mapOf("", "")).build();
+        // we don't care about the column mapping at this point
+        return foreignKeyTo(table).mapLocalToForeignColumn("", "").build();
     }
 }

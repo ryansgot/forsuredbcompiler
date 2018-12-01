@@ -142,7 +142,9 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         emptyTestTableContext,
                         TableContext.fromSchema(tableMapOf(
                                 tableBuilder(TABLE_NAME)
-                                        .addColumn(longCol().foreignKeyInfo(idCascadeFKI("user")).build())
+                                        .addColumn(longCol()
+                                                .foreignKeyInfo(idCascadeFKI("user"))
+                                                .build())
                                         .build()
                         )),
                         migrationSet(3)
@@ -348,7 +350,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                                 tableBuilder(TABLE_NAME)
                                         .addColumn(longCol().build())
                                         .addForeignKey(cascadeForeignKeyTo("user")
-                                                .localToForeignColumnMap(mapOf("long_col", "_id"))
+                                                .mapLocalToForeignColumn("long_col", "_id")
                                                 .build())
                                         .build()
                         )),
@@ -375,7 +377,7 @@ public class SmallDiffGeneratorTest extends BaseDiffGeneratorTest {
                         TableContext.fromSchema(tableMapOf(
                                 tableBuilder(TABLE_NAME).addColumn(longCol().build())
                                         .addForeignKey(cascadeForeignKeyTo("user")
-                                                .localToForeignColumnMap(mapOf("long_column", "_id"))
+                                                .mapLocalToForeignColumn("long_column", "_id")
                                                 .build())
                                         .build()
                         )),

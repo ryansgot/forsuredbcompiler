@@ -75,7 +75,7 @@ public class OrderByGenerator extends JavaSourceGenerator {
 
     private boolean filterUnorderableColumns(ColumnInfo c) {
         return c.orderable()
-                && !TableInfo.defaultColumns().containsKey(c.getColumnName())
+                && !TableInfo.defaultColumnNames().contains(c.getColumnName())
                 && isOrderableType(c)
                 && !additionalUnorderableColumns.contains(c.columnName());
     }

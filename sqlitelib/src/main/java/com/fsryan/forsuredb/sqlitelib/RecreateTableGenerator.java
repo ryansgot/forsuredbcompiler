@@ -7,8 +7,6 @@ import com.fsryan.forsuredb.migration.Migration;
 
 import java.util.*;
 
-import static com.fsryan.forsuredb.sqlitelib.ApiInfo.DEFAULT_COLUMN_MAP;
-
 public abstract class RecreateTableGenerator extends QueryGenerator {
 
     protected final TableInfo table;
@@ -51,7 +49,7 @@ public abstract class RecreateTableGenerator extends QueryGenerator {
         retList.addAll(new DropTableGenerator(getTableName()).generate());
         retList.addAll(new CreateTableGenerator(getTableName(), targetSchema).generate());
         for (ColumnInfo columnInfo : table.getNonForeignKeyColumns()) { // TODO: update this to filter based upon TableForeignKeyInfo
-            if (DEFAULT_COLUMN_MAP.containsKey(columnInfo.getColumnName())
+            if (TableInfo.defaultColumnNames().contains(columnInfo.getColumnName())
                     || table.getPrimaryKey().contains(columnInfo.getColumnName())
                     || columnInfo.unique()) {
                 continue;   // <-- these columns were added in the CREATE TABLE query

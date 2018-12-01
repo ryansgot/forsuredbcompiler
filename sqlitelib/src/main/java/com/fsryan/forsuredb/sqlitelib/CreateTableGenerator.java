@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.fsryan.forsuredb.sqlitelib.ApiInfo.DEFAULT_COLUMN_MAP;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
 public class CreateTableGenerator extends QueryGenerator {
@@ -165,9 +164,9 @@ public class CreateTableGenerator extends QueryGenerator {
     }
 
     private List<ColumnInfo> columnsToAdd() {
-        List<ColumnInfo> ret = new ArrayList<>(DEFAULT_COLUMN_MAP.values());
+        List<ColumnInfo> ret = new ArrayList<>(TableInfo.defaultColumns().values());
         for (ColumnInfo column : targetSchema.get(getTableName()).getColumns()) {
-            if (DEFAULT_COLUMN_MAP.keySet().contains(column.getColumnName())) {
+            if (TableInfo.defaultColumnNames().contains(column.getColumnName())) {
                 continue;
             }
             if (column.unique()

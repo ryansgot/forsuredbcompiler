@@ -25,11 +25,9 @@ import java.util.*;
 
 
 /**
- * <p>
- *     The complete description of a table. Each table will have the
- *     {@link #DEFAULT_COLUMNS default columns}. You should call the builder()
- *     method in order to begin building a TableInfo instance.
- * </p>
+ * <p>The complete description of a table. Each table will have the
+ * {@link #defaultColumns()} default columns}. You should call the builder()
+ * method in order to begin building a TableInfo instance.
  * @author Ryan Scott
  */
 @AutoValue
@@ -48,48 +46,6 @@ public abstract class TableInfo {
      *     <li>deleted: an integer (either 0 or 1) describing whether the record is deleted</li>
      * </ul>
      */
-    /*package*/ static final Map<String, ColumnInfo> DEFAULT_COLUMNS = new HashMap<>();
-    static {
-        DEFAULT_COLUMNS.put("_id", ColumnInfo.builder().columnName("_id")
-                .methodName("id")
-                .primaryKey(true)
-                .qualifiedType("long")
-                .build());
-        DEFAULT_COLUMNS.put("created", ColumnInfo.builder().columnName("created")
-                .methodName("created")
-                .qualifiedType(Date.class.getName())
-                .defaultValue("CURRENT_TIMESTAMP")
-                .build());
-        DEFAULT_COLUMNS.put("modified", ColumnInfo.builder().columnName("modified")
-                .methodName("modified")
-                .qualifiedType(Date.class.getName())
-                .defaultValue("CURRENT_TIMESTAMP")
-                .build());
-        DEFAULT_COLUMNS.put("deleted", ColumnInfo.builder().columnName("deleted")
-                .methodName("deleted")
-                .qualifiedType("boolean")
-                .defaultValue("0")
-                .build());
-    }
-
-    /*package*/ static final Map<String, ColumnInfo> DOC_STORE_COLUMNS = new HashMap<>();
-    static {
-        DOC_STORE_COLUMNS.put("class_name", ColumnInfo.builder()
-                .methodName("className")
-                .qualifiedType(String.class.getName())
-                .columnName("class_name")
-                .build());
-        DOC_STORE_COLUMNS.put("doc", ColumnInfo.builder()
-                .methodName("doc")
-                .qualifiedType(String.class.getName())
-                .columnName("doc")
-                .build());
-        DOC_STORE_COLUMNS.put("blob_doc", ColumnInfo.builder()
-                .methodName("blobDoc")
-                .qualifiedType(byte[].class.getCanonicalName())
-                .columnName("blob_doc")
-                .build());
-    }
 
     @AutoValue.Builder
     public static abstract class Builder {
@@ -107,7 +63,7 @@ public abstract class TableInfo {
 
         public Builder addColumn(ColumnInfo column) {
             if (column != null) {
-                columnMap.put(column.getColumnName(), column);
+                columnMap.put(column.methodName(), column);
             }
             return this;
         }
@@ -118,6 +74,11 @@ public abstract class TableInfo {
                     addColumn(c);
                 }
             }
+            return this;
+        }
+
+        public Builder clearColumns() {
+            columnMap.clear();
             return this;
         }
 
@@ -178,19 +139,22 @@ public abstract class TableInfo {
                     if (legacyForeignKey == null) {
                         continue;
                     }
-                    Map<String, String> localToForeignColumnMap = new HashMap<>(1);
-                    localToForeignColumnMap.put(column.getColumnName(), legacyForeignKey.columnName());
                     actualForeignKeys.add(TableForeignKeyInfo.builder()
                             .foreignTableApiClassName(legacyForeignKey.apiClassName())
                             .foreignTableName(legacyForeignKey.tableName())
-                            .localToForeignColumnMap(localToForeignColumnMap)
+                            .mapLocalToForeignColumn(column.getColumnName(), legacyForeignKey.columnName())
                             .updateChangeAction(legacyForeignKey.updateAction())
                             .deleteChangeAction(legacyForeignKey.deleteAction())
                             .build());
                 }
             }
 
-            columnMap.putAll(DEFAULT_COLUMNS);
+            for (Map.Entry<String, ColumnInfo> defaultColumnEntry : defaultColumns().entrySet()) {
+                ColumnInfo toBuildColumn = columnMap.get(defaultColumnEntry.getKey());
+                if (toBuildColumn == null) {
+                    columnMap.put(defaultColumnEntry.getKey(), defaultColumnEntry.getValue());
+                }
+            }
             return tableName(createTableName(tableName(), qualifiedClassName()))
                     .columnMap(columnMap)
                     .foreignKeys(actualForeignKeys)
@@ -214,15 +178,56 @@ public abstract class TableInfo {
     }
 
     public static Set<String> defaultColumnNames() {
-        return DEFAULT_COLUMNS.keySet();
+        return new HashSet<>(Arrays.asList("_id", "created", "deleted", "modified"));
     }
 
     public static Map<String, ColumnInfo> defaultColumns() {
-        return new HashMap<>(DEFAULT_COLUMNS);
+        Map<String, ColumnInfo> ret = new HashMap<>(4);
+        ret.put("id", ColumnInfo.builder()
+                .columnName("_id")
+                .methodName("id")
+                .primaryKey(true)
+                .qualifiedType("long")
+                .build());
+        ret.put("created", ColumnInfo.builder()
+                .columnName("created")
+                .methodName("created")
+                .qualifiedType(Date.class.getName())
+                .defaultValue("CURRENT_TIMESTAMP")
+                .build());
+        ret.put("modified", ColumnInfo.builder()
+                .columnName("modified")
+                .methodName("modified")
+                .qualifiedType(Date.class.getName())
+                .defaultValue("CURRENT_TIMESTAMP")
+                .build());
+        ret.put("deleted", ColumnInfo.builder()
+                .columnName("deleted")
+                .methodName("deleted")
+                .qualifiedType("boolean")
+                .defaultValue("0")
+                .build());
+        return ret;
     }
 
     public static Map<String, ColumnInfo> docStoreColumns() {
-        return new HashMap<>(DOC_STORE_COLUMNS);
+        HashMap<String, ColumnInfo> ret = new HashMap<>(3);
+        ret.put("className", ColumnInfo.builder()
+                .methodName("className")
+                .qualifiedType(String.class.getName())
+                .columnName("class_name")
+                .build());
+        ret.put("doc", ColumnInfo.builder()
+                .methodName("doc")
+                .qualifiedType(String.class.getName())
+                .columnName("doc")
+                .build());
+        ret.put("blobDoc", ColumnInfo.builder()
+                .methodName("blobDoc")
+                .qualifiedType(byte[].class.getCanonicalName())
+                .columnName("blob_doc")
+                .build());
+        return ret;
     }
 
     @Nonnull public abstract Map<String, ColumnInfo> columnMap();  // column_info_map
@@ -282,11 +287,21 @@ public abstract class TableInfo {
     }
 
     public boolean hasColumn(String columnName) {
-        return columnMap().containsKey(columnName);
+        return getColumn(columnName) != null;
     }
 
+    @Nullable
     public ColumnInfo getColumn(String columnName) {
-        return columnName == null ? null : columnMap().get(columnName);
+        if (columnName == null) {
+            return null;
+        }
+
+        for (ColumnInfo column : getColumns()) {
+            if (columnName.equals(column.getColumnName())) {
+                return column;
+            }
+        }
+        return null;
     }
 
     public Collection<ColumnInfo> getColumns() {

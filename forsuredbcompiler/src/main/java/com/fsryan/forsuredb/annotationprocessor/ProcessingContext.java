@@ -28,6 +28,7 @@ import com.google.common.collect.Sets;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -66,14 +67,27 @@ public class ProcessingContext implements TableContext {
 
     @Override
     public boolean hasTableWithName(String tableName) {
-        createTableMapIfNecessary();
-        return tableName != null && tableMap.containsKey(tableName);
+        if (tableName == null) {
+            return false;
+        }
+        return getTableByName(tableName) != null;
     }
 
+    @Nullable
     @Override
     public TableInfo getTableByName(String tableName) {
+        if (tableName == null) {
+            return null;
+        }
+
         createTableMapIfNecessary();
-        return tableName == null ? null : tableMap.get(tableName);
+        for (Map.Entry<String, TableInfo> entry : tableMap.entrySet()) {
+            final TableInfo t = entry.getValue();
+            if (tableName.equals(t.tableName())) {
+                return t;
+            }
+        }
+        return null;
     }
 
     //TODO: @Override
@@ -102,7 +116,7 @@ public class ProcessingContext implements TableContext {
             }
 
             for (TableForeignKeyInfo foreignKey : foreignKeys) {
-                TableInfo parent = tableMap.get(foreignKey.foreignTableName());
+                TableInfo parent = tableMap.get(foreignKey.foreignTableApiClassName());
                 List<ColumnInfo> childColumns = new ArrayList<>();
                 List<ColumnInfo> parentColumns = new ArrayList<>();
                 for (Map.Entry<String, String> entry : foreignKey.localToForeignColumnMap().entrySet()) {
@@ -127,26 +141,27 @@ public class ProcessingContext implements TableContext {
             throw new IllegalArgumentException("Can only create TableInfo create " + ElementKind.INTERFACE.toString() + ", not " + intf.getKind().toString());
         }
 
+        final String tableClassName = intf.getQualifiedName().toString();
         final String tableName = createTableName(intf);
         // docStoreParametrization will be non-null only for doc store tables, so add the doc store columns in this case
         String docStoreParameterization = getDocStoreParametrizationFrom(intf);
         if (docStoreParameterization != null) {
             docStoreColumns().values()
-                    .forEach(c -> builder.addColumn(tableName, c.columnName(), c.toBuilder()));
+                    .forEach(c -> builder.addColumn(tableClassName, c.columnName(), c.toBuilder()));
         }
-        builder.addTable(tableName, intf.getQualifiedName().toString(), TableInfo.builder()
+        builder.addTable(tableName, tableClassName, TableInfo.builder()
                 .tableName(tableName)
-                .qualifiedClassName(intf.getQualifiedName().toString())
+                .qualifiedClassName(tableClassName)
                 .docStoreParameterization(docStoreParameterization)
                 .resetPrimaryKey(primaryKeyFrom(intf))
                 .primaryKeyOnConflict(primaryKeyOnConflictFrom(intf))
                 .staticDataAsset(createStaticDataAsset(intf)));
 
         methodsIn(intf.getEnclosedElements()).forEach(ee -> {
-            builder.addColumn(tableName, columnNameOf(ee), InfoTransformer.transform(ee));
+            builder.addColumn(tableClassName, columnNameOf(ee), InfoTransformer.transform(ee));
             if (containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
-                builder.addForeignKeyInfo(tableName, p.first, p.second);
+                builder.addForeignKeyInfo(tableClassName, p.first, p.second);
             }
         });
     }
@@ -177,7 +192,7 @@ public class ProcessingContext implements TableContext {
                 .foreignTableApiClassName(at.property("apiClass").asString())
                 .deleteChangeAction(at.property("deleteAction").asString())
                 .updateChangeAction(at.property("updateAction").asString())
-                .localToForeignColumnMap(localToForeignColumnMap);
+                .addAllLocalToForeignColumns(localToForeignColumnMap);
     }
 
     private static TableForeignKeyInfo.Builder tableForeignKeyInfoBuilderFromLegacy(String columnName, AnnotationTranslator at) {
@@ -186,7 +201,7 @@ public class ProcessingContext implements TableContext {
         return TableForeignKeyInfo.builder()
                 .deleteChangeAction(ForeignKey.ChangeAction.from(at.property("deleteAction").asString()).name())
                 .updateChangeAction(ForeignKey.ChangeAction.from(at.property("updateAction").asString()).name())
-                .localToForeignColumnMap(localToForeignColumnMap)
+                .addAllLocalToForeignColumns(localToForeignColumnMap)
                 .foreignTableApiClassName(at.property("apiClass").asString());
     }
 

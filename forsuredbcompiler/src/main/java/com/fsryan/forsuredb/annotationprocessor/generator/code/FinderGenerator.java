@@ -87,7 +87,7 @@ public class FinderGenerator extends JavaSourceGenerator {
         ParameterizedTypeName conjunctionTypeName = ParameterizedTypeName.get(ClassName.get(Conjunction.GroupableAndOr.class), TypeVariableName.get("R"), paramaterizedFinderType);
         ParameterizedTypeName betweenTypeName = ParameterizedTypeName.get(ClassName.get(Finder.Between.class), TypeVariableName.get("R"), paramaterizedFinderType);
         for (ColumnInfo column : columnsSortedByName) {
-            if (!column.searchable() || TableInfo.defaultColumns().containsKey(column.getColumnName())) {
+            if (!column.searchable() || TableInfo.defaultColumnNames().contains(column.getColumnName())) {
                 continue;
             }
             for (MethodSpec methodSpec : FinderMethodSpecGenerator.create(column, conjunctionTypeName, betweenTypeName).generate()) {

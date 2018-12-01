@@ -19,7 +19,8 @@ package com.fsryan.forsuredb.info;
 
 import com.google.auto.value.AutoValue;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -43,15 +44,50 @@ public abstract class TableForeignKeyInfo {
     public abstract Map<String, String> localToForeignColumnMap();    // local_to_foreign_column_map
     public abstract String updateChangeAction();    // update_action
     public abstract String deleteChangeAction();    // delete_action
-    public abstract Builder toBuilder();
+
+    public Builder toBuilder() {
+        return autoToBuilder().addAllLocalToForeignColumns(localToForeignColumnMap());
+    }
+
+    abstract Builder autoToBuilder();
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder foreignTableApiClassName(String foreignTableApiClassName);    // foreign_table_api_class_name
-        public abstract Builder foreignTableName(String foreignTableName);  // foreign_table_name
-        public abstract Builder localToForeignColumnMap(Map<String, String> localToForeignColumnMap);    // local_to_foreign_column_map
-        public abstract Builder updateChangeAction(String updateAction);    // update_action
-        public abstract Builder deleteChangeAction(String deleteAction);    // delete_action
-        public abstract TableForeignKeyInfo build();
+
+        private final Map<String, String> columnNameMap = new HashMap<>(4);
+
+        public abstract Builder foreignTableApiClassName(String foreignTableApiClassName);      // foreign_table_api_class_name
+        public abstract Builder foreignTableName(String foreignTableName);                      // foreign_table_name
+        public abstract Builder updateChangeAction(String updateAction);                        // update_action
+        public abstract Builder deleteChangeAction(String deleteAction);                        // delete_action
+
+        public abstract String foreignTableApiClassName();
+
+        @Nonnull
+        public Map<String, String> localToForeignColumnMap() {
+            return new HashMap<>(columnNameMap);
+        }
+
+        public Builder mapLocalToForeignColumn(@Nonnull String localColumnName, @Nonnull String foreignColumnName) {
+            columnNameMap.put(localColumnName, foreignColumnName);
+            return this;
+        }
+
+        public Builder addAllLocalToForeignColumns(Map<String, String> localToForeignColumnMap) {
+            if (localToForeignColumnMap != null) {
+                columnNameMap.putAll(localToForeignColumnMap);
+            }
+            return this;
+        }
+
+        public TableForeignKeyInfo build() {
+            if (columnNameMap.size() < 1) {
+                throw new IllegalStateException("Cannot create " + TableForeignKeyInfo.class + "with empty columnNameMap");
+            }
+            return localToForeignColumnMap(columnNameMap).autoBuild();
+        }
+
+        abstract Builder localToForeignColumnMap(Map<String, String> localToForeignColumnMap);    // local_to_foreign_column_map
+        abstract TableForeignKeyInfo autoBuild();
     }
 }

@@ -28,7 +28,6 @@ import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import java.util.*;
 
 import static com.fsryan.forsuredb.migration.Migration.Type.*;
-import static com.fsryan.forsuredb.sqlitelib.ApiInfo.DEFAULT_COLUMN_MAP;
 
 /**
  * <p>
@@ -150,7 +149,7 @@ class QueryGeneratorFactory {
         }
 
         Set<String> ret = new HashSet<>();
-        for (ColumnInfo column : DEFAULT_COLUMN_MAP.values()) {
+        for (ColumnInfo column : TableInfo.defaultColumns().values()) {
             ret.add(column.columnName());
         }
         return ret;
