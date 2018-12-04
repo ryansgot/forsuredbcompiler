@@ -20,9 +20,9 @@ package com.fsryan.forsuredb.migration;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>Contains a list of {@link Migration} as well as a
@@ -34,18 +34,21 @@ import java.util.Map;
  *     <td>Version written to file</td>
  *     <td>Schema table key</td>
  *     <td>Schema column key</td>
+ *     <td>Notes</td>
  *   </th>
  *   <tr>
  *     <td>1</td>
  *     <td>NO</td>
  *     <td>table name</td>
  *     <td>column name</td>
+ *     <td>n/a</td>
  *   </tr>
  *   <tr>
  *     <td>2</td>
  *     <td>YES</td>
  *     <td>table java class name</td>
  *     <td>column method name</td>
+ *     <td>Added {@link #diffMap()} and {@link #containsDiffs()}</td>
  *   </tr>
  * </table>
  *
@@ -56,11 +59,53 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
 
     @AutoValue.Builder
     public static abstract class Builder {
-        public abstract Builder orderedMigrations(List<Migration> orderedMigrations);   // ordered_migrations
-        public abstract Builder targetSchema(Map<String, TableInfo> targetSchema);      // target_schema
-        public abstract Builder dbVersion(int dbVersion);                               // db_version
-        public abstract Builder setVersion(int version);                                // set_version
-        public abstract MigrationSet build();
+
+        private final Map<String, Set<SchemaDiff>> diffMap = new HashMap<>();
+
+        public abstract Builder orderedMigrations(@Nullable List<Migration> orderedMigrations); // ordered_migrations
+        public abstract Builder targetSchema(Map<String, TableInfo> targetSchema);              // target_schema
+        public abstract Builder dbVersion(int dbVersion);                                       // db_version
+        public abstract Builder setVersion(int version);                                        // set_version
+
+        public Builder addDiff(@Nonnull String tableClassName, SchemaDiff diff) {
+            if (diff != null) {
+                Set<SchemaDiff> current = diffMap.get(tableClassName);
+                if (current == null) {
+                    current = new HashSet<>();
+                    diffMap.put(tableClassName, current);
+                }
+                current.add(diff);
+            }
+            return this;
+        }
+
+        public Builder mergeDiffs(@Nonnull String tableClassName, Set<SchemaDiff> diffs) {
+            if (diffs != null) {
+                Set<SchemaDiff> current = diffMap.get(tableClassName);
+                if (current == null) {
+                    current = new HashSet<>();
+                    diffMap.put(tableClassName, current);
+                }
+                current.addAll(diffs);
+            }
+            return this;
+        }
+
+        public Builder mergeDiffMap(Map<String, Set<SchemaDiff>> diffMap) {
+            if (diffMap != null) {
+                for (Map.Entry<String, Set<SchemaDiff>> entry : diffMap.entrySet()) {
+                    mergeDiffs(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
+        }
+
+        public MigrationSet build() {
+            return diffMap(diffMap).autoBuild();
+        }
+
+        abstract Builder diffMap(Map<String, Set<SchemaDiff>> diffMap);                         // diff_map
+        abstract MigrationSet autoBuild();
     }
 
     public static Builder v2Builder() {
@@ -71,11 +116,10 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
         return new AutoValue_MigrationSet.Builder().setVersion(1);
     }
 
-    public abstract List<Migration> orderedMigrations();                                // ordered_migrations
-    public abstract Map<String, TableInfo> targetSchema();                              // target_schema
-    public abstract int dbVersion();                                                    // db_version
-    public abstract int setVersion();                                                   // set_version
-    public abstract Builder toBuilder();
+    @Nullable public abstract List<Migration> orderedMigrations();                              // ordered_migrations
+    public abstract Map<String, TableInfo> targetSchema();                                      // target_schema
+    public abstract int dbVersion();                                                            // db_version
+    public abstract int setVersion();                                                           // set_version
 
     @Override
     public int compareTo(MigrationSet other) {
@@ -86,6 +130,10 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
 
     public boolean containsMigrations() {
         return orderedMigrations() != null && !orderedMigrations().isEmpty();
+    }
+
+    public boolean containsDiffs() {
+        return diffMap() != null && !diffMap().isEmpty();
     }
 
     @Nullable
@@ -100,4 +148,11 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
         }
         return null;
     }
+
+    public Builder toBuilder() {
+        return toAutoBuilder().mergeDiffMap(diffMap());
+    }
+
+    @Nullable abstract Map<String, Set<SchemaDiff>> diffMap();                                  // diff_map
+    abstract Builder toAutoBuilder();
 }
