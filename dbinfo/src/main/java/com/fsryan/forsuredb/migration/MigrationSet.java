@@ -101,10 +101,14 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
         }
 
         public MigrationSet build() {
-            return diffMap(diffMap).autoBuild();
+            if (orderedMigrations() != null && !diffMap.isEmpty()) {
+                throw new IllegalStateException("Cannot have both migrations and diffs in the same " + MigrationSet.class);
+            }
+            return diffMap.isEmpty() ? autoBuild() : diffMap(diffMap).autoBuild();
         }
 
-        abstract Builder diffMap(Map<String, Set<SchemaDiff>> diffMap);                         // diff_map
+        @Nullable abstract List<Migration> orderedMigrations();
+        abstract Builder diffMap(@Nullable Map<String, Set<SchemaDiff>> diffMap);               // diff_map
         abstract MigrationSet autoBuild();
     }
 
@@ -153,6 +157,6 @@ public abstract class MigrationSet implements Comparable<MigrationSet> {
         return toAutoBuilder().mergeDiffMap(diffMap());
     }
 
-    @Nullable abstract Map<String, Set<SchemaDiff>> diffMap();                                  // diff_map
+    @Nullable public abstract Map<String, Set<SchemaDiff>> diffMap();                           // diff_map
     abstract Builder toAutoBuilder();
 }
