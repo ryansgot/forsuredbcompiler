@@ -31,9 +31,7 @@ public abstract class TableInfoUtil {
     public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
         Map<String, TableInfo> retMap = new HashMap<>();
         for (TableInfo table : tables) {
-            // TODO: change the keying mechanism to be based upon fq class name
-//            retMap.put(table.qualifiedClassName(), table);
-            retMap.put(table.tableName(), table);
+            retMap.put(table.qualifiedClassName(), table);
         }
         return retMap;
     }
