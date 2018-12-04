@@ -22,7 +22,12 @@ final class ForeignKeyInfoAdapter extends JsonAdapter<ForeignKeyInfo> {
     public ForeignKeyInfoAdapter() {}
 
     @Override
-    public ForeignKeyInfo fromJson(JsonReader reader) throws IOException {
+    public ForeignKeyInfo fromJson(@Nonnull JsonReader reader) throws IOException {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull();
+            return null;
+        }
+
         reader.beginObject();
         ForeignKeyInfo.Builder builder = ForeignKeyInfo.builder();
         while (reader.hasNext()) {
@@ -57,25 +62,30 @@ final class ForeignKeyInfoAdapter extends JsonAdapter<ForeignKeyInfo> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, @Nonnull ForeignKeyInfo value) throws IOException {
+    public void toJson(@Nonnull JsonWriter writer, ForeignKeyInfo obj) throws IOException {
+        if (obj == null) {
+            writer.nullValue();
+            return;
+        }
+
         writer.beginObject();
         writer.name("update_action");
-        writer.value(value.updateAction());
+        writer.value(obj.updateAction());
 
         writer.name("delete_action");
-        writer.value(value.deleteAction());
+        writer.value(obj.deleteAction());
 
-        String tableName = value.tableName();
+        String tableName = obj.tableName();
         if (tableName != null) {
             writer.name("foreign_table_name");
-            writer.value(value.tableName());
+            writer.value(obj.tableName());
         }
 
         writer.name("foreign_column_name");
-        writer.value(value.columnName());
+        writer.value(obj.columnName());
 
         writer.name("foreign_api_class_name");
-        writer.value(value.apiClassName());
+        writer.value(obj.apiClassName());
         writer.endObject();
     }
 }

@@ -31,7 +31,12 @@ final class ColumnInfoAdapter extends JsonAdapter<ColumnInfo> {
     }
 
     @Override
-    public ColumnInfo fromJson(JsonReader reader) throws IOException {
+    public ColumnInfo fromJson(@Nonnull JsonReader reader) throws IOException {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull();
+            return null;
+        }
+
         ColumnInfo.Builder builder = ColumnInfo.builder();
         reader.beginObject();
         while (reader.hasNext()) {
@@ -88,47 +93,52 @@ final class ColumnInfoAdapter extends JsonAdapter<ColumnInfo> {
     }
 
     @Override
-    public void toJson(JsonWriter writer, @Nonnull ColumnInfo value) throws IOException {
+    public void toJson(@Nonnull JsonWriter writer, ColumnInfo obj) throws IOException {
+        if (obj == null) {
+            writer.nullValue();
+            return;
+        }
+
         writer.beginObject();
 
         writer.name("method_name");
-        writer.value(value.methodName());
+        writer.value(obj.methodName());
 
         writer.name("column_name");
-        writer.value(value.getColumnName());
+        writer.value(obj.getColumnName());
 
-        String qualifiedType = value.qualifiedType();
+        String qualifiedType = obj.qualifiedType();
         if (qualifiedType != null) {
             writer.name("column_type");
             writer.value(qualifiedType);
         }
 
         writer.name("index");
-        writer.value(value.index());
+        writer.value(obj.index());
 
-        String defaultValue = value.defaultValue();
+        String defaultValue = obj.defaultValue();
         if (defaultValue != null) {
             writer.name("default_value");
-            writer.value(value.defaultValue());
+            writer.value(obj.defaultValue());
         }
 
         writer.name("unique");
-        writer.value(value.unique());
+        writer.value(obj.unique());
 
         writer.name("primary_key");
-        writer.value(value.primaryKey());
+        writer.value(obj.primaryKey());
 
-        ForeignKeyInfo foreignKeyInfo = value.foreignKeyInfo();
+        ForeignKeyInfo foreignKeyInfo = obj.foreignKeyInfo();
         if (foreignKeyInfo != null) {
             writer.name("foreign_key_info");
             foreignKeyInfoAdapter.toJson(writer, foreignKeyInfo);
         }
 
         writer.name("searchable");
-        writer.value(value.searchable());
+        writer.value(obj.searchable());
 
         writer.name("orderable");
-        writer.value(value.orderable());
+        writer.value(obj.orderable());
 
         writer.endObject();
     }

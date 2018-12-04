@@ -34,8 +34,14 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
         this.primaryKeyAdapter = adapterFrom(moshi, Types.newParameterizedType(Set.class, String.class)).nullSafe();
         this.foreignKeysAdapter = adapterFrom(moshi, Types.newParameterizedType(Set.class, TableForeignKeyInfo.class)).nullSafe();
     }
+
     @Override
-    public TableInfo fromJson(JsonReader reader) throws IOException {
+    public TableInfo fromJson(@Nonnull JsonReader reader) throws IOException {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull();
+            return null;
+        }
+
         reader.beginObject();
 
         TableInfo.Builder builder = TableInfo.builder();
@@ -88,47 +94,52 @@ final class TableInfoAdapter extends JsonAdapter<TableInfo> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, @Nonnull TableInfo value) throws IOException {
+    public void toJson(@Nonnull JsonWriter writer, TableInfo obj) throws IOException {
+        if (obj == null) {
+            writer.nullValue();
+            return;
+        }
+
         writer.beginObject();
 
-        Map<String, ColumnInfo> columnMap = value.columnMap();
+        Map<String, ColumnInfo> columnMap = obj.columnMap();
         writer.name("column_info_map");
         columnMapAdapter.toJson(writer, columnMap);
 
         writer.name("table_name");
-        writer.value(value.tableName());
+        writer.value(obj.tableName());
 
         writer.name("qualified_class_name");
-        writer.value(value.qualifiedClassName());
+        writer.value(obj.qualifiedClassName());
 
-        String staticDataAsset = value.staticDataAsset();
+        String staticDataAsset = obj.staticDataAsset();
         if (staticDataAsset != null) {
             writer.name("static_data_asset");
-            writer.value(value.staticDataAsset());
+            writer.value(obj.staticDataAsset());
         }
 
-        String staticDataRecordName = value.staticDataRecordName();
+        String staticDataRecordName = obj.staticDataRecordName();
         if (staticDataRecordName != null) {
             writer.name("static_data_record_name");
-            writer.value(value.staticDataRecordName());
+            writer.value(obj.staticDataRecordName());
         }
 
-        String docStoreParameterization = value.docStoreParameterization();
+        String docStoreParameterization = obj.docStoreParameterization();
         if (docStoreParameterization != null) {
             writer.name("doc_store_parameterization");
-            writer.value(value.docStoreParameterization());
+            writer.value(obj.docStoreParameterization());
         }
 
         writer.name("primary_key");
-        primaryKeyAdapter.toJson(writer, value.primaryKey());
+        primaryKeyAdapter.toJson(writer, obj.primaryKey());
 
-        String primaryKeyOnConflict = value.primaryKeyOnConflict();
+        String primaryKeyOnConflict = obj.primaryKeyOnConflict();
         if (primaryKeyOnConflict != null) {
             writer.name("primary_key_on_conflict");
             writer.value(primaryKeyOnConflict);
         }
 
-        Set<TableForeignKeyInfo> foreignKeys = value.foreignKeys();
+        Set<TableForeignKeyInfo> foreignKeys = obj.foreignKeys();
         if (foreignKeys != null) {
             writer.name("foreign_keys");
             foreignKeysAdapter.toJson(writer, foreignKeys);
