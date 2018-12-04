@@ -11,6 +11,7 @@ import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class FSDbInfoJacksonSerializer implements FSDbInfoSerializer {
 
     public FSDbInfoJacksonSerializer() {
         mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule("DbInfoSerializer", new Version(0, 10,0, null, null, null));
+        SimpleModule module = new SimpleModule("DbInfoSerializer", new Version(0, 14,0, null, null, null));
         module.addSerializer(TableForeignKeyInfo.class, new TableForeignKeyInfoSerializer(mapper));
         module.addDeserializer(TableForeignKeyInfo.class, new TableForeignKeyInfoDeserializer(mapper));
         module.addSerializer(ForeignKeyInfo.class, new ForeignKeyInfoSerializer());
@@ -40,6 +41,8 @@ public class FSDbInfoJacksonSerializer implements FSDbInfoSerializer {
         module.addDeserializer(Migration.class, new MigrationDeserializer(mapper));
         module.addSerializer(MigrationSet.class, new MigrationSetSerializer(mapper));
         module.addDeserializer(MigrationSet.class, new MigrationSetDeserializer(mapper));
+        module.addSerializer(SchemaDiff.class, new SchemaDiffSerializer(mapper));
+        module.addDeserializer(SchemaDiff.class, new SchemaDiffDeserializer(mapper));
         mapper.registerModule(module);
     }
 

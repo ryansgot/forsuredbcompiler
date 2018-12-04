@@ -18,18 +18,25 @@ public class MigrationSetSerializer extends StdSerializer<MigrationSet> {
     }
 
     @Override
-    public void serialize(MigrationSet object, JsonGenerator jGen, SerializerProvider provider) throws IOException {
-        if (object == null) {
+    public void serialize(MigrationSet obj, JsonGenerator jGen, SerializerProvider provider) throws IOException {
+        if (obj == null) {
             jGen.writeNull();
             return;
         }
 
         jGen.writeStartObject();
-        jGen.writeFieldName("ordered_migrations");
-        mapper.writeValue(jGen, object.orderedMigrations());
+        if (obj.containsMigrations()) {
+            jGen.writeFieldName("ordered_migrations");
+            mapper.writeValue(jGen, obj.orderedMigrations());
+        }
+        if (obj.containsDiffs()) {
+            jGen.writeFieldName("diff_map");
+            mapper.writeValue(jGen, obj.diffMap());
+        }
         jGen.writeFieldName("target_schema");
-        mapper.writeValue(jGen, object.targetSchema());
-        jGen.writeNumberField("db_version", object.dbVersion());
+        mapper.writeValue(jGen, obj.targetSchema());
+        jGen.writeNumberField("db_version", obj.dbVersion());
+        jGen.writeNumberField("set_version", obj.setVersion());
         jGen.writeEndObject();
     }
 }
