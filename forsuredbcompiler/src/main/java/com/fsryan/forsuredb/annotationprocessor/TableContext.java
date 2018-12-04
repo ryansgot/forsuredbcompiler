@@ -104,27 +104,31 @@ public interface TableContext {
                 throw new IllegalStateException("Could not find " + TableInfo.Builder.class + " for key '" + tableClassName + "'");
             }
 
-            Set<ColumnInfo> columns = columnInfoMap.keySet()
+            return builder.addAllColumns(collectColumns(tableClassName))
+                    .addAllForeignKeys(collectForeignKeys(tableClassName))
+                    .build();
+        }
+
+        private Set<ColumnInfo> collectColumns(String tableClassName) {
+            return columnInfoMap.keySet()
                     .stream()
                     .filter(k -> k.startsWith(tableClassName + "#"))
                     .map(columnInfoMap::get)
                     .map(ColumnInfo.Builder::build)
                     .collect(Collectors.toSet());
+        }
 
+        private Set<TableForeignKeyInfo> collectForeignKeys(String tableClassName) {
             Stream<TableForeignKeyInfo.Builder> compositeStream = compositeForeignKeyInfoMap.keySet().stream()
                     .filter(k -> k.startsWith(tableClassName + "#"))
                     .map(compositeForeignKeyInfoMap::get);
             Stream<TableForeignKeyInfo.Builder> nonCompositeStream = nonCompositeForeignKeyInfoMap
                     .computeIfAbsent(tableClassName, k -> Collections.emptySet())
                     .stream();
-            Set<TableForeignKeyInfo> foreignKeys = Stream.concat(compositeStream, nonCompositeStream)
+            return Stream.concat(compositeStream, nonCompositeStream)
                     .map(tfkiBuilder -> tfkiBuilder.foreignTableName(findForeignTable(tfkiBuilder.foreignTableApiClassName())))
                     .map(TableForeignKeyInfo.Builder::build)
                     .collect(toSet());
-
-            return builder.addAllColumns(columns)
-                    .addAllForeignKeys(foreignKeys)
-                    .build();
         }
 
         private String findForeignTable(String tableClassName) {
@@ -219,6 +223,11 @@ public interface TableContext {
             @Override
             public Map<String, TableInfo> tableMap() {
                 return actualSchema;
+            }
+
+            @Override
+            public String toString() {
+                return tableMap().toString();
             }
         };
     }
