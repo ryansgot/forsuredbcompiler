@@ -37,6 +37,7 @@ class MigrationSetAdapter extends TypeAdapter<MigrationSet> {
 
     private static TypeToken<List<Migration>> orderedMigrationType = new TypeToken<List<Migration>>() {};
     private static TypeToken<Map<String, TableInfo>> targetSchemaType = new TypeToken<Map<String, TableInfo>>() {};
+    private static TypeToken<Map<String, Set<SchemaDiff>>> diffMapType = new TypeToken<Map<String, Set<SchemaDiff>>>() {};
 
     private final TypeAdapter<List<Migration>> orderedMigrationAdapter;
     private final TypeAdapter<Map<String, TableInfo>> targetSchemaAdapter;
@@ -45,7 +46,7 @@ class MigrationSetAdapter extends TypeAdapter<MigrationSet> {
     MigrationSetAdapter(Gson gson) {
         orderedMigrationAdapter = gson.getAdapter(orderedMigrationType);
         targetSchemaAdapter = gson.getAdapter(targetSchemaType);
-        diffMapAdapter = gson.getAdapter(new TypeToken<Map<String, Set<SchemaDiff>>>() {});
+        diffMapAdapter = gson.getAdapter(diffMapType);
     }
 
     @Override

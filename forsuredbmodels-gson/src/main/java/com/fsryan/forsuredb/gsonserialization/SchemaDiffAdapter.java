@@ -30,10 +30,12 @@ import java.util.Map;
 
 class SchemaDiffAdapter extends TypeAdapter<SchemaDiff> {
 
+    private static final TypeToken<Map<String, String>> attributesType = new TypeToken<Map<String, String>>() {};
+
     private final TypeAdapter<Map<String, String>> attributesTypeAdapter;
 
     SchemaDiffAdapter(Gson gson) {
-        attributesTypeAdapter = gson.getAdapter(new TypeToken<Map<String, String>>() {});
+        attributesTypeAdapter = gson.getAdapter(attributesType);
     }
 
     @Override
