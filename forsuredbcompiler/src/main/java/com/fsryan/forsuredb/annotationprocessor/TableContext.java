@@ -195,41 +195,7 @@ public interface TableContext {
     @Nonnull
     static TableContext fromSchema(@Nullable Map<String, TableInfo> schema) {
         final Map<String, TableInfo> actualSchema = schema == null ? Collections.emptyMap() : new HashMap<>(schema);
-        return new TableContext() {
-            @Override
-            public boolean hasTableWithName(String tableName) {
-                if (tableName == null) {
-                    return false;
-                }
-                return actualSchema.values().stream().anyMatch(t -> tableName.equals(t.tableName()));
-            }
-
-            @Override
-            public TableInfo getTableByName(String tableName) {
-                if (tableName == null) {
-                    return null;
-                }
-                return actualSchema.values().stream()
-                        .filter(t -> tableName.equals(t.tableName()))
-                        .findFirst()
-                        .orElse(null);
-            }
-
-            @Override
-            public Collection<TableInfo> allTables() {
-                return actualSchema.values();
-            }
-
-            @Override
-            public Map<String, TableInfo> tableMap() {
-                return actualSchema;
-            }
-
-            @Override
-            public String toString() {
-                return tableMap().toString();
-            }
-        };
+        return () -> actualSchema;
     }
 
     static MigrationSet convertToMigrationSetV2(MigrationSet ms) {
@@ -245,25 +211,52 @@ public interface TableContext {
                 .build();
     }
 
+    @Nullable
+    default String tableNameByClass(@Nullable String tableClassName) {
+        if (tableClassName == null) {
+            return null;
+        }
+        TableInfo table = tableMap().get(tableClassName);
+        return table == null ? null : table.tableName();
+    }
+
     /**
      * @param tableName the name of the table to check
      * @return true if the table exists within the context
      */
-    boolean hasTableWithName(String tableName);
+    default boolean hasTableWithName(@Nullable String tableName) {
+        if (tableName == null) {
+            return false;
+        }
+        return tableMap().values().stream().anyMatch(t -> tableName.equals(t.tableName()));
+    }
 
     /**
      * @param tableName the name of the table to get
      * @return a TableInfo object if the context contains the table and null if not
      */
-    TableInfo getTableByName(String tableName);
+    @Nullable
+    default TableInfo getTableByName(@Nullable String tableName) {
+        if (tableName == null) {
+            return null;
+        }
+        return tableMap().values().stream()
+                .filter(t -> tableName.equals(t.tableName()))
+                .findFirst()
+                .orElse(null);
+    }
 
     /**
      * @return all of the tables in the context
      */
-    Collection<TableInfo> allTables();
+    @Nonnull
+    default Collection<TableInfo> allTables() {
+        return tableMap().values();
+    }
 
     /**
      * @return a map from table_name -&gt; TableInfo for all tables
      */
+    @Nonnull
     Map<String, TableInfo> tableMap();
 }

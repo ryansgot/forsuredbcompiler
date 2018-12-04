@@ -161,7 +161,7 @@ public class ProcessingContext implements TableContext {
             builder.addColumn(tableClassName, columnNameOf(ee), InfoTransformer.transform(ee));
             if (containsForeignKey(ee)) {
                 Pair<String, TableForeignKeyInfo.Builder> p = foreignKeyInfoBuilder(ee);
-                builder.addForeignKeyInfo(tableClassName, p.first, p.second);
+                builder.addForeignKeyInfo(tableClassName, p.first(), p.second());
             }
         });
     }
@@ -171,15 +171,15 @@ public class ProcessingContext implements TableContext {
         return ee.getAnnotationMirrors().stream().filter(am -> {
             final String type = am.getAnnotationType().toString();
             return type.equals(FSForeignKey.class.getName()) || type.equals(ForeignKey.class.getName());
-        }).map(am -> new Pair<>(am.getAnnotationType().toString(), AnnotationTranslatorFactory.inst().create(am)))
+        }).map(am -> Pair.create(am.getAnnotationType().toString(), AnnotationTranslatorFactory.inst().create(am)))
         .map(p -> {
-            String type = p.first;
-            AnnotationTranslator at = p.second;
+            String type = p.first();
+            AnnotationTranslator at = p.second();
             if (type.equals(ForeignKey.class.getName())) {
-                return new Pair<>("", tableForeignKeyInfoBuilderFromLegacy(columnNameOf(ee), at));
+                return Pair.create("", tableForeignKeyInfoBuilderFromLegacy(columnNameOf(ee), at));
             }
             final String compositeId = at.property("compositeId").asString();
-            return new Pair<>(compositeId, tableForeignKeyInfoBuilderSet(columnNameOf(ee), at));
+            return Pair.create(compositeId, tableForeignKeyInfoBuilderSet(columnNameOf(ee), at));
         })
         .findFirst()
         .get();

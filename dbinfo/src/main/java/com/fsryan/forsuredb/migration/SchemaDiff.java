@@ -481,6 +481,27 @@ public abstract class SchemaDiff {
                 .build();
     }
 
+    public static SchemaDiff forTableDropped(@Nonnull String tableName) {
+        return builder()
+                .type(TYPE_DROPPED)
+                .subType(TYPE_DROPPED)
+                .category(CAT_TABLE)
+                .tableName(tableName)
+                .build();
+    }
+
+    public static SchemaDiff forTableRenamed(@Nonnull String previousName, @Nonnull String currentName) {
+        return builder()
+                .type(TYPE_CHANGED)
+                .subType(TYPE_NAME)
+                .category(CAT_TABLE)
+                .tableName(currentName)
+                .addAttribute(ATTR_PREV_NAME, previousName)
+                .addAttribute(ATTR_CURR_NAME, currentName)
+                .build();
+
+    }
+
     public static SchemaDiff forColumnCreated(@Nonnull String tableName, @Nonnull String colName) {
         return builder()
                 .type(TYPE_CREATED)
