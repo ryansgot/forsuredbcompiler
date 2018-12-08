@@ -18,15 +18,14 @@ import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCollec
 
 public class SchemaDiffGenerator {
 
-    private static final BinaryOperator<Map<String, Set<SchemaDiff>>> diffMapCombiner = (m1, m2) -> {
-        Map<String, Set<SchemaDiff>> combined = new HashMap<>(m1);
+    private static final BinaryOperator<Map<String, SchemaDiff>> diffMapCombiner = (m1, m2) -> {
+        Map<String, SchemaDiff> combined = new HashMap<>(m1);
         m2.forEach((k, v) -> {
-            Set<SchemaDiff> current = combined.get(k);
-            if (current == null) {
-                combined.put(k, v);
-            } else {
-                current.addAll(v);
+            SchemaDiff current = combined.get(k);
+            if (current != null) {
+                throw new IllegalStateException("Cannot combine diffs with same key: '" + k + "': current = " + current + "; to combine = " + v);
             }
+            combined.put(k, v);
         });
         return combined;
     };
@@ -38,7 +37,7 @@ public class SchemaDiffGenerator {
     }
 
     @Nonnull
-    public Map<String, Set<SchemaDiff>> generate(@Nonnull TableContext target) {
+    public Map<String, SchemaDiff> generate(@Nonnull TableContext target) {
         // create table diffs
 //        final Map<String, TableInfo> renamedTables = target.allTables()
 //                .stream()
@@ -58,11 +57,14 @@ public class SchemaDiffGenerator {
                 tableDiffStream(droppedTables, t -> SchemaDiff.forTableDropped(t.tableName()))
         ).collect(Collector.of(
                 HashMap::new,
-                (Map<String, Set<SchemaDiff>> acc, Pair<String, SchemaDiff> pair) -> {
+                (Map<String, SchemaDiff> acc, Pair<String, SchemaDiff> pair) -> {
                     final String tableClassName = pair.first();
                     final SchemaDiff diff = pair.second();
-                    final Set<SchemaDiff> existingDiffs = acc.computeIfAbsent(tableClassName, k -> new HashSet<>());
-                    existingDiffs.add(diff);
+                    SchemaDiff current = acc.get(tableClassName);
+                    if (current != null) {
+                        throw new IllegalStateException("Cannot combine diffs with same key: '" + tableClassName + "': current = " + current + "; to combine = " + diff);
+                    }
+                    acc.put(tableClassName, diff);
                 },
                 diffMapCombiner
         ));
@@ -74,39 +76,44 @@ public class SchemaDiffGenerator {
             throw new IllegalStateException("Expecting base context to contain table at key '" + targetTable.qualifiedClassName() + "'; base: " + base);
         }
 
-        SchemaDiff.Builder tableDiffBuilder = SchemaDiff.builder()
+        SchemaDiff.Builder builder = SchemaDiff.builder()
                 .tableName(targetTable.tableName())
                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, targetTable.tableName())
                 .type(SchemaDiff.TYPE_CHANGED);
 
-        // table name
+        enrichWithNameChangeDiff(builder, baseTable, targetTable);
+        enrichWithPrimaryKeyDiff(builder, baseTable, targetTable);
+        SchemaDiff tableDiff = builder.build();
+        return tableDiff.isEmpty()
+                ? Stream.empty()
+                : Stream.of(Pair.create(targetTable.qualifiedClassName(), tableDiff));
+    }
+
+    private static void enrichWithNameChangeDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
         if (!baseTable.tableName().equals(targetTable.tableName())) {
-            tableDiffBuilder.enrichSubType(SchemaDiff.TYPE_NAME)
+            builder.enrichSubType(SchemaDiff.TYPE_NAME)
                     .addAttribute(SchemaDiff.ATTR_PREV_NAME, baseTable.tableName());
         }
+    }
 
+    private static void enrichWithPrimaryKeyDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
         // Primary Key on conflict behavior
         String basePkOnConflict = baseTable.primaryKeyOnConflict();
         basePkOnConflict = basePkOnConflict == null ? "" : basePkOnConflict;
         String targetPkOnConflict = targetTable.primaryKeyOnConflict();
         targetPkOnConflict = targetPkOnConflict == null ? "" : targetPkOnConflict;
         if (!basePkOnConflict.equals(targetPkOnConflict)) {
-            tableDiffBuilder.enrichSubType(SchemaDiff.TYPE_PK_ON_CONFLICT)
+            builder.enrichSubType(SchemaDiff.TYPE_PK_ON_CONFLICT)
                     .addAttribute(SchemaDiff.ATTR_PREV_PK_ON_CONFLICT, basePkOnConflict)
                     .addAttribute(SchemaDiff.ATTR_CURR_PK_ON_CONFLICT, targetPkOnConflict);
         }
 
         // Primary Key columns
         if (!baseTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
-            tableDiffBuilder.enrichSubType(SchemaDiff.TYPE_PK_COLUMNS)
+            builder.enrichSubType(SchemaDiff.TYPE_PK_COLUMNS)
                     .addAttribute(SchemaDiff.ATTR_PREV_PK_COL_NAMES, toCsv(baseTable.getPrimaryKey()))
                     .addAttribute(SchemaDiff.ATTR_CURR_PK_COL_NAMES, toCsv(targetTable.getPrimaryKey()));
         }
-
-        SchemaDiff tableDiff = tableDiffBuilder.build();
-        return tableDiff.isEmpty()
-                ? Stream.empty()
-                : Stream.of(Pair.create(targetTable.qualifiedClassName(), tableDiff));
     }
 
     private static Stream<Pair<String, SchemaDiff>> tableDiffStream(Map<String, TableInfo> tables, Function<TableInfo, SchemaDiff> mapper) {

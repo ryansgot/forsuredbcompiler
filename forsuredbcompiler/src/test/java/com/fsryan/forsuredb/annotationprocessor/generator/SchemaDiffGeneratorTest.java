@@ -11,14 +11,12 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
-import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertSetEquals;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -35,7 +33,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1"))
+                                SchemaDiff.forTableCreated("t1")
                         )
                 ),
                 arguments(
@@ -48,9 +46,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1")),
+                                SchemaDiff.forTableCreated("t1"),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableCreated("t2"))
+                                SchemaDiff.forTableCreated("t2")
                         )
                 ),
                 arguments(
@@ -62,7 +60,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1"))
+                                SchemaDiff.forTableCreated("t1")
                         )
                 ),
                 arguments(
@@ -75,7 +73,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1"))
+                                SchemaDiff.forTableCreated("t1")
                         )
                 ),
                 // TODO: update this test when composite indices are possible
@@ -88,7 +86,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1"))
+                                SchemaDiff.forTableCreated("t1")
                         )
                 ),
                 arguments(
@@ -106,9 +104,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableCreated("t1")),
+                                SchemaDiff.forTableCreated("t1"),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableCreated("t2"))
+                                SchemaDiff.forTableCreated("t2")
                         )
                 )
         );
@@ -125,7 +123,7 @@ public class SchemaDiffGeneratorTest {
                         TableContext.fromSchema(Collections.emptyMap()),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableDropped("t1"))
+                                SchemaDiff.forTableDropped("t1")
                         )
                 ),
                 arguments(
@@ -139,9 +137,9 @@ public class SchemaDiffGeneratorTest {
                         TableContext.fromSchema(Collections.emptyMap()),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableDropped("t1")),
+                                SchemaDiff.forTableDropped("t1"),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableDropped("t2"))
+                                SchemaDiff.forTableDropped("t2")
                         )
                 ),
                 arguments(
@@ -156,9 +154,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableDropped("t1")),
+                                SchemaDiff.forTableDropped("t1"),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableCreated("t2"))
+                                SchemaDiff.forTableCreated("t2")
                         )
                 )
         );
@@ -179,7 +177,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(tableRenameDiff("t1", "t1_renamed"))
+                                tableRenameDiff("t1", "t1_renamed")
                         )
                 ),
                 arguments(
@@ -200,9 +198,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(tableRenameDiff("t1", "t1_renamed")),
+                                tableRenameDiff("t1", "t1_renamed"),
                                 tableFQClassName("t2"),
-                                setOf(tableRenameDiff("t2", "t2_renamed"))
+                                tableRenameDiff("t2", "t2_renamed")
                         )
                 ),
                 arguments(
@@ -220,9 +218,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(tableRenameDiff("t1", "t1_renamed")),
+                                tableRenameDiff("t1", "t1_renamed"),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableCreated("t2"))
+                                SchemaDiff.forTableCreated("t2")
                         )
                 )
         );
@@ -244,13 +242,13 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(diffForPrimaryKeyChange(
+                                diffForPrimaryKeyChange(
                                         "t1",
                                         "",
                                         "",
                                         "_id",
                                         colNameByType(long.class)
-                                ))
+                                )
                         )
                 ),
                 arguments(
@@ -270,13 +268,13 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(diffForPrimaryKeyChange(
+                                diffForPrimaryKeyChange(
                                         "t1",
                                         "",
                                         "REPLACE",
                                         colNameByType(long.class),
                                         colNameByType(long.class)
-                                ))
+                                )
                         )
                 ),
                 arguments(
@@ -297,13 +295,13 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(diffForPrimaryKeyChange(
+                                diffForPrimaryKeyChange(
                                         "t1",
                                         "REPLACE",
                                         "ABORT",
                                         colNameByType(long.class),
                                         colNameByType(long.class)
-                                ))
+                                )
                         )
                 ),
                 arguments(
@@ -322,13 +320,13 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(diffForPrimaryKeyChange(
+                                diffForPrimaryKeyChange(
                                         "t1",
                                         "",
                                         "FAIL",
                                         "_id",
                                         colNameByType(long.class)
-                                ))
+                                )
                         )
                 ),
                 arguments(
@@ -354,13 +352,13 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(diffForPrimaryKeyChange(
+                                diffForPrimaryKeyChange(
                                         "t1",
                                         "",
                                         "",
                                         String.format("%s,%s", colNameByType(int.class), colNameByType(long.class)),
                                         String.format("%s,%s,%s", colNameByType(int.class), colNameByType(long.class), colNameByType(String.class))
-                                ))
+                                )
                         )
                 )
         );
@@ -369,37 +367,33 @@ public class SchemaDiffGeneratorTest {
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
-    public void tableCreateFromZero(String desc, TableContext target, Map<String, Set<SchemaDiff>> expected) {
+    public void tableCreateFromZero(String desc, TableContext target, Map<String, SchemaDiff> expected) {
         runTest(desc, TableContext.empty(), target, expected);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("dropTableInput")
     @DisplayName("Dropping a table should be detected")
-    public void dropTable(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
+    public void dropTable(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         runTest(desc, base, target, expected);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableRenameInput")
     @DisplayName("Renaming a table should be detected")
-    public void renameTable(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
+    public void renameTable(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         runTest(desc, base, target, expected);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("changePrimaryKeyInput")
     @DisplayName("Changing primary key on conflict behavior and primary key columns should be detected")
-    public void changePrimaryKey(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
+    public void changePrimaryKey(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         runTest(desc, base, target, expected);
     }
 
-    static void runTest(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
-        Map<String, Set<SchemaDiff>> actual = new SchemaDiffGenerator(base).generate(target);
-        expected.forEach((tableClassName, expectedDiffSet) -> {
-            Set<SchemaDiff> actualDiffSet = actual.get(tableClassName);
-            assertSetEquals(desc + "; mismatched diff set at key " + tableClassName, expectedDiffSet, actualDiffSet);
-        });
+    static void runTest(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
 
