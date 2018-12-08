@@ -28,7 +28,7 @@ public class SchemaDiffSerializer extends StdSerializer<SchemaDiff> {
         jGen.writeStartObject();
         jGen.writeNumberField("type", obj.type());
         jGen.writeNumberField("sub_type", obj.subType());
-        jGen.writeNumberField("category", obj.category());
+//        jGen.writeNumberField("category", obj.category());
         jGen.writeStringField("table_name", obj.tableName());
         jGen.writeFieldName("attributes");
         mapper.writeValue(jGen, obj.attributes());

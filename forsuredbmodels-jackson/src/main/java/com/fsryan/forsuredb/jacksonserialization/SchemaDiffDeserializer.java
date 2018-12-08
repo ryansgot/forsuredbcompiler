@@ -30,8 +30,8 @@ public class SchemaDiffDeserializer extends StdDeserializer<SchemaDiff> {
 
         SchemaDiff.Builder builder = SchemaDiff.builder()
                 .type(node.get("type").asInt())
-                .subType(node.get("sub_type").asInt())
-                .category(node.get("category").asInt())
+                .replaceSubType(node.get("sub_type").asLong())
+//                .category(node.get("category").asInt())
                 .tableName(node.get("table_name").asText());
         Map<String, String> attributes = mapper.readValue(node.get("attributes").toString(), attributesType);
         return builder.addAllAttributes(attributes).build();

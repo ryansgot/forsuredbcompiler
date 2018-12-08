@@ -7,15 +7,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
-import static com.fsryan.forsuredb.info.DBInfoFixtures.cascadeForeignKeyTo;
-import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
-import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertMapEquals;
@@ -180,7 +179,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableRenamed("t1", "t1_renamed"))
+                                setOf(tableRenameDiff("t1", "t1_renamed"))
                         )
                 ),
                 arguments(
@@ -201,9 +200,9 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableRenamed("t1", "t1_renamed")),
+                                setOf(tableRenameDiff("t1", "t1_renamed")),
                                 tableFQClassName("t2"),
-                                setOf(SchemaDiff.forTableRenamed("t2", "t2_renamed"))
+                                setOf(tableRenameDiff("t2", "t2_renamed"))
                         )
                 ),
                 arguments(
@@ -221,9 +220,147 @@ public class SchemaDiffGeneratorTest {
                         )),
                         mapOf(
                                 tableFQClassName("t1"),
-                                setOf(SchemaDiff.forTableRenamed("t1", "t1_renamed")),
+                                setOf(tableRenameDiff("t1", "t1_renamed")),
                                 tableFQClassName("t2"),
                                 setOf(SchemaDiff.forTableCreated("t2"))
+                        )
+                )
+        );
+    }
+
+    public static Iterable<Arguments> changePrimaryKeyInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table: change primary key column from default to different column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                setOf(diffForPrimaryKeyChange(
+                                        "t1",
+                                        "",
+                                        "",
+                                        "_id",
+                                        colNameByType(long.class)
+                                ))
+                        )
+                ),
+                arguments(
+                        "Single table: change primary key on conflict from none to REPLACE",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .primaryKeyOnConflict("REPLACE")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                setOf(diffForPrimaryKeyChange(
+                                        "t1",
+                                        "",
+                                        "REPLACE",
+                                        colNameByType(long.class),
+                                        colNameByType(long.class)
+                                ))
+                        )
+                ),
+                arguments(
+                        "Single table: change primary key on conflict from REPLACE to ABORT",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .primaryKeyOnConflict("REPLACE")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .primaryKeyOnConflict("ABORT")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                setOf(diffForPrimaryKeyChange(
+                                        "t1",
+                                        "REPLACE",
+                                        "ABORT",
+                                        colNameByType(long.class),
+                                        colNameByType(long.class)
+                                ))
+                        )
+                ),
+                arguments(
+                        "Single table: change both the columns and the on conflict behavior at once",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class)))
+                                        .primaryKeyOnConflict("FAIL")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                setOf(diffForPrimaryKeyChange(
+                                        "t1",
+                                        "",
+                                        "FAIL",
+                                        "_id",
+                                        colNameByType(long.class)
+                                ))
+                        )
+                ),
+                arguments(
+                        "Single table: change composite primary key columns only including existing columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .addColumn(stringCol().build())
+                                        .resetPrimaryKey(setOf(colNameByType(long.class), colNameByType(int.class)))
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .addColumn(stringCol().build())
+                                        .resetPrimaryKey(setOf(
+                                                colNameByType(long.class),
+                                                colNameByType(int.class),
+                                                colNameByType(String.class)
+                                        )).build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                setOf(diffForPrimaryKeyChange(
+                                        "t1",
+                                        "",
+                                        "",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class)),
+                                        String.format("%s,%s,%s", colNameByType(int.class), colNameByType(long.class), colNameByType(String.class))
+                                ))
                         )
                 )
         );
@@ -250,6 +387,13 @@ public class SchemaDiffGeneratorTest {
         runTest(desc, base, target, expected);
     }
 
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("changePrimaryKeyInput")
+    @DisplayName("Changing primary key on conflict behavior and primary key columns should be detected")
+    public void changePrimaryKey(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
+        runTest(desc, base, target, expected);
+    }
+
     static void runTest(String desc, TableContext base, TableContext target, Map<String, Set<SchemaDiff>> expected) {
         Map<String, Set<SchemaDiff>> actual = new SchemaDiffGenerator(base).generate(target);
         expected.forEach((tableClassName, expectedDiffSet) -> {
@@ -257,5 +401,45 @@ public class SchemaDiffGeneratorTest {
             assertSetEquals(desc + "; mismatched diff set at key " + tableClassName, expectedDiffSet, actualDiffSet);
         });
         assertMapEquals(desc, expected, actual);
+    }
+
+    public static SchemaDiff tableRenameDiff(@Nonnull String previousName, @Nonnull String currentName) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .replaceSubType(SchemaDiff.TYPE_NAME)
+                .tableName(currentName)
+                .addAttribute(SchemaDiff.ATTR_PREV_NAME, previousName)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, currentName)
+                .build();
+    }
+
+    /**
+     * <p>Note: the previousPKCols and currentPKCols must be sorted
+     * @param tableName
+     * @param previousPKOnConflict
+     * @param currentPKOnConflict
+     * @param previousPKCols
+     * @param currentPKCols
+     * @return
+     */
+    public static SchemaDiff diffForPrimaryKeyChange(@Nonnull String tableName, @Nonnull String previousPKOnConflict,
+                                                     @Nonnull String currentPKOnConflict,
+                                                     @Nonnull String previousPKCols,
+                                                     @Nonnull String currentPKCols) {
+        SchemaDiff.Builder builder = SchemaDiff.builder()
+                .tableName(tableName)
+                .type(SchemaDiff.TYPE_CHANGED)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName);
+        if (!previousPKOnConflict.equals(currentPKOnConflict)) {
+            builder.addAttribute(SchemaDiff.ATTR_PREV_PK_ON_CONFLICT, previousPKOnConflict)
+                    .addAttribute(SchemaDiff.ATTR_CURR_PK_ON_CONFLICT, currentPKOnConflict)
+                    .enrichSubType(SchemaDiff.TYPE_PK_ON_CONFLICT);
+        }
+        if (!previousPKCols.equals(currentPKCols)) {
+            builder.addAttribute(SchemaDiff.ATTR_PREV_PK_COL_NAMES, previousPKCols)
+                    .addAttribute(SchemaDiff.ATTR_CURR_PK_COL_NAMES, currentPKCols)
+                    .enrichSubType(SchemaDiff.TYPE_PK_COLUMNS);
+        }
+        return builder.build();
     }
 }
