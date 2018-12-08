@@ -147,6 +147,22 @@ public abstract class SchemaDiff {
     public static final int TYPE_TYPE = TYPE_NAME << 1;                             // 0b10
 
     /**
+     * <p>Columns were either created or dropped from a table
+     * <ul>
+     *   <li>{@link #ATTR_NEW_COLUMNS}</li>
+     * </ul>
+     */
+    public static final int TYPE_ADD_COLUMNS = TYPE_TYPE << 1;                      // 0b100
+
+    /**
+     * <p>Columns were either created or dropped from a table
+     * <ul>
+     *   <li>{@link #ATTR_NEW_COLUMNS}</li>
+     * </ul>
+     */
+    public static final int TYPE_DROP_COLUMNS = TYPE_ADD_COLUMNS << 1;              // 0b1000
+
+    /**
      * <p>The columns of a primary key changed.
      * <p>Relevant attributes:
      * <ul>
@@ -154,7 +170,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_PK_COL_NAMES}</li>
      * </ul>
      */
-    public static final int TYPE_PK_COLUMNS = TYPE_TYPE << 1;                       // 0b100
+    public static final int TYPE_PK_COLUMNS = TYPE_DROP_COLUMNS << 1;               // 0b10000
 
     /**
      * <p>The primary key on conflict behavior changed.
@@ -164,7 +180,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_PK_ON_CONFLICT}</li>
      * </ul>
      */
-    public static final int TYPE_PK_ON_CONFLICT = TYPE_PK_COLUMNS << 1;             // 0b1000
+    public static final int TYPE_PK_ON_CONFLICT = TYPE_PK_COLUMNS << 1;             // 0b100000
 
     /**
      * <p>The sort of an index changed. This can coincide with the
@@ -175,7 +191,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_SORT}</li>
      * </ul>
      */
-    public static final int TYPE_SORT = TYPE_PK_ON_CONFLICT << 1;                   // 0b10000
+    public static final int TYPE_SORT = TYPE_PK_ON_CONFLICT << 1;                   // 0b1000000
 
     /**
      * <p>The constraint of a column in a table changed.
@@ -186,7 +202,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_CONSTRAINT_VAL}</li>
      * </ul>
      */
-    public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b100000
+    public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b10000000
 
     /**
      * <p>The default value of a column in a table changed.
@@ -196,66 +212,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_DEFAULT}</li>
      * </ul>
      */
-    public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                   // 0b1000000
-
-    /**
-     * <p>The diff pertains to the table only. The table could be . . .
-     * <ul>
-     *   <li>created {@link #TYPE_CREATED}</li>
-     *   <li>dropped {@link #TYPE_DROPPED}</li>
-     *   <li>name changed {@link #TYPE_NAME}</li>
-     * </ul>
-     */
-    public static final int CAT_TABLE = 1;
-
-    /**
-     * <p>The diff pertains to one or more columns of a table. The type could
-     * be
-     * <ul>
-     *   <li>created {@link #TYPE_CREATED}</li>
-     *   <li>dropped {@link #TYPE_DROPPED}</li>
-     *   <li>name changed {@link #TYPE_NAME}</li>
-     *   <li>type changed {@link #TYPE_TYPE}</li>
-     *   <li>constraint changed {@link #TYPE_CONSTRAINT}</li>
-     *   <li>default changed {@link #TYPE_CONSTRAINT}</li>
-     * </ul>
-     */
-    public static final int CAT_COLUMN = CAT_TABLE + 1;
-
-    /**
-     * <p>The diff pertains to the primary key of a table. Typically, this
-     * will happen when the order changes or a column is added/removed from the
-     * primary key.
-     * <ul>
-     *   <li>primary key order changed {@link #TYPE_PK_COLUMNS}</li>
-     *   <li>primary key column added {@link #TYPE_PK_COLUMNS}</li>
-     *   <li>primary key column removed {@link #TYPE_PK_COLUMNS}</li>
-     * </ul>
-     */
-    public static final int CAT_PRIMARY_KEY = CAT_COLUMN + 1;
-
-    /**
-     * <p>The diff pertains to a foreign key of a table. The foreign key could
-     * be . . .
-     * <ul>
-     *   <li>created {@link #TYPE_CREATED}</li>
-     *   <li>dropped {@link #TYPE_DROPPED}</li>
-     * </ul>
-     */
-    public static final int CAT_FOREIGN_KEY = CAT_PRIMARY_KEY + 1;
-
-    /**
-     * <p>The diff pertains to an index of a table. The index could be . . .
-     * <ul>
-     *   <li>created {@link #TYPE_CREATED}</li>
-     *   <li>dropped {@link #TYPE_DROPPED}</li>
-     *   <li>column added {@link #TYPE_PK_COLUMNS}</li>
-     *   <li>column removed {@link #TYPE_PK_COLUMNS}</li>
-     *   <li>sort changed {@link #TYPE_SORT}</li>
-     *   <li>column order changed {@link #TYPE_PK_COLUMNS}</li>
-     * </ul>
-     */
-    public static final int CAT_INDEX = CAT_FOREIGN_KEY + 1;
+    public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b100000000
 
     /**
      * <p>The current name of the object in question. This will always be non
@@ -288,6 +245,18 @@ public abstract class SchemaDiff {
      * @see #ATTR_CURR_TYPE
      */
     public static final String ATTR_PREV_TYPE = "p_type";
+
+    /**
+     * <p>The column names of the columns added to a table.
+     * {@link #TYPE_ADD_COLUMNS}.
+     */
+    public static final String ATTR_CREATE_COLUMNS = "c_cols";
+
+    /**
+     * <p>The column names of the columns dropped from a table.
+     * {@link #TYPE_DROP_COLUMNS}.
+     */
+    public static final String ATTR_DROP_COLUMNS = "d_cols";
 
     /**
      * <p>The current primary key column names. This will be non null when:

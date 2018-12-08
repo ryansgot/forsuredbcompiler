@@ -3,18 +3,23 @@ package com.fsryan.forsuredb.annotationprocessor.generator;
 import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotationprocessor.util.StreamUtil;
+import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCollector;
+import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCombiner;
 
 public class SchemaDiffGenerator {
 
@@ -83,10 +88,57 @@ public class SchemaDiffGenerator {
 
         enrichWithNameChangeDiff(builder, baseTable, targetTable);
         enrichWithPrimaryKeyDiff(builder, baseTable, targetTable);
+        enrichWithColumnChangesDiff(builder, baseTable, targetTable);
         SchemaDiff tableDiff = builder.build();
         return tableDiff.isEmpty()
                 ? Stream.empty()
                 : Stream.of(Pair.create(targetTable.qualifiedClassName(), tableDiff));
+    }
+
+    private static void enrichWithColumnChangesDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
+        Map<String, ColumnInfo> newColumns = missingColumns(baseTable.columnMap(), targetTable.columnMap());
+        Map<String, ColumnInfo> droppedColumns = missingColumns(targetTable.columnMap(), baseTable.columnMap());
+
+        Map<String, String> oldToNewColumnNames = targetTable.getColumns()
+                .stream()
+                .filter(c -> !newColumns.containsKey(c.methodName()))
+                .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()).getColumnName(), c.getColumnName()))
+                .filter(pair -> !pair.first().equals(pair.second()))
+                .collect(Collector.of(
+                        HashMap::new,
+                        (acc, oldToNewNamePair) -> acc.put(oldToNewNamePair.first(), oldToNewNamePair.second()),
+                        mapCombiner()
+                ));
+
+        if (!oldToNewColumnNames.isEmpty()) {
+            // TODO
+        }
+
+        if (!newColumns.isEmpty()) {
+            Set<String> newColumnNames = newColumns.values()
+                    .stream()
+                    .map(ColumnInfo::getColumnName)
+                    .collect(Collectors.toSet());
+            builder.enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, toCsv(newColumnNames, true));
+        }
+
+        if (!droppedColumns.isEmpty()) {
+            Set<String> droppedColumnNames = droppedColumns.values()
+                    .stream()
+                    .map(ColumnInfo::getColumnName)
+                    .collect(Collectors.toSet());
+            builder.enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, toCsv(droppedColumnNames, true));
+        }
+    }
+
+    private static Map<String, ColumnInfo> missingColumns(Map<String, ColumnInfo> baseColumns, Map<String, ColumnInfo> targetColumns) {
+        return targetColumns.keySet()
+                .stream()
+                .filter(columnMethodName -> !baseColumns.containsKey(columnMethodName))
+                .map(columnMethodName -> targetColumns.get(columnMethodName))
+                .collect(mapCollector((acc, column) -> acc.put(column.methodName(), column)));
     }
 
     private static void enrichWithNameChangeDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
@@ -111,8 +163,8 @@ public class SchemaDiffGenerator {
         // Primary Key columns
         if (!baseTable.getPrimaryKey().equals(targetTable.getPrimaryKey())) {
             builder.enrichSubType(SchemaDiff.TYPE_PK_COLUMNS)
-                    .addAttribute(SchemaDiff.ATTR_PREV_PK_COL_NAMES, toCsv(baseTable.getPrimaryKey()))
-                    .addAttribute(SchemaDiff.ATTR_CURR_PK_COL_NAMES, toCsv(targetTable.getPrimaryKey()));
+                    .addAttribute(SchemaDiff.ATTR_PREV_PK_COL_NAMES, toCsv(baseTable.getPrimaryKey(), true))
+                    .addAttribute(SchemaDiff.ATTR_CURR_PK_COL_NAMES, toCsv(targetTable.getPrimaryKey(), true));
         }
     }
 
@@ -134,12 +186,11 @@ public class SchemaDiffGenerator {
     }
 
     /**
-     * <p>Sorts the strings first and then writes them out to csv
      * @param col a possibly null or empty collection of Strings
-     * @return a sorted csv of all the values
+     * @return a csv of all the values
      */
     @Nonnull
-    private static String toCsv(@Nullable Collection<String> col) {
+    private static String toCsv(@Nullable Collection<String> col, boolean sort) {
         if (col == null || col.size() == 0) {
             return "";
         }
@@ -147,11 +198,14 @@ public class SchemaDiffGenerator {
             return col.toArray(new String[1])[0];
         }
 
-        List<String> sorted = new ArrayList<>(col);
-        Collections.sort(sorted);
+
+        List<String> list = new ArrayList<>(col);
+        if (sort) {
+            Collections.sort(list);
+        }
 
         StringBuilder buf = new StringBuilder();
-        for (String s : sorted) {
+        for (String s : list) {
             buf.append(s).append(',');
         }
         return buf.delete(buf.length() - 1, buf.length()).toString();

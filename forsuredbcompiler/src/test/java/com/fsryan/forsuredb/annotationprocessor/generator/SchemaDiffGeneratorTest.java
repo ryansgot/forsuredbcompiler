@@ -237,6 +237,7 @@ public class SchemaDiffGeneratorTest {
                         )),
                         TableContext.fromSchema(tableMapOf(
                                 tableBuilder("t1")
+                                        .addColumn(longCol().build())
                                         .resetPrimaryKey(setOf(colNameByType(long.class)))
                                         .build()
                         )),
@@ -364,35 +365,194 @@ public class SchemaDiffGeneratorTest {
         );
     }
 
+    public static Iterable<Arguments> addColumnsInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; add one column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                addColumnsDiff("t1", colNameByType(long.class))
+                        )
+                ),
+                arguments(
+                        "Single table; add two columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                addColumnsDiff(
+                                        "t1",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                )
+                        )
+                ),
+                arguments(
+                        "Multiple tables; add two columns each",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                addColumnsDiff(
+                                        "t1",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                ),
+                                tableFQClassName("t2"),
+                                addColumnsDiff(
+                                        "t2",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                )
+                        )
+                )
+        );
+    }
+
+    public static Iterable<Arguments> dropColumnsInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; drop one column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                dropColumnsDiff("t1", colNameByType(long.class))
+                        )
+                ),
+                arguments(
+                        "Single table; drop two columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                dropColumnsDiff(
+                                        "t1",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                )
+                        )
+                ),
+                arguments(
+                        "Multiple tables; drop two columns each",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(longCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                dropColumnsDiff(
+                                        "t1",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                ),
+                                tableFQClassName("t2"),
+                                dropColumnsDiff(
+                                        "t2",
+                                        String.format("%s,%s", colNameByType(int.class), colNameByType(long.class))
+                                )
+                        )
+                )
+        );
+    }
+
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
     public void tableCreateFromZero(String desc, TableContext target, Map<String, SchemaDiff> expected) {
-        runTest(desc, TableContext.empty(), target, expected);
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(TableContext.empty()).generate(target);
+        assertMapEquals(desc, expected, actual);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("dropTableInput")
     @DisplayName("Dropping a table should be detected")
     public void dropTable(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
-        runTest(desc, base, target, expected);
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableRenameInput")
     @DisplayName("Renaming a table should be detected")
     public void renameTable(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
-        runTest(desc, base, target, expected);
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
     }
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("changePrimaryKeyInput")
     @DisplayName("Changing primary key on conflict behavior and primary key columns should be detected")
     public void changePrimaryKey(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
-        runTest(desc, base, target, expected);
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
     }
 
-    static void runTest(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("addColumnsInput")
+    @DisplayName("New columns of a table should be detected")
+    public void addColumns(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("dropColumnsInput")
+    @DisplayName("Dropped columns of a table should be detected")
+    public void dropColumns(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
@@ -416,7 +576,7 @@ public class SchemaDiffGeneratorTest {
      * @param currentPKCols
      * @return
      */
-    public static SchemaDiff diffForPrimaryKeyChange(@Nonnull String tableName, @Nonnull String previousPKOnConflict,
+    private static SchemaDiff diffForPrimaryKeyChange(@Nonnull String tableName, @Nonnull String previousPKOnConflict,
                                                      @Nonnull String currentPKOnConflict,
                                                      @Nonnull String previousPKCols,
                                                      @Nonnull String currentPKCols) {
@@ -435,5 +595,25 @@ public class SchemaDiffGeneratorTest {
                     .enrichSubType(SchemaDiff.TYPE_PK_COLUMNS);
         }
         return builder.build();
+    }
+
+    private static SchemaDiff addColumnsDiff(@Nonnull String tableName, @Nonnull String columnsCSV) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .tableName(tableName)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
+                .enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, columnsCSV)
+                .build();
+    }
+
+    private static SchemaDiff dropColumnsDiff(@Nonnull String tableName, @Nonnull String columnsCSV) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .tableName(tableName)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
+                .enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, columnsCSV)
+                .build();
     }
 }
