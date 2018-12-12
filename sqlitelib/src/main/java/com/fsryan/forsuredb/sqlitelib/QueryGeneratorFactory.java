@@ -30,12 +30,15 @@ import java.util.*;
 import static com.fsryan.forsuredb.migration.Migration.Type.*;
 
 /**
- * <p>
- *     QueryGeneratorFactory is intended to create all of the {@link QueryGenerator} objects that generate the
- *     correct queries in the correct order to perform all of the migrations in the {@link MigrationSet} that is the
- *     argument to the constructor.
- * </p>
+ * <p>QueryGeneratorFactory is intended to create all of the
+ * {@link QueryGenerator} objects that generate the correct queries in the
+ * correct order to perform all of the migrations in the {@link MigrationSet}
+ * that is the argument to the constructor.
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
  */
+@Deprecated
 class QueryGeneratorFactory {
 
     private static final QueryGenerator emptyGenerator = new QueryGenerator("empty", Migration.Type.DROP_TABLE) {

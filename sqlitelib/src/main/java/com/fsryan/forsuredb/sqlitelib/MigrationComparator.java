@@ -11,6 +11,12 @@ import java.util.Map;
 
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.TYPES_REQUIRING_TABLE_RECREATION;
 
+/**
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
+ */
+@Deprecated
 /*package*/ class MigrationComparator implements Comparator<Migration> {
 
     private final Map<String, TableInfo> targetSchema;

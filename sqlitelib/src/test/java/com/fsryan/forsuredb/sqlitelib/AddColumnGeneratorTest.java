@@ -31,7 +31,7 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.stringCol;
 import static com.fsryan.forsuredb.sqlitelib.TestData.TABLE_NAME;
 
 @RunWith(Parameterized.class)
-public class AddColumnGeneratorTest extends BaseSQLiteGeneratorTest {
+public class AddColumnGeneratorTest extends LegacyBaseSQLiteGeneratorTest {
 
     private AddColumnGenerator generatorUnderTest;
 

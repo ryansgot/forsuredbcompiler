@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class AddForeignKeyGeneratorTest extends BaseSQLiteGeneratorTest {
+public class AddForeignKeyGeneratorTest extends LegacyBaseSQLiteGeneratorTest {
 
     private AddForeignKeyGenerator generatorUnderTest;
 

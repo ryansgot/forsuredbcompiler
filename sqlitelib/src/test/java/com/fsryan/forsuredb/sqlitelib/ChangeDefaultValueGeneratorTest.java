@@ -20,7 +20,6 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.api.migration.QueryGenerator;
 import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -29,12 +28,11 @@ import java.util.Map;
 
 import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
-import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
 @RunWith(Parameterized.class)
-public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {
+public class ChangeDefaultValueGeneratorTest extends LegacyBaseSQLiteGeneratorTest {
 
     private ChangeDefaultValueGenerator generatorUnderTest;
 

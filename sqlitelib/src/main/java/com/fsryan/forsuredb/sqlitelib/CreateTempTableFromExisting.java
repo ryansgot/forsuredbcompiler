@@ -28,6 +28,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
+ */
+@Deprecated
 public class CreateTempTableFromExisting extends QueryGenerator {
 
     private final TableInfo table;

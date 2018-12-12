@@ -24,6 +24,12 @@ import com.fsryan.forsuredb.migration.Migration;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
+ */
+@Deprecated
 public class AddIndexGenerator extends QueryGenerator {
 
     private final boolean unique;

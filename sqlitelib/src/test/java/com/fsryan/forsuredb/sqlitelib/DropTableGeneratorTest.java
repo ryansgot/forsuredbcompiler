@@ -27,7 +27,7 @@ import java.util.Arrays;
 import static com.fsryan.forsuredb.sqlitelib.TestData.TABLE_NAME;
 
 @RunWith(Parameterized.class)
-public class DropTableGeneratorTest extends BaseSQLiteGeneratorTest {
+public class DropTableGeneratorTest extends LegacyBaseSQLiteGeneratorTest {
 
     private DropTableGenerator generatorUnderTest;
 

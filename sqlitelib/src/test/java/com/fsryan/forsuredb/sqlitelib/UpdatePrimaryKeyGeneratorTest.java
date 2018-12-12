@@ -35,7 +35,7 @@ import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
 @RunWith(Parameterized.class)
-public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
+public class UpdatePrimaryKeyGeneratorTest extends LegacyBaseSQLiteGeneratorTest {
 
     private UpdatePrimaryKeyGenerator generatorUnderTest;
 
