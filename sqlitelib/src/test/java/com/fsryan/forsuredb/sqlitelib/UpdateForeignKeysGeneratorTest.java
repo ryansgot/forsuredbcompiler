@@ -35,10 +35,10 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.intCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
-@Ignore("Ignored while switching to use SchemaDiff")
 @RunWith(Parameterized.class)
 public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
 
@@ -68,7 +68,7 @@ public class UpdateForeignKeysGeneratorTest extends BaseSQLiteGeneratorTest {
                         "referencing_table",
                         Collections.<TableForeignKeyInfo>emptySet(),
                         TableInfoUtil.defaultColumnsPlus(),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("referenced_table")
                                         .qualifiedClassName(UpdateForeignKeysGeneratorTest.class.getName())
                                         .resetPrimaryKey(setOf("referenced_int_column", "referenced_long_column"))

@@ -20,7 +20,6 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.api.migration.QueryGenerator;
 import com.fsryan.forsuredb.info.TableInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -31,11 +30,10 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.stringCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.defaultColumnsPlus;
-import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 import static com.fsryan.forsuredb.test.tools.CollectionUtil.setOf;
 
-@Ignore("Ignored while switching to use SchemaDiff")
 @RunWith(Parameterized.class)
 public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
 
@@ -58,7 +56,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 00: default primary key case when additional column already existed
                         "table_name",
                         defaultColumnsPlus(colNameByType(long.class)),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .addColumn(longCol().build())
                                         .build()
@@ -77,7 +75,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 01: make existing column a primary key (when it wasn't before)
                         "table_name",
                         defaultColumnsPlus(colNameByType(long.class)),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(Collections.singleton(colNameByType(long.class)))
                                         .addColumn(longCol().primaryKey(true).build())
@@ -96,7 +94,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 02: make new column a primary key
                         "table_name",
                         defaultColumnsPlus(),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(Collections.singleton(colNameByType(long.class)))
                                         .addColumn(longCol().primaryKey(true).build())
@@ -115,7 +113,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 03: non-default, non-composite primary key case with on conflict on an existing column
                         "table_name",
                         defaultColumnsPlus(colNameByType(String.class)),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(Collections.singleton(colNameByType(String.class)))
                                         .primaryKeyOnConflict("REPLACE")
@@ -135,7 +133,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 04: non-default, non-composite primary key case with on conflict on a new column
                         "table_name",
                         defaultColumnsPlus(),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(Collections.singleton(colNameByType(String.class)))
                                         .primaryKeyOnConflict("REPLACE")
@@ -155,7 +153,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 05: non-default, composite primary key case with no on-conflict new columns
                         "table_name",
                         defaultColumnsPlus(),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                         .addColumn(stringCol().build())
@@ -175,7 +173,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 06: non-default, composite primary key case with one of the columns existing and one not existing
                         "table_name",
                         defaultColumnsPlus(colNameByType(String.class)),
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                         .addColumn(stringCol().build())
@@ -195,7 +193,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 07: non-default, composite primary key case with both columns existing
                         "table_name",
                         defaultColumnsPlus(colNameByType(String.class), "string_col_2"),
-                        tableMapOf(tableBuilder("table_name")
+                        tableMapWithTableNameKeys(tableBuilder("table_name")
                                 .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                 .addColumn(stringCol().build())
                                 .addColumn(stringCol().methodName("stringCol2").columnName("string_col_2").build())
@@ -213,7 +211,7 @@ public class UpdatePrimaryKeyGeneratorTest extends BaseSQLiteGeneratorTest {
                 {   // 08: non-default, composite primary key case with both columns existing and on conflict
                         "table_name",
                         defaultColumnsPlus(colNameByType(String.class), "string_col_2"),
-                        tableMapOf(tableBuilder("table_name")
+                        tableMapWithTableNameKeys(tableBuilder("table_name")
                                 .resetPrimaryKey(setOf(colNameByType(String.class), "string_col_2"))
                                 .primaryKeyOnConflict("ROLLBACK")
                                 .addColumn(stringCol().build())

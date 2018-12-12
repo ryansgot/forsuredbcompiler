@@ -30,9 +30,9 @@ import java.util.Map;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.longCol;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
-@Ignore("Ignored while switching to use SchemaDiff")
 @RunWith(Parameterized.class)
 public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {
 
@@ -52,7 +52,7 @@ public class ChangeDefaultValueGeneratorTest extends BaseSQLiteGeneratorTest {
         return Arrays.asList(new Object[][] {
                 {   // 00: changes the default value of a column
                         "table_name",
-                        tableMapOf(
+                        tableMapWithTableNameKeys(
                                 tableBuilder("table_name")
                                         .addColumn(longCol().defaultValue("12").build())
                                         .build()

@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 
-@Ignore("Ignored while switching to use SchemaDiff")
 @RunWith(Parameterized.class)
 public class CombinedMigrationTest {
 
@@ -33,7 +33,7 @@ public class CombinedMigrationTest {
                     .build()
     );
 
-    private static final Map<String, TableInfo> testSchema = tableMapOf(
+    private static final Map<String, TableInfo> testSchema = tableMapWithTableNameKeys(
             TableInfo.builder()
                     .qualifiedClassName(SqlGeneratorTest.class.getName())
                     .tableName("table")
