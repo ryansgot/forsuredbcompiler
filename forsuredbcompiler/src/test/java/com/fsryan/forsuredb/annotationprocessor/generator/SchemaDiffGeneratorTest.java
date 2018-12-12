@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-import static com.fsryan.forsuredb.info.ColumnInfoUtil.colMethodNameByType;
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
@@ -730,6 +729,120 @@ public class SchemaDiffGeneratorTest {
         );
     }
 
+    public static Iterable<Arguments> changeColumnConstraintInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; make existing column unique",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(false).build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnConstraintDiff(
+                                        "t1",
+                                        String.format("%s:%s=%s", colNameByType(String.class), SchemaDiff.CONSTRAINT_UNIQUE, "true")
+                                )
+                        )
+                ),
+                arguments(
+                        "Single table; make existing unique column non unique",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(false).build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnConstraintDiff(
+                                        "t1",
+                                        String.format("%s:%s=%s", colNameByType(String.class), SchemaDiff.CONSTRAINT_UNIQUE, "false")
+                                )
+                        )
+                ),
+                arguments(
+                        "Single table; make changes to uniqueness constraint of multiple columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .addColumn(intCol().unique(false).build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(false).build())
+                                        .addColumn(intCol().unique(true).build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnConstraintDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s:%s=%s,%s:%s=%s",
+                                                colNameByType(int.class), SchemaDiff.CONSTRAINT_UNIQUE, "true",
+                                                colNameByType(String.class), SchemaDiff.CONSTRAINT_UNIQUE, "false"
+                                        )
+                                )
+                        )
+                ),
+                arguments(
+                        "Multiple table; make changes to uniqueness constraint of multiple columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .addColumn(intCol().unique(false).build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(stringCol().unique(false).build())
+                                        .addColumn(intCol().unique(true).build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(false).build())
+                                        .addColumn(intCol().unique(true).build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .addColumn(intCol().unique(false).build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnConstraintDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s:%s=%s,%s:%s=%s",
+                                                colNameByType(int.class), SchemaDiff.CONSTRAINT_UNIQUE, "true",
+                                                colNameByType(String.class), SchemaDiff.CONSTRAINT_UNIQUE, "false"
+                                        )
+                                ),
+                                tableFQClassName("t2"),
+                                columnConstraintDiff(
+                                        "t2",
+                                        String.format(
+                                                "%s:%s=%s,%s:%s=%s",
+                                                colNameByType(int.class), SchemaDiff.CONSTRAINT_UNIQUE, "false",
+                                                colNameByType(String.class), SchemaDiff.CONSTRAINT_UNIQUE, "true"
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
@@ -788,8 +901,16 @@ public class SchemaDiffGeneratorTest {
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("changeColumnDefaultInput")
-    @DisplayName("Column default vlaue changes should be detected")
+    @DisplayName("Column default value changes should be detected")
     public void changeColumnDefault(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("changeColumnConstraintInput")
+    @DisplayName("Column constraint changes should be detected")
+    public void changeColumnConstraint(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
@@ -871,6 +992,16 @@ public class SchemaDiffGeneratorTest {
                 .enrichSubType(SchemaDiff.TYPE_DEFAULT)
                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
                 .addAttribute(SchemaDiff.ATTR_DEFAULTS, expectedDefaultsDesc)
+                .build();
+    }
+
+    private static SchemaDiff columnConstraintDiff(String tableName, String expectedConstraintsDesc) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .tableName(tableName)
+                .enrichSubType(SchemaDiff.TYPE_CONSTRAINT)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
+                .addAttribute(SchemaDiff.ATTR_CONSTRAINTS, expectedConstraintsDesc)
                 .build();
     }
 }

@@ -205,7 +205,7 @@ public abstract class SchemaDiff {
      * <p>The constraint of a column in a table changed.
      * <p>Relevant attributes:
      * <ul>
-     *   <li>{@link #ATTR_CONSTRAINT}</li>
+     *   <li>{@link #ATTR_CONSTRAINTS}</li>
      *   <li>{@link #ATTR_PREV_CONSTRAINT_VAL}</li>
      *   <li>{@link #ATTR_CURR_CONSTRAINT_VAL}</li>
      * </ul>
@@ -370,7 +370,7 @@ public abstract class SchemaDiff {
     /**
      * TODO: figure this one out
      */
-    public static final String ATTR_CONSTRAINT = "constraint";
+    public static final String ATTR_CONSTRAINTS = "constraint";
     /**
      * TODO: figure this one out
      */

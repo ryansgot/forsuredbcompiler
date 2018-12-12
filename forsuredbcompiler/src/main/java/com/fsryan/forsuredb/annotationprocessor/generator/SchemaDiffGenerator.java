@@ -4,7 +4,6 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotationprocessor.util.StreamUtil;
 import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.google.common.base.Strings;
@@ -12,15 +11,12 @@ import com.google.common.base.Strings;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCollector;
-import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCombiner;
 
 public class SchemaDiffGenerator {
 
@@ -34,16 +30,6 @@ public class SchemaDiffGenerator {
             combined.put(k, v);
         });
         return combined;
-    };
-
-    private static final BinaryOperator<StringBuilder> stringBuilderCombiner = (buf1, buf2) -> {
-        if (buf1.length() == 0) {
-            return buf2;
-        }
-        if (buf2.length() == 0) {
-            return buf1;
-        }
-        return buf1.append(buf2);
     };
 
     private final TableContext base;
@@ -122,18 +108,18 @@ public class SchemaDiffGenerator {
                     .addAttribute(SchemaDiff.ATTR_DEFAULTS, changeDefaults);
         }
 
-        
+        String changeConstraints = createConstraintChangeString(baseTable, targetTable, newColumns.keySet());
+        if (!changeConstraints.isEmpty()) {
+            builder.enrichSubType(SchemaDiff.TYPE_CONSTRAINT)
+                    .addAttribute(SchemaDiff.ATTR_CONSTRAINTS, changeConstraints);
+        }
 
         if (!newColumns.isEmpty()) {
             StringBuilder buf = newColumns.values()
                     .stream()
                     .map(ColumnInfo::getColumnName)
                     .sorted()
-                    .collect(Collector.of(
-                            StringBuilder::new,
-                            (acc, colName) -> acc.append(colName).append(','),
-                            stringBuilderCombiner
-                    ));
+                    .collect(stringBuilderCollector(','));
             final String createColumns = chopLast(buf);
             builder.enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
                     .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, createColumns);
@@ -144,15 +130,24 @@ public class SchemaDiffGenerator {
                     .stream()
                     .map(ColumnInfo::getColumnName)
                     .sorted()
-                    .collect(Collector.of(
-                            StringBuilder::new,
-                            (acc, colName) -> acc.append(colName).append(','),
-                            stringBuilderCombiner
-                    ));
+                    .collect(stringBuilderCollector(','));
             final String dropColumns = chopLast(buf);
             builder.enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
                     .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, dropColumns);
         }
+    }
+
+    // TODO: currently only detects UNIQUE diff. Add other constraint detection here
+    private static String createConstraintChangeString(TableInfo baseTable, TableInfo targetTable, Set<String> exclusionFilter) {
+        StringBuilder buf = targetTable.getColumns()
+                .stream()
+                .filter(c -> !exclusionFilter.contains(c.methodName()))
+                .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()), c))
+                .filter(prevCurrPair -> prevCurrPair.first().unique() != prevCurrPair.second().unique())
+                .map(prevCurrPair -> Pair.create(prevCurrPair.second().getColumnName(), SchemaDiff.CONSTRAINT_UNIQUE + "=" + prevCurrPair.second().unique()))
+                .sorted(Comparator.comparing(Pair::first))
+                .collect(delimitedStringBuilderCollector(':', ','));
+        return chopLast(buf);
     }
 
     @Nonnull
@@ -163,11 +158,7 @@ public class SchemaDiffGenerator {
                 .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()).getColumnName(), c.getColumnName()))
                 .filter(pair -> !pair.first().equals(pair.second()))
                 .sorted(Comparator.comparing(Pair::first))
-                .collect(Collector.of(
-                        StringBuilder::new,
-                        (acc, pair) -> acc.append(pair.first()).append('=').append(pair.second()).append(','),
-                        stringBuilderCombiner
-                ));
+                .collect(delimitedStringBuilderCollector('=', ','));
         return chopLast(buf);
     }
 
@@ -180,11 +171,7 @@ public class SchemaDiffGenerator {
                 .filter(prevCurrPair -> !Objects.equals(prevCurrPair.first().defaultValue(), prevCurrPair.second().defaultValue()))
                 .map(prevCurrPair -> Pair.create(prevCurrPair.second().getColumnName(), Strings.nullToEmpty(prevCurrPair.second().defaultValue())))
                 .sorted(Comparator.comparing(Pair::first))
-                .collect(Collector.of(
-                        StringBuilder::new,
-                        (acc, pair) -> acc.append(pair.first()).append('=').append(pair.second()).append(','),
-                        stringBuilderCombiner
-                ));
+                .collect(delimitedStringBuilderCollector('=', ','));
         return chopLast(buf);
     }
 
@@ -268,5 +255,24 @@ public class SchemaDiffGenerator {
 
     private static String chopLast(@Nonnull StringBuilder buf) {
         return buf.length() < 1 ? "" : buf.delete(buf.length() - 1, buf.length()).toString();
+    }
+
+    private static Collector<String, StringBuilder, StringBuilder> stringBuilderCollector(char delimiter) {
+        return Collector.of(
+                StringBuilder::new,
+                (acc, s) -> acc.append(s).append(delimiter),
+                StringBuilder::append
+        );
+    }
+
+    private static Collector<Pair<String, String>, StringBuilder, StringBuilder> delimitedStringBuilderCollector(char innerDelimiter, char outerDelimiter) {
+        return Collector.of(
+                StringBuilder::new,
+                (StringBuilder acc, Pair<String, String> pair) -> acc.append(pair.first())
+                        .append(innerDelimiter)
+                        .append(pair.second())
+                        .append(outerDelimiter),
+                StringBuilder::append
+        );
     }
 }
