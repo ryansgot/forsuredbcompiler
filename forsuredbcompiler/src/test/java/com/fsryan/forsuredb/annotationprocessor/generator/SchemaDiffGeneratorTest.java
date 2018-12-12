@@ -8,10 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colMethodNameByType;
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
@@ -611,6 +608,128 @@ public class SchemaDiffGeneratorTest {
         );
     }
 
+    public static Iterable<Arguments> changeColumnDefaultInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; change one column default",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().defaultValue("1970-01-01 00:00:00.000").build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().defaultValue("CURRENT_TIMESTAMP").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnDefaultDiff(
+                                        "t1",
+                                        String.format("%s=%s", colNameByType(Date.class), "CURRENT_TIMESTAMP")
+                                )
+                        )
+                ),
+                arguments(
+                        "Single table; int_col from no default to default; date_col none to none",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().build())
+                                        .addColumn(intCol().defaultValue("5").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnDefaultDiff(
+                                        "t1",
+                                        String.format("%s=%s", colNameByType(int.class), "5")
+                                )
+                        )
+                ),
+                arguments(
+                        "Single table; multiple column default change",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().build())
+                                        .addColumn(intCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().defaultValue("CURRENT_TIMESTAMP").build())
+                                        .addColumn(intCol().defaultValue("5").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnDefaultDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(Date.class),
+                                                "CURRENT_TIMESTAMP",
+                                                colNameByType(int.class),
+                                                "5"
+                                        )
+                                )
+                        )
+                ),
+                arguments(
+                        "Multiple table; multiple column default change",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().build())
+                                        .addColumn(intCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(booleanCol().defaultValue("false").build())
+                                        .addColumn(floatCol().defaultValue("0.01").build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(dateCol().defaultValue("CURRENT_TIMESTAMP").build())
+                                        .addColumn(intCol().defaultValue("5").build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(booleanCol().defaultValue("true").build())
+                                        .addColumn(floatCol().defaultValue("1.01").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnDefaultDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(Date.class),
+                                                "CURRENT_TIMESTAMP",
+                                                colNameByType(int.class),
+                                                "5"
+                                        )
+                                ),
+                                tableFQClassName("t2"),
+                                columnDefaultDiff(
+                                        "t2",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(boolean.class),
+                                                "true",
+                                                colNameByType(float.class),
+                                                "1.01"
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
@@ -663,6 +782,14 @@ public class SchemaDiffGeneratorTest {
     @MethodSource("changeColumnNamesInput")
     @DisplayName("Column name changes should be detected")
     public void changeColumnNames(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("changeColumnDefaultInput")
+    @DisplayName("Column default vlaue changes should be detected")
+    public void changeColumnDefault(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
@@ -731,9 +858,19 @@ public class SchemaDiffGeneratorTest {
         return SchemaDiff.builder()
                 .type(SchemaDiff.TYPE_CHANGED)
                 .tableName(tableName)
-                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
                 .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
                 .addAttribute(SchemaDiff.ATTR_RENAME_COLUMNS, expectedNameChangeDesc)
+                .build();
+    }
+
+    private static SchemaDiff columnDefaultDiff(String tableName, String expectedDefaultsDesc) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .tableName(tableName)
+                .enrichSubType(SchemaDiff.TYPE_DEFAULT)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
+                .addAttribute(SchemaDiff.ATTR_DEFAULTS, expectedDefaultsDesc)
                 .build();
     }
 }

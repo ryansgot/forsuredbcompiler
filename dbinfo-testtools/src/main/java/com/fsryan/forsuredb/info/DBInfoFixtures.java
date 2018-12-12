@@ -67,6 +67,10 @@ public abstract class DBInfoFixtures {
         return colBuilder(double.class);
     }
 
+    public static ColumnInfo.Builder floatCol() {
+        return colBuilder(float.class);
+    }
+
     public static ColumnInfo.Builder intCol() {
         return colBuilder(int.class);
     }

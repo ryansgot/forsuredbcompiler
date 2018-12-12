@@ -7,6 +7,7 @@ import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
+import com.google.common.base.Strings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +34,16 @@ public class SchemaDiffGenerator {
             combined.put(k, v);
         });
         return combined;
+    };
+
+    private static final BinaryOperator<StringBuilder> stringBuilderCombiner = (buf1, buf2) -> {
+        if (buf1.length() == 0) {
+            return buf2;
+        }
+        if (buf2.length() == 0) {
+            return buf1;
+        }
+        return buf1.append(buf2);
     };
 
     private final TableContext base;
@@ -99,49 +110,82 @@ public class SchemaDiffGenerator {
         Map<String, ColumnInfo> newColumns = missingColumns(baseTable.columnMap(), targetTable.columnMap());
         Map<String, ColumnInfo> droppedColumns = missingColumns(targetTable.columnMap(), baseTable.columnMap());
 
-        StringBuilder nameChangeBuf = targetTable.getColumns()
+        String renameColumns = createNameChangeString(baseTable, targetTable, newColumns.keySet());
+        if (!renameColumns.isEmpty()) {
+            builder.enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_RENAME_COLUMNS, renameColumns);
+        }
+
+        String changeDefaults = createDefaultChangeString(baseTable, targetTable, newColumns.keySet());
+        if (!changeDefaults.isEmpty()) {
+            builder.enrichSubType(SchemaDiff.TYPE_DEFAULT)
+                    .addAttribute(SchemaDiff.ATTR_DEFAULTS, changeDefaults);
+        }
+
+        
+
+        if (!newColumns.isEmpty()) {
+            StringBuilder buf = newColumns.values()
+                    .stream()
+                    .map(ColumnInfo::getColumnName)
+                    .sorted()
+                    .collect(Collector.of(
+                            StringBuilder::new,
+                            (acc, colName) -> acc.append(colName).append(','),
+                            stringBuilderCombiner
+                    ));
+            final String createColumns = chopLast(buf);
+            builder.enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, createColumns);
+        }
+
+        if (!droppedColumns.isEmpty()) {
+            StringBuilder buf = droppedColumns.values()
+                    .stream()
+                    .map(ColumnInfo::getColumnName)
+                    .sorted()
+                    .collect(Collector.of(
+                            StringBuilder::new,
+                            (acc, colName) -> acc.append(colName).append(','),
+                            stringBuilderCombiner
+                    ));
+            final String dropColumns = chopLast(buf);
+            builder.enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, dropColumns);
+        }
+    }
+
+    @Nonnull
+    private static String createNameChangeString(TableInfo baseTable, TableInfo targetTable, Set<String> exclusionFilter) {
+        StringBuilder buf = targetTable.getColumns()
                 .stream()
-                .filter(c -> !newColumns.containsKey(c.methodName()))
+                .filter(c -> !exclusionFilter.contains(c.methodName()))
                 .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()).getColumnName(), c.getColumnName()))
                 .filter(pair -> !pair.first().equals(pair.second()))
                 .sorted(Comparator.comparing(Pair::first))
                 .collect(Collector.of(
                         StringBuilder::new,
                         (acc, pair) -> acc.append(pair.first()).append('=').append(pair.second()).append(','),
-                        (buf1, buf2) -> {
-                            if (buf1.length() == 0) {
-                                return buf2;
-                            }
-                            if (buf2.length() == 0) {
-                                return buf1;
-                            }
-                            return buf1.append(buf2);
-                        }
+                        stringBuilderCombiner
                 ));
+        return chopLast(buf);
+    }
 
-        if (nameChangeBuf.length() != 0) {
-            String renameColumns = nameChangeBuf.delete(nameChangeBuf.length() - 1, nameChangeBuf.length()).toString();
-            builder.enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
-                    .addAttribute(SchemaDiff.ATTR_RENAME_COLUMNS, renameColumns);
-        }
-
-        if (!newColumns.isEmpty()) {
-            Set<String> newColumnNames = newColumns.values()
-                    .stream()
-                    .map(ColumnInfo::getColumnName)
-                    .collect(Collectors.toSet());
-            builder.enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
-                    .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, toCsv(newColumnNames, true));
-        }
-
-        if (!droppedColumns.isEmpty()) {
-            Set<String> droppedColumnNames = droppedColumns.values()
-                    .stream()
-                    .map(ColumnInfo::getColumnName)
-                    .collect(Collectors.toSet());
-            builder.enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
-                    .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, toCsv(droppedColumnNames, true));
-        }
+    @Nonnull
+    private static String createDefaultChangeString(TableInfo baseTable, TableInfo targetTable, Set<String> exclusionFilter) {
+        StringBuilder buf = targetTable.getColumns()
+                .stream()
+                .filter(c -> !exclusionFilter.contains(c.methodName()))
+                .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()), c))
+                .filter(prevCurrPair -> !Objects.equals(prevCurrPair.first().defaultValue(), prevCurrPair.second().defaultValue()))
+                .map(prevCurrPair -> Pair.create(prevCurrPair.second().getColumnName(), Strings.nullToEmpty(prevCurrPair.second().defaultValue())))
+                .sorted(Comparator.comparing(Pair::first))
+                .collect(Collector.of(
+                        StringBuilder::new,
+                        (acc, pair) -> acc.append(pair.first()).append('=').append(pair.second()).append(','),
+                        stringBuilderCombiner
+                ));
+        return chopLast(buf);
     }
 
     private static Map<String, ColumnInfo> missingColumns(Map<String, ColumnInfo> baseColumns, Map<String, ColumnInfo> targetColumns) {
@@ -222,5 +266,7 @@ public class SchemaDiffGenerator {
         return buf.delete(buf.length() - 1, buf.length()).toString();
     }
 
-
+    private static String chopLast(@Nonnull StringBuilder buf) {
+        return buf.length() < 1 ? "" : buf.delete(buf.length() - 1, buf.length()).toString();
+    }
 }

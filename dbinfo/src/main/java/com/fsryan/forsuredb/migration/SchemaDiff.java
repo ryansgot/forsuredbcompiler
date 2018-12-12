@@ -213,12 +213,8 @@ public abstract class SchemaDiff {
     public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b100000000
 
     /**
-     * <p>The default value of a column in a table changed.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_PREV_DEFAULT}</li>
-     *   <li>{@link #ATTR_CURR_DEFAULT}</li>
-     * </ul>
+     * <p>The default value of a column in a table changed. The relevant
+     * attribute is {@link #ATTR_DEFAULTS}
      */
     public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b1000000000
 
@@ -385,12 +381,9 @@ public abstract class SchemaDiff {
     public static final String ATTR_CURR_CONSTRAINT_VAL = "c_constraint_val";
 
     /**
-     * <p>The default value of the column has changed. This will be non null if
-     * {@link #type()} is {@link #TYPE_CHANGED} and the {@link #subType()} is
-     * {@link #TYPE_DEFAULT} and the {@link #category()} is {@link #CAT_COLUMN}
+     * <p>A comma-separated list of col=default values
      */
-    public static final String ATTR_PREV_DEFAULT = "p_default";
-    public static final String ATTR_CURR_DEFAULT = "c_default";
+    public static final String ATTR_DEFAULTS = "defaults";
 
     /**
      * <p>The name of the uniqueness constraint.
