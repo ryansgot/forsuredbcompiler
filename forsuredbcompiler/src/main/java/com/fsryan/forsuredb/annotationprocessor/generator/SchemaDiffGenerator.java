@@ -4,6 +4,7 @@ import com.fsryan.forsuredb.annotationprocessor.TableContext;
 import com.fsryan.forsuredb.annotationprocessor.util.Pair;
 import com.fsryan.forsuredb.annotationprocessor.util.StreamUtil;
 import com.fsryan.forsuredb.info.ColumnInfo;
+import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.google.common.base.Strings;
@@ -14,6 +15,7 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.fsryan.forsuredb.annotationprocessor.util.StreamUtil.mapCollector;
@@ -41,17 +43,12 @@ public class SchemaDiffGenerator {
     @Nonnull
     public Map<String, SchemaDiff> generate(@Nonnull TableContext target) {
         // create table diffs
-//        final Map<String, TableInfo> renamedTables = target.allTables()
-//                .stream()
-//                .filter(t -> containsConflictingTableName(base, t))
-//                .collect(mapCollector((acc, table) -> acc.put(table.qualifiedClassName(), table)));
         final Map<String, TableInfo> newTables = missingTables(base, target);
         final Map<String, TableInfo> droppedTables = missingTables(target, base);
         Stream<Pair<String, SchemaDiff>> existingTableDiffStream = target.tableMap().values()
                 .stream()
                 .filter(t -> !newTables.containsKey(t.qualifiedClassName()))
                 .flatMap(this::generateAllDiffs);
-
 
         return StreamUtil.concatAll(
                 existingTableDiffStream,
@@ -83,6 +80,7 @@ public class SchemaDiffGenerator {
                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, targetTable.tableName())
                 .type(SchemaDiff.TYPE_CHANGED);
 
+        enrichWithForeignKeyDiff(builder, baseTable, targetTable);
         enrichWithNameChangeDiff(builder, baseTable, targetTable);
         enrichWithPrimaryKeyDiff(builder, baseTable, targetTable);
         enrichWithColumnChangesDiff(builder, baseTable, targetTable);
@@ -90,6 +88,52 @@ public class SchemaDiffGenerator {
         return tableDiff.isEmpty()
                 ? Stream.empty()
                 : Stream.of(Pair.create(targetTable.qualifiedClassName(), tableDiff));
+    }
+
+    private static void enrichWithForeignKeyDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
+        Set<TableForeignKeyInfo> createdFKs = missingForeignKeys(baseTable.foreignKeys(), targetTable.foreignKeys());
+        Set<TableForeignKeyInfo> droppedFks = missingForeignKeys(targetTable.foreignKeys(), baseTable.foreignKeys());
+
+        if (!createdFKs.isEmpty()) {
+            StringBuilder buf = createdFKs.stream()
+                    .sorted(Comparator.comparing(TableForeignKeyInfo::foreignTableName))
+                    .map(SchemaDiffGenerator::serializeTFKI)
+                    .collect(stringBuilderCollector(','));
+            final String createdFKString = chopLast(buf).toString();
+            builder.enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                    .addAttribute(SchemaDiff.ATTR_CREATED_FKS, createdFKString);
+        }
+
+        if (!droppedFks.isEmpty()) {
+            StringBuilder buf = droppedFks.stream()
+                    .sorted(Comparator.comparing(TableForeignKeyInfo::foreignTableName))
+                    .map(SchemaDiffGenerator::serializeTFKI)
+                    .collect(stringBuilderCollector(','));
+            final String droppedFKString = chopLast(buf).toString();
+            builder.enrichSubType(SchemaDiff.TYPE_DROP_FK)
+                    .addAttribute(SchemaDiff.ATTR_DROPPED_FKS, droppedFKString);
+        }
+    }
+
+    private static Set<TableForeignKeyInfo> missingForeignKeys(Set<TableForeignKeyInfo> baseFKs, Set<TableForeignKeyInfo> targetFKs) {
+        return (targetFKs == null ? Collections.<TableForeignKeyInfo>emptySet(): targetFKs)
+                .stream()
+                .filter(targetFK -> !baseFKs.contains(targetFK))
+                .collect(Collectors.toSet());
+    }
+
+    //foreign_table:local_col1=foreign_col1,local_col2=foreign_col2:update_action:delete_action
+    private static String serializeTFKI(TableForeignKeyInfo tfki) {
+        StringBuilder buf = new StringBuilder(tfki.foreignTableName()).append(':');
+        tfki.localToForeignColumnMap().keySet()
+                .stream()
+                .sorted()
+                .forEach(localCol -> buf.append(localCol).append('=').append(tfki.localToForeignColumnMap().get(localCol))
+                        .append(','));
+        return chopLast(buf).append(':')
+                .append(tfki.updateChangeAction()).append(':')
+                .append(tfki.deleteChangeAction())
+                .toString();
     }
 
     private static void enrichWithColumnChangesDiff(SchemaDiff.Builder builder, TableInfo baseTable, TableInfo targetTable) {
@@ -120,7 +164,7 @@ public class SchemaDiffGenerator {
                     .map(ColumnInfo::getColumnName)
                     .sorted()
                     .collect(stringBuilderCollector(','));
-            final String createColumns = chopLast(buf);
+            final String createColumns = chopLast(buf).toString();
             builder.enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
                     .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, createColumns);
         }
@@ -131,7 +175,7 @@ public class SchemaDiffGenerator {
                     .map(ColumnInfo::getColumnName)
                     .sorted()
                     .collect(stringBuilderCollector(','));
-            final String dropColumns = chopLast(buf);
+            final String dropColumns = chopLast(buf).toString();
             builder.enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
                     .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, dropColumns);
         }
@@ -147,7 +191,7 @@ public class SchemaDiffGenerator {
                 .map(prevCurrPair -> Pair.create(prevCurrPair.second().getColumnName(), SchemaDiff.CONSTRAINT_UNIQUE + "=" + prevCurrPair.second().unique()))
                 .sorted(Comparator.comparing(Pair::first))
                 .collect(delimitedStringBuilderCollector(':', ','));
-        return chopLast(buf);
+        return chopLast(buf).toString();
     }
 
     @Nonnull
@@ -159,7 +203,7 @@ public class SchemaDiffGenerator {
                 .filter(pair -> !pair.first().equals(pair.second()))
                 .sorted(Comparator.comparing(Pair::first))
                 .collect(delimitedStringBuilderCollector('=', ','));
-        return chopLast(buf);
+        return chopLast(buf).toString();
     }
 
     @Nonnull
@@ -172,7 +216,7 @@ public class SchemaDiffGenerator {
                 .map(prevCurrPair -> Pair.create(prevCurrPair.second().getColumnName(), Strings.nullToEmpty(prevCurrPair.second().defaultValue())))
                 .sorted(Comparator.comparing(Pair::first))
                 .collect(delimitedStringBuilderCollector('=', ','));
-        return chopLast(buf);
+        return chopLast(buf).toString();
     }
 
     private static Map<String, ColumnInfo> missingColumns(Map<String, ColumnInfo> baseColumns, Map<String, ColumnInfo> targetColumns) {
@@ -253,8 +297,9 @@ public class SchemaDiffGenerator {
         return buf.delete(buf.length() - 1, buf.length()).toString();
     }
 
-    private static String chopLast(@Nonnull StringBuilder buf) {
-        return buf.length() < 1 ? "" : buf.delete(buf.length() - 1, buf.length()).toString();
+    @Nonnull
+    private static StringBuilder chopLast(@Nonnull StringBuilder buf) {
+        return buf.length() < 1 ? buf : buf.delete(buf.length() - 1, buf.length());
     }
 
     private static Collector<String, StringBuilder, StringBuilder> stringBuilderCollector(char delimiter) {

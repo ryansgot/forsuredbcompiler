@@ -219,6 +219,18 @@ public abstract class SchemaDiff {
     public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b1000000000
 
     /**
+     * <p>One or more foreign keys was added to a table. Relevant attribute is
+     * {@link #ATTR_CREATED_FKS}
+     */
+    public static final int TYPE_CREATE_FK = TYPE_DEFAULT << 1;                     // 0b10000000000
+
+    /**
+     * <p>One or more foreign keys was dropped from a table. Relevant attribute
+     * is {@link #ATTR_DROPPED_FKS}
+     */
+    public static final int TYPE_DROP_FK = TYPE_CREATE_FK << 1;                     // 0b100000000000
+
+    /**
      * <p>The current name of the object in question. This will always be non
      * null.
      * @see #ATTR_PREV_NAME
@@ -295,27 +307,9 @@ public abstract class SchemaDiff {
      */
     public static final String ATTR_PREV_PK_ON_CONFLICT = "p_pk_on_conflict";
 
-    /**
-     * <p>The current foreign key column names. This will be non null if the
-     * {@link #type()} is one of
-     * <ul>
-     *   <li>{@link #TYPE_CREATED}</li>
-     *   <li>{@link #TYPE_CHANGED}</li>
-     * </ul>
-     * and the {@link #category()} is {@link #CAT_FOREIGN_KEY}
-     * <p>These column names are always columns of the foreign table
-     * @see #ATTR_CURR_FK_COL_NAMES
-     */
-    public static final String ATTR_CURR_FK_COL_NAMES = "c_fk";
+    public static final String ATTR_CREATED_FKS = "c_fk";
 
-    /**
-     * <p>The previous foreign key column names. This will be non null if the
-     * {@link #type()} is {@link #TYPE_CHANGED} or {@link #TYPE_DROPPED} and
-     * {@link #category()} is {@link #CAT_FOREIGN_KEY}
-     * <p>These column names are always columns of the foreign table
-     * @see #ATTR_CURR_FK_COL_NAMES
-     */
-    public static final String ATTR_PREV_FK_COL_NAMES = "p_fk";
+    public static final String ATTR_DROPPED_FKS = "d_fk";
 
     /**
      * <p>This does not have a current/previous version. The foreign key table

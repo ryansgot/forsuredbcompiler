@@ -843,6 +843,335 @@ public class SchemaDiffGeneratorTest {
         );
     }
 
+    static Iterable<Arguments> changeForeignKeyInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; add a non-composite foreign key referencing an existing table using a new column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                                        .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, colNameByType(long.class))
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_CREATED_FKS,
+                                                String.format("%s:%s=%s:%s:%s", "t2", colNameByType(long.class), "_id", "CASCADE", "CASCADE")
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; add a non-composite foreign key referencing an existing table using an existing column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_CREATED_FKS,
+                                                String.format("%s:%s=%s:%s:%s", "t2", colNameByType(long.class), "_id", "CASCADE", "CASCADE")
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; add a non-composite foreign key referencing an new table using an existing column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_CREATED_FKS,
+                                                String.format("%s:%s=%s:%s:%s", "t2", colNameByType(long.class), "_id", "CASCADE", "CASCADE")
+                                        ).build(),
+                                tableFQClassName("t2"),
+                                SchemaDiff.forTableCreated("t2")
+                        )
+                ),
+                arguments(
+                        "Single table; add composite foreign key referencing an existing table using an existing column and a new column; update and delete actions get put in correct spot",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .resetPrimaryKey(setOf(colNameByType(long.class), colNameByType(String.class)))
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .addForeignKey(
+                                                foreignKeyTo("t2")
+                                                        .updateChangeAction("NO ACTION")
+                                                        .deleteChangeAction("CASCADE")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), colNameByType(long.class))
+                                                        .mapLocalToForeignColumn(colNameByType(String.class), colNameByType(String.class))
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .resetPrimaryKey(setOf(colNameByType(long.class), colNameByType(String.class)))
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                                        .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, colNameByType(String.class))
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_CREATED_FKS,
+                                                String.format("%s:%s=%s,%s=%s:%s:%s",
+                                                        "t2",
+                                                        colNameByType(long.class), colNameByType(long.class),
+                                                        colNameByType(String.class), colNameByType(String.class),
+                                                        "NO ACTION",
+                                                        "CASCADE"
+                                                )
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; drop a non-composite foreign key referencing an existing table, dropping the column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, colNameByType(long.class))
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_DROPPED_FKS,
+                                                String.format("%s:%s=%s:%s:%s", "t2", colNameByType(long.class), "_id", "CASCADE", "CASCADE")
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; drop a non-composite foreign key referencing an existing table without dropping the column",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_DROPPED_FKS,
+                                                String.format("%s:%s=%s:%s:%s", "t2", colNameByType(long.class), "_id", "CASCADE", "CASCADE")
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; drop composite foreign key referencing an existing table, dropping one of the columns",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .addForeignKey(
+                                                foreignKeyTo("t2")
+                                                        .updateChangeAction("NO ACTION")
+                                                        .deleteChangeAction("CASCADE")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), colNameByType(long.class))
+                                                        .mapLocalToForeignColumn(colNameByType(String.class), colNameByType(String.class))
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .resetPrimaryKey(setOf(colNameByType(long.class), colNameByType(String.class)))
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .resetPrimaryKey(setOf(colNameByType(long.class), colNameByType(String.class)))
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, colNameByType(String.class))
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_DROPPED_FKS,
+                                                String.format("%s:%s=%s,%s=%s:%s:%s",
+                                                        "t2",
+                                                        colNameByType(long.class), colNameByType(long.class),
+                                                        colNameByType(String.class), colNameByType(String.class),
+                                                        "NO ACTION",
+                                                        "CASCADE"
+                                                )
+                                        ).build()
+                        )
+                ),
+                arguments(
+                        "Single table; drop a foreign key and add a foreign key",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .addForeignKey(
+                                                cascadeForeignKeyTo("t2")
+                                                        .mapLocalToForeignColumn(colNameByType(String.class), colNameByType(String.class))
+                                                        .build()
+                                        ).build(),
+                                tableBuilder("t2")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                SchemaDiff.builder()
+                                        .type(SchemaDiff.TYPE_CHANGED)
+                                        .enrichSubType(SchemaDiff.TYPE_DROP_FK)
+                                        .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                        .tableName("t1")
+                                        .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                        .addAttribute(
+                                                SchemaDiff.ATTR_DROPPED_FKS,
+                                                String.format("%s:%s=%s:%s:%s",
+                                                        "t2",
+                                                        colNameByType(long.class), "_id",
+                                                        "CASCADE",
+                                                        "CASCADE"
+                                                )
+                                        ).addAttribute(
+                                                SchemaDiff.ATTR_CREATED_FKS,
+                                                String.format("%s:%s=%s:%s:%s",
+                                                        "t2",
+                                                        colNameByType(String.class), colNameByType(String.class),
+                                                        "CASCADE",
+                                                        "CASCADE"
+                                                )
+                                        ).build()
+                        )
+                )
+        );
+    }
+
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
@@ -911,6 +1240,14 @@ public class SchemaDiffGeneratorTest {
     @MethodSource("changeColumnConstraintInput")
     @DisplayName("Column constraint changes should be detected")
     public void changeColumnConstraint(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("changeForeignKeyInput")
+    @DisplayName("Foreign key changes should be detected")
+    public void changeForeignKey(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
