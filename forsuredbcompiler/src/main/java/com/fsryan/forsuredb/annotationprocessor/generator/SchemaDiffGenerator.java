@@ -99,19 +99,30 @@ public class SchemaDiffGenerator {
         Map<String, ColumnInfo> newColumns = missingColumns(baseTable.columnMap(), targetTable.columnMap());
         Map<String, ColumnInfo> droppedColumns = missingColumns(targetTable.columnMap(), baseTable.columnMap());
 
-        Map<String, String> oldToNewColumnNames = targetTable.getColumns()
+        StringBuilder nameChangeBuf = targetTable.getColumns()
                 .stream()
                 .filter(c -> !newColumns.containsKey(c.methodName()))
                 .map(c -> Pair.create(baseTable.columnMap().get(c.methodName()).getColumnName(), c.getColumnName()))
                 .filter(pair -> !pair.first().equals(pair.second()))
+                .sorted(Comparator.comparing(Pair::first))
                 .collect(Collector.of(
-                        HashMap::new,
-                        (acc, oldToNewNamePair) -> acc.put(oldToNewNamePair.first(), oldToNewNamePair.second()),
-                        mapCombiner()
+                        StringBuilder::new,
+                        (acc, pair) -> acc.append(pair.first()).append('=').append(pair.second()).append(','),
+                        (buf1, buf2) -> {
+                            if (buf1.length() == 0) {
+                                return buf2;
+                            }
+                            if (buf2.length() == 0) {
+                                return buf1;
+                            }
+                            return buf1.append(buf2);
+                        }
                 ));
 
-        if (!oldToNewColumnNames.isEmpty()) {
-            // TODO
+        if (nameChangeBuf.length() != 0) {
+            String renameColumns = nameChangeBuf.delete(nameChangeBuf.length() - 1, nameChangeBuf.length()).toString();
+            builder.enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                    .addAttribute(SchemaDiff.ATTR_RENAME_COLUMNS, renameColumns);
         }
 
         if (!newColumns.isEmpty()) {

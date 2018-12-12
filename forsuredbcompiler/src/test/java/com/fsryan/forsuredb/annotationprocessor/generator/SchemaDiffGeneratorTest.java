@@ -10,8 +10,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import static com.fsryan.forsuredb.info.ColumnInfoUtil.colMethodNameByType;
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
@@ -509,6 +511,106 @@ public class SchemaDiffGeneratorTest {
         );
     }
 
+    public static Iterable<Arguments> changeColumnNamesInput() {
+        return Arrays.asList(
+                arguments(
+                        "Single table; change one column name",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().columnName("long_col_renamed").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnNameChangeDiff(
+                                        "t1",
+                                        String.format("%s=%s", colNameByType(long.class), "long_col_renamed")
+                                )
+                        )
+                ),
+                arguments(
+                        "Single table; change multiple column names",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().columnName("long_col_renamed").build())
+                                        .addColumn(stringCol().columnName("string_col_renamed").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnNameChangeDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(long.class),
+                                                "long_col_renamed",
+                                                colNameByType(String.class),
+                                                "string_col_renamed"
+                                        )
+                                )
+                        )
+                ),
+                arguments(
+                        "Multiple tables; change multiple column names",
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(longCol().build())
+                                        .addColumn(stringCol().build())
+                                        .build(),
+                                tableBuilder("t2")
+                                        .addColumn(intCol().build())
+                                        .addColumn(booleanCol().build())
+                                        .build()
+                        )),
+                        TableContext.fromSchema(tableMapOf(
+                                tableBuilder("t2")
+                                        .addColumn(intCol().columnName("int_col_renamed").build())
+                                        .addColumn(booleanCol().columnName("boolean_col_renamed").build())
+                                        .build(),
+                                tableBuilder("t1")
+                                        .addColumn(longCol().columnName("long_col_renamed").build())
+                                        .addColumn(stringCol().columnName("string_col_renamed").build())
+                                        .build()
+                        )),
+                        mapOf(
+                                tableFQClassName("t1"),
+                                columnNameChangeDiff(
+                                        "t1",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(long.class),
+                                                "long_col_renamed",
+                                                colNameByType(String.class),
+                                                "string_col_renamed"
+                                        )
+                                ),
+                                tableFQClassName("t2"),
+                                columnNameChangeDiff(
+                                        "t2",
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(boolean.class),
+                                                "boolean_col_renamed",
+                                                colNameByType(int.class),
+                                                "int_col_renamed"
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("tableCreateFromZeroInput")
     @DisplayName("Table creation from zero should be represented as the correct set of create table diffs")
@@ -553,6 +655,14 @@ public class SchemaDiffGeneratorTest {
     @MethodSource("dropColumnsInput")
     @DisplayName("Dropped columns of a table should be detected")
     public void dropColumns(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
+        Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
+        assertMapEquals(desc, expected, actual);
+    }
+
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("changeColumnNamesInput")
+    @DisplayName("Column name changes should be detected")
+    public void changeColumnNames(String desc, TableContext base, TableContext target, Map<String, SchemaDiff> expected) {
         Map<String, SchemaDiff> actual = new SchemaDiffGenerator(base).generate(target);
         assertMapEquals(desc, expected, actual);
     }
@@ -614,6 +724,16 @@ public class SchemaDiffGeneratorTest {
                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
                 .enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
                 .addAttribute(SchemaDiff.ATTR_DROP_COLUMNS, columnsCSV)
+                .build();
+    }
+
+    private static SchemaDiff columnNameChangeDiff(String tableName, String expectedNameChangeDesc) {
+        return SchemaDiff.builder()
+                .type(SchemaDiff.TYPE_CHANGED)
+                .tableName(tableName)
+                .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
+                .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                .addAttribute(SchemaDiff.ATTR_RENAME_COLUMNS, expectedNameChangeDesc)
                 .build();
     }
 }

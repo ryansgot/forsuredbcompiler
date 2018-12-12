@@ -147,20 +147,28 @@ public abstract class SchemaDiff {
     public static final int TYPE_TYPE = TYPE_NAME << 1;                             // 0b10
 
     /**
-     * <p>Columns were either created or dropped from a table
+     * <p>Columns were created on a table
      * <ul>
-     *   <li>{@link #ATTR_NEW_COLUMNS}</li>
+     *   <li>{@link #ATTR_CREATE_COLUMNS}</li>
      * </ul>
      */
     public static final int TYPE_ADD_COLUMNS = TYPE_TYPE << 1;                      // 0b100
 
     /**
-     * <p>Columns were either created or dropped from a table
+     * <p>Columns were dropped from a table
      * <ul>
-     *   <li>{@link #ATTR_NEW_COLUMNS}</li>
+     *   <li>{@link #ATTR_DROP_COLUMNS}</li>
      * </ul>
      */
     public static final int TYPE_DROP_COLUMNS = TYPE_ADD_COLUMNS << 1;              // 0b1000
+
+    /**
+     * <p>Columns were either created or dropped from a table
+     * <ul>
+     *   <li>{@link #ATTR_RENAME_COLUMNS}</li>
+     * </ul>
+     */
+    public static final int TYPE_RENAME_COLUMNS = TYPE_DROP_COLUMNS << 1;           // 0b10000
 
     /**
      * <p>The columns of a primary key changed.
@@ -170,7 +178,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_PK_COL_NAMES}</li>
      * </ul>
      */
-    public static final int TYPE_PK_COLUMNS = TYPE_DROP_COLUMNS << 1;               // 0b10000
+    public static final int TYPE_PK_COLUMNS = TYPE_DROP_COLUMNS << 1;               // 0b100000
 
     /**
      * <p>The primary key on conflict behavior changed.
@@ -180,7 +188,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_PK_ON_CONFLICT}</li>
      * </ul>
      */
-    public static final int TYPE_PK_ON_CONFLICT = TYPE_PK_COLUMNS << 1;             // 0b100000
+    public static final int TYPE_PK_ON_CONFLICT = TYPE_PK_COLUMNS << 1;             // 0b1000000
 
     /**
      * <p>The sort of an index changed. This can coincide with the
@@ -191,7 +199,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_SORT}</li>
      * </ul>
      */
-    public static final int TYPE_SORT = TYPE_PK_ON_CONFLICT << 1;                   // 0b1000000
+    public static final int TYPE_SORT = TYPE_PK_ON_CONFLICT << 1;                   // 0b10000000
 
     /**
      * <p>The constraint of a column in a table changed.
@@ -202,7 +210,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_CONSTRAINT_VAL}</li>
      * </ul>
      */
-    public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b10000000
+    public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b100000000
 
     /**
      * <p>The default value of a column in a table changed.
@@ -212,7 +220,7 @@ public abstract class SchemaDiff {
      *   <li>{@link #ATTR_CURR_DEFAULT}</li>
      * </ul>
      */
-    public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b100000000
+    public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b1000000000
 
     /**
      * <p>The current name of the object in question. This will always be non
@@ -257,6 +265,11 @@ public abstract class SchemaDiff {
      * {@link #TYPE_DROP_COLUMNS}.
      */
     public static final String ATTR_DROP_COLUMNS = "d_cols";
+
+    /**
+     * <p>A comma-separated list of prev=curr column names.
+     */
+    public static final String ATTR_RENAME_COLUMNS = "r_cols";
 
     /**
      * <p>The current primary key column names. This will be non null when:
