@@ -523,8 +523,8 @@ public class CreateTableGeneratorTest {
 
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("shouldGenerateCorrectSqlInput")
-    @DisplayName("should generate correct sql given the input table and schema")
-    public void should(String desc, String tableClassName, Map<String, TableInfo> schema, List<String> expectedStatements) {
+    @DisplayName("should generate correct TABLE CREATE sql given tableclassName and schema")
+    public void shouldCorrectlyGenerateSql(String desc, String tableClassName, Map<String, TableInfo> schema, List<String> expectedStatements) {
         List<String> statements = new CreateTableGenerator(tableClassName, schema).statements();
         assertListEquals(desc, expectedStatements, statements);
     }

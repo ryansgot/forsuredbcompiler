@@ -40,6 +40,7 @@ public class CreateTableGenerator {
                 table.tableName(),
                 CURRENT_UTC_TIME
         ));
+        // TODO: add indices
         if (hasForeignKeys) {
             ret.add("PRAGMA foreign_keys = true;");
         }
@@ -76,15 +77,7 @@ public class CreateTableGenerator {
 
     @SuppressWarnings("ConstantConditions")
     private StringBuilder addForeignKeysTo(StringBuilder buf) {
-        List<TableForeignKeyInfo> orderedForeignKeyDeclarations = new ArrayList<>(table.foreignKeys());
-        Collections.sort(orderedForeignKeyDeclarations, new Comparator<TableForeignKeyInfo>() {
-            @Override
-            public int compare(TableForeignKeyInfo tfki1, TableForeignKeyInfo tfki2) {
-                return tfki1.foreignTableName().compareTo(tfki2.foreignTableName());
-            }
-        });
-
-        for (TableForeignKeyInfo tfki : orderedForeignKeyDeclarations) {
+        for (TableForeignKeyInfo tfki : MigrationUtil.orderedForeignKeyDeclarations(table)) {
             buf.append(", FOREIGN KEY(");
             List<String> orderedLocalCols = new ArrayList<>(tfki.localToForeignColumnMap().keySet());
             Collections.sort(orderedLocalCols);
@@ -122,13 +115,13 @@ public class CreateTableGenerator {
 
     @Nonnull
     private StringBuilder addColDefsTo(StringBuilder buf, boolean isDefaultPrimaryKey) {
-        for (ColumnInfo col : sortTableColumnsByName()) {
+        for (ColumnInfo col : MigrationUtil.sortTableColumnsByName(table)) {
             if (col.getColumnName().equals(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN) && isDefaultPrimaryKey) {
                 buf.append(col.getColumnName()).append(" INTEGER PRIMARY KEY, ");
             } else {
                 buf.append(col.getColumnName())
                         .append(' ')
-                        .append(TypeUtil.sqlTypeOf(col.getQualifiedType()));
+                        .append(MigrationUtil.sqlTypeOf(col.getQualifiedType()));
                 if (col.hasDefaultValue()) {
                     //noinspection ConstantConditions
                     buf.append(" DEFAULT(")
@@ -139,18 +132,6 @@ public class CreateTableGenerator {
             }
         }
         return buf.delete(buf.length() - 2, buf.length());
-    }
-
-    @Nonnull
-    private List<ColumnInfo> sortTableColumnsByName() {
-        List<ColumnInfo> ret = new ArrayList<>(table.getColumns());
-        Collections.sort(ret, new Comparator<ColumnInfo>() {
-            @Override
-            public int compare(ColumnInfo c1, ColumnInfo c2) {
-                return c1.getColumnName().compareTo(c2.getColumnName());
-            }
-        });
-        return ret;
     }
 
     private boolean hasForeignKeys() {

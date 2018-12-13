@@ -8,4 +8,11 @@
         <Class name="com.fsryan.forsuredb.sqlitelib.ProjectionHelper" />
         <Bug pattern="PZLA_PREFER_ZERO_LENGTH_ARRAYS" />
     </Match>
+
+
+    <!-- TODO: remove if it turns out you don't actually need the schema -->
+    <Match>
+        <Class name="com.fsryan.forsuredb.sqlitelib.diff.CreateTableGenerator" />
+        <Bug pattern="URF_UNREAD_FIELD" />
+    </Match>
 </FindBugsFilter>
