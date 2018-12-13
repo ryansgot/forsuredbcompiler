@@ -26,7 +26,12 @@ final class TableForeignKeyInfoAdapter extends JsonAdapter<TableForeignKeyInfo> 
     }
 
     @Override
-    public TableForeignKeyInfo fromJson(JsonReader reader) throws IOException {
+    public TableForeignKeyInfo fromJson(@Nonnull JsonReader reader) throws IOException {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull();
+            return null;
+        }
+
         reader.beginObject();
         TableForeignKeyInfo.Builder builder = TableForeignKeyInfo.builder();
         while (reader.hasNext()) {
@@ -62,23 +67,28 @@ final class TableForeignKeyInfoAdapter extends JsonAdapter<TableForeignKeyInfo> 
     }
 
     @Override
-    public void toJson(JsonWriter writer, @Nonnull TableForeignKeyInfo value) throws IOException {
+    public void toJson(@Nonnull JsonWriter writer, TableForeignKeyInfo obj) throws IOException {
+        if (obj == null) {
+            writer.nullValue();
+            return;
+        }
+
         writer.beginObject();
 
         writer.name("foreign_table_api_class_name");
-        writer.value(value.foreignTableApiClassName());
+        writer.value(obj.foreignTableApiClassName());
 
         writer.name("foreign_table_name");
-        writer.value(value.foreignTableName());
+        writer.value(obj.foreignTableName());
 
         writer.name("local_to_foreign_column_map");
-        string2StringMapAdapter.toJson(writer, value.localToForeignColumnMap());
+        string2StringMapAdapter.toJson(writer, obj.localToForeignColumnMap());
 
         writer.name("update_action");
-        writer.value(value.updateChangeAction());
+        writer.value(obj.updateChangeAction());
 
         writer.name("delete_action");
-        writer.value(value.deleteChangeAction());
+        writer.value(obj.deleteChangeAction());
         writer.endObject();
     }
 }

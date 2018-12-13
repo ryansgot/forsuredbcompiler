@@ -29,18 +29,41 @@ public abstract class TableInfoUtil {
      * tables passed in using the default keying mechanism
      */
     public static Map<String, TableInfo> tableMapOf(TableInfo... tables) {
-        Map<String, TableInfo> retMap = new HashMap<>();
-        for (TableInfo table : tables) {
-            // TODO: change the keying mechanism to be based upon fq class name
-//            retMap.put(table.qualifiedClassName(), table);
-            retMap.put(table.tableName(), table);
-        }
-        return retMap;
+        return tableMapOf(false, tables);
+    }
+
+    /**
+     * <p>Except in case of legacy tests, you should use
+     * {@link #tableMapOf(TableInfo...)}, which will use the qualified class
+     * name as the key
+     * @param tables the tables to add to the map
+     * @return a {@link Map}&lt;{@link String}, {@link TableInfo}&gt; with
+     * table name keys
+     */
+    @Deprecated
+    public static Map<String, TableInfo> tableMapWithTableNameKeys(TableInfo... tables) {
+        return tableMapOf(true, tables);
     }
 
     public static Set<String> defaultColumnsPlus(String... additionalColumns) {
         Set<String> ret = new HashSet<>(defaultColumnNames);
         ret.addAll(Arrays.asList(additionalColumns));
         return ret;
+    }
+
+    /**
+     * <p>
+     * @param useTableNameAsKey whether to use the table name as the key
+     * @param tables the tables to put into the {@link Map}
+     * @return A {@link Map}&lt;{@link String}, {@link TableInfo}&gt; of all
+     * tables passed in using the default keying mechanism
+     */
+    private static Map<String, TableInfo> tableMapOf(boolean useTableNameAsKey, TableInfo... tables) {
+        Map<String, TableInfo> retMap = new HashMap<>();
+        for (TableInfo table : tables) {
+            final String qClassName = useTableNameAsKey ? table.tableName() : table.qualifiedClassName();
+            retMap.put(qClassName, table);
+        }
+        return retMap;
     }
 }

@@ -30,7 +30,7 @@ import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.sqlitelib.TestData.TABLE_NAME;
 
 @RunWith(Parameterized.class)
-public class CreateTempTableFromExistingTest extends BaseSQLiteGeneratorTest {
+public class CreateTempTableFromExistingTest extends LegacyBaseSQLiteGeneratorTest {
 
     private CreateTempTableFromExisting generatorUnderTest;
 

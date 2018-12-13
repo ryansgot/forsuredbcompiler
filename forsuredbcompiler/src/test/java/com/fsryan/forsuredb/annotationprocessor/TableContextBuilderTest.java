@@ -223,11 +223,11 @@ public abstract class TableContextBuilderTest {
             startingTables
                     .forEach((name, builder) -> builderUnderTest.addTable(name, tableFQClassName(name), builder));
             startingColumns
-                    .forEach((t2cMethod, builder) -> builderUnderTest.addColumn(tableFQClassName(t2cMethod.first), t2cMethod.second, builder));
+                    .forEach((t2cMethod, builder) -> builderUnderTest.addColumn(tableFQClassName(t2cMethod.first()), t2cMethod.second(), builder));
             startingFKs
                     .forEach((t2Composite, builderSet) -> {
-                        final String tableClassName = tableFQClassName(t2Composite.first);
-                        final String compositeId = t2Composite.second;
+                        final String tableClassName = tableFQClassName(t2Composite.first());
+                        final String compositeId = t2Composite.second();
                         builderSet.forEach(builder -> builderUnderTest.addForeignKeyInfo(tableClassName, compositeId, builder));
                     });
             actual = builderUnderTest.build();
@@ -259,7 +259,7 @@ public abstract class TableContextBuilderTest {
     }
 
     static Pair<String, String> t1ColPair(String colName) {
-        return new Pair<>("t1", colName);
+        return Pair.create("t1", colName);
     }
 
     static ColumnInfo.Builder t1c1() {
@@ -271,11 +271,11 @@ public abstract class TableContextBuilderTest {
     }
 
     static Pair<String, String> t2ColPair(String colName) {
-        return new Pair<>("t2", colName);
+        return Pair.create("t2", colName);
     }
 
     static Pair<String, String> t2FKPair(String compositeId) {
-        return new Pair<>("t2", compositeId);
+        return Pair.create("t2", compositeId);
     }
 
     static ColumnInfo.Builder t2c1() {

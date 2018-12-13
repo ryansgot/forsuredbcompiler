@@ -5,6 +5,7 @@ import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
+import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapWithTableNameKeys;
 import static com.fsryan.forsuredb.migration.MigrationFixtures.migration;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 
@@ -31,7 +33,7 @@ public class CombinedMigrationTest {
                     .build()
     );
 
-    private static final Map<String, TableInfo> testSchema = tableMapOf(
+    private static final Map<String, TableInfo> testSchema = tableMapWithTableNameKeys(
             TableInfo.builder()
                     .qualifiedClassName(SqlGeneratorTest.class.getName())
                     .tableName("table")

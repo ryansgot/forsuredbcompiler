@@ -105,6 +105,9 @@ subprojects { subproject ->
         jcenter()
     }
 
+    test {
+        useJUnitPlatform()
+    }
 
     jacoco {
         toolVersion = "0.7.6.+"
@@ -243,6 +246,10 @@ subprojects { subproject ->
 
     afterEvaluate { project ->
         tasks.findByName('bintrayUpload').dependsOn('generatePomFileForBintrayPublication')
+
+        tasks.withType(JavaCompile).findAll { it.name.contains('test') || it.name.contains('Test') }.each { t->
+            t.sourceCompatibility = t.targetCompatibility = JavaVersion.VERSION_1_8
+        }
 
         task release(dependsOn: ['bintrayUpload', 'publishMavenS3PublicationToReleaseRepository']) {
             description = "Release ${project.name}-${project.version} to bintray and S3 release repos"

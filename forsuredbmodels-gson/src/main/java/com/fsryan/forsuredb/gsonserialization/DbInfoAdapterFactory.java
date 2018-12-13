@@ -23,6 +23,7 @@ import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
@@ -44,6 +45,8 @@ class DbInfoAdapterFactory implements TypeAdapterFactory {
             return (TypeAdapter<T>) new TableForeignKeyInfoAdapter(gson);
         } else if (MigrationSet.class.isAssignableFrom(rawType)) {
             return (TypeAdapter<T>) new MigrationSetAdapter(gson);
+        } else if (SchemaDiff.class.isAssignableFrom(rawType)) {
+            return (TypeAdapter<T>) new SchemaDiffAdapter(gson);
         } else if (ForeignKeyInfo.class.isAssignableFrom(rawType)) {
             return (TypeAdapter<T>) new ForeignKeyInfoAdapter(gson);
         } else {

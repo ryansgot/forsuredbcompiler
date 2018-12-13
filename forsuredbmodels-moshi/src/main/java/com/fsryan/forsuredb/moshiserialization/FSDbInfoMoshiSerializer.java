@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.fsryan.forsuredb.serialization.FSDbInfoSerializer;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
@@ -94,6 +95,9 @@ public class FSDbInfoMoshiSerializer implements FSDbInfoSerializer {
             }
             if (MigrationSet.class.equals(type)) {
                 return new MigrationSetAdapter(moshi).nullSafe();
+            }
+            if (SchemaDiff.class.equals(type)) {
+                return new SchemaDiffAdapter(moshi).nullSafe();
             }
             if (ForeignKeyInfo.class.equals(type)) {
                 return new ForeignKeyInfoAdapter().nullSafe();

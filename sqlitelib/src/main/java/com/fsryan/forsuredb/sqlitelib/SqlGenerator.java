@@ -69,6 +69,7 @@ public class SqlGenerator implements DBMSIntegrator {
         projectionHelper = new ProjectionHelper(this);
     }
 
+    // TODO: update this to handle the version of the migration set first
     @Override
     public List<String> generateMigrationSql(MigrationSet migrationSet, FSDbInfoSerializer serializer) {
         if (migrationSet == null || !migrationSet.containsMigrations() || migrationSet.targetSchema() == null) {

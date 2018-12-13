@@ -20,6 +20,7 @@ package com.fsryan.forsuredb.gsonserialization;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.SchemaDiff;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
@@ -30,20 +31,22 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class MigrationSetAdapter extends TypeAdapter<MigrationSet> {
 
     private static TypeToken<List<Migration>> orderedMigrationType = new TypeToken<List<Migration>>() {};
     private static TypeToken<Map<String, TableInfo>> targetSchemaType = new TypeToken<Map<String, TableInfo>>() {};
+    private static TypeToken<Map<String, Set<SchemaDiff>>> diffMapType = new TypeToken<Map<String, Set<SchemaDiff>>>() {};
 
     private final TypeAdapter<List<Migration>> orderedMigrationAdapter;
     private final TypeAdapter<Map<String, TableInfo>> targetSchemaAdapter;
-    private final TypeAdapter<Integer> dbVersionAdapter;
+    private final TypeAdapter<Map<String, Set<SchemaDiff>>> diffMapAdapter;
 
     MigrationSetAdapter(Gson gson) {
         orderedMigrationAdapter = gson.getAdapter(orderedMigrationType);
         targetSchemaAdapter = gson.getAdapter(targetSchemaType);
-        dbVersionAdapter = gson.getAdapter(Integer.class);
+        diffMapAdapter = gson.getAdapter(diffMapType);
     }
 
     @Override
@@ -54,12 +57,20 @@ class MigrationSetAdapter extends TypeAdapter<MigrationSet> {
         }
 
         jsonWriter.beginObject();
-        jsonWriter.name("ordered_migrations");
-        orderedMigrationAdapter.write(jsonWriter, object.orderedMigrations());
+        if (object.containsMigrations()) {
+            jsonWriter.name("ordered_migrations");
+            orderedMigrationAdapter.write(jsonWriter, object.orderedMigrations());
+        }
+        if (object.containsDiffs()) {
+            jsonWriter.name("diff_map");
+            diffMapAdapter.write(jsonWriter, object.diffMap());
+        }
         jsonWriter.name("target_schema");
         targetSchemaAdapter.write(jsonWriter, object.targetSchema());
         jsonWriter.name("db_version");
-        dbVersionAdapter.write(jsonWriter, object.dbVersion());
+        jsonWriter.value(object.dbVersion());
+        jsonWriter.name("set_version");
+        jsonWriter.value(object.setVersion());
         jsonWriter.endObject();
     }
 
@@ -87,7 +98,13 @@ class MigrationSetAdapter extends TypeAdapter<MigrationSet> {
                     builder.targetSchema(targetSchemaAdapter.read(jsonReader));
                     break;
                 case "db_version":
-                    builder.dbVersion(dbVersionAdapter.read(jsonReader));
+                    builder.dbVersion(jsonReader.nextInt());
+                    break;
+                case "set_version":
+                    builder.setVersion(jsonReader.nextInt());
+                    break;
+                case "diff_map":
+                    builder.mergeDiffMap(diffMapAdapter.read(jsonReader));
                     break;
                 default:
                     jsonReader.skipValue();

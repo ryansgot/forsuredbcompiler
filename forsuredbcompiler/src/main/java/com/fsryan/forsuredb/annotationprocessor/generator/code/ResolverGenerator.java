@@ -112,7 +112,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
                 if (!foreignKey.foreignTableName().equals(table.tableName())) {
                     continue;
                 }
-                ret.add(new Pair<>(otherTable, foreignKey));
+                ret.add(Pair.create(otherTable, foreignKey));
             }
         }
         return ret;
@@ -127,7 +127,7 @@ public class ResolverGenerator extends JavaSourceGenerator {
             codeBuilder.addType(createJoinResolverClass(referencedTable, foreignKey));
         }
         for (Pair<TableInfo, TableForeignKeyInfo> parentJoin : parentJoins) {
-            codeBuilder.addType(createJoinResolverClass(parentJoin.first, parentJoin.second));
+            codeBuilder.addType(createJoinResolverClass(parentJoin.first(), parentJoin.second()));
         }
     }
 

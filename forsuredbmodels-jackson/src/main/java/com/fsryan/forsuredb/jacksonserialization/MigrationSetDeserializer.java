@@ -10,15 +10,18 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.Migration;
 import com.fsryan.forsuredb.migration.MigrationSet;
+import com.fsryan.forsuredb.migration.SchemaDiff;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MigrationSetDeserializer extends StdDeserializer<MigrationSet> {
 
     private static final TypeReference<List<Migration>> orderedMigrationsType = new TypeReference<List<Migration>>() {};
     private static final TypeReference<Map<String, TableInfo>> targetSchemaType = new TypeReference<Map<String, TableInfo>>() {};
+    private static final TypeReference<Map<String, Set<SchemaDiff>>> diffMapType = new TypeReference<Map<String, Set<SchemaDiff>>>() {};
 
     private final ObjectMapper mapper;
 
@@ -27,52 +30,27 @@ public class MigrationSetDeserializer extends StdDeserializer<MigrationSet> {
         this.mapper = mapper;
     }
 
-    /*
-        @Override
-    public MigrationSet read(JsonReader jsonReader) throws IOException {
-        if (jsonReader.peek() == JsonToken.NULL) {
-            jsonReader.nextNull();
-            return null;
-        }
-
-        jsonReader.beginObject();
-
-        MigrationSet.Builder builder = MigrationSet.builder();
-        while (jsonReader.hasNext()) {
-            String name = jsonReader.nextName();
-            if (jsonReader.peek() == JsonToken.NULL) {
-                jsonReader.nextNull();
-                continue;
-            }
-            switch (name) {
-                case "ordered_migrations":
-                    builder.orderedMigrations(orderedMigrationAdapter.read(jsonReader));
-                    break;
-                case "target_schema":
-                    builder.targetSchema(targetSchemaAdapter.read(jsonReader));
-                    break;
-                case "db_version":
-                    builder.dbVersion(dbVersionAdapter.read(jsonReader));
-                    break;
-                default:
-                    jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        return builder.build();
-    }
-     */
-
     @Override
     public MigrationSet deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        MigrationSet.Builder builder = MigrationSet.builder();
+
         JsonNode node = jp.getCodec().readTree(jp);
-        final List<Migration> orderedMigrations = mapper.readValue(node.get("ordered_migrations").toString(), orderedMigrationsType);
+        if (node.hasNonNull("ordered_migrations")) {
+            final List<Migration> orderedMigrations = mapper.readValue(node.get("ordered_migrations").toString(), orderedMigrationsType);
+            builder.orderedMigrations(orderedMigrations);
+        }
+        if (node.hasNonNull("set_version")) {
+            builder.setVersion(node.get("set_version").asInt());
+        }
+        if (node.hasNonNull("diff_map")) {
+            final Map<String, Set<SchemaDiff>> diffMap = mapper.readValue(node.get("diff_map").toString(), diffMapType);
+            builder.mergeDiffMap(diffMap);
+        }
+
         final Map<String, TableInfo> targetSchema = mapper.readValue(node.get("target_schema").toString(), targetSchemaType);
-        final int dbVersion = node.get("db_version").asInt();
         return MigrationSet.builder()
-                .orderedMigrations(orderedMigrations)
                 .targetSchema(targetSchema)
-                .dbVersion(dbVersion)
+                .dbVersion(node.get("db_version").asInt())
                 .build();
     }
 }

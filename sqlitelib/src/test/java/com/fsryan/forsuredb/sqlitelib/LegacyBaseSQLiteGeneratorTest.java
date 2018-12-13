@@ -27,11 +27,11 @@ import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEq
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public abstract class BaseSQLiteGeneratorTest {
+public abstract class LegacyBaseSQLiteGeneratorTest {
 
     private List<String> expectedSql;
 
-    public BaseSQLiteGeneratorTest(String[] expectedSql) {
+    public LegacyBaseSQLiteGeneratorTest(String[] expectedSql) {
         this.expectedSql = Arrays.asList(expectedSql);
     }
 

@@ -25,10 +25,14 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
     }
 
     @Override
-    public Migration fromJson(JsonReader reader) throws IOException {
+    public Migration fromJson(@Nonnull JsonReader reader) throws IOException {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull();
+            return null;
+        }
+
         reader.beginObject();
         Migration.Builder builder = Migration.builder();
-
         while (reader.hasNext()) {
             switch (reader.selectName(OPTIONS)) {
                 case 0: {
@@ -61,24 +65,28 @@ final class MigrationAdapter extends JsonAdapter<Migration> {
         return builder.build();
     }
     @Override
-    public void toJson(JsonWriter writer, @Nonnull Migration value) throws IOException {
+    public void toJson(@Nonnull JsonWriter writer, Migration obj) throws IOException {
+        if (obj == null) {
+            writer.nullValue();
+            return;
+        }
+
         writer.beginObject();
-
         writer.name("table_name");
-        writer.value(value.tableName());
+        writer.value(obj.tableName());
 
-        String columnName = value.columnName();
+        String columnName = obj.columnName();
         if (columnName != null) {
             writer.name("column_name");
             writer.value(columnName);
         }
 
         writer.name("migration_type");
-        writer.value(value.type().toString());
+        writer.value(obj.type().toString());
 
-        if (value.hasExtras()) {
+        if (obj.hasExtras()) {
             writer.name("extras");
-            extrasAdapter.toJson(writer, value.extras());
+            extrasAdapter.toJson(writer, obj.extras());
         }
 
         writer.endObject();

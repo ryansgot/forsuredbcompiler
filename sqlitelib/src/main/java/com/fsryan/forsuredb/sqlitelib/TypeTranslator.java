@@ -23,6 +23,13 @@ import java.util.Date;
 
 import javax.lang.model.type.TypeMirror;
 
+// TODO: use a map
+/**
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
+ */
+@Deprecated
 public enum TypeTranslator {
     BIG_INTEGER(BigInteger.class.getName(), "TEXT"),    // <-- storing as TEXT means you cannot sort reliably
     BIG_DECIMAL(BigDecimal.class.getName(), "TEXT"),    // <-- storing as TEXT means you cannot sort reliably

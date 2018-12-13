@@ -27,10 +27,9 @@ import java.util.*;
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
 /**
- * <p>
- *     Depends upon foreign keys and primary key being marked on the columns.
- *     Only used by deprecated {@link AddForeignKeyGenerator}
- * </p>
+ * <p>Depends upon foreign keys and primary key being marked on the columns.
+ * Only used by deprecated {@link AddForeignKeyGenerator}
+ * <p>Will be removed in 1.0
  */
 @Deprecated
 public class LegacyCreateTableGenerator extends QueryGenerator {

@@ -48,11 +48,11 @@ public class TableInfoUtil {
 
                 int minDepth = 0;
                 for (TableForeignKeyInfo tfki1 : t1.foreignKeys()) {
-                    String foreignTableName = tfki1.foreignTableName();
-                    if (t2.tableName().equals(foreignTableName)) {
+                    String foreignTableClassName = tfki1.foreignTableApiClassName();
+                    if (t2.qualifiedClassName().equals(foreignTableClassName)) {
                         return totalHops + 1;   // <-- there is a direct dependency t1 -> t2
                     }
-                    int depth = findHopCount(schema.get(foreignTableName), t2, totalHops + 1);
+                    int depth = findHopCount(schema.get(foreignTableClassName), t2, totalHops + 1);
                     // minDepth = 0 means that a transitive dependency has not yet been found.
                     minDepth = minDepth == 0 ? depth : Math.min(depth, minDepth);
                 }

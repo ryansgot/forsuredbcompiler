@@ -47,16 +47,24 @@ public abstract class DBInfoFixtures {
 
     // ColumnInfo
 
-    public static ColumnInfo.Builder booleanCol() {
-        return colBuilder(boolean.class);
-    }
-
     public static ColumnInfo.Builder bigDecimalCol() {
         return colBuilder(BigDecimal.class);
     }
 
     public static ColumnInfo.Builder bigIntegerCol() {
         return colBuilder(BigInteger.class);
+    }
+
+    public static ColumnInfo.Builder booleanCol() {
+        return colBuilder(boolean.class);
+    }
+
+    public static ColumnInfo.Builder booleanWrapperCol() {
+        return colBuilder(Boolean.class);
+    }
+
+    public static ColumnInfo.Builder byteArrayCol() {
+        return colBuilder(byte[].class);
     }
 
     public static ColumnInfo.Builder dateCol() {
@@ -67,12 +75,32 @@ public abstract class DBInfoFixtures {
         return colBuilder(double.class);
     }
 
+    public static ColumnInfo.Builder doubleWrapperCol() {
+        return colBuilder(Double.class);
+    }
+
+    public static ColumnInfo.Builder floatCol() {
+        return colBuilder(float.class);
+    }
+
+    public static ColumnInfo.Builder floatWrapperCol() {
+        return colBuilder(Float.class);
+    }
+
     public static ColumnInfo.Builder intCol() {
         return colBuilder(int.class);
     }
 
+    public static ColumnInfo.Builder integerWrapperCol() {
+        return colBuilder(Integer.class);
+    }
+
     public static ColumnInfo.Builder longCol() {
         return colBuilder(long.class);
+    }
+
+    public static ColumnInfo.Builder longWrapperCol() {
+        return colBuilder(Long.class);
     }
 
     public static ColumnInfo.Builder stringCol() {
@@ -91,7 +119,7 @@ public abstract class DBInfoFixtures {
     public static ColumnInfo.Builder colBuilder(Class cls) {
         return ColumnInfo.builder()
                 .columnName(ColumnInfoUtil.colNameByType(cls))
-                .qualifiedType(cls.getName())
+                .qualifiedType(cls == byte[].class ? "byte[]" : cls.getName())
                 .orderable(true)
                 .searchable(true)
                 .methodName(ColumnInfoUtil.colMethodNameByType(cls));

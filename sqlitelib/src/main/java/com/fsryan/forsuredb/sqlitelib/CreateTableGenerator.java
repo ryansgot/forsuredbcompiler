@@ -16,6 +16,12 @@ import java.util.Comparator;
 
 import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
+/**
+ * <p>Deprecated because this was intended to work with the previous migration
+ * system. It probably would still work, but the ultimate goal is to completely
+ * remove the old stuff when 1.0 rolls out.
+ */
+@Deprecated
 public class CreateTableGenerator extends QueryGenerator {
 
     private static final Comparator<Map.Entry<String, String>> childToParentColumnMapEntryComparator = new Comparator<Map.Entry<String, String>>() {

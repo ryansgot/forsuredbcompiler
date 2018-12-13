@@ -15,6 +15,7 @@ public class ColumnInfoUtil {
         defaultColNameMap.put(BigInteger.class, "big_integer_col");
         defaultColNameMap.put(boolean.class, "boolean_col");
         defaultColNameMap.put(Boolean.class, "boolean_wrapper_col");
+        defaultColNameMap.put(byte[].class, "byte_array_col");
         defaultColNameMap.put(Date.class, "date_col");
         defaultColNameMap.put(double.class, "double_col");
         defaultColNameMap.put(Double.class, "double_wrapper_col");
@@ -30,6 +31,7 @@ public class ColumnInfoUtil {
         defaultMethodNameMap.put(BigInteger.class, "bigIntegerCol");
         defaultMethodNameMap.put(boolean.class, "booleanCol");
         defaultMethodNameMap.put(Boolean.class, "booleanWrapperCol");
+        defaultMethodNameMap.put(byte[].class, "byteArrayCol");
         defaultMethodNameMap.put(Date.class, "dateCol");
         defaultMethodNameMap.put(double.class, "doubleCol");
         defaultMethodNameMap.put(Double.class, "doubleWrapperCol");
