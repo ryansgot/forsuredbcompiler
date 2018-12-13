@@ -50,8 +50,6 @@ class SchemaDiffAdapter extends TypeAdapter<SchemaDiff> {
         jsonWriter.value(object.type());
         jsonWriter.name("sub_type");
         jsonWriter.value(object.subType());
-//        jsonWriter.name("category");
-//        jsonWriter.value(object.category());
         jsonWriter.name("table_name");
         jsonWriter.value(object.tableName());
         jsonWriter.name("attributes");
@@ -81,9 +79,6 @@ class SchemaDiffAdapter extends TypeAdapter<SchemaDiff> {
                 case "sub_type":
                     builder.replaceSubType(jsonReader.nextLong());
                     break;
-//                case "category":
-//                    builder.category(jsonReader.nextInt());
-//                    break;
                 case "table_name":
                     builder.tableName(jsonReader.nextString());
                     break;
