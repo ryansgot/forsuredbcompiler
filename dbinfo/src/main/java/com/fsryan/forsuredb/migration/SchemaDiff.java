@@ -18,7 +18,7 @@ import java.util.Map;
  * the target schema.
  * <p>Each {@link SchemaDiff} should be associated with the fully qualified
  * class name of the FSGetApi extension so that the diff can get properly
- * associated with
+ * associated with the table to which the difference applies.
  */
 @AutoValue
 public abstract class SchemaDiff {
@@ -48,7 +48,7 @@ public abstract class SchemaDiff {
         /**
          * <p>Replaces the subType
          * @param subType the subType to overwrite
-         * @return
+         * @return this {@link Builder}
          */
         public Builder replaceSubType(long subType) {
             this.subType = subType;
@@ -104,278 +104,218 @@ public abstract class SchemaDiff {
     }
 
     /**
-     * <p>An object (a table, column, index, etc) should be created. See the
-     * {@link #category()} for the category of object that was created.
+     * <p>An object (a table, column, index, etc) should be created.
      */
     public static final int TYPE_CREATED = 0;
 
     /**
-     * <p>An existing object (a table, column, index, etc) was modified. The
-     * type of modification will be specified by the {@link #subType()}, and
-     * the specifics of the change will be specified by the
-     * {@link #attributes()}. See the specific type for the relevant
-     * attributes.
+     * <p>The table should should be altered. The type of alteration will be
+     * specified by the {@link #subType()}, and the attributes of the change
+     * will be available in the {@link #attributes()}.
      */
     public static final int TYPE_CHANGED = TYPE_CREATED + 1;
 
     /**
-     * <p>An existing object (a table, column, index, etc) was dropped.
+     * <p>An existing object (a table, column, index, etc) should be dropped.
      */
     public static final int TYPE_DROPPED = TYPE_CHANGED + 1;
 
     // subtypes
     /**
-     * <p>An object (a table, column, index, etc) may have its name changed.
-     * When an object is renamed, this flag will be set on the subtype.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_CURR_NAME}</li>
-     *   <li>{@link #ATTR_PREV_NAME}</li>
-     * </ul>
+     * <p>The table should be renamed. Both {@link #ATTR_CURR_NAME} and
+     * {@link #ATTR_PREV_NAME} will be populated.
      */
     public static final int TYPE_NAME = 0b1;                                        // 0b1
 
+    // TODO: detect java type diffs
     /**
      * <p>The Java type of a column changed. This may have repercussions for
      * the type stored in the DBMS, so type changes get detected as diffs.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_PREV_TYPE}</li>
-     *   <li>{@link #ATTR_CURR_TYPE}</li>
-     * </ul>
+     * Both {@link #ATTR_PREV_TYPES} and {@link #ATTR_CURR_TYPES} will be
+     * populated.
      */
-    public static final int TYPE_TYPE = TYPE_NAME << 1;                             // 0b10
+    public static final int TYPE_COLUMN_TYPES = TYPE_NAME << 1;                     // 0b10
 
     /**
-     * <p>Columns were created on a table
-     * <ul>
-     *   <li>{@link #ATTR_CREATE_COLUMNS}</li>
-     * </ul>
+     * <p>Columns were created on the table. {@link #ATTR_CREATE_COLUMNS} will
+     * be populated.
      */
-    public static final int TYPE_ADD_COLUMNS = TYPE_TYPE << 1;                      // 0b100
+    public static final int TYPE_ADD_COLUMNS = TYPE_COLUMN_TYPES << 1;              // 0b100
 
     /**
-     * <p>Columns were dropped from a table
-     * <ul>
-     *   <li>{@link #ATTR_DROP_COLUMNS}</li>
-     * </ul>
+     * <p>Columns were dropped from the table. {@link #ATTR_DROP_COLUMNS} will
+     * be populated.
      */
     public static final int TYPE_DROP_COLUMNS = TYPE_ADD_COLUMNS << 1;              // 0b1000
 
     /**
-     * <p>Columns were either created or dropped from a table
-     * <ul>
-     *   <li>{@link #ATTR_RENAME_COLUMNS}</li>
-     * </ul>
+     * <p>One or more columns of the table were renamed.
+     * {@link #ATTR_RENAME_COLUMNS} will be populated.
      */
     public static final int TYPE_RENAME_COLUMNS = TYPE_DROP_COLUMNS << 1;           // 0b10000
 
     /**
-     * <p>The columns of a primary key changed.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_PREV_PK_COL_NAMES}</li>
-     *   <li>{@link #ATTR_CURR_PK_COL_NAMES}</li>
-     * </ul>
+     * <p>The columns of a primary key changed. {@link #ATTR_PREV_PK_COL_NAMES}
+     * and {@link #ATTR_CURR_PK_COL_NAMES} will be populated.
      */
     public static final int TYPE_PK_COLUMNS = TYPE_DROP_COLUMNS << 1;               // 0b100000
 
     /**
      * <p>The primary key on conflict behavior changed.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_PREV_PK_ON_CONFLICT}</li>
-     *   <li>{@link #ATTR_CURR_PK_ON_CONFLICT}</li>
-     * </ul>
+     * {@link #ATTR_PREV_PK_ON_CONFLICT} and {@link #ATTR_CURR_PK_ON_CONFLICT}
+     * will be populated.
      */
     public static final int TYPE_PK_ON_CONFLICT = TYPE_PK_COLUMNS << 1;             // 0b1000000
 
+    // TODO: detect sort changes on indices.
     /**
-     * <p>The sort of an index changed. This can coincide with the
-     * {@link #TYPE_PK_COLUMNS} subtype.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_PREV_SORT}</li>
-     *   <li>{@link #ATTR_CURR_SORT}</li>
-     * </ul>
+     * <p>The sort of one or more indices of an index changed.
+     * {@link #ATTR_IDX_SORTS} will be populated.
      */
-    public static final int TYPE_SORT = TYPE_PK_ON_CONFLICT << 1;                   // 0b10000000
+    public static final int TYPE_IDX_SORT = TYPE_PK_ON_CONFLICT << 1;               // 0b10000000
 
     /**
      * <p>The constraint of a column in a table changed.
-     * <p>Relevant attributes:
-     * <ul>
-     *   <li>{@link #ATTR_CONSTRAINTS}</li>
-     *   <li>{@link #ATTR_PREV_CONSTRAINT_VAL}</li>
-     *   <li>{@link #ATTR_CURR_CONSTRAINT_VAL}</li>
-     * </ul>
+     * {@link #ATTR_COLUMN_CONSTRAINTS} will be populated.
      */
-    public static final int TYPE_CONSTRAINT = TYPE_SORT << 1;                       // 0b100000000
+    public static final int TYPE_COL_CONSTRAINT = TYPE_IDX_SORT << 1;               // 0b100000000
 
     /**
-     * <p>The default value of a column in a table changed. The relevant
-     * attribute is {@link #ATTR_DEFAULTS}
+     * <p>One or more default values of the table's columns should change.
+     * {@link #ATTR_DEFAULTS} will be populated.
      */
-    public static final int TYPE_DEFAULT = TYPE_CONSTRAINT << 1;                    // 0b1000000000
+    public static final int TYPE_DEFAULT = TYPE_COL_CONSTRAINT << 1;                // 0b1000000000
 
     /**
-     * <p>One or more foreign keys was added to a table. Relevant attribute is
-     * {@link #ATTR_CREATED_FKS}
+     * <p>One or more foreign keys was added to a table.
+     * {@link #ATTR_CREATED_FKS} will be populated.
      */
     public static final int TYPE_CREATE_FK = TYPE_DEFAULT << 1;                     // 0b10000000000
 
     /**
-     * <p>One or more foreign keys was dropped from a table. Relevant attribute
-     * is {@link #ATTR_DROPPED_FKS}
+     * <p>One or more foreign keys was dropped from a table.
+     * is {@link #ATTR_DROPPED_FKS} will be populated
      */
     public static final int TYPE_DROP_FK = TYPE_CREATE_FK << 1;                     // 0b100000000000
 
     /**
-     * <p>The current name of the object in question. This will always be non
-     * null.
-     * @see #ATTR_PREV_NAME
+     * <p>The current name of the table.
      */
     public static final String ATTR_CURR_NAME = "c_name";
 
     /**
-     * <p>The name of the object to which the diff pertains. This will be non
-     * null when the {@link #type()} is {@link #TYPE_CHANGED} and the
-     * {@link #subType()} is {@link #TYPE_NAME} regardless of
-     * {@link #category()}.
-     * @see #ATTR_CURR_NAME
+     * <p>The previous name of the table. This will be populated only when the
+     * {@link #subType()} includes the {@link #TYPE_NAME} value.
      */
     public static final String ATTR_PREV_NAME = "p_name";
 
+    // TODO: detect column type changes
     /**
-     * <p>The type of the column to which the diff pertains. This will be non
-     * null when the {@link #type()} is {@link #TYPE_CHANGED} and when the
-     * {@link #subType()} is {@link #TYPE_TYPE}.
-     * @see #ATTR_PREV_TYPE
+     * <p>Comma-separated values of the form column_name=java_type_name that
+     * represent the current types of the columns that have changed types. This
+     * will be populated only when the {@link #subType()} contains the
+     * {@link #TYPE_COLUMN_TYPES} value.
      */
-    public static final String ATTR_CURR_TYPE = "c_type";
+    public static final String ATTR_CURR_TYPES = "c_type";
+
+    // TODO: detect column type changes
+    /**
+     * <p>Comma-separated values of the form column_name=java_type_name that
+     * represent the previous types of the columns that have changed types.
+     * This will be populated only when the {@link #subType()} contains the
+     * {@link #TYPE_COLUMN_TYPES} value.
+     */
+    public static final String ATTR_PREV_TYPES = "p_type";
 
     /**
-     * <p>The type of the column to which the diff pertains. This will be non
-     * null when the {@link #type()} is {@link #TYPE_CHANGED} and when the
-     * {@link #subType()} is {@link #TYPE_TYPE}.
-     * @see #ATTR_CURR_TYPE
-     */
-    public static final String ATTR_PREV_TYPE = "p_type";
-
-    /**
-     * <p>The column names of the columns added to a table.
+     * <p>The column names of the columns added to a table. This will be
+     * populated only when the {@link #subType()} contains
      * {@link #TYPE_ADD_COLUMNS}.
      */
     public static final String ATTR_CREATE_COLUMNS = "c_cols";
 
     /**
-     * <p>The column names of the columns dropped from a table.
+     * <p>The column names of the columns dropped from a table. This will be
+     * populated only when the {@link #subType()} contains
      * {@link #TYPE_DROP_COLUMNS}.
      */
     public static final String ATTR_DROP_COLUMNS = "d_cols";
 
     /**
-     * <p>A comma-separated list of prev=curr column names.
+     * <p>A comma-separated list of prev=curr column names. This will be
+     * populated only when the {@link #subType()} contains the
+     * {@link #TYPE_RENAME_COLUMNS} value.
      */
     public static final String ATTR_RENAME_COLUMNS = "r_cols";
 
     /**
-     * <p>The current primary key column names. This will be non null when:
-     * TODO
+     * <p>A comma-separated list of the current primary key column names for
+     * this table. This will be populated only when the {@link #subType()}
+     * contains {@link #TYPE_PK_COLUMNS}.
      * @see #ATTR_PREV_PK_COL_NAMES
      */
     public static final String ATTR_CURR_PK_COL_NAMES = "c_col_names";
 
     /**
-     * <p>The current primary key column names. This will be non null when:
-     * TODO
+     * <p>A comma-separated list of the previous primary key column names for
+     * this table. This will be populated only when the {@link #subType()}
+     * contains {@link #TYPE_PK_COLUMNS}.
      * @see #ATTR_CURR_PK_COL_NAMES
      */
     public static final String ATTR_PREV_PK_COL_NAMES = "p_pk_col_names";
 
     /**
-     * <p>The current primary key column names. This will be non null when:
-     * TODO
-     * @see #ATTR_PREV_PK_COL_NAMES
+     * <p>The current primary key on-conflict behavior for this table. This
+     * will be populated only when the {@link #subType()} contains
+     * {@link #TYPE_PK_ON_CONFLICT}.
+     * @see #ATTR_PREV_PK_ON_CONFLICT
      */
     public static final String ATTR_CURR_PK_ON_CONFLICT = "c_pk_on_conflict";
 
     /**
-     * <p>The current primary key column names. This will be non null when:
-     * TODO
-     * @see #ATTR_CURR_PK_COL_NAMES
+     * <p>The previous primary key on-conflict behavior for this table. This
+     * will be populated only when the {@link #subType()} contains
+     * {@link #TYPE_PK_ON_CONFLICT}.
+     * @see #ATTR_CURR_PK_ON_CONFLICT
      */
     public static final String ATTR_PREV_PK_ON_CONFLICT = "p_pk_on_conflict";
 
+    /**
+     * <p>One or more created foreign keys of the format:
+     * <pre>
+     * {@code foreign_table:local_col1=foreign_col1,local_col2=foreign_col2:update_action:delete_action}
+     * </pre>
+     * <p>This will populated when {@link #subType()} contains
+     * {@link #TYPE_CREATE_FK}
+     */
     public static final String ATTR_CREATED_FKS = "c_fk";
 
+    /**
+     * <p>One or more dropped foreign keys of the format:
+     * <pre>
+     * {@code foreign_table:local_col1=foreign_col1,local_col2=foreign_col2:update_action:delete_action}
+     * </pre>
+     * <p>This will populated when {@link #subType()} contains
+     * {@link #TYPE_DROP_FK}
+     */
     public static final String ATTR_DROPPED_FKS = "d_fk";
 
+    // TODO: actually detect differences in index sorts.
     /**
-     * <p>This does not have a current/previous version. The foreign key table
-     * cannot be changed for an existing foreign key, so you must drop the
-     * foreign key first, then create a new one.
-     * <p>This will be non null if the {@link #type()} is one of
-     * <ul>
-     *   <li>{@link #TYPE_CREATED}</li>
-     *   <li>{@link #TYPE_CHANGED}</li>
-     *   <li>{@link #TYPE_DROPPED}</li>
-     * </ul>
-     * and the {@link #category()} is {@link #CAT_FOREIGN_KEY}
+     * <p>One or more indices of the table changed sorts. This will be
+     * populated if {@link #subType()} contains {@link #TYPE_IDX_SORT}.
      */
-    public static final String ATTR_FK_TABLE = "fk_table";
+    public static final String ATTR_IDX_SORTS = "c_sort";
 
     /**
-     * <p>The current sort of an index. This will be non null under of the
-     * following sets of conditions
-     * <ul>
-     *   <li>
-     *     {@link #type()} is {@link #TYPE_CREATED} and the {@link #category()}
-     *     is {@link #CAT_INDEX}.
-     *   </li>
-     *   <li>
-     *     {@link #type()} is {@link #TYPE_CHANGED} and the
-     *     {@link #category()} is {@link #CAT_INDEX}. If the {@link #subType()}
-     *     is {@link #TYPE_SORT}, then only the sorts of the existing columns
-     *     has changed.
-     *   </li>
-     * </ul>
+     * <p>One or more columns of a table has changed its constraints. This will
+     * be populated if {@link #subType()} contains {@link #TYPE_COL_CONSTRAINT}
      */
-    public static final String ATTR_CURR_SORT = "c_sort";
+    public static final String ATTR_COLUMN_CONSTRAINTS = "col_constraints";
 
     /**
-     * <p>The previous sort of an index. This will be non null under of the
-     * following sets of conditions
-     * <ul>
-     *   <li>
-     *     {@link #type()} is {@link #TYPE_CHANGED} and the {@link #category()}
-     *     is {@link #CAT_INDEX}. If the {@link #subType()} is
-     *     {@link #TYPE_SORT}, then only the sorts of the existing columns has
-     *     changed.
-     *   </li>
-     *   <li>
-     *     {@link #type()} is {@link #TYPE_DROPPED} and the {@link #category()}
-     *     is {@link #CAT_INDEX}
-     *   </li>
-     * </ul>
-     */
-    public static final String ATTR_PREV_SORT = "p_sort";
-
-    /**
-     * TODO: figure this one out
-     */
-    public static final String ATTR_CONSTRAINTS = "constraint";
-    /**
-     * TODO: figure this one out
-     */
-    public static final String ATTR_PREV_CONSTRAINT_VAL = "p_constraint_val";
-    /**
-     * TODO: figure this one out
-     */
-    public static final String ATTR_CURR_CONSTRAINT_VAL = "c_constraint_val";
-
-    /**
-     * <p>A comma-separated list of col=default values
+     * <p>A comma-separated list of col=default values. This will be populated
+     * if {@link #subType()} contains {@link #TYPE_DEFAULT}.
      */
     public static final String ATTR_DEFAULTS = "defaults";
 
@@ -385,7 +325,7 @@ public abstract class SchemaDiff {
     public static final String CONSTRAINT_UNIQUE = "UNIQUE";
 
     /**
-     * <p>The name of the uniqueness constraint.
+     * <p>The name of the not null constraint.
      */
     public static final String CONSTRAINT_NOT_NULL = "NOT NULL";
 
@@ -435,14 +375,10 @@ public abstract class SchemaDiff {
 
     /**
      * <p>Further information is usually necessary when determining how to
-     * apply a diff. The name of the object will always be supplied at the key
+     * apply a diff. The name of the table will always be supplied at the key
      * {@link #ATTR_CURR_NAME}
-     * <p>The attributes that may present in any {@link SchemaDiff} are defined
-     * by the {@link #category()} and {@link #subType()} of the
-     * {@link SchemaDiff}.
      * @return the attributes associated with this diff
      * @see #subType()
-     * @see #category()
      */
     @Nonnull public abstract Map<String, String> attributes();              // attributes
 

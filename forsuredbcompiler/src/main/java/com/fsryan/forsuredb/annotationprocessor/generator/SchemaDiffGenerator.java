@@ -154,8 +154,8 @@ public class SchemaDiffGenerator {
 
         String changeConstraints = createConstraintChangeString(baseTable, targetTable, newColumns.keySet());
         if (!changeConstraints.isEmpty()) {
-            builder.enrichSubType(SchemaDiff.TYPE_CONSTRAINT)
-                    .addAttribute(SchemaDiff.ATTR_CONSTRAINTS, changeConstraints);
+            builder.enrichSubType(SchemaDiff.TYPE_COL_CONSTRAINT)
+                    .addAttribute(SchemaDiff.ATTR_COLUMN_CONSTRAINTS, changeConstraints);
         }
 
         if (!newColumns.isEmpty()) {

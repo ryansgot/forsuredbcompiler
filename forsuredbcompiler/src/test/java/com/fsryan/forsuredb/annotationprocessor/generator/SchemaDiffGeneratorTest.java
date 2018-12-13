@@ -1336,9 +1336,9 @@ public class SchemaDiffGeneratorTest {
         return SchemaDiff.builder()
                 .type(SchemaDiff.TYPE_CHANGED)
                 .tableName(tableName)
-                .enrichSubType(SchemaDiff.TYPE_CONSTRAINT)
+                .enrichSubType(SchemaDiff.TYPE_COL_CONSTRAINT)
                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, tableName)
-                .addAttribute(SchemaDiff.ATTR_CONSTRAINTS, expectedConstraintsDesc)
+                .addAttribute(SchemaDiff.ATTR_COLUMN_CONSTRAINTS, expectedConstraintsDesc)
                 .build();
     }
 }
