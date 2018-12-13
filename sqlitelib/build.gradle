@@ -8,8 +8,10 @@ dependencies {
     testImplementation project(':forsuredbmodels-gson')
     testImplementation project(':testtools')
     testImplementation project(':dbinfo-testtools')
+
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api
+    testImplementation deps.test.junit.jupiter.params
     testRuntime deps.test.junit.jupiter.engine
     testRuntime deps.test.junit.vintage.engine
     testImplementation deps.test.mockito
