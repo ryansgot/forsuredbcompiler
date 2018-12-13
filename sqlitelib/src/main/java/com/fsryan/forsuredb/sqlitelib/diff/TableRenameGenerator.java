@@ -16,6 +16,6 @@ public class TableRenameGenerator {
 
     @Nonnull
     public List<String> statements() {
-        return Collections.singletonList("ALTER TABLE " + prevName + " RENAME TO " + currName);
+        return Collections.singletonList(String.format("ALTER TABLE %s RENAME TO %s;", prevName, currName));
     }
 }

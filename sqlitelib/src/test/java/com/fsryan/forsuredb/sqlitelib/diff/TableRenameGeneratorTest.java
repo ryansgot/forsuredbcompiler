@@ -22,6 +22,6 @@ public class TableRenameGeneratorTest {
                         .build()
         );
         List<String> statements = new TableRenameGenerator("t1", "t1_renamed").statements();
-        assertListEquals(Collections.singletonList("ALTER TABLE t1 RENAME TO t1_renamed"), statements);
+        assertListEquals(Collections.singletonList("ALTER TABLE t1 RENAME TO t1_renamed;"), statements);
     }
 }
