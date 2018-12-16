@@ -122,6 +122,10 @@ public class CreateTableGenerator {
                 buf.append(col.getColumnName())
                         .append(' ')
                         .append(MigrationUtil.sqlTypeOf(col.getQualifiedType()));
+                if (col.unique()) {
+                    // TODO: when composite uniqueness is a thing, you'll actually have to check for that.
+                    buf.append(" UNIQUE");
+                }
                 if (col.hasDefaultValue()) {
                     //noinspection ConstantConditions
                     buf.append(" DEFAULT(")
