@@ -48,16 +48,6 @@ public class CreateTableGenerator {
     }
 
     @Nonnull
-    private static String interpretDefaultValue(@Nonnull String defVal) {
-        return "CURRENT_TIMESTAMP".equals(defVal) ? CURRENT_UTC_TIME : escape(defVal);
-    }
-
-    @Nonnull
-    private static String escape(@Nonnull String toEscape) {
-        return '\'' + toEscape.replaceAll("\\'", "''") + '\'';
-    }
-
-    @Nonnull
     private String createTableQuery() {
         StringBuilder buf = new StringBuilder("CREATE TABLE IF NOT EXISTS ")
                 .append(table.tableName())
@@ -119,13 +109,18 @@ public class CreateTableGenerator {
             if (col.getColumnName().equals(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN) && isDefaultPrimaryKey) {
                 buf.append(col.getColumnName()).append(" INTEGER PRIMARY KEY, ");
             } else {
+                final String sqlType = MigrationUtil.sqlTypeOf(col.getQualifiedType());
                 buf.append(col.getColumnName())
                         .append(' ')
-                        .append(MigrationUtil.sqlTypeOf(col.getQualifiedType()));
+                        .append(sqlType);
+                if (col.unique()) {
+                    // TODO: when composite uniqueness is a thing, you'll actually have to check for that.
+                    buf.append(" UNIQUE");
+                }
                 if (col.hasDefaultValue()) {
                     //noinspection ConstantConditions
                     buf.append(" DEFAULT(")
-                            .append(interpretDefaultValue(col.defaultValue()))
+                            .append(MigrationUtil.extractDefault(col.defaultValue(), sqlType))
                             .append(')');
                 }
                 buf.append(", ");

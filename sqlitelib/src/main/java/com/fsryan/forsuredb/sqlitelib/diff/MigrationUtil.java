@@ -3,12 +3,10 @@ package com.fsryan.forsuredb.sqlitelib.diff;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.sqlitelib.SqlGenerator;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public abstract class MigrationUtil {
 
@@ -53,7 +51,12 @@ public abstract class MigrationUtil {
 
     @Nonnull
     static List<ColumnInfo> sortTableColumnsByName(@Nonnull TableInfo table) {
-        List<ColumnInfo> ret = new ArrayList<>(table.getColumns());
+        return sortColumnsByName(table.getColumns());
+    }
+
+    @Nonnull
+    static List<ColumnInfo> sortColumnsByName(@Nonnull Collection<ColumnInfo> columns) {
+        List<ColumnInfo> ret = new ArrayList<>(columns);
         Collections.sort(ret, new Comparator<ColumnInfo>() {
             @Override
             public int compare(ColumnInfo c1, ColumnInfo c2) {
@@ -61,5 +64,13 @@ public abstract class MigrationUtil {
             }
         });
         return ret;
+    }
+
+    @Nonnull
+    static String extractDefault(@Nonnull String defaultVal, @Nonnull String sqlTypeName) {
+        if ("DATETIME".equals(sqlTypeName) && "CURRENT_TIMESTAMP".equals(defaultVal)) {
+            return SqlGenerator.CURRENT_UTC_TIME;
+        }
+        return "'" + defaultVal.replaceAll("'", "''") + "'";
     }
 }

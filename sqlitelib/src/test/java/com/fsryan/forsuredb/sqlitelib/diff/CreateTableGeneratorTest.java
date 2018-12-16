@@ -40,7 +40,7 @@ public class CreateTableGeneratorTest {
                 ),
                 // Adding a single column
                 arguments(
-                        "Basic table with big integer column",
+                        "Basic table with big decimal column",
                         tableFQClassName("t1"),
                         tableMapOf(
                                 tableBuilder("t1")
@@ -327,6 +327,25 @@ public class CreateTableGeneratorTest {
                                         CURRENT_UTC_TIME,
                                         colNameByType(String.class),
                                         "Something''s up"
+                                ),
+                                "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
+                        )
+                ),
+                arguments(
+                        "Basic table with a unique String column",
+                        tableFQClassName("t1"),
+                        tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().unique(true).build())
+                                        .build()
+                        ),
+                        Arrays.asList(
+                                "DROP TABLE IF EXISTS t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(%s), %s TEXT UNIQUE);",
+                                        CURRENT_UTC_TIME,
+                                        CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
