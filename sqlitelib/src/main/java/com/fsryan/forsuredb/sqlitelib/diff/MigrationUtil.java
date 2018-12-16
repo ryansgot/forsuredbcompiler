@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-abstract class MigrationUtil {
+public abstract class MigrationUtil {
 
     @Nonnull
-    static String sqlTypeOf(@Nonnull String fqType) {
+    public static String sqlTypeOf(@Nonnull String fqType) {
         switch (fqType) {
             case "java.math.BigDecimal":
             case "java.math.BigInteger":

@@ -6,7 +6,7 @@ dependencies {
 
     compileOnly deps.jsr305
 
-    testImplementation 'org.xerial:sqlite-jdbc:3.21.0' // <-- jdbc driver
+    testImplementation deps.sqlitejdbc // <-- jdbc driver
 
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api

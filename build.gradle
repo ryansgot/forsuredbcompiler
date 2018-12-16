@@ -12,6 +12,7 @@ buildscript {
                     'value': "com.google.auto.value:auto-value:${versions.auto.value}",
                     'valueAnnotations': "com.google.auto.value:auto-value-annotations:${versions.auto.value}"
             ],
+            'sqlitejdbc': 'org.xerial:sqlite-jdbc:3.25.2',
             'jsr305': 'com.google.code.findbugs:jsr305:3.0.2',
             'test': [
                     'junit4': 'junit:junit:4.12',

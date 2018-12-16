@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.sqlitelib.diff;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class TableRenameGenerator {
@@ -16,6 +16,9 @@ public class TableRenameGenerator {
 
     @Nonnull
     public List<String> statements() {
-        return Collections.singletonList(String.format("ALTER TABLE %s RENAME TO %s;", prevName, currName));
+        return Arrays.asList(
+                "PRAGMA foreign_keys = ON;",
+                String.format("ALTER TABLE %s RENAME TO %s;", prevName, currName)
+        );
     }
 }
