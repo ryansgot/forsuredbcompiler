@@ -40,7 +40,7 @@ public class CreateTableGeneratorTest {
                 ),
                 // Adding a single column
                 arguments(
-                        "Basic table with big integer column",
+                        "Basic table with big decimal column",
                         tableFQClassName("t1"),
                         tableMapOf(
                                 tableBuilder("t1")
