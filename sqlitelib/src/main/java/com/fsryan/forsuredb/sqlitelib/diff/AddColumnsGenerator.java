@@ -56,7 +56,7 @@ public class AddColumnsGenerator {
                 .append(' ').append(sqlType);
         if (column.hasDefaultValue()) {
             buf.append(" DEFAULT(")
-                    .append(MigrationUtil.extractDefault(column.defaultValue(), sqlType))
+                    .append(MigrationUtil.extractDefault(column))
                     .append(')');
         }
         return buf.append(';').toString();

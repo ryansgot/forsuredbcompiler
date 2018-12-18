@@ -1,7 +1,7 @@
 package com.fsryan.forsuredb.sqlitelib.diff;
 
 import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.sqlitelib.SetUpDBExtension;
+import com.fsryan.forsuredb.sqlitelib.FreshDBForClassExtension;
 import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.*;
 
-@ExtendWith(SetUpDBExtension.class)
+@ExtendWith(FreshDBForClassExtension.class)
 public class CreateTableGeneratorIntegrationTest {
 
     public static Iterable<Arguments> generatedSqlInput() {

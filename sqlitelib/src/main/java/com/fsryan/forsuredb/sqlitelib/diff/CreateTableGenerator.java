@@ -1,13 +1,9 @@
 package com.fsryan.forsuredb.sqlitelib.diff;
 
-import com.fsryan.forsuredb.info.ColumnInfo;
-import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-
-import static com.fsryan.forsuredb.sqlitelib.SqlGenerator.CURRENT_UTC_TIME;
 
 public class CreateTableGenerator {
 
@@ -26,116 +22,18 @@ public class CreateTableGenerator {
 
     @Nonnull
     public List<String> statements() {
-        final boolean hasForeignKeys = hasForeignKeys();
+        final boolean hasForeignKeys = table.referencesOtherTable();
         List<String> ret = new ArrayList<>(hasForeignKeys ? 5 : 3);
         if (hasForeignKeys) {
-            ret.add("PRAGMA foreign_keys = false;");
+            ret.add(MigrationUtil.setForeignKeyPragma(false));
         }
         ret.add(String.format("DROP TABLE IF EXISTS %s;", table.tableName()));
-        ret.add(createTableQuery());
-        ret.add(String.format(
-                "CREATE TRIGGER IF NOT EXISTS %s_modified_trigger AFTER UPDATE ON %s BEGIN UPDATE %s SET modified=%s WHERE _id=NEW._id; END;",
-                table.tableName(),
-                table.tableName(),
-                table.tableName(),
-                CURRENT_UTC_TIME
-        ));
+        ret.add(MigrationUtil.createTableQuery(table));
+        ret.add(MigrationUtil.modifiedTriggerQuery(table.tableName()));
         // TODO: add indices
         if (hasForeignKeys) {
-            ret.add("PRAGMA foreign_keys = true;");
+            ret.add(MigrationUtil.setForeignKeyPragma(true));
         }
         return ret;
-    }
-
-    @Nonnull
-    private String createTableQuery() {
-        StringBuilder buf = new StringBuilder("CREATE TABLE IF NOT EXISTS ")
-                .append(table.tableName())
-                .append('(');
-
-        boolean isDefaultPrimaryKey = isDefaultPrimaryKey();
-        addColDefsTo(buf, isDefaultPrimaryKey);
-
-        if (!isDefaultPrimaryKey) {
-            addPrimaryKeyTo(buf);
-        }
-        if (hasForeignKeys()) {
-            addForeignKeysTo(buf);
-        }
-        return buf.append(");").toString();
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private StringBuilder addForeignKeysTo(StringBuilder buf) {
-        for (TableForeignKeyInfo tfki : MigrationUtil.orderedForeignKeyDeclarations(table)) {
-            buf.append(", FOREIGN KEY(");
-            List<String> orderedLocalCols = new ArrayList<>(tfki.localToForeignColumnMap().keySet());
-            Collections.sort(orderedLocalCols);
-            for (String localCol : orderedLocalCols) {
-                buf.append(localCol).append(", ");
-            }
-            buf.delete(buf.length() - 2, buf.length())
-                    .append(") REFERENCES ")
-                    .append(tfki.foreignTableName())
-                    .append('(');
-            for (String localCol : orderedLocalCols) {
-                buf.append(tfki.localToForeignColumnMap().get(localCol)).append(", ");
-            }
-            buf.delete(buf.length() - 2, buf.length()).append(')');
-            if (!tfki.deleteChangeAction().isEmpty()) {
-                buf.append(" ON DELETE ").append(tfki.deleteChangeAction());
-            }
-            if (!tfki.updateChangeAction().isEmpty()) {
-                buf.append(" ON UPDATE ").append(tfki.updateChangeAction());
-            }
-        }
-        return buf;
-    }
-
-    @Nonnull
-    private StringBuilder addPrimaryKeyTo(StringBuilder buf) {
-        buf.append(", PRIMARY KEY(");
-        List<String> sortedPkColList = new ArrayList<>(table.getPrimaryKey());
-        Collections.sort(sortedPkColList);
-        for (String pkCol : sortedPkColList) {
-            buf.append(pkCol).append(", ");
-        }
-        return buf.delete(buf.length() - 2, buf.length()).append(')');
-    }
-
-    @Nonnull
-    private StringBuilder addColDefsTo(StringBuilder buf, boolean isDefaultPrimaryKey) {
-        for (ColumnInfo col : MigrationUtil.sortTableColumnsByName(table)) {
-            if (col.getColumnName().equals(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN) && isDefaultPrimaryKey) {
-                buf.append(col.getColumnName()).append(" INTEGER PRIMARY KEY, ");
-            } else {
-                final String sqlType = MigrationUtil.sqlTypeOf(col.getQualifiedType());
-                buf.append(col.getColumnName())
-                        .append(' ')
-                        .append(sqlType);
-                if (col.unique()) {
-                    // TODO: when composite uniqueness is a thing, you'll actually have to check for that.
-                    buf.append(" UNIQUE");
-                }
-                if (col.hasDefaultValue()) {
-                    //noinspection ConstantConditions
-                    buf.append(" DEFAULT(")
-                            .append(MigrationUtil.extractDefault(col.defaultValue(), sqlType))
-                            .append(')');
-                }
-                buf.append(", ");
-            }
-        }
-        return buf.delete(buf.length() - 2, buf.length());
-    }
-
-    private boolean hasForeignKeys() {
-        Set<TableForeignKeyInfo> foreignKeys = table.foreignKeys();
-        return foreignKeys != null && !foreignKeys.isEmpty();
-    }
-
-    private boolean isDefaultPrimaryKey() {
-        Set<String> pk = table.getPrimaryKey();
-        return pk.size() == 0 || (pk.size() == 1 && pk.contains(TableInfo.DEFAULT_PRIMARY_KEY_COLUMN));
     }
 }

@@ -6,6 +6,7 @@ import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.sqlitelib.diff.MigrationUtil;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -112,7 +113,7 @@ public abstract class SqliteMasterAssertions {
     }
 
     /**
-     * <p>TODO: check for nonnull and dflt_value
+     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
@@ -120,12 +121,12 @@ public abstract class SqliteMasterAssertions {
      * @return assertion SQL to run to ensure that this column exists
      */
     @Nonnull
-    public static String forColumnExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, boolean primaryKey) {
-        return forColumn(tableName, colName, sqlTypeName, primaryKey, true);
+    public static String forColumnExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey) {
+        return forColumn(tableName, colName, sqlTypeName, defaultValue, primaryKey, true);
     }
 
     /**
-     * <p>TODO: check for nonnull and dflt_value
+     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
@@ -133,30 +134,32 @@ public abstract class SqliteMasterAssertions {
      * @return assertion SQL to run to ensure that this column does not exist
      */
     @Nonnull
-    public static String forColumnNotExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, boolean primaryKey) {
-        return forColumn(tableName, colName, sqlTypeName, primaryKey, false);
+    public static String forColumnNotExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey) {
+        return forColumn(tableName, colName, sqlTypeName, defaultValue, primaryKey, false);
     }
 
     /**
-     * <p>TODO: check for nonnull and dflt_value
+     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
      * @param primaryKey the primary key columns of the table
+     * @param defaultValue the default value of the column or null if none
      * @param exists whether you want to assert the column exists (true) or
      *               does not exist (false)
      * @return assertion SQL to run to ensure that this column either exists or
      * does not exist
      */
     @Nonnull
-    public static String forColumn(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, boolean primaryKey, boolean exists) {
+    public static String forColumn(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey, boolean exists) {
         return String.format(
-                "SELECT CASE COUNT(*) WHEN %d THEN 'true' ELSE 'false' END AS '%s' FROM pragma_table_info('%s') WHERE type = '%s' AND name = '%s' AND pk %s 0;",
+                "SELECT CASE COUNT(*) WHEN %d THEN 'true' ELSE 'false' END AS '%s' FROM pragma_table_info('%s') WHERE type = '%s' AND name = '%s' AND %s AND pk %s 0;",
                 exists ? 1 : 0,
                 exists ? "exists" : "not_exists",
                 tableName,
                 sqlTypeName,
                 colName,
+                defaultValue == null ? "\"dflt_value\" IS NULL" : "\"dflt_value\" = " + defaultValue,
                 primaryKey ? ">" : "="
         );
     }
@@ -277,7 +280,21 @@ public abstract class SqliteMasterAssertions {
      * @return assertion SQL to run to ensure that this column exists
      */
     public static String forColumnInfo(String tableName, Set<String> pk, ColumnInfo column) {
-        return SqliteMasterAssertions.forColumnExists(tableName, column.getColumnName(), MigrationUtil.sqlTypeOf(column.getQualifiedType()), pk.contains(column.getColumnName()));
+        String dfltVal = column.defaultValue();
+        if (column.hasDefaultValue()) {
+            dfltVal = Date.class.getName().equals(column.qualifiedType()) && "CURRENT_TIMESTAMP".equals(dfltVal)
+                    ? '"' + SqlGenerator.CURRENT_UTC_TIME + '"'
+                    : String.class.getName().equals(column.getQualifiedType())
+                    ? "\"'" + dfltVal.replaceAll("'", "''") + "'\""
+                    : "'" + dfltVal.replaceAll("'", "''") + "'";
+        }
+        return SqliteMasterAssertions.forColumnExists(
+                tableName,
+                column.getColumnName(),
+                MigrationUtil.sqlTypeOf(column.getQualifiedType()),
+                dfltVal,
+                pk.contains(column.getColumnName())
+        );
     }
 
     /**

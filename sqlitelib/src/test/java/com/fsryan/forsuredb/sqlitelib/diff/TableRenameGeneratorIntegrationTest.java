@@ -1,6 +1,6 @@
 package com.fsryan.forsuredb.sqlitelib.diff;
 
-import com.fsryan.forsuredb.sqlitelib.SetUpDBExtension;
+import com.fsryan.forsuredb.sqlitelib.FreshDBForClassExtension;
 import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.List;
 
-@ExtendWith(SetUpDBExtension.class)
+@ExtendWith(FreshDBForClassExtension.class)
 public class TableRenameGeneratorIntegrationTest {
 
     @Test

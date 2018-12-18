@@ -11,7 +11,7 @@ import java.sql.Savepoint;
  * a class. Furthermore, it supplies the {@link Connection} to each test that
  * needs to apply SQL.
  */
-public class SetUpDBExtension implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, AfterAllCallback, ParameterResolver {
+public class FreshDBForClassExtension implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, AfterAllCallback, ParameterResolver {
 
     private Connection conn;
     private Savepoint savepoint;

@@ -18,7 +18,7 @@ public class TableRenameGenerator {
     public List<String> statements() {
         return Arrays.asList(
                 "PRAGMA foreign_keys = ON;",
-                String.format("ALTER TABLE %s RENAME TO %s;", prevName, currName)
+                MigrationUtil.renameTableQuery(prevName, currName)
         );
     }
 }

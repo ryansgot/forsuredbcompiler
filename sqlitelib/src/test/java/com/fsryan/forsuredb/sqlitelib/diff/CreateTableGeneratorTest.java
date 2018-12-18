@@ -34,7 +34,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -49,7 +49,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(BigDecimal.class) + " TEXT, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(BigDecimal.class) + " TEXT, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -63,7 +63,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(BigInteger.class) + " TEXT, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(BigInteger.class) + " TEXT, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -77,7 +77,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(boolean.class) + " INTEGER, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(boolean.class) + " INTEGER, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -91,7 +91,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(Boolean.class) + " INTEGER, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(Boolean.class) + " INTEGER, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -105,7 +105,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(byte[].class) + " BLOB, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, " + colNameByType(byte[].class) + " BLOB, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -119,7 +119,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(Date.class) + " DATETIME, deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(Date.class) + " DATETIME, deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -133,7 +133,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(double.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(double.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -147,7 +147,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(Double.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(Double.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -161,7 +161,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(float.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(float.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -175,7 +175,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(Float.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(Float.class) + " REAL, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -189,7 +189,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(int.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(int.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -203,7 +203,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(Integer.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(Integer.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -217,7 +217,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(long.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(long.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -231,7 +231,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), " + colNameByType(Long.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), " + colNameByType(Long.class) + " INTEGER, modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -245,7 +245,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(String.class) + " TEXT);",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(String.class) + " TEXT);",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -275,7 +275,7 @@ public class CreateTableGeneratorTest {
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s INTEGER, %s INTEGER, %s BLOB, created DATETIME DEFAULT(%s), %s DATETIME, deleted INTEGER DEFAULT('0'), %s REAL, %s REAL, %s REAL, %s REAL, %s INTEGER, %s INTEGER, %s INTEGER, %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s INTEGER, %s INTEGER, %s BLOB, created DATETIME DEFAULT(%s), %s DATETIME, deleted INTEGER DEFAULT(0), %s REAL, %s REAL, %s REAL, %s REAL, %s INTEGER, %s INTEGER, %s INTEGER, %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT);",
                                         colNameByType(BigDecimal.class),
                                         colNameByType(BigInteger.class),
                                         colNameByType(boolean.class),
@@ -307,7 +307,7 @@ public class CreateTableGeneratorTest {
                         ),
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
-                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(String.class) + " TEXT DEFAULT('Something'));",
+                                "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(" + CURRENT_UTC_TIME + "), " + colNameByType(String.class) + " TEXT DEFAULT('Something'));",
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;"
                         )
                 ),
@@ -322,7 +322,7 @@ public class CreateTableGeneratorTest {
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(%s), %s TEXT DEFAULT('%s'));",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT DEFAULT('%s'));",
                                         CURRENT_UTC_TIME,
                                         CURRENT_UTC_TIME,
                                         colNameByType(String.class),
@@ -342,7 +342,7 @@ public class CreateTableGeneratorTest {
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), modified DATETIME DEFAULT(%s), %s TEXT UNIQUE);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT UNIQUE);",
                                         CURRENT_UTC_TIME,
                                         CURRENT_UTC_TIME,
                                         colNameByType(String.class)
@@ -363,7 +363,7 @@ public class CreateTableGeneratorTest {
                         Arrays.asList(
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT, PRIMARY KEY(%s, %s));",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT, PRIMARY KEY(%s, %s));",
                                         CURRENT_UTC_TIME,
                                         colNameByType(int.class),
                                         CURRENT_UTC_TIME,
@@ -389,10 +389,10 @@ public class CreateTableGeneratorTest {
                                         .build()
                         ),
                         Arrays.asList(
-                                "PRAGMA foreign_keys = false;",
+                                "PRAGMA foreign_keys = OFF;",
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s));",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s));",
                                         CURRENT_UTC_TIME,
                                         colNameByType(long.class),
                                         CURRENT_UTC_TIME,
@@ -400,7 +400,7 @@ public class CreateTableGeneratorTest {
                                         "_id"
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "PRAGMA foreign_keys = true;"
+                                "PRAGMA foreign_keys = ON;"
                         )
                 ),
                 arguments(
@@ -419,10 +419,10 @@ public class CreateTableGeneratorTest {
                                         .build()
                         ),
                         Arrays.asList(
-                                "PRAGMA foreign_keys = false;",
+                                "PRAGMA foreign_keys = OFF;",
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON UPDATE CASCADE);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON UPDATE CASCADE);",
                                         CURRENT_UTC_TIME,
                                         colNameByType(long.class),
                                         CURRENT_UTC_TIME,
@@ -430,7 +430,7 @@ public class CreateTableGeneratorTest {
                                         "_id"
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "PRAGMA foreign_keys = true;"
+                                "PRAGMA foreign_keys = ON;"
                         )
                 ),
                 arguments(
@@ -449,10 +449,10 @@ public class CreateTableGeneratorTest {
                                         .build()
                         ),
                         Arrays.asList(
-                                "PRAGMA foreign_keys = false;",
+                                "PRAGMA foreign_keys = OFF;",
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON DELETE SET NULL);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON DELETE SET NULL);",
                                         CURRENT_UTC_TIME,
                                         colNameByType(long.class),
                                         CURRENT_UTC_TIME,
@@ -460,7 +460,7 @@ public class CreateTableGeneratorTest {
                                         "_id"
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "PRAGMA foreign_keys = true;"
+                                "PRAGMA foreign_keys = ON;"
                         )
                 ),
                 arguments(
@@ -480,10 +480,10 @@ public class CreateTableGeneratorTest {
                                         .build()
                         ),
                         Arrays.asList(
-                                "PRAGMA foreign_keys = false;",
+                                "PRAGMA foreign_keys = OFF;",
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON DELETE SET DEFAULT ON UPDATE CASCADE);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), FOREIGN KEY(%s) REFERENCES t2(%s) ON DELETE SET DEFAULT ON UPDATE CASCADE);",
                                         CURRENT_UTC_TIME,
                                         colNameByType(long.class),
                                         CURRENT_UTC_TIME,
@@ -491,7 +491,7 @@ public class CreateTableGeneratorTest {
                                         "_id"
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "PRAGMA foreign_keys = true;"
+                                "PRAGMA foreign_keys = ON;"
                         )
                 ),
                 arguments(
@@ -514,10 +514,10 @@ public class CreateTableGeneratorTest {
                                         .build()
                         ),
                         Arrays.asList(
-                                "PRAGMA foreign_keys = false;",
+                                "PRAGMA foreign_keys = OFF;",
                                 "DROP TABLE IF EXISTS t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT('0'), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT, FOREIGN KEY(%s, %s) REFERENCES t2(%s, %s) ON DELETE CASCADE ON UPDATE CASCADE);",
+                                        "CREATE TABLE IF NOT EXISTS t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT, FOREIGN KEY(%s, %s) REFERENCES t2(%s, %s) ON DELETE CASCADE ON UPDATE CASCADE);",
                                         CURRENT_UTC_TIME,
                                         colNameByType(long.class),
                                         CURRENT_UTC_TIME,
@@ -528,7 +528,7 @@ public class CreateTableGeneratorTest {
                                         colNameByType(String.class)
                                 ),
                                 "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=" + CURRENT_UTC_TIME + " WHERE _id=NEW._id; END;",
-                                "PRAGMA foreign_keys = true;"
+                                "PRAGMA foreign_keys = ON;"
                         )
                 )
                 // TODO: tests for table indices

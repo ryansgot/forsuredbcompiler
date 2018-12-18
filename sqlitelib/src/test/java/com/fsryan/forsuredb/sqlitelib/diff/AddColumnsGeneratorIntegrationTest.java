@@ -2,7 +2,7 @@ package com.fsryan.forsuredb.sqlitelib.diff;
 
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.sqlitelib.SetUpDBExtension;
+import com.fsryan.forsuredb.sqlitelib.FreshDBForClassExtension;
 import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 
-@ExtendWith(SetUpDBExtension.class)
+@ExtendWith(FreshDBForClassExtension.class)
 public class AddColumnsGeneratorIntegrationTest {
 
     public static Iterable<Arguments> generatedSqlInput() {
