@@ -1,9 +1,10 @@
 package com.fsryan.forsuredb.sqlitelib.diff;
 
-import com.fsryan.forsuredb.info.ColumnInfoUtil;
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
+import com.fsryan.forsuredb.sqlitelib.RowFieldVal;
 import com.fsryan.forsuredb.sqlitelib.SqlGenerator;
+import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,11 +14,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.*;
 
 import static com.fsryan.forsuredb.info.ColumnInfoUtil.colNameByType;
-import static com.fsryan.forsuredb.info.DBInfoFixtures.stringCol;
-import static com.fsryan.forsuredb.info.DBInfoFixtures.tableBuilder;
+import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
 import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
+import static com.fsryan.forsuredb.test.tools.CollectionUtil.mapOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -87,9 +88,9 @@ public class RecreateTableGeneratorTest {
                 // TODO: index handling when table is recreated
                 arguments(
                         "Change default value of column; no extra indices",
-                        Arrays.asList(
+                        /* initialSqlScript */ Arrays.asList(
                                 String.format(
-                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s) , deleted INTEGER DEFAULT('0'), int_col INTEGER, modified DATETIME DEFAULT(%s), %s TEXT DEFAULT('prev'))",
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT DEFAULT('prev'))",
                                         SqlGenerator.CURRENT_UTC_TIME,
                                         SqlGenerator.CURRENT_UTC_TIME,
                                         colNameByType(String.class)
@@ -97,29 +98,35 @@ public class RecreateTableGeneratorTest {
                                 String.format(
                                         "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END",
                                         SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                "INSERT INTO t1(deleted) VALUES(0);",
+                                String.format(
+                                        "INSERT INTO t1(%s) VALUES('something');",
+                                        colNameByType(String.class)
                                 )
                         ),
-                        tableFQClassName("t1"),
-                        tableMapOf(
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
                                 tableBuilder("t1")
                                         .addColumn(stringCol().defaultValue("current").build())
                                         .build()
                         ),
-                        SchemaDiff.builder()
+                        /* diff */ SchemaDiff.builder()
                                 .tableName("t1")
                                 .type(SchemaDiff.TYPE_CHANGED)
                                 .enrichSubType(SchemaDiff.TYPE_DEFAULT)
                                 .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
                                 .addAttribute(SchemaDiff.ATTR_DEFAULTS, String.format("%s=%s", colNameByType(String.class), "current"))
                                 .build(),
-                        Arrays.asList(
+                        /* expectedSql */Arrays.asList(
                                 "PRAGMA foreign_keys = OFF;",
                                 "BEGIN TRANSACTION;",
                                 "DROP TABLE IF EXISTS forsuredb_new_t1;",
                                 String.format(
-                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), string_col TEXT DEFAULT('current'));",
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT DEFAULT('current'));",
                                         SqlGenerator.CURRENT_UTC_TIME,
-                                        SqlGenerator.CURRENT_UTC_TIME
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
                                 ),
                                 "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, modified, string_col FROM t1;",
                                 "DROP TABLE t1;",
@@ -132,6 +139,323 @@ public class RecreateTableGeneratorTest {
                                 // No foreign keys to handle in this test, so we're fine.
                                 "END TRANSACTION;",
                                 "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Arrays.asList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(colNameByType(String.class), RowFieldVal.create("TEXT", "prev", "="))
+                                ),
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(colNameByType(String.class), RowFieldVal.create("TEXT", "something", "="))
+                                )
+                        )
+                ),
+                arguments(
+                        "Change name of a single column; no extra indices",
+                        /* initialSqlScript */ Arrays.asList(
+                                String.format(
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT)",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "INSERT INTO t1(%s) VALUES('something');",
+                                        colNameByType(String.class)
+                                )
+                        ),
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().columnName(colNameByType(String.class) + "_renamed").build())
+                                        .build()
+                        ),
+                        /* diff */ SchemaDiff.builder()
+                                .tableName("t1")
+                                .type(SchemaDiff.TYPE_CHANGED)
+                                .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                                .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                .addAttribute(
+                                        SchemaDiff.ATTR_RENAME_COLUMNS,
+                                        String.format("%s=%s", colNameByType(String.class), colNameByType(String.class) + "_renamed")
+                                ).build(),
+                        /* expectedSql */Arrays.asList(
+                                "PRAGMA foreign_keys = OFF;",
+                                "BEGIN TRANSACTION;",
+                                "DROP TABLE IF EXISTS forsuredb_new_t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s_renamed TEXT);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, modified, string_col FROM t1;",
+                                "DROP TABLE t1;",
+                                "ALTER TABLE forsuredb_new_t1 RENAME TO t1;",
+                                String.format(
+                                        "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                // forsuredb does not support views at this time.
+                                // No foreign keys to handle in this test, so we're fine.
+                                "END TRANSACTION;",
+                                "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Collections.singletonList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(colNameByType(String.class) + "_renamed", RowFieldVal.create("TEXT", "something", "="))
+                                )
+                        )
+                ),
+                arguments(
+                        "Change name of multiple columns; no extra indices",
+                        /* initialSqlScript */ Arrays.asList(
+                                String.format(
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT)",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(int.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "INSERT INTO t1(%s, %s) VALUES(%d, '%s');",
+                                        colNameByType(int.class),
+                                        colNameByType(String.class),
+                                        1,
+                                        "something"
+                                )
+                        ),
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().columnName(colNameByType(String.class) + "_renamed").build())
+                                        .addColumn(intCol().columnName(colNameByType(int.class) + "_renamed").build())
+                                        .build()
+                        ),
+                        /* diff */ SchemaDiff.builder()
+                                .tableName("t1")
+                                .type(SchemaDiff.TYPE_CHANGED)
+                                .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                                .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                .addAttribute(
+                                        SchemaDiff.ATTR_RENAME_COLUMNS,
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(int.class), colNameByType(int.class) + "_renamed",
+                                                colNameByType(String.class), colNameByType(String.class) + "_renamed"
+                                        )
+                                ).build(),
+                        /* expectedSql */Arrays.asList(
+                                "PRAGMA foreign_keys = OFF;",
+                                "BEGIN TRANSACTION;",
+                                "DROP TABLE IF EXISTS forsuredb_new_t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s_renamed INTEGER, modified DATETIME DEFAULT(%s), %s_renamed TEXT);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(int.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, int_col, modified, string_col FROM t1;",
+                                "DROP TABLE t1;",
+                                "ALTER TABLE forsuredb_new_t1 RENAME TO t1;",
+                                String.format(
+                                        "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                // forsuredb does not support views at this time.
+                                // No foreign keys to handle in this test, so we're fine.
+                                "END TRANSACTION;",
+                                "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Collections.singletonList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(
+                                                colNameByType(int.class) + "_renamed", RowFieldVal.create("INTEGER", "1", "="),
+                                                colNameByType(String.class) + "_renamed", RowFieldVal.create("TEXT", "something", "=")
+                                        )
+                                )
+                        )
+                ),
+                arguments(
+                        "Change name of multiple columns while adding multiple columns; no extra indices",
+                        /* initialSqlScript */ Arrays.asList(
+                                String.format(
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT)",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(int.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "INSERT INTO t1(%s, %s) VALUES(%d, '%s');",
+                                        colNameByType(int.class),
+                                        colNameByType(String.class),
+                                        1,
+                                        "something"
+                                )
+                        ),
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().columnName(colNameByType(String.class) + "_renamed").build())
+                                        .addColumn(intCol().columnName(colNameByType(int.class) + "_renamed").build())
+                                        .addColumn(doubleCol().build())
+                                        .addColumn(longCol().build())
+                                        .build()
+                        ),
+                        /* diff */ SchemaDiff.builder()
+                                .tableName("t1")
+                                .type(SchemaDiff.TYPE_CHANGED)
+                                .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                                .addAttribute(
+                                        SchemaDiff.ATTR_RENAME_COLUMNS,
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(int.class), colNameByType(int.class) + "_renamed",
+                                                colNameByType(String.class), colNameByType(String.class) + "_renamed"
+                                        )
+                                ).enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                                .addAttribute(
+                                        SchemaDiff.ATTR_CREATE_COLUMNS,
+                                        String.format("%s,%s", colNameByType(double.class), colNameByType(long.class))
+                                ).build(),
+                        /* expectedSql */Arrays.asList(
+                                "PRAGMA foreign_keys = OFF;",
+                                "BEGIN TRANSACTION;",
+                                "DROP TABLE IF EXISTS forsuredb_new_t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s REAL, %s_renamed INTEGER, %s INTEGER, modified DATETIME DEFAULT(%s), %s_renamed TEXT);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(double.class),
+                                        colNameByType(int.class),
+                                        colNameByType(long.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, null, int_col, null, modified, string_col FROM t1;",
+                                "DROP TABLE t1;",
+                                "ALTER TABLE forsuredb_new_t1 RENAME TO t1;",
+                                String.format(
+                                        "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                // forsuredb does not support views at this time.
+                                // No foreign keys to handle in this test, so we're fine.
+                                "END TRANSACTION;",
+                                "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Collections.singletonList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(
+                                                colNameByType(int.class) + "_renamed", RowFieldVal.create("INTEGER", "1", "="),
+                                                colNameByType(String.class) + "_renamed", RowFieldVal.create("TEXT", "something", "="),
+                                                colNameByType(double.class), RowFieldVal.createNull(),
+                                                colNameByType(long.class), RowFieldVal.createNull()
+                                        )
+                                )
+                        )
+                ),
+                arguments(
+                        "Change name of multiple columns while removing multiple columns; no extra indices",
+                        /* initialSqlScript */ Arrays.asList(
+                                String.format(
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s REAL, %s INTEGER, %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT)",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(double.class),
+                                        colNameByType(int.class),
+                                        colNameByType(long.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "INSERT INTO t1(%s, %s, %s, %s) VALUES(%.2f, %d, %d, '%s');",
+                                        colNameByType(double.class),
+                                        colNameByType(int.class),
+                                        colNameByType(long.class),
+                                        colNameByType(String.class),
+                                        100.01,
+                                        1,
+                                        1234567,
+                                        "something"
+                                )
+                        ),
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().columnName(colNameByType(String.class) + "_renamed").build())
+                                        .addColumn(intCol().columnName(colNameByType(int.class) + "_renamed").build())
+                                        .build()
+                        ),
+                        /* diff */ SchemaDiff.builder()
+                                .tableName("t1")
+                                .type(SchemaDiff.TYPE_CHANGED)
+                                .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                .enrichSubType(SchemaDiff.TYPE_RENAME_COLUMNS)
+                                .addAttribute(
+                                        SchemaDiff.ATTR_RENAME_COLUMNS,
+                                        String.format(
+                                                "%s=%s,%s=%s",
+                                                colNameByType(int.class), colNameByType(int.class) + "_renamed",
+                                                colNameByType(String.class), colNameByType(String.class) + "_renamed"
+                                        )
+                                ).enrichSubType(SchemaDiff.TYPE_DROP_COLUMNS)
+                                .addAttribute(
+                                        SchemaDiff.ATTR_DROP_COLUMNS,
+                                        String.format("%s,%s", colNameByType(double.class), colNameByType(long.class))
+                                ).build(),
+                        /* expectedSql */Arrays.asList(
+                                "PRAGMA foreign_keys = OFF;",
+                                "BEGIN TRANSACTION;",
+                                "DROP TABLE IF EXISTS forsuredb_new_t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s_renamed INTEGER, modified DATETIME DEFAULT(%s), %s_renamed TEXT);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(int.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, int_col, modified, string_col FROM t1;",
+                                "DROP TABLE t1;",
+                                "ALTER TABLE forsuredb_new_t1 RENAME TO t1;",
+                                String.format(
+                                        "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                // forsuredb does not support views at this time.
+                                // No foreign keys to handle in this test, so we're fine.
+                                "END TRANSACTION;",
+                                "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Collections.singletonList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(
+                                                colNameByType(int.class) + "_renamed", RowFieldVal.create("INTEGER", "1", "="),
+                                                colNameByType(String.class) + "_renamed", RowFieldVal.create("TEXT", "something", "=")
+                                        )
+                                )
                         )
                 )
         );
@@ -145,8 +469,8 @@ public class RecreateTableGeneratorTest {
     @ParameterizedTest(name = "{index} => {0}")
     @MethodSource("recreateTableInput")
     @DisplayName("should generate correct table recreation SQL")
-    public void sqlGeneration(String desc, List<String> _ignore, String tableClassName, Map<String, TableInfo> schema, SchemaDiff diff, List<String> expectedStatements) {
+    public void sqlGeneration(String desc, List<String> _ignore, String tableClassName, Map<String, TableInfo> schema, SchemaDiff diff, List<String> expectedSql, List<String> _ignore2) {
         List<String> statements = new RecreateTableGenerator(tableClassName, schema, diff).statements();
-        assertListEquals(desc, expectedStatements, statements);
+        assertListEquals(desc, expectedSql, statements);
     }
 }

@@ -43,11 +43,21 @@ public class RecreateTableGenerator {
         StringBuilder buf = new StringBuilder("INSERT INTO ")
                 .append(tmpTableName)
                 .append(" SELECT ");
-        Map<String, String> newToOldStringNamesMap = createNewToOldColumnNames();
+        Map<String, String> newToOldStringNamesMap = createPrevToCurrentColumnNameMap();
+        Set<ColumnInfo> newColumnsSet = createNewColumnsSet();
 
         for (ColumnInfo column : MigrationUtil.sortTableColumnsByName(table)) {
             String columnName = newToOldStringNamesMap.get(column.getColumnName());
-            columnName = columnName == null ? column.getColumnName() : columnName;
+            if (columnName == null) {   // a created or dropped column was found
+                if (newColumnsSet.contains(column)) {   // override a created column with its default value if it has one
+                    columnName = column.hasDefaultValue()
+                            ? MigrationUtil.extractDefault(column)
+                            : "null";
+                }
+            }
+            columnName = columnName == null
+                    ? column.getColumnName()
+                    : columnName;
             buf.append(columnName).append(", ");
         }
         return StringUtil.cutDownBuf(buf, 2)
@@ -56,9 +66,10 @@ public class RecreateTableGenerator {
                 .append(';')
                 .toString();
     }
+
     // TODO: this is flawed because it does not anticipate columns to be added/dropped as well
     // TODO: test column name change
-    private Map<String, String> createNewToOldColumnNames() {
+    private Map<String, String> createPrevToCurrentColumnNameMap() {
         if ((diff.subType() & SchemaDiff.TYPE_RENAME_COLUMNS) == 0) {
             return Collections.emptyMap();
         }
@@ -80,6 +91,27 @@ public class RecreateTableGenerator {
                     : renameColumnsStr.substring(eqIdx + 1, delimIdx);
             ret.put(current, prev);
         } while (delimIdx != -1);
+        return ret;
+    }
+
+    private Set<ColumnInfo> createNewColumnsSet() {
+        if ((diff.subType() & SchemaDiff.TYPE_ADD_COLUMNS) == 0) {
+            return Collections.emptySet();
+        }
+
+        String newColumnsStr = diff.attributes().get(SchemaDiff.ATTR_CREATE_COLUMNS);
+        if (newColumnsStr == null || newColumnsStr.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        String[] newColNames = newColumnsStr.split(",");
+        Set<ColumnInfo> ret = new HashSet<>(newColNames.length);
+        for (String newColName : newColNames) {
+            ColumnInfo column = table.getColumn(newColName);
+            if (column != null) {
+                ret.add(column);
+            }
+        }
         return ret;
     }
 }

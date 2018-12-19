@@ -253,6 +253,52 @@ public abstract class SqliteMasterAssertions {
     }
 
     /**
+     * @param tableName The name of the table or relation on which to make the
+     *                  assertion
+     * @param columnValueMap A map of the column names to the associated value
+     *                       (operator =) or some constraint specified by a
+     *                       different operator
+     * @return the sql string that can make the assertion that one and only
+     * one record exists that matches the value map in the relation (table)
+     * passed in.
+     */
+    @Nonnull
+    public static String forRecordExists(@Nonnull String tableName, @Nonnull Map<String, RowFieldVal> columnValueMap) {
+        return forRecordExists(tableName, columnValueMap, 1);
+    }
+
+    /**
+     * @param tableName The name of the table or relation on which to make the
+     *                  assertion
+     * @param columnValueMap A map of the column names to the associated value
+     *                       (operator =) or some constraint specified by a
+     *                       different operator
+     * @param count the exact count of expected matching records
+     * @return the sql string that can make this assertion
+     */
+    @Nonnull
+    public static String forRecordExists(@Nonnull String tableName, @Nonnull Map<String, RowFieldVal> columnValueMap, int count) {
+        StringBuilder buf = new StringBuilder("SELECT CASE COUNT(*) WHEN ")
+                .append(count)
+                .append(" THEN 'true' ELSE 'false' END AS 'exists' FROM ")
+                .append(tableName);
+        if (columnValueMap.size() == 0) {
+            return buf.append(';').toString();
+        }
+
+        buf.append(" WHERE ");
+        for (Map.Entry<String, RowFieldVal> entry : columnValueMap.entrySet()) {
+            final String colName = entry.getKey();
+            final RowFieldVal rowFieldVal = entry.getValue();
+            buf.append(colName)
+                    .append(' ').append(rowFieldVal.operator()).append(' ')
+                    .append("TEXT".equals(rowFieldVal.sqlType()) ? "'" + rowFieldVal.val() + "'" : rowFieldVal.val())
+                    .append(" AND ");
+        }
+        return buf.delete(buf.length() - 5, buf.length()).append(';').toString();
+    }
+
+    /**
      * <p>Intended to be a one-stop shop for checking that a full table schema
      * exists.
      * @param tables a collection of {@link TableInfo} describing the tables to
