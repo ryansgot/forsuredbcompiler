@@ -113,37 +113,49 @@ public abstract class SqliteMasterAssertions {
     }
 
     /**
-     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
+     * @param nullable whether the column is nullable
+     * @param defaultValue the default value of the column or null if none
      * @param primaryKey the primary key columns of the table
      * @return assertion SQL to run to ensure that this column exists
      */
     @Nonnull
-    public static String forColumnExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey) {
-        return forColumn(tableName, colName, sqlTypeName, defaultValue, primaryKey, true);
+    public static String forColumnExists(@Nonnull String tableName,
+                                         @Nonnull String colName,
+                                         @Nonnull String sqlTypeName,
+                                         boolean nullable,
+                                         @Nullable String defaultValue,
+                                         boolean primaryKey) {
+        return forColumn(tableName, colName, sqlTypeName, nullable, defaultValue, primaryKey, true);
     }
 
     /**
-     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
+     * @param nullable whether the column is nullable
+     * @param defaultValue the default value of the column or null if none
      * @param primaryKey the primary key columns of the table
      * @return assertion SQL to run to ensure that this column does not exist
      */
     @Nonnull
-    public static String forColumnNotExists(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey) {
-        return forColumn(tableName, colName, sqlTypeName, defaultValue, primaryKey, false);
+    public static String forColumnNotExists(@Nonnull String tableName,
+                                            @Nonnull String colName,
+                                            @Nonnull String sqlTypeName,
+                                            boolean nullable,
+                                            @Nullable String defaultValue,
+                                            boolean primaryKey) {
+        return forColumn(tableName, colName, sqlTypeName, nullable, defaultValue, primaryKey, false);
     }
 
     /**
-     * <p>TODO: check for nonnull
      * @param tableName the name of the table containing the column
      * @param colName the name of the column
      * @param sqlTypeName the SQL type name of the column
      * @param primaryKey the primary key columns of the table
+     * @param nullable whether the column is nullable
      * @param defaultValue the default value of the column or null if none
      * @param exists whether you want to assert the column exists (true) or
      *               does not exist (false)
@@ -151,15 +163,22 @@ public abstract class SqliteMasterAssertions {
      * does not exist
      */
     @Nonnull
-    public static String forColumn(@Nonnull String tableName, @Nonnull String colName, @Nonnull String sqlTypeName, @Nullable String defaultValue, boolean primaryKey, boolean exists) {
+    public static String forColumn(@Nonnull String tableName,
+                                   @Nonnull String colName,
+                                   @Nonnull String sqlTypeName,
+                                   boolean nullable,
+                                   @Nullable String defaultValue,
+                                   boolean primaryKey,
+                                   boolean exists) {
         return String.format(
-                "SELECT CASE COUNT(*) WHEN %d THEN 'true' ELSE 'false' END AS '%s' FROM pragma_table_info('%s') WHERE type = '%s' AND name = '%s' AND %s AND pk %s 0;",
+                "SELECT CASE COUNT(*) WHEN %d THEN 'true' ELSE 'false' END AS '%s' FROM pragma_table_info('%s') WHERE name = '%s' AND type = '%s' AND \"notnull\" = %d AND \"dflt_value\" %s AND pk %s 0;",
                 exists ? 1 : 0,
                 exists ? "exists" : "not_exists",
                 tableName,
-                sqlTypeName,
                 colName,
-                defaultValue == null ? "\"dflt_value\" IS NULL" : "\"dflt_value\" = " + defaultValue,
+                sqlTypeName,
+                nullable ? 0 : 1,
+                defaultValue == null ? "IS NULL" : "= " + defaultValue,
                 primaryKey ? ">" : "="
         );
     }
@@ -292,6 +311,7 @@ public abstract class SqliteMasterAssertions {
                 tableName,
                 column.getColumnName(),
                 MigrationUtil.sqlTypeOf(column.getQualifiedType()),
+                true,
                 dfltVal,
                 pk.contains(column.getColumnName())
         );
