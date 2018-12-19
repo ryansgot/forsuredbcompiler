@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.sqlitelib;
+package com.fsryan.forsuredb.sqlite;
 
 import com.google.auto.value.AutoValue;
 

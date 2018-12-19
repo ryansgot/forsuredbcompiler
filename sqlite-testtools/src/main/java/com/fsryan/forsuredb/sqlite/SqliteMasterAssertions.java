@@ -1,9 +1,8 @@
-package com.fsryan.forsuredb.sqlitelib;
+package com.fsryan.forsuredb.sqlite;
 
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.sqlitelib.diff.MigrationUtilAccessor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,6 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>Assertions on indices is forthcoming.
  */
 public abstract class SqliteMasterAssertions {
+
+    private static final String CURRENT_UTC_TIME = "STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')";
 
     /**
      * @param tableName the table name to look for
@@ -348,7 +349,7 @@ public abstract class SqliteMasterAssertions {
         String dfltVal = column.defaultValue();
         if (column.hasDefaultValue()) {
             dfltVal = Date.class.getName().equals(column.qualifiedType()) && "CURRENT_TIMESTAMP".equals(dfltVal)
-                    ? '"' + SqlGenerator.CURRENT_UTC_TIME + '"'
+                    ? '"' + CURRENT_UTC_TIME + '"'
                     : String.class.getName().equals(column.getQualifiedType())
                     ? "\"'" + dfltVal.replaceAll("'", "''") + "'\""
                     : "'" + dfltVal.replaceAll("'", "''") + "'";
@@ -356,7 +357,7 @@ public abstract class SqliteMasterAssertions {
         return SqliteMasterAssertions.forColumnExists(
                 tableName,
                 column.getColumnName(),
-                MigrationUtilAccessor.sqlTypeOf(column.getQualifiedType()),
+                sqlTypeOf(column.getQualifiedType()),
                 true,
                 dfltVal,
                 pk.contains(column.getColumnName())
@@ -415,5 +416,33 @@ public abstract class SqliteMasterAssertions {
             assertTrue(result.next(), "sql: " + sql + "; failed to return a result");
             assertTrue(Boolean.parseBoolean(result.getString(1)), "sql: " + sql + "; expected to exist but did not");
         }
+    }
+
+    // Copied from MigrationUtil
+    @Nonnull
+    private static String sqlTypeOf(@Nonnull String fqType) {
+        switch (fqType) {
+            case "java.math.BigDecimal":
+            case "java.math.BigInteger":
+            case "java.lang.String":
+                return "TEXT";
+            case "boolean":
+            case "int":
+            case "long":
+            case "java.lang.Boolean":
+            case "java.lang.Integer":
+            case "java.lang.Long":
+                return "INTEGER";
+            case "double":
+            case "float":
+            case "java.lang.Double":
+            case "java.lang.Float":
+                return "REAL";
+            case "java.util.Date":
+                return "DATETIME";
+            case "byte[]":
+                return "BLOB";
+        }
+        throw new IllegalArgumentException("Unsupported type: " + fqType);
     }
 }

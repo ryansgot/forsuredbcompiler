@@ -8,6 +8,7 @@ dependencies {
     testImplementation project(':forsuredbmodels-gson')
     testImplementation project(':testtools')
     testImplementation project(':dbinfo-testtools')
+    implementation project(':sqlite-testtools')
 
     testImplementation deps.test.mockito
     testImplementation deps.sqlitejdbc                  // <-- run integration tests against real in-memory database

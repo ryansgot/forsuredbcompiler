@@ -2,9 +2,9 @@ package com.fsryan.forsuredb.sqlitelib.diff;
 
 import com.fsryan.forsuredb.info.TableInfo;
 import com.fsryan.forsuredb.migration.SchemaDiff;
-import com.fsryan.forsuredb.sqlitelib.RowFieldVal;
+import com.fsryan.forsuredb.sqlite.RowFieldVal;
+import com.fsryan.forsuredb.sqlite.SqliteMasterAssertions;
 import com.fsryan.forsuredb.sqlitelib.SqlGenerator;
-import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

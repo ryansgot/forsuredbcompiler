@@ -2,8 +2,9 @@ package com.fsryan.forsuredb.sqlitelib.diff;
 
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableInfo;
+import com.fsryan.forsuredb.sqlite.SqliteMasterAssertions;
+import com.fsryan.forsuredb.sqlite.StatementUtil;
 import com.fsryan.forsuredb.sqlitelib.FreshDBForClassExtension;
-import com.fsryan.forsuredb.sqlitelib.SqliteMasterAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 import static com.fsryan.forsuredb.info.DBInfoFixtures.*;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableFQClassName;
 import static com.fsryan.forsuredb.info.TableInfoUtil.tableMapOf;
-import static com.fsryan.forsuredb.test.assertions.AssertCollection.assertListEquals;
 
 @ExtendWith(FreshDBForClassExtension.class)
 public class AddColumnsGeneratorIntegrationTest {
@@ -56,11 +56,7 @@ public class AddColumnsGeneratorIntegrationTest {
     // TODO: this may not work properly due to foreign key constraint issues
     private static void createBeginningSchema(Connection conn, Map<String, TableInfo> schema) throws SQLException {
         for (String tableClassName : schema.keySet()) {
-            for (String sql : new CreateTableGenerator(tableClassName, schema).statements()) {
-                try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                    statement.execute();
-                }
-            }
+            StatementUtil.executeScript(conn, new CreateTableGenerator(tableClassName, schema).statements());
         }
     }
 }

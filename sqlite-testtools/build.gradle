@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group 'com.fsryan.forsuredb'
+version 'unspecified'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    implementation project(':dbinfo')
+    implementation project(':testtools')
+    implementation project(':dbinfo-testtools')
+
+    implementation deps.sqlitejdbc                  // <-- run integration tests against real in-memory database
+    compileOnly deps.jsr305
+
+    compileOnly deps.auto.valueAnnotations
+    annotationProcessor deps.auto.value
+}

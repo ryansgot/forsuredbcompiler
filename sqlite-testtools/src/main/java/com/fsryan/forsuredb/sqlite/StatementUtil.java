@@ -1,4 +1,4 @@
-package com.fsryan.forsuredb.sqlitelib.diff;
+package com.fsryan.forsuredb.sqlite;
 
 import javax.annotation.Nonnull;
 import java.sql.Connection;
