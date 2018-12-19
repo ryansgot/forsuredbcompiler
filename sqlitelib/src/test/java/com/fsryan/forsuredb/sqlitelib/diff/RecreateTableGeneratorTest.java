@@ -457,7 +457,96 @@ public class RecreateTableGeneratorTest {
                                         )
                                 )
                         )
+                ),
+                arguments(
+                        "Add a non-composite foreign key; no extra indices",
+                        /* initialSqlScript */ Arrays.asList(
+                                String.format(
+                                        "CREATE TABLE t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s), %s TEXT);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class)
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "CREATE TABLE t2(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), modified DATETIME DEFAULT(%s));",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "CREATE TRIGGER t2_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                String.format(
+                                        "INSERT INTO t1(%s) VALUES('%s');",
+                                        colNameByType(String.class),
+                                        "something"
+                                )
+                        ),
+                        /* tableClassName */ tableFQClassName("t1"),
+                        /* schema */ tableMapOf(
+                                tableBuilder("t1")
+                                        .addColumn(stringCol().build())
+                                        .addColumn(longCol().build())
+                                        .addForeignKey(cascadeForeignKeyTo("t2")
+                                                .mapLocalToForeignColumn(colNameByType(long.class), "_id")
+                                                .build()
+                                        ).build()
+                        ),
+                        /* diff */ SchemaDiff.builder()
+                                .tableName("t1")
+                                .type(SchemaDiff.TYPE_CHANGED)
+                                .addAttribute(SchemaDiff.ATTR_CURR_NAME, "t1")
+                                .enrichSubType(SchemaDiff.TYPE_ADD_COLUMNS)
+                                .addAttribute(SchemaDiff.ATTR_CREATE_COLUMNS, colNameByType(long.class))
+                                .enrichSubType(SchemaDiff.TYPE_CREATE_FK)
+                                .addAttribute(
+                                        SchemaDiff.ATTR_CREATED_FKS,
+                                        String.format("t2:%s=_id:CASCADE:CASCADE", colNameByType(long.class))
+                                ).build(),
+                        /* expectedSql */Arrays.asList(
+                                "PRAGMA foreign_keys = OFF;",
+                                "BEGIN TRANSACTION;",
+                                "DROP TABLE IF EXISTS forsuredb_new_t1;",
+                                String.format(
+                                        "CREATE TABLE IF NOT EXISTS forsuredb_new_t1(_id INTEGER PRIMARY KEY, created DATETIME DEFAULT(%s), deleted INTEGER DEFAULT(0), %s INTEGER, modified DATETIME DEFAULT(%s), %s TEXT, FOREIGN KEY(%s) REFERENCES t2(_id) ON DELETE CASCADE ON UPDATE CASCADE);",
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(long.class),
+                                        SqlGenerator.CURRENT_UTC_TIME,
+                                        colNameByType(String.class),
+                                        colNameByType(long.class)
+                                ),
+                                "INSERT INTO forsuredb_new_t1 SELECT _id, created, deleted, null, modified, string_col FROM t1;",
+                                "DROP TABLE t1;",
+                                "ALTER TABLE forsuredb_new_t1 RENAME TO t1;",
+                                String.format(
+                                        "CREATE TRIGGER IF NOT EXISTS t1_modified_trigger AFTER UPDATE ON t1 BEGIN UPDATE t1 SET modified=%s WHERE _id=NEW._id; END;",
+                                        SqlGenerator.CURRENT_UTC_TIME
+                                ),
+                                // forsuredb does not support views at this time.
+                                // No foreign keys to handle in this test, so we're fine.
+                                "END TRANSACTION;",
+                                "PRAGMA foreign_keys = ON;"
+                        ),
+                        /* valueAssertions */ Collections.singletonList(
+                                SqliteMasterAssertions.forRecordExists(
+                                        "t1",
+                                        mapOf(
+                                                colNameByType(long.class), RowFieldVal.createNull(),
+                                                colNameByType(String.class), RowFieldVal.create("TEXT", "something", "=")
+                                        )
+                                )
+                        )
                 )
+                // TODO: add a composite foreign key (adding the columns)
+                // TODO: change an existing column into a foreign key
+                // TODO: add a composite foreign key using existing columns
+                // TODO: remove a foreign key column
+                // TODO: keep the column, but remove the foreign key
+                // TODO: make an existing unique column non-unique
         );
     }
 
