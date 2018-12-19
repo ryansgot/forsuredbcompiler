@@ -9,10 +9,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class MigrationUtil {
+abstract class MigrationUtil {
 
     @Nonnull
-    public static String sqlTypeOf(@Nonnull String fqType) {
+    static String sqlTypeOf(@Nonnull String fqType) {
         switch (fqType) {
             case "java.math.BigDecimal":
             case "java.math.BigInteger":

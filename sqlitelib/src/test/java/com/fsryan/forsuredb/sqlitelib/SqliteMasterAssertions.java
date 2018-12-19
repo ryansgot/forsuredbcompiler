@@ -3,7 +3,7 @@ package com.fsryan.forsuredb.sqlitelib;
 import com.fsryan.forsuredb.info.ColumnInfo;
 import com.fsryan.forsuredb.info.TableForeignKeyInfo;
 import com.fsryan.forsuredb.info.TableInfo;
-import com.fsryan.forsuredb.sqlitelib.diff.MigrationUtil;
+import com.fsryan.forsuredb.sqlitelib.diff.MigrationUtilAccessor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -310,7 +310,7 @@ public abstract class SqliteMasterAssertions {
         return SqliteMasterAssertions.forColumnExists(
                 tableName,
                 column.getColumnName(),
-                MigrationUtil.sqlTypeOf(column.getQualifiedType()),
+                MigrationUtilAccessor.sqlTypeOf(column.getQualifiedType()),
                 true,
                 dfltVal,
                 pk.contains(column.getColumnName())
