@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'net.ltgt.apt-idea' version '0.18'
+    id 'net.ltgt.apt' version '0.18'
 }
 
 group 'com.fsryan.forsuredb'

@@ -14,10 +14,6 @@ dependencies {
     testImplementation deps.sqlitejdbc                  // <-- run integration tests against real in-memory database
     testCompileOnly deps.jsr305
 
-
-    testCompileOnly deps.auto.valueAnnotations
-    testAnnotationProcessor deps.auto.value
-
     testCompileOnly deps.test.junit4
     testImplementation deps.test.junit.jupiter.api
     testImplementation deps.test.junit.jupiter.params
